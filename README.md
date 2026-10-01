@@ -67,6 +67,8 @@ A simulação é independente do desenho. Phaser desenha o mundo; o DOM apresent
 
 ## Verificação e distribuição
 
+Os envios para `main` e os pull requests executam os testes e o build pelo GitHub Actions.
+
 ```powershell
 npm test
 npm run build
