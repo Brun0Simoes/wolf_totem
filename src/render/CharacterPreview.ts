@@ -15,8 +15,9 @@ export class CharacterPreview {
 
   clear(): void { this.generation++; this.canvas = undefined; this.image = undefined; this.sheet = undefined; }
 
-  mount(canvas: HTMLCanvasElement, characterId: number, stars: number): void {
-    this.clear(); this.canvas = canvas; this.sheet = getAnimation(characterId, stars); this.elapsed = 0;
+  /** `sheet` overrides the painted atlas, e.g. a stand-in or a code-drawn figure. */
+  mount(canvas: HTMLCanvasElement, characterId: number, stars: number, sheet?: SheetDefinition): void {
+    this.clear(); this.canvas = canvas; this.sheet = sheet ?? getAnimation(characterId, stars); this.elapsed = 0;
     const status = document.querySelector<HTMLElement>('#preview-status');
     if (!this.sheet) { if (status) status.textContent = 'Animação em produção'; return; }
     if (status) status.textContent = 'Carregando animação…';

@@ -1,0 +1,136 @@
+# Wolf Totem 1.0 — sistemas do jogo
+
+Todos os números abaixo são decisões de protótipo, calibradas por simulação, e ficam fora do catálogo canônico de `src/data/characters.ts`.
+
+## Ciclo de jogo
+
+```text
+Aldeia produz ─► recrutar / fundir / equipar ─► expedição automática ─► recursos e componentes
+     ▲                                                                           │
+     └──── eras (espíritos), construções, trabalhadores ◄────────────────────────┘
+Primeiro Inverno ─► Caçada Eterna + Grande Totem ─► renascimento ─► memórias permanentes
+```
+
+Ritmo medido durante o desenvolvimento com um jogador automático simples (melhora construções, avança eras, recruta um núcleo de equipe e tenta sempre a próxima expedição):
+
+| Marco | Tempo de jogo |
+| --- | --- |
+| Era II | ~1 min |
+| Era III / IV / V | ~3 / ~10 / ~20 min |
+| Chefe da região 5 (Leviatã) | ~25 min |
+| Primeiro Inverno | entre 30 min e 1h40, conforme a equipe chega a 3★ |
+| Grande Totem completo e primeiro renascimento | ~1h10–1h40 |
+| Segundo ciclo até a região 5 | ~20 min (com memórias) |
+
+## Aldeia
+
+| Construção | Produção por nível | Afinidade dos trabalhadores |
+| --- | --- | --- |
+| Bosque dos coletores | 1,5 madeira/s | Copa, Enxame |
+| Acampamento de caça | 1,2 alimento/s | Caçador, Presas |
+| Pedreira ancestral | 0,85 pedra/s | Brigão, Guardião, Manada |
+| Círculo dos espíritos | 0,3 espírito/s | Xamã, Místico, Totêmico |
+| Forja de Osso (Era II) | 1 componente a cada 900/nível s | Ancestral, Escamas, Trapaceiro |
+
+- Construções vão até o nível 15; o custo cresce 1,65× por nível.
+- Produção total = base × nível × (1 + 12% por era) × espíritos × (1 + 25% por Raízes Profundas) × trabalhadores.
+- **Trabalhadores:** heróis da reserva (fora da formação). Vagas por construção: 1 + nível/4, no máximo 4. Cada um soma 10% × custo × (1; 2,2; 4 conforme as estrelas), com ×1,5 de afinidade.
+- **Eras:** a aldeia de nível *n* custa 160/110/80/30 × 2,8^(n−1) (madeira, alimento, pedra, espírito). Cada era libera um custo de herói, uma vaga na formação e uma escolha de espírito.
+- Coleta manual: 5/4/3 por clique × nível da aldeia.
+- Produção offline: até 2 horas, inclusive da forja.
+
+## Espíritos protetores
+
+| Era | Espírito | Bônus permanente | Poder (1× por expedição) |
+| --- | --- | --- | --- |
+| II | Lobo | Presas e Caçadores +12% ataque; +10% alimento | Uivo da Matilha: +40% velocidade e +20% ataque por 6 s |
+| II | Cervo | Curas e escudos +20%; +15% madeira | Chuva de Primavera: cura 35% e remove veneno |
+| II | Corvo | +12 mana inicial; +15% espírito | Revoada: 10% da vida máx. e −20 armadura por 8 s |
+| III | Serpente | Escamas −12% dano recebido; +15% pedra | Bote Coletivo: veneno de 4% da vida/s por 6 s |
+| III | Coruja | Místicos, Xamãs e Totêmicos +20% poder; +10% espírito | Silêncio da Noite: inimigos sem mana e lentos por 5 s |
+| III | Gorila | Copa e Guardiões +15% vida; +10% madeira | Rugido da Copa: atordoa todos por 1,75 s |
+| IV | Crocodilo | Rio e Brigões +12% vida e ataque; +15% alimento | Fome do Pântano: devora o mais ferido (<40%) e molha todos |
+| IV | Elefante | Manada e Ancestrais +25 armadura/RM; +15% pedra | Muralha de Marfim: escudo de 30% da vida |
+| IV | Águia | Caçadores +12% velocidade; +1 viajante na fogueira | Olho do Céu: marca todos e revela furtivos por 10 s |
+| V | Urso | +10% vida; +10% de tudo | Despertar do Inverno: ergue os caídos com 35% |
+| V | Jaguar | Espreitadores e Noturnos +18% ataque | Eclipse: aliados inalvejáveis 2,5 s e +50% ataque |
+| V | Aranha | Invocações +50%; forja 50% mais rápida | Teia Mãe: atordoa 1 s e desacelera 6 s |
+
+## Heróis e laços
+
+- Fogueira: 4 viajantes (5 com a Águia); chances por era em [PERSONAGENS.md](PERSONAGENS.md).
+- Recrutar custa 15 de alimento e 30 de espírito × custo; liberar devolve 15 × custo × 3^(estrelas−1) de espírito e os itens.
+- Até 18 heróis no total; formação de 3 a 7, conforme a era.
+- Os laços contam personagens distintos na formação; a tabela completa está no códice (aba **Laços**) e em `src/game/synergies.ts`.
+
+## Itens
+
+Os componentes vêm de:
+
+- primeiras vitórias: 1 componente, ou 2 nos chefes;
+- repetições: 35% de chance;
+- Caçada Eterna: 1 por vitória, 2 a cada 5 profundidades;
+- Forja de Osso.
+
+| Componente | Efeito |
+| --- | --- |
+| Presa de Osso | +12% ataque |
+| Arco de Teixo | +12% velocidade de ataque |
+| Couro Curtido | +20 armadura |
+| Manto de Fibras | +20 resistência mágica |
+| Pena Sagrada | +15 mana inicial |
+| Cinturão de Raízes | +180 vida |
+
+Cada par de componentes forma um dos 21 itens. Exemplos:
+
+- **Lâmina de Obsidiana:** o terceiro ataque causa dano dobrado.
+- **Garra do Caçador:** velocidade de ataque crescente.
+- **Couraça de Espinhos:** devolve parte do dano recebido.
+- **Escudo Totêmico:** escuda os aliados vizinhos.
+- **Véu da Coruja:** ignora atordoamentos.
+
+Para combinar:
+
+- coloque o segundo componente no herói que já tem o primeiro;
+- ou, com a forja construída, toque dois componentes na bolsa.
+
+Cada herói carrega até 3 itens; ao fundir cópias, os itens passam ao herói que fica e o excedente volta à bolsa. A lista completa está no códice (aba **Itens**).
+
+## Campanha
+
+| Região | Era | Chefe |
+| --- | --- | --- |
+| 1. Clareira do Lobo | I | O Alfa Cinzento (Akru) |
+| 2. Margem do Rio | II | A Boca do Delta (Nask) |
+| 3. Copa Alta | III | O Oráculo da Copa (Roko) |
+| 4. Savana de Marfim | IV | O Rei dos Búfalos (Boro) |
+| 5. Pântano Ancestral | V | O Leviatã do Pântano (Karkun) |
+| 6. Montanhas do Primeiro Inverno | V | O Primeiro Inverno (Uruq) |
+
+- **Força dos inimigos:** (0,56 + 0,03·L + 0,0009·L²) ÷ (1 + 0,12 × (custo − 1)). Um chefe tem vida × (1,7 + 0,12 × região), ataque × (1,12 + 0,02 × região) e +15 de armadura e resistência.
+- **Recompensa:** madeira 40 + 14·L, alimento 35 + 12·L, pedra 25 + 10·L e espírito 40 + 10·L. A repetição paga metade.
+- **Caçada Eterna:** composições geradas por semente, que crescem em quantidade, estrelas e custo; o nível equivale a 30 + 1,6 × profundidade.
+
+## Grande Totem e renascimento
+
+- Exige a Era V e a vitória na expedição 5·5.
+- Tem 5 partes; a parte *n* custa 2 500/1 800/2 200/1 100 × *n*.
+- Para renascer: Totem completo e Primeiro Inverno vencido.
+- Brasas ganhas = 8 + 2 × profundidade da Caçada Eterna nesta jornada + 2 × renascimentos anteriores.
+- O renascimento volta a aldeia, os heróis, os itens, os espíritos e a campanha ao início. Mantém brasas, memórias, configurações e o recorde da Caçada.
+
+| Memória | Efeito por nível | Máx. | Custo |
+| --- | --- | --- | --- |
+| Raízes Profundas | +25% produção | 10 | 3 × (nível + 1) |
+| Bênção Ancestral | +6% vida e ataque | 10 | 4 × (nível + 1) |
+| Fogueira Acolhedora | −8% preço de recrutamento | 5 | 3 × (nível + 1) |
+| Botim das Caçadas | +20% recompensas | 5 | 3 × (nível + 1) |
+| Herança da Tribo | +150 de cada recurso ao renascer | 5 | 2 × (nível + 1) |
+| Memória da Forja | +1 componente ao renascer | 3 | 4 × (nível + 1) |
+
+## Saves
+
+- Formato versão 2.
+- A versão 1 é migrada: cada onda vencida vira uma expedição vencida, e os heróis recebem espaços de item e de trabalho.
+- Combate em andamento nunca é salvo.
+- Valores inválidos são saneados: itens desconhecidos, espíritos fora da ordem das eras e trabalhadores acima das vagas.

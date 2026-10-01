@@ -1,0 +1,135 @@
+/* Wolf Totem 1.0 — campaign, items, spirits, workers and the Great Totem. */
+.side-panel{overflow-y:auto;scrollbar-width:thin}
+.resource.embers .resource-icon{color:#e9c47c}
+.nav-group .nav-button{padding:12px 4px}
+.muted{color:var(--muted)}.small{font-size:9px;line-height:1.6}
+.primary.compact{margin-top:10px;padding:8px 10px;font-size:10px;width:auto}
+.primary.danger{background:#d9a07a;color:#2b1a12}
+.outline-button.on{border-color:#e0c686aa;color:#f0dca2;background:#d6ba7914}
+kbd{font:8px 'DM Sans',sans-serif;border:1px solid #ffffff25;border-radius:3px;padding:1px 4px;margin-left:auto;color:var(--muted)}
+.objective.urgent{border-left-color:#e7c77d;background:#e7c77d10;animation:urgent 2.4s ease-in-out infinite}
+@keyframes urgent{50%{box-shadow:0 0 0 1px #e7c77d33}}
+@media (prefers-reduced-motion:reduce){.objective.urgent{animation:none}}
+.spirit-row{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.spirit-badge{width:26px;height:26px;display:grid;place-items:center;border:1px solid #d6ba7930;border-radius:50%;background:#0e1a1450}
+.spirit-badge .glyph{width:20px;height:20px}
+.production-line{display:flex;align-items:center;gap:7px;font-size:10px;color:#c9d3a8;margin:-4px 0 10px;flex-wrap:wrap}
+.production-line svg{width:13px;height:13px}
+.production-line.muted{color:var(--muted)}
+.forge-bar{flex-basis:100%;height:4px;border-radius:2px;background:#ffffff10;position:relative;overflow:hidden}
+.forge-bar:after{content:'';position:absolute;inset:0;width:calc(var(--progress,0)*100%);background:linear-gradient(90deg,#b98a4f,#f2d486);transition:width .4s}
+.workers{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.workers-title{display:flex;align-items:center;gap:6px;font-size:7px;letter-spacing:1.5px;color:#9dab91;margin-bottom:7px}
+.workers-title b{color:var(--accent);font-weight:500;font-size:9px}.workers-title span{margin-left:auto;color:var(--muted)}.workers-title svg{width:12px;height:12px}
+.worker{display:flex;align-items:center;gap:7px;font-size:10px;padding:4px 0;color:#cfd8bd}
+.worker em{margin-left:auto;font-style:normal;color:#a9c27f;font-size:9px}
+.worker-glyph .glyph{width:20px;height:20px;display:block}
+.icon-button.tiny{width:20px;height:20px}.icon-button.tiny svg{width:12px;height:12px}
+.assign-row{display:flex;gap:6px;margin-top:6px}
+.assign-row select{flex:1;min-width:0;background:#243421;color:#bfcea6;border:1px solid #c2d29c33;border-radius:3px;padding:6px;font:10px 'DM Sans',sans-serif}
+.assign-row .outline-button{width:auto;padding:6px 8px}
+.stage-card{border:1px solid #d6ba7922;background:linear-gradient(160deg,#d6ba790c,transparent 60%);border-radius:4px;padding:13px 12px;margin:14px 0 4px}
+.stage-card .eyebrow{font-size:7px;letter-spacing:1.6px}
+.stage-card h2{font-size:22px;margin:4px 0 10px;line-height:1.1}
+.stage-card .outline-button{margin-top:10px}
+.stage-reward{font-size:9px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.stage-reward .cost{font-size:9px;gap:6px}
+.enemy-preview{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.enemy-chip{width:34px;height:38px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #d49a7c33;border-radius:4px;background:#2b1f1a55}
+.enemy-chip .glyph{width:24px;height:24px}
+.enemy-chip b{font-size:6px;color:#e2b88f;font-weight:400;letter-spacing:-.5px}
+.enemy-chip.boss{border-color:#e3b46b99;box-shadow:0 0 10px #e3b46b33}
+.control-row{display:flex;gap:6px;margin-top:8px}
+.control-row .outline-button{padding:8px}
+.power-bar{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;z-index:3;background:#121d17d9;border:1px solid #d6ba7930;border-radius:30px;padding:6px 10px;backdrop-filter:blur(6px)}
+.power-label{font-size:7px;letter-spacing:1.8px;color:#9dab91;padding:0 4px}
+.power-button{display:flex;align-items:center;gap:6px;border:1px solid color-mix(in srgb,var(--spirit) 45%,transparent);border-radius:20px;padding:4px 10px 4px 4px;font-size:9px;color:#e8e4cc;background:color-mix(in srgb,var(--spirit) 12%,transparent)}
+.power-button .glyph{width:24px;height:24px}
+.power-button:not(:disabled):hover{box-shadow:0 0 14px color-mix(in srgb,var(--spirit) 40%,transparent)}
+.power-button.used{opacity:.35}
+.battle-result .loot{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:-8px 0 14px}
+.result-actions{display:flex;gap:8px;margin-top:18px}.result-actions>*{flex:1}.result-actions .primary{margin:0}
+.recruit-grid{grid-template-columns:repeat(var(--shop,4),1fr)}
+.recruit-button.merge{border-color:#e0c686aa;color:#f2dc9c;background:#d6ba7918}
+.party-card{height:170px}
+.party-card.working{border-color:#a9c27f44}
+.party-card.can-equip{border-style:dashed;border-color:#e0c68677}
+.party-select>span{bottom:21px}
+.item-slots{position:absolute;bottom:5px;left:8px;display:flex;gap:4px}
+.slot{width:14px;height:14px;border:1px solid #ffffff22;border-radius:3px;background:#0b141055;padding:0}
+.slot.filled{background:radial-gradient(circle at 35% 35%,#fff8,var(--item) 45%,color-mix(in srgb,var(--item) 60%,#000));border-color:var(--item);cursor:pointer}
+.bag{margin-top:12px;border:1px solid var(--line);border-radius:5px;padding:10px 12px;background:#141f1880}
+.bag-title{display:flex;align-items:center;gap:8px;font-size:8px;letter-spacing:1.6px;color:#9dab91;margin-bottom:8px;flex-wrap:wrap}
+.bag-title svg{width:14px;height:14px}.bag-title b{color:var(--accent);font-weight:500}
+.bag-title span{letter-spacing:0;font-size:9px;color:var(--muted);margin-left:auto}
+.bag-items{display:flex;flex-wrap:wrap;gap:6px}
+.item-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid color-mix(in srgb,var(--item) 40%,transparent);border-radius:14px;padding:4px 9px 4px 5px;font-size:9px;color:#dfe2cc;background:#0e1813aa}
+.item-chip.item{border-width:1.5px;color:#f1ecd2}
+.item-chip.selected{background:color-mix(in srgb,var(--item) 30%,#0e1813);box-shadow:0 0 0 1px var(--item)}
+.item-chip.combinable{border-style:dashed}
+.item-gem{width:14px;height:14px;border-radius:50%;flex-shrink:0;background:radial-gradient(circle at 35% 35%,#fffa,var(--item) 45%,color-mix(in srgb,var(--item) 55%,#000))}
+.item-chip.component .item-gem{border-radius:3px;transform:rotate(45deg) scale(.8)}
+.item-gem.big{width:28px;height:28px}
+.codex-tabs{display:flex;gap:6px;margin:18px 0 4px;flex-wrap:wrap}
+.codex-tabs button{display:flex;gap:6px;align-items:center;border:1px solid #b1c09225;border-radius:3px;padding:8px 12px;font-size:10px;color:#a0b192}
+.codex-tabs button svg{width:14px;height:14px}
+.codex-tabs button.active{background:#b6c698;color:#1b2b19;border-color:#b6c698}
+.codex-section{font:22px var(--serif);margin:24px 0 10px;color:#d6c996}
+.item-grid,.recipe-table,.memory-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.item-card,.recipe{display:flex;gap:10px;align-items:flex-start;border:1px solid color-mix(in srgb,var(--item) 30%,transparent);border-radius:4px;padding:10px;background:#0f1a1455}
+.recipe .item-gem{margin-top:3px}
+.item-card b,.recipe b{font:17px var(--serif)}
+.item-card p,.recipe p{font-size:10px;color:#a5b299;line-height:1.6;margin-top:3px}
+.recipe small{display:block;font-size:8px;color:#d0b98a;letter-spacing:.5px}
+.spirit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.spirit-card{border:1px solid color-mix(in srgb,var(--spirit) 35%,transparent);border-radius:6px;padding:18px;background:radial-gradient(circle at 50% 0%,color-mix(in srgb,var(--spirit) 14%,transparent),transparent 70%);display:flex;flex-direction:column;gap:8px}
+.spirit-card .spirit-art{display:block;width:96px;height:96px;margin:0 auto 4px}
+.spirit-card.small .spirit-art{width:64px;height:64px}
+.spirit-card .glyph{width:100%;height:100%;filter:drop-shadow(0 4px 12px color-mix(in srgb,var(--spirit) 40%,transparent))}
+.spirit-card h3{font-size:28px;text-align:center}
+.spirit-card>b{font:20px var(--serif);text-align:center}
+.spirit-card p{font-size:10px;color:#b0bca2;line-height:1.7}
+.spirit-card .power-text{border-top:1px solid #ffffff10;padding-top:8px;color:#d6dcc4}
+.spirit-card .power-text svg{width:12px;height:12px;vertical-align:-1px}
+.spirit-card .primary{margin-top:auto}
+.spirit-card.chosen{box-shadow:0 0 0 1px var(--spirit)}
+.trait-table{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.trait-row{border:1px solid var(--line);border-radius:4px;padding:10px;background:#0f1a1455}
+.trait-row b{font:18px var(--serif)}.trait-thresholds{float:right;font-size:9px;color:var(--accent)}
+.trait-row p{font-size:10px;color:#a5b299;line-height:1.6;margin:5px 0}.trait-row small{font-size:8px;color:#7f9175}
+.map{display:flex;flex-direction:column;gap:12px;margin-top:22px}
+.map-region{border:1px solid color-mix(in srgb,var(--line,#cfc) 30%,transparent);border-radius:6px;padding:12px 14px;background:linear-gradient(100deg,color-mix(in srgb,var(--floor,#555) 30%,transparent),transparent 70%)}
+.map-region header{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:10px}
+.map-region header b{font:21px var(--serif)}.map-region header span{font-size:10px;color:var(--muted)}
+.map-region.locked{opacity:.5}
+.map-region.endless{--floor:#5b4a7a;--line:#c7b7e8}
+.map-nodes{display:flex;gap:6px;flex-wrap:wrap;position:relative}
+.map-node{flex:1;min-width:120px;display:flex;align-items:center;gap:8px;border:1px solid #ffffff18;border-radius:4px;padding:8px;background:#0e1813aa;text-align:left;font-size:10px;color:#d9dcc6}
+.node-mark{width:26px;height:26px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;border:1px solid #ffffff30;font-size:11px;color:#c9d3a8}
+.node-mark svg{width:13px;height:13px}
+.map-node.cleared .node-mark{background:#a9c27f33;border-color:#a9c27f}
+.map-node.boss .node-mark{border-color:#e3b46b;color:#e3b46b}
+.map-node.current{border-color:var(--accent);box-shadow:0 0 0 1px #d6ba7955}
+.wonder{border:1px solid #d6ba7930;border-radius:6px;padding:18px;margin-top:22px;background:radial-gradient(circle at 50% 0%,#d6ba7912,transparent 70%)}
+.wonder-stages{display:flex;gap:6px;margin-bottom:14px}
+.wonder-stages span{flex:1;text-align:center;padding:10px 0;border:1px solid #ffffff15;border-radius:3px;font:18px var(--serif);color:#7f9175}
+.wonder-stages span.done{background:#d6ba7922;color:var(--accent);border-color:#d6ba7966}
+.wonder .primary{width:auto;padding:11px 16px}.wonder .primary .cost{margin-left:10px;color:#1b2b19}
+.wonder-note{font:20px var(--serif);color:var(--accent)}
+.ascend{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.ascend p{font-size:11px;color:#b0bca2;margin-bottom:10px}.ascend b{color:var(--accent)}
+.memory-card{border:1px solid var(--line);border-radius:4px;padding:12px;background:#0f1a1455;display:flex;flex-direction:column;gap:6px}
+.memory-card b{font:18px var(--serif)}.memory-level{font-size:9px;color:var(--accent)}
+.memory-card p{font-size:10px;color:#a5b299;line-height:1.6;flex:1}
+@media(max-width:950px){.item-grid,.recipe-table,.memory-grid,.spirit-grid{grid-template-columns:repeat(2,1fr)}.recruit-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.item-grid,.recipe-table,.memory-grid,.spirit-grid,.trait-table{grid-template-columns:1fr}.power-bar{bottom:auto;top:96px;flex-wrap:wrap;justify-content:center;width:calc(100% - 24px);border-radius:12px}.map-node{min-width:calc(50% - 6px)}.party-card{height:165px}}
+/* Compact expedition panel so the start button stays visible. */
+.stage-card{margin:10px 0 0;padding:10px 11px}
+.stage-card h2{font-size:19px;margin:3px 0 8px}
+.enemy-chip{width:28px;height:32px}.enemy-chip .glyph{width:20px;height:20px}
+.stage-card .outline-button{margin-top:8px;padding:7px 10px}
+.side-panel .formation-count{padding:10px 0 4px}
+.side-panel .synergies{margin-top:8px}.side-panel .synergies .eyebrow{margin-bottom:4px}
+.side-panel .synergy{padding:5px 0;font-size:10px}.side-panel .synergy svg{width:14px;height:14px}
+.side-panel .battle-controls{padding-top:10px}
+@media(max-width:720px){.side-panel .stage-card,.side-panel .workers,.side-panel .spirit-row{grid-column:1/-1}.side-panel .battle-controls{grid-column:1/-1}}

@@ -12,7 +12,7 @@ Qualquer balanceamento provisório do combate deve ficar separado desse catálog
 
 Novas formas e animações são entregues em `public/assets/animations/v3`. O [inventário de produção](production/STATUS.md) registra as 165 formas planejadas e distingue as prontas das pendentes; hoje são **41 prontas e 124 pendentes**. Para personagens novos, o retrato do códice é um recorte da primeira pose; o PNG permanece intacto.
 
-## Integração ao jogo (versão 0.4)
+## Integração ao jogo (versões 0.4 e 1.0)
 
 Os 55 personagens são recrutáveis e lutam com suas habilidades. As regras abaixo são **decisões de protótipo**, separadas do catálogo canônico: `src/game/roster.ts`, `src/game/skills.ts` e `src/game/synergies.ts`.
 
@@ -35,7 +35,7 @@ Os 55 personagens são recrutáveis e lutam com suas habilidades. As regras abai
 - Cada habilidade tem uma nota "Efeito nesta versão" no códice com os números usados.
 - Mecânicas novas: invocações com duração (crias de seda, corvos, escaravelhos explosivos, ecos de aliados caídos, espíritos do marfim), zonas que acompanham o conjurador ou ficam no chão, provocação, furtividade, presa coletiva (Fenra), inimigos molhados (Rio/Aruun), redução de cura, roubo de vida, golpes em área, metamorfoses temporárias, noite que pune conjurações (Veyra) e renascimento único (Ssar'ka).
 - Invocações não decidem a batalha: a vitória ou derrota considera apenas os heróis.
-- As 12 expedições têm nomes e composições próprias. As primeiras usam custo 1; a partir da 4ª entram custos 2–3; as duas últimas trazem custos 4 e Uruq, o lendário do Primeiro Inverno. Inimigos de custo maior recebem uma escala de onda um pouco menor, porque seus atributos canônicos já são mais altos.
+- Na versão 1.0 as 12 ondas viraram 6 regiões com 5 expedições e chefes; a lista e as fórmulas estão em [SISTEMAS.md](SISTEMAS.md). Inimigos de custo maior recebem uma escala menor, porque seus atributos canônicos já são mais altos.
 
 ### Características
 

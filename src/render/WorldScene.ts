@@ -3,27 +3,35 @@ import type { BuildingId, Game } from '../game/simulation';
 import { characters } from '../data/characters';
 import { animationSheets, bestAnimation, getAnimation, frameRect, sheetKey } from './animationAssets';
 import { advanceMotion, createMotion, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState, type SheetDefinition } from './animationModel';
-import { CombatEffects } from './CombatEffects';
+import { CombatEffects, SKILL_COLORS } from './CombatEffects';
+import { artFor } from './artSource';
+import { proceduralSheet } from './proceduralArt';
+import { CHARACTER_ANIMAL, paintGlyph, type AnimalId } from './spiritGlyphs';
+import { REGIONS } from '../game/campaign';
+import { SPIRITS, spiritById } from '../game/spirits';
 
 type View = 'village' | 'battle';
 type Ctx = CanvasRenderingContext2D;
 type Point = [number, number];
 type Entity = NonNullable<Game['battle']>['entities'][number];
 type Callbacks = { onBuilding: (id: BuildingId) => void; onSlot: (slot: number) => void };
-type UnitView = { summon?: string; transform: boolean; sprite: Phaser.GameObjects.Sprite; bars: Phaser.GameObjects.Graphics; name: Phaser.GameObjects.Text; ring: Phaser.GameObjects.Ellipse; baseTexture: string; desiredHeight: number; characterId: number; stars: number; motion: MotionState; x: number; y: number; lastHp: number; enemy: boolean };
-type Villager = { uid: string; view: UnitView; phase: number; work: BuildingId; lastWork: number };
+type UnitView = { summon?: string; transform: boolean; layer: Phaser.GameObjects.Layer; aura?: Phaser.GameObjects.Image; sprite: Phaser.GameObjects.Sprite; bars: Phaser.GameObjects.Graphics; name: Phaser.GameObjects.Text; ring: Phaser.GameObjects.Ellipse; baseTexture: string; desiredHeight: number; characterId: number; stars: number; motion: MotionState; x: number; y: number; lastHp: number; enemy: boolean };
+type Villager = { uid: string; view: UnitView; phase: number; work: BuildingId | null; lastWork: number };
 
 const COST_TINT = [0xdfd8c0, 0xc7dccf, 0xc3cde6, 0xdccbe6, 0xf1dca6];
 const SUMMON_HEIGHT: Record<string, number> = { spider: 34, crow: 40, beetle: 36, elephant: 82 };
 const ZONE_COLOR: Record<string, number> = { web: 0xc8ebd8, water: 0x7fc8d6, veil: 0x4f7fa8, domain: 0xa77d4f, frost: 0xcfe9f7 };
 const W = 1200;
 const H = 740;
-const BUILDINGS: { id: BuildingId; name: string; x: number; y: number; icon: string }[] = [
+const BUILDINGS: { id: BuildingId; name: string; x: number; y: number; icon: string; labelY?: number }[] = [
   { id: 'lumber', name: 'BOSQUE DOS COLETORES', x: 390, y: 329, icon: '↟' },
   { id: 'hunt', name: 'ACAMPAMENTO DE CAÇA', x: 797, y: 337, icon: '⌁' },
   { id: 'quarry', name: 'PEDREIRA ANCESTRAL', x: 838, y: 494, icon: '◇' },
   { id: 'shrine', name: 'CÍRCULO DOS ESPÍRITOS', x: 398, y: 493, icon: '✦' },
+  { id: 'forge', name: 'FORJA DE OSSO', x: 672, y: 254, icon: '⚒', labelY: -118 },
 ];
+const ENEMY_SLOTS = [1, 2, 5, 6, 0, 3, 8, 11];
+const procKey = (id: number, stars: number) => `proc-${id}-${stars}`;
 
 function random(seed: number): () => number {
   return () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -71,6 +79,13 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private ambience!: Phaser.GameObjects.Graphics;
     private floorHover!: Phaser.GameObjects.Graphics;
     private zoneLayer!: Phaser.GameObjects.Graphics;
+    private board!: Phaser.GameObjects.Graphics;
+    private boardRegion = 0;
+    private totemImage!: Phaser.GameObjects.Image;
+    private forgeImage!: Phaser.GameObjects.Image;
+    private banners: Phaser.GameObjects.Image[] = [];
+    private bannerKey = '';
+    private totemStage = -1;
     private stars: { x: number; y: number; phase: number; speed: number }[] = [];
     private activeView: View = 'village';
     private lastFormation = '';
@@ -200,7 +215,9 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       this.paint('hut-hunt', 248, 225, c => this.paintHut(c, true));
       this.paint('shrine', 210, 183, c => this.paintShrine(c));
       this.paint('quarry', 230, 175, c => this.paintQuarry(c));
-      this.paint('totem', 170, 198, c => this.paintTotem(c));
+      for (let stage = 0; stage <= 5; stage++) this.paint(`totem-${stage}`, 220, 330, c => this.paintGreatTotem(c, stage));
+      this.paint('forge', 230, 200, c => this.paintForge(c, true));
+      this.paint('forge-site', 230, 200, c => this.paintForge(c, false));
       this.paint('logs', 105, 65, c => this.paintLogs(c));
       this.paint('tent', 160, 148, c => this.paintTent(c));
 
@@ -220,16 +237,17 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         { key: 'hut-hunt', x: 797, y: 337, scale: .92 },
         { key: 'shrine', x: 398, y: 493, scale: .96 },
         { key: 'quarry', x: 838, y: 494, scale: .97 },
-        { key: 'totem', x: 610, y: 410, scale: .93 },
         { key: 'logs', x: 308, y: 350, scale: .85 },
         { key: 'logs', x: 455, y: 326, scale: .65 },
-        { key: 'tent', x: 640, y: 271, scale: .62 },
+        { key: 'tent', x: 520, y: 262, scale: .5 },
         { key: 'tent', x: 746, y: 425, scale: .50 },
         { key: 'rock', x: 970, y: 448, scale: .74 },
         { key: 'rock', x: 187, y: 368, scale: .79 },
         { key: 'rock', x: 698, y: 606, scale: .6 },
       ];
       objects.forEach(o => this.village.add(this.add.image(o.x, o.y, o.key).setOrigin(.5, 1).setScale(o.scale).setDepth(o.y)));
+      this.totemImage = this.add.image(610, 412, 'totem-0').setOrigin(.5, 1).setScale(.93).setDepth(410); this.village.add(this.totemImage);
+      this.forgeImage = this.add.image(672, 256, 'forge-site').setOrigin(.5, 1).setScale(.62).setDepth(268); this.village.add(this.forgeImage);
 
       for (const b of BUILDINGS) {
         const ring = this.add.ellipse(b.x, b.y - 8, 156, 67).setStrokeStyle(1.5, 0xe9c47c, 0).setDepth(b.y - 1);
@@ -242,15 +260,108 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
           callbacks.onBuilding(b.id); this.pulse(b.x, b.y - 7, 0xe2bd79, this.village);
         });
         this.village.add(zone);
-        const bg = this.add.rectangle(b.x, b.y + 17, 193, 24, 0x1d2920, .9).setStrokeStyle(1, 0xc5b481, .27).setDepth(1000);
-        const badge = this.add.text(b.x, b.y + 17, `${b.icon}  ${b.name}`, { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#e8ddba', letterSpacing: .8 }).setOrigin(.5).setDepth(1001);
-        const level = this.add.text(b.x, b.y + 36, '', { fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#bbc29d' }).setOrigin(.5).setDepth(1001);
+        const labelY = b.y + (b.labelY ?? 17);
+        const bg = this.add.rectangle(b.x, labelY, 193, 24, 0x1d2920, .9).setStrokeStyle(1, 0xc5b481, .27).setDepth(1000);
+        const badge = this.add.text(b.x, labelY, `${b.icon}  ${b.name}`, { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#e8ddba', letterSpacing: .8 }).setOrigin(.5).setDepth(1001);
+        const level = this.add.text(b.x, labelY + 19, '', { fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#bbc29d' }).setOrigin(.5).setDepth(1001);
         this.village.add([bg, badge, level]); this.labels.set(b.id, level);
       }
       this.fire = this.add.graphics().setDepth(465); this.village.add(this.fire);
       // Small flag claims the center, leaving the place itself as the hero of the screen.
       const centerTitle = this.add.text(610, 429, 'TOTEM DO LOBO', { fontFamily: 'Georgia, serif', fontSize: '11px', color: '#f4dda1', letterSpacing: 1.8 }).setOrigin(.5).setDepth(1001);
       this.village.add(centerTitle);
+    }
+
+    /** Each raised stage of the Great Totem stacks another carved spirit; the last one opens wings and glows. */
+    private paintGreatTotem(c: Ctx, stage: number): void {
+      if (stage >= 5) glow(c, 110, 120, 120, '#f2d48633');
+      const animals: AnimalId[] = ['bear', 'eagle', 'owl', 'serpent', 'elephant'];
+      for (let i = 0; i < stage; i++) {
+        const top = 139 - 27 * (i + 1);
+        polygon(c, [[92, top + 28], [93, top], [127, top], [128, top + 28]], i % 2 ? '#7d5c3c' : '#8e6b45', '#3b2e20', 2);
+        line(c, [[95, top + 3], [125, top + 3]], '#c9a66c88', 2);
+        paintGlyph(c, animals[i], 110, top + 14, 30, i === stage - 1 && stage === 5 ? '#f2d486' : '#d9c39a', 1, '#3b2e20');
+      }
+      if (stage >= 3) {
+        const top = 139 - 27 * stage;
+        for (const side of [-1, 1]) polygon(c, [[110 + side * 16, top + 10], [110 + side * 70, top - 12], [110 + side * 86, top + 6], [110 + side * 58, top + 14], [110 + side * 72, top + 26], [110 + side * 22, top + 22]], stage >= 5 ? '#e8c77a' : '#b39a6c', '#4a3a26', 2);
+      }
+      c.save(); c.translate(25, 132); this.paintTotem(c); c.restore();
+    }
+
+    private paintForge(c: Ctx, built: boolean): void {
+      ellipse(c, 118, 186, 100, 18, '#1c2c2363');
+      if (!built) {
+        for (const [x, y] of [[50, 176], [186, 176], [80, 150], [160, 150]]) { line(c, [[x, y], [x, y - 34]], '#7b6545', 4); ellipse(c, x, y - 34, 3, 2, '#c7ab78'); }
+        line(c, [[50, 150], [80, 124], [160, 124], [186, 150]], '#b9a172', 1.5);
+        for (let i = 0; i < 9; i++) { const a = i * Math.PI * 2 / 9; polygon(c, [[118 + Math.cos(a) * 34 - 6, 168 + Math.sin(a) * 11], [118 + Math.cos(a) * 34, 160 + Math.sin(a) * 11], [118 + Math.cos(a) * 34 + 7, 168 + Math.sin(a) * 11]], '#8e9386', '#5f665c', 1); }
+        return;
+      }
+      // Hide canopy over the hearth.
+      for (const [x, y] of [[44, 182], [192, 182], [70, 150], [168, 150]]) line(c, [[x, y], [x + (x < 118 ? 6 : -6), y - 92]], '#6b5236', 5);
+      polygon(c, [[40, 94], [118, 64], [198, 94], [176, 112], [118, 88], [62, 112]], '#b08a5c', '#5a4430', 2);
+      polygon(c, [[118, 64], [198, 94], [176, 112], [118, 88]], '#94714a');
+      for (let i = 0; i < 6; i++) line(c, [[62 + i * 22, 108 - Math.abs(2.5 - i) * 3], [62 + i * 22, 116 - Math.abs(2.5 - i) * 3]], '#d8bf8f', 2);
+      // Stone hearth with embers.
+      ellipse(c, 118, 168, 46, 16, '#6f7468'); ellipse(c, 118, 164, 38, 12, '#3a2a20');
+      glow(c, 118, 156, 44, '#f2a24f66');
+      for (let i = 0; i < 5; i++) polygon(c, [[104 + i * 7, 166], [108 + i * 7, 146 - (i % 2) * 10], [112 + i * 7, 166]], i % 2 ? '#f9d378' : '#e0843e');
+      for (let i = 0; i < 10; i++) { const a = i * Math.PI * 2 / 10; ellipse(c, 118 + Math.cos(a) * 44, 166 + Math.sin(a) * 14, 7, 5, '#9a9f8f'); }
+      // Anvil stone, bones and a finished spear on the rack.
+      polygon(c, [[160, 176], [166, 158], [194, 156], [200, 174], [182, 182]], '#868b80', '#4f564c', 2);
+      line(c, [[170, 157], [192, 155]], '#c7c9b8', 2);
+      line(c, [[52, 176], [58, 120]], '#7b6545', 4); line(c, [[78, 176], [84, 120]], '#7b6545', 4); line(c, [[50, 132], [88, 128]], '#7b6545', 3);
+      for (let i = 0; i < 4; i++) line(c, [[56 + i * 8, 130], [54 + i * 8, 160]], '#e8dcc0', 3);
+      line(c, [[34, 178], [64, 96]], '#9d8358', 3); polygon(c, [[64, 96], [70, 84], [60, 92]], '#c2c7bb');
+    }
+
+    private paintBanner(c: Ctx, color: string, animal: AnimalId): void {
+      line(c, [[24, 116], [24, 6]], '#6b5236', 4); ellipse(c, 24, 6, 3, 3, '#e3c27c');
+      polygon(c, [[26, 12], [66, 14], [62, 40], [66, 66], [44, 58], [26, 64]], '#d8c7a2', '#5a4430', 2);
+      paintGlyph(c, animal, 46, 38, 30, color, 1, '#3b2e20');
+      line(c, [[26, 64], [30, 76]], color, 2); line(c, [[44, 58], [46, 72]], color, 2);
+    }
+
+    private updateVillageStructures(t: number): void {
+      const s = game.state;
+      if (s.wonder !== this.totemStage) {
+        if (this.totemStage >= 0) { this.pulse(610, 360, 0xf2d486, this.village); this.pulse(610, 300, 0xf2d486, this.village); }
+        this.totemStage = s.wonder; this.totemImage.setTexture(`totem-${Math.min(5, s.wonder)}`);
+      }
+      const forgeKey = s.buildings.forge > 0 ? 'forge' : 'forge-site';
+      if (this.forgeImage.texture.key !== forgeKey) this.forgeImage.setTexture(forgeKey);
+      const key = s.spirits.join(',');
+      if (key !== this.bannerKey) {
+        this.bannerKey = key;
+        for (const banner of this.banners) banner.destroy();
+        const spots: Point[] = [[530, 402], [694, 404], [548, 462], [676, 462]];
+        this.banners = s.spirits.map((id, i) => {
+          const spirit = spiritById(id)!, texture = `banner-${id}`;
+          if (!this.textures.exists(texture)) this.paint(texture, 72, 120, c => this.paintBanner(c, spirit.color, spirit.animal as AnimalId));
+          const image = this.add.image(spots[i][0], spots[i][1], texture).setOrigin(.33, 1).setScale(.62).setDepth(spots[i][1]);
+          this.village.add(image); this.pulse(spots[i][0], spots[i][1], 0xe9d18e, this.village);
+          return image;
+        });
+      }
+      this.banners.forEach((banner, i) => banner.setAngle(this.reducedMotion ? 0 : Math.sin(t * 1.3 + i) * 2.5));
+    }
+
+    /** Board colors follow the region of the selected expedition. */
+    private paintBoard(region: number): void {
+      if (region === this.boardRegion) return;
+      this.boardRegion = region;
+      const palette = (REGIONS[region - 1] ?? REGIONS[0]).palette, g = this.board;
+      const corners: Point[] = [[672, 171], [1037, 351], [599, 567], [234, 387]];
+      g.clear();
+      g.fillStyle(0x283b31, .96); g.fillPoints(corners.map(([x, y]) => ({ x, y: y + 15 })), true);
+      g.fillStyle(palette.floor, 1); g.fillPoints(corners.map(([x, y]) => ({ x, y })), true);
+      g.lineStyle(2, palette.line, .45); g.strokePoints(corners.map(([x, y]) => ({ x, y })), true);
+      for (let y = 0; y < 6; y++) for (let x = 0; x < 4; x++) {
+        const [px, py] = iso(x, y);
+        const points = [{ x: px, y: py - 35 }, { x: px + 71, y: py }, { x: px, y: py + 35 }, { x: px - 71, y: py }];
+        g.fillStyle(y < 3 ? ((x + y) % 2 ? palette.floor : palette.floorAlt) : ((x + y) % 2 ? palette.ally : palette.allyAlt), 1);
+        g.fillPoints(points, true); g.lineStyle(1, palette.line, .18); g.strokePoints(points, true);
+      }
     }
 
     private paintTree(c: Ctx, variant: number): void {
@@ -416,16 +527,10 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
 
     private createBattlefield(): void {
       const g = this.add.graphics(); this.battlefield.add(g);
-      const corners: Point[] = [[672, 171], [1037, 351], [599, 567], [234, 387]];
-      g.fillStyle(0x283b31, .96); g.fillPoints(corners.map(([x, y]) => ({ x, y: y + 15 })), true);
-      g.fillStyle(0x73765a, 1); g.fillPoints(corners.map(([x, y]) => ({ x, y })), true);
-      g.lineStyle(2, 0xaca57a, .45); g.strokePoints(corners.map(([x, y]) => ({ x, y })), true);
+      this.board = g; this.paintBoard(1);
       for (let y = 0; y < 6; y++) {
         for (let x = 0; x < 4; x++) {
           const [px, py] = iso(x, y);
-          const points = [{ x: px, y: py - 35 }, { x: px + 71, y: py }, { x: px, y: py + 35 }, { x: px - 71, y: py }];
-          g.fillStyle(y < 3 ? ((x + y) % 2 ? 0x77755a : 0x7e7b5d) : ((x + y) % 2 ? 0x647257 : 0x6d7a5e), 1);
-          g.fillPoints(points, true); g.lineStyle(1, 0xccca9d, .18); g.strokePoints(points, true);
           if (y >= 3) {
             const slot = (y - 3) * 4 + x;
             const diamond = [71, 0, 142, 35, 71, 70, 0, 35];
@@ -532,7 +637,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       this.syncVillageRoster();
       for (const b of BUILDINGS) {
         const level = game.state.buildings[b.id];
-        const label = this.labels.get(b.id), text = `Nível ${level}  ·  ${level >= 10 ? 'máximo' : 'melhorar'}`;
+        const label = this.labels.get(b.id), text = level ? `Nível ${level}  ·  ${level >= 10 ? 'máximo' : 'melhorar'}` : 'construir';
         if (label?.text !== text) label?.setText(text);
         if (level > this.previousLevels[b.id]) {
           this.pulse(b.x, b.y, 0xe9d18e, this.village);
@@ -542,22 +647,33 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       }
       const t = this.reducedMotion ? 0 : time / 1000;
       for (const tree of this.scenery) tree.object.setAngle(Math.sin(t * .8 + tree.phase) * tree.angle);
-      this.villageActors.forEach((actor, i) => {
-        const cycle = (this.clock + actor.phase) % 20;
-        const building = BUILDINGS.find(b => b.id === actor.work)!;
-        const start = { x: 536 + i % 3 * 42, y: 435 + Math.floor(i / 3) * 22 };
-        const end = { x: building.x + 38, y: building.y + 2 };
-        let progress = 0, moving = false;
-        if (cycle >= 3 && cycle < 9) { progress = (cycle - 3) / 6; moving = true; }
-        else if (cycle >= 9 && cycle < 14) progress = 1;
-        else if (cycle >= 14) { progress = 1 - (cycle - 14) / 6; moving = true; }
-        if (this.reducedMotion) progress = 0;
-        const x = Phaser.Math.Linear(start.x, end.x, progress), y = Phaser.Math.Linear(start.y, end.y, progress);
-        const workBeat = Math.floor((this.clock + actor.phase) / 1.5);
-        if (cycle >= 9 && cycle < 14 && actor.lastWork !== workBeat && dt > 0) {
-          triggerMotion(actor.view.motion, 'attack', building.x - x); actor.lastWork = workBeat;
+      this.updateVillageStructures(t);
+      const idle = this.villageActors.filter(actor => !actor.work);
+      this.villageActors.forEach(actor => {
+        let x: number, y: number, moving = false;
+        if (actor.work) {
+          // Workers walk from the fire to the building they really work in, labour, and return.
+          const cycle = (this.clock + actor.phase) % 20;
+          const building = BUILDINGS.find(b => b.id === actor.work)!;
+          const slot = this.villageActors.filter(other => other.work === actor.work).indexOf(actor);
+          const start = { x: 560 + (actor.phase * 13) % 90, y: 440 + (actor.phase * 7) % 30 };
+          const end = { x: building.x + 30 + slot * 22, y: building.y + 6 + slot * 6 };
+          let progress = 0;
+          if (cycle >= 2 && cycle < 6) { progress = (cycle - 2) / 4; moving = true; }
+          else if (cycle >= 6 && cycle < 16) progress = 1;
+          else if (cycle >= 16) { progress = 1 - (cycle - 16) / 4; moving = true; }
+          if (this.reducedMotion) { progress = 1; moving = false; }
+          x = Phaser.Math.Linear(start.x, end.x, progress); y = Phaser.Math.Linear(start.y, end.y, progress);
+          const workBeat = Math.floor((this.clock + actor.phase) / 1.5);
+          if (cycle >= 6 && cycle < 16 && actor.lastWork !== workBeat && dt > 0) { triggerMotion(actor.view.motion, 'attack', building.x - x); actor.lastWork = workBeat; }
+        } else {
+          // Resting heroes gather around the fire and stroll a little.
+          const index = idle.indexOf(actor), angle = index / Math.max(1, idle.length) * Math.PI * 2 + .4;
+          const sway = this.reducedMotion ? 0 : Math.sin(this.clock * .25 + actor.phase) * 10;
+          x = 612 + Math.cos(angle) * (78 + sway); y = 418 + Math.sin(angle) * 34 + 6;
+          moving = !this.reducedMotion && Math.abs(Math.cos(this.clock * .25 + actor.phase)) > .85;
         }
-        this.presentUnit(actor.view, moving && !this.reducedMotion ? 'walk' : 'idle', dt, x, y, x - actor.view.x);
+        this.presentUnit(actor.view, moving ? 'walk' : 'idle', dt, x, y, x - actor.view.x);
         actor.view.name.setVisible(false); actor.view.bars.clear(); actor.view.ring.setAlpha(.2);
       });
       const f = this.fire; f.clear();
@@ -611,16 +727,37 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       return sheet;
     }
 
-    private ensureBestAtlas(characterId: number, stars: number): SheetDefinition | undefined {
-      const sheet = bestAnimation(characterId, stars);
-      return sheet ? this.ensureAtlas(sheet.characterId, sheet.stars ?? 1) : undefined;
+    private ensureProcedural(characterId: number, stars: number): SheetDefinition {
+      const { canvas, sheet } = proceduralSheet(characterId, stars);
+      const key = procKey(characterId, stars);
+      if (!this.textures.exists(key)) {
+        const texture = this.textures.addCanvas(key, canvas)!;
+        for (let i = 0; i < sheet.columns * sheet.rows; i++) { const rect = frameRect(sheet, i); texture.add(i, 0, rect.x, rect.y, rect.width, rect.height); }
+      }
+      this.atlasUsed.set(key, this.clock);
+      return sheet;
+    }
+
+    /** Stand-in stages show the painted lower star with the spirit animal rising behind it. */
+    private updateAura(view: UnitView, show: boolean, x: number, y: number): void {
+      if (!show) { view.aura?.setVisible(false); return; }
+      const animal = CHARACTER_ANIMAL[view.characterId] ?? 'wolf', texture = `aura-${animal}-${view.characterId}`;
+      if (!this.textures.exists(texture)) {
+        const color = '#' + (SKILL_COLORS[view.characterId] ?? 0xd6c08a).toString(16).padStart(6, '0');
+        this.paint(texture, 160, 160, c => { glow(c, 80, 80, 78, color + '40'); paintGlyph(c, animal, 80, 80, 140, color, 1); });
+      }
+      if (!view.aura) { view.aura = this.add.image(x, y, texture).setOrigin(.5, .5); view.layer.add(view.aura); }
+      const big = view.stars >= 3, pulse = this.reducedMotion ? 0 : Math.sin(this.clock * 2 + view.motion.seed) * .04;
+      const size = view.desiredHeight * (big ? 1.35 : .8) / 160;
+      view.aura.setVisible(true).setTexture(texture).setPosition(x - view.motion.facing * (big ? 4 : 10), y - view.desiredHeight * (big ? .62 : .78))
+        .setScale(size * (1 + pulse)).setAlpha(big ? .48 : .34).setDepth(y + 9).setFlipX(view.motion.facing < 0);
     }
 
     private evictAtlases(): void {
       if (this.atlasUsed.size <= 24) return;
       const active = new Set([...this.units.values(), ...this.villageActors.map(a => a.view)].flatMap(v => {
         const best = bestAnimation(v.characterId, v.stars);
-        return [sheetKey(v.characterId, v.stars), ...(best ? [sheetKey(best.characterId, best.stars)] : [])];
+        return [sheetKey(v.characterId, v.stars), procKey(v.characterId, v.stars), ...(best ? [sheetKey(best.characterId, best.stars)] : [])];
       }));
       for (const [key, lastUsed] of [...this.atlasUsed].sort((a, b) => a[1] - b[1])) {
         if (this.atlasUsed.size <= 24) break;
@@ -652,7 +789,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       const motion = createMotion(characterId * .173 + this.units.size * .11);
       motion.facing = enemy ? -1 : 1;
       if (summon) { ring.setScale(.6); name.setFontSize(8).setAlpha(.8); }
-      return { summon, transform: false, sprite, bars, name, ring, baseTexture: key, desiredHeight: height, characterId, stars, motion, x: 0, y: 0, lastHp: -1, enemy };
+      return { summon, transform: false, layer, sprite, bars, name, ring, baseTexture: key, desiredHeight: height, characterId, stars, motion, x: 0, y: 0, lastHp: -1, enemy };
     }
 
     private unitView(id: string, characterId: number, enemy: boolean, stars: number, summon?: string, label?: string): UnitView {
@@ -668,22 +805,26 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     }
 
     private syncVillageRoster(): void {
-      const heroes = game.state.heroes.slice(0, 6);
-      const key = heroes.map(h => h.uid + ':' + h.stars).join(',');
+      const workers = game.state.heroes.filter(h => h.work);
+      const heroes = [...workers, ...game.state.heroes.filter(h => !h.work)].slice(0, Math.max(8, workers.length));
+      const key = heroes.map(h => h.uid + ':' + h.stars + ':' + (h.work ?? '')).join(',');
       if (key === this.villageRoster) return;
       this.villageRoster = key;
       for (const actor of this.villageActors) this.destroyUnit(actor.view);
-      this.villageActors = heroes.map((hero, i) => ({ uid: hero.uid, view: this.makeUnit(hero.characterId, false, hero.stars, this.village, 69 + hero.stars * 3), phase: i * 3.7, work: BUILDINGS[i % BUILDINGS.length].id, lastWork: -1 }));
+      this.villageActors = heroes.map((hero, i) => ({ uid: hero.uid, view: this.makeUnit(hero.characterId, false, hero.stars, this.village, 69 + hero.stars * 3), phase: i * 3.7, work: hero.work, lastWork: -1 }));
     }
 
     private presentUnit(view: UnitView, desired: MotionClip, dt: number, x: number, y: number, direction = 0): void {
       advanceMotion(view.motion, desired, dt, direction);
       const creature = !!view.summon && view.summon !== 'echo';
       const character = characters.find(h => h.id === view.characterId);
-      // Exact stage sheet, then the original illustration, then the closest animated stage.
-      const sheet = creature ? undefined : this.ensureAtlas(view.characterId, view.stars) ?? (character?.art ? undefined : this.ensureBestAtlas(view.characterId, view.stars));
-      const key = sheet ? sheetKey(sheet.characterId, sheet.stars) : '';
+      // Painted sheet of this star, original illustration, closest painted star with an aura, or the drawn figure.
+      const art = creature || !character ? undefined : artFor(character, view.stars);
+      let sheet: SheetDefinition | undefined, key = '';
+      if (art?.kind === 'painted' || art?.kind === 'standin') { sheet = this.ensureAtlas(art.sheet!.characterId, art.sheet!.stars ?? 1); key = sheetKey(art.sheet!.characterId, art.sheet!.stars); }
+      else if (art?.kind === 'procedural') { sheet = this.ensureProcedural(view.characterId, view.stars); key = procKey(view.characterId, view.stars); }
       const hasSheet = !!sheet && this.textures.exists(key);
+      this.updateAura(view, art?.kind === 'standin' && view.stars >= 2, x, y);
       const pose = poseForMotion(view.motion, hasSheet, this.reducedMotion);
       if (!creature) view.baseTexture = this.resolveArt(view.characterId, view.stars);
       let scale: number;
@@ -699,7 +840,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         scale = view.desiredHeight / view.sprite.height;
       }
       // Metamorphs grow while their transformation lasts; summoned echoes stay translucent.
-      if (view.transform) scale *= 1.2;
+      if (view.transform) scale *= 1.12;
       view.sprite.setFlipX(view.motion.facing < 0).setScale(scale * pose.scaleX, scale * pose.scaleY);
       view.sprite.setPosition(x + pose.x, y + 5 + pose.y).setAngle(pose.angle).setAlpha(pose.alpha * (view.summon ? .82 : 1)).setDepth(y + 10);
       if (view.motion.hit > .12) view.sprite.setTintFill(0xf5d8b2);
@@ -715,8 +856,19 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
 
     private syncBattle(dt: number): void {
       const battle = game.battle;
+      this.paintBoard(battle ? battle.region : game.nextStage().stage.region);
       if (!battle) {
         const keep = new Set<string>();
+        // The next expedition's enemies wait on their half of the board.
+        if (game.state.heroes.some(h => h.slot !== null)) game.nextStage().stage.units.forEach((unit, index) => {
+          const id = `preview-${game.state.selectedStage}-${index}-${unit.id}`; keep.add(id);
+          const view = this.unitView(id, unit.id, true, unit.stars);
+          const slot = ENEMY_SLOTS[index];
+          const [x, y] = iso(slot % 4, 2 - Math.floor(slot / 4));
+          view.motion.facing = -1;
+          this.presentUnit(view, 'idle', dt, x, y); view.bars.clear();
+          if (unit.boss) view.name.setColor('#f2c879');
+        });
         for (const hero of game.state.heroes) {
           if (hero.slot === null || hero.slot === undefined || hero.slot < 0) continue;
           const id = 'formation-' + hero.uid; keep.add(id);
@@ -767,6 +919,15 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
           else this.effects.heal(b);
         } else if (event.type === 'shield') this.effects.shield(b);
         else if (event.type === 'summon') this.effects.summon(b, target.enemy ? 0xd49a7c : 0xc8e3b0);
+        else if (event.type === 'power') {
+          const spirit = SPIRITS.find(entry => event.text?.startsWith(entry.name + ':'));
+          if (spirit) {
+            const texture = `power-${spirit.id}`;
+            if (!this.textures.exists(texture)) this.paint(texture, 220, 220, c => { glow(c, 110, 110, 108, spirit.color + '55'); paintGlyph(c, spirit.animal as AnimalId, 110, 110, 190, spirit.color, 1, '#1b1712'); });
+            this.effects.power(texture, parseInt(spirit.color.slice(1), 16), points('ally'), points('enemy'));
+            this.floatText(spirit.power.name, 672, 250, spirit.color, true);
+          }
+        }
         else if (event.type === 'revive') {
           target.motion = createMotion(target.motion.seed); target.motion.facing = target.enemy ? -1 : 1;
           this.effects.revive(b); if (event.text) this.floatText(event.text, b.x, b.y - 122, '#f4d79b', true);
@@ -801,7 +962,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     }
 
     private destroyUnit(view: UnitView): void {
-      view.sprite.destroy(); view.bars.destroy(); view.name.destroy(); view.ring.destroy();
+      view.sprite.destroy(); view.bars.destroy(); view.name.destroy(); view.ring.destroy(); view.aura?.destroy();
     }
 
     private drawBars(view: UnitView, entity: Entity, x: number, y: number): void {

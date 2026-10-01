@@ -1,5 +1,17 @@
 # Wolf Totem — arte e animação
 
+## Versão 1.0: figuras procedurais e glifos
+
+Enquanto as folhas pintadas não chegam, o jogo completa o visual com código (`src/render/proceduralArt.ts` e `src/render/spiritGlyphs.ts`):
+
+- **Escolha da arte** (`src/render/artSource.ts`): folha pintada da estrela → ilustração original → folha pintada mais próxima com aura do animal espiritual (2★ pequena, 3★ grande) → figura procedural.
+- **Figuras procedurais** dos 23 personagens sem nenhuma arte. Cada um tem descrição tirada do plano (porte, pele, cabelo, roupa, arma, adereço) e uma folha 4 × 3 no mesmo formato das pintadas: repouso, caminhada e ataque, quatro poses cada. A evolução segue a regra do plano: 1★ humano; 2★ marcas brilhando, orelhas, chifres, cauda, asas ou braços espirituais conforme o animal; 3★ avatar do animal atrás da figura.
+- **Glifos de 27 animais** em estilo máscara de totem: espíritos protetores, poderes, estandartes da aldeia, partes do Grande Totem, auras e prévias de inimigos.
+- **Aldeia:** forja (canteiro antes de construída), Grande Totem em 6 estágios, estandartes dos espíritos escolhidos e trabalhadores andando até a construção onde trabalham.
+- **Campo:** cor do tabuleiro por região e inimigos visíveis na preparação.
+
+As figuras são provisórias e sempre perdem para uma folha pintada da mesma forma.
+
 ## Expansão 0.3
 
 A produção abrange os 55 personagens e suas três estrelas. Consulte o [estado atualizado](production/STATUS.md) para as entregas efetivas: a geração foi interrompida pelo limite de uso da ferramenta antes de completar as 165 formas.

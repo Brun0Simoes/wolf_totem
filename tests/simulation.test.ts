@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Game, buildingCost, capacity, getRates, getSynergies, OFFLINE_CAP_SECONDS, villageCost } from '../src/game/simulation';
+import { Game, buildingCost, capacity, getRates, getSynergies, OFFLINE_CAP_SECONDS, stageUnlocked, villageCost } from '../src/game/simulation';
+import { stageReward } from '../src/game/campaign';
 
 describe('village and recruitment', () => {
   it('starts with the three specified heroes and produces the published income', () => {
@@ -83,10 +84,10 @@ describe('versioned saves and offline time', () => {
     expect(loaded.state.heroes).toHaveLength(3);
     expect(loaded.state.heroes[1].slot).toBeNull();
     expect(loaded.battle).toBeNull();
-    expect(loaded.state.wave).toBe(1);
+    expect(loaded.state.progress).toBe(0);
     fresh.startBattle(); fresh.tick(1);
     expect(new Game(fresh.serialize(1000), 1000).battle).toBeNull();
-    expect(new Game(fresh.serialize(1000), 1000).state.wave).toBe(1);
+    expect(new Game(fresh.serialize(1000), 1000).state.progress).toBe(0);
   });
 });
 
@@ -98,14 +99,18 @@ describe('automatic combat', () => {
     expect(game.recruit(1).ok).toBe(false);
     for (let i = 0; i < 150 && game.battle?.status === 'fighting'; i++) game.tick(1);
     expect(game.battle?.status).toBe('victory');
-    expect(game.battle?.reward?.spirit).toBe(43);
-    expect(game.state.wave).toBe(2);
+    expect(game.battle?.reward?.spirit).toBe(stageReward(1, false).spirit);
+    expect(game.battle?.firstClear).toBe(true);
+    expect(game.battle?.loot).toHaveLength(1);
+    expect(game.state.progress).toBe(1);
+    expect(game.state.selectedStage).toBe(2);
     const resources = game.state.resources.spirit;
     game.tick(1);
     expect(game.state.resources.spirit).toBeCloseTo(resources + getRates(game.state).spirit);
-    expect(game.state.wave).toBe(2);
+    expect(game.state.progress).toBe(1);
     const saved = new Game(game.serialize(1000), 1000);
-    expect(saved.state.wave).toBe(2);
+    expect(saved.state.progress).toBe(1);
+    expect(saved.state.inventory).toEqual(game.state.inventory);
     expect(saved.battle).toBeNull();
   });
 
@@ -116,7 +121,7 @@ describe('automatic combat', () => {
     for (const entity of game.battle!.entities) if (entity.team === 'ally') entity.hp = 0;
     game.tick(0.1);
     expect(game.battle?.status).toBe('defeat');
-    expect(game.state.wave).toBe(1);
+    expect(game.state.progress).toBe(0);
     expect(JSON.stringify(game.state.heroes)).toBe(heroes);
     expect(game.dismissBattle().ok).toBe(true);
     expect(game.startBattle().ok).toBe(true);
@@ -126,7 +131,7 @@ describe('automatic combat', () => {
   it('executes each of the 55 prototype skills with finite battle stats', () => {
     for (let characterId = 1; characterId <= 55; characterId++) {
       const game = new Game();
-      game.state.heroes = [{ uid: 'test-hero', characterId, stars: 2, slot: 1 }];
+      game.state.heroes = [{ uid: 'test-hero', characterId, stars: 2, slot: 1, items: [], work: null }];
       game.startBattle();
       const hero = game.battle!.entities.find(entity => entity.team === 'ally')!;
       hero.mana = hero.manaMax;
@@ -137,16 +142,21 @@ describe('automatic combat', () => {
     }
   });
 
-  it('allows an evolved full party to complete the last expedition', () => {
+  it('lets an evolved, equipped tribe finish the campaign and opens the endless hunt', () => {
     const game = new Game();
-    game.state.villageLevel = 5;
-    game.state.wave = 12;
-    game.state.heroes = [1, 3, 6, 8, 9, 11, 12].map((characterId, index) => ({ uid: `final-${index}`, characterId, stars: 3, slot: index }));
+    game.state.villageLevel = 5; game.state.progress = 29; game.state.selectedStage = 30;
+    game.state.spirits = ['lobo', 'coruja', 'elefante', 'urso'];
+    const items = [['garra', 'presa', 'talisma'], ['muralha', 'pele-urso'], ['espinhos'], ['obsidiana', 'garra'], ['cajado-vida'], ['tempestade', 'lanca'], ['carvalho']];
+    game.state.heroes = [[39, 3], [28, 3], [40, 2], [8, 3], [25, 2], [33, 2], [49, 2]].map(([characterId, stars], index) => ({ uid: `final-${index}`, characterId, stars, slot: [1, 2, 0, 9, 10, 5, 6][index], items: items[index], work: null }));
+    expect(stageUnlocked(game.state, 0)).toBe(false);
     game.startBattle();
-    for (let i = 0; i < 150 && game.battle?.status === 'fighting'; i++) game.tick(1);
+    for (let i = 0; i < 160 && game.battle?.status === 'fighting'; i++) game.tick(1);
     expect(game.battle?.status).toBe('victory');
-    expect(game.state.wave).toBe(13);
+    expect(game.state.progress).toBe(30);
+    expect(stageUnlocked(game.state, 0)).toBe(true);
     game.dismissBattle();
-    expect(game.startBattle().ok).toBe(false);
+    expect(game.selectStage(0).ok).toBe(true);
+    expect(game.startBattle().ok).toBe(true);
+    expect(game.battle?.stage).toBe(0);
   });
 });

@@ -1,16 +1,19 @@
 import { characters, type Character } from '../data/characters';
-import { ALL_CHARACTER_IDS, WAVES, recruitPrice, rollVisitor, sellRefund, unlockedCost } from './roster';
+import { ALL_CHARACTER_IDS, nextRandom, recruitPrice, rollVisitor, sellRefund, unlockedCost } from './roster';
+import { bossScale, endlessLevel, endlessStage, enemyScale, FINAL_STAGE, regionOf, stageById, stageReward, type Stage } from './campaign';
+import { COMPONENT_IDS, isComponent, itemById, MAX_ITEMS_PER_HERO, recipeFor, type ItemPerks } from './items';
 import { castAbility, SKILL_NOTES } from './skills';
+import { MEMORIES, memoryCost, spiritById, spiritsOfEra, type MemoryId, type SpiritId } from './spirits';
 import { countTraits, TRAIT_RULES, traitStatus } from './synergies';
 
-export { SKILL_NOTES };
+export { SKILL_NOTES, FINAL_STAGE };
 
 /** Pure, deterministic simulation. All times are seconds and positions use board cells. */
 export type Resource = 'wood' | 'food' | 'stone' | 'spirit';
 export type Resources = Record<Resource, number>;
-export type BuildingId = 'lumber' | 'hunt' | 'quarry' | 'shrine';
+export type BuildingId = 'lumber' | 'hunt' | 'quarry' | 'shrine' | 'forge';
 export type Team = 'ally' | 'enemy';
-export interface Hero { uid: string; characterId: number; stars: number; slot: number | null }
+export interface Hero { uid: string; characterId: number; stars: number; slot: number | null; items: string[]; work: BuildingId | null }
 export interface GameState {
   resources: Resources;
   villageLevel: number;
@@ -18,8 +21,21 @@ export interface GameState {
   heroes: Hero[];
   shop: number[];
   shopSeed: number;
-  wave: number;
-  victories: number;
+  /** Number of campaign stages cleared, in order (0–30). */
+  progress: number;
+  /** Stage chosen for the next expedition; 0 is the endless hunt. */
+  selectedStage: number;
+  endlessBest: number;
+  endlessRecord: number;
+  inventory: string[];
+  lootSeed: number;
+  forgeProgress: number;
+  spirits: SpiritId[];
+  wonder: number;
+  embers: number;
+  memories: Partial<Record<MemoryId, number>>;
+  rebirths: number;
+  settings: { speed: number; autoRepeat: boolean };
   paused: boolean;
 }
 export interface ActionResult { ok: boolean; message: string }
@@ -35,6 +51,7 @@ export interface CombatEntity {
   team: Team;
   stars: number;
   cost: number;
+  boss: boolean;
   x: number;
   y: number;
   hp: number;
@@ -87,10 +104,15 @@ export interface CombatEntity {
   scavenger: boolean;
   bonds: string[];
   mods: Modifier[];
+  items: string[];
+  perks: ItemPerks;
+  attackCount: number;
+  prevStun: number;
+  lowHpShieldUsed: boolean;
 }
 export interface CombatEvent {
   id: number;
-  type: 'attack' | 'skill' | 'damage' | 'heal' | 'death' | 'shield' | 'summon' | 'revive';
+  type: 'attack' | 'skill' | 'damage' | 'heal' | 'death' | 'shield' | 'summon' | 'revive' | 'power';
   sourceId: string;
   targetId?: string;
   amount?: number;
@@ -128,12 +150,18 @@ export interface BattleState {
   entities: CombatEntity[];
   zones: CombatZone[];
   time: number;
-  wave: number;
+  /** Campaign stage id, or 0 for the endless hunt. */
+  stage: number;
+  depth: number;
+  region: number;
   name: string;
   status: 'fighting' | 'victory' | 'defeat';
   reward: Resources | null;
+  loot: string[];
+  firstClear: boolean;
   prey: Partial<Record<Team, { id: string; time: number }>>;
   lastCast: Partial<Record<Team, number>>;
+  powersUsed: SpiritId[];
 }
 export interface SummonSpec { hp: number; attack: number; range: number; lifetime: number; attackSpeed?: number; taunt?: number; deathBurst?: number; characterId?: number; stars?: number; x?: number; y?: number }
 
@@ -154,37 +182,67 @@ export interface CombatApi {
 }
 
 const RESOURCE_KEYS: Resource[] = ['wood', 'food', 'stone', 'spirit'];
-const BUILDING_KEYS: BuildingId[] = ['lumber', 'hunt', 'quarry', 'shrine'];
+export const BUILDING_KEYS: BuildingId[] = ['lumber', 'hunt', 'quarry', 'shrine', 'forge'];
 export const PLAYABLE_IDS = ALL_CHARACTER_IDS;
-export const MAX_BUILDING_LEVEL = 10;
+export const MAX_BUILDING_LEVEL = 15;
 export const MAX_VILLAGE_LEVEL = 5;
-export const MAX_WAVE = WAVES.length;
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export const OFFLINE_CAP_SECONDS = 7200;
 export const MAX_ROSTER_SIZE = 18;
-export const SHOP_SIZE = 4;
+export const MAX_INVENTORY = 30;
+export const WONDER_STAGES = 5;
 const MAX_SUMMONS_PER_OWNER = 6;
 const BOARD = { maxX: 3, maxY: 5 };
+const STAR_POWER = [1, 2.2, 4];
+/** Heroes whose traits match a building work 50% better there. */
+export const WORK_AFFINITY: Record<BuildingId, string[]> = {
+  lumber: ['Copa', 'Enxame'], hunt: ['Caçador', 'Presas'], quarry: ['Brigão', 'Guardião', 'Manada'],
+  shrine: ['Xamã', 'Místico', 'Totêmico'], forge: ['Ancestral', 'Escamas', 'Trapaceiro'],
+};
+const BUILDING_RESOURCE: Partial<Record<BuildingId, Resource>> = { lumber: 'wood', hunt: 'food', quarry: 'stone', shrine: 'spirit' };
 
 export function characterById(id: number): Character {
   return characters.find(character => character.id === id) ?? characters[0];
 }
 export const emptyResources = (): Resources => ({ wood: 0, food: 0, stone: 0, spirit: 0 });
 export const capacity = (state: GameState): number => 2 + state.villageLevel;
+const memory = (state: GameState, id: MemoryId): number => state.memories[id] ?? 0;
+const chosenSpirits = (state: GameState) => state.spirits.map(spiritById).filter(spirit => !!spirit);
+export const shopSize = (state: GameState): number => 4 + chosenSpirits(state).reduce((sum, spirit) => sum + (spirit.passive.shopSlot ?? 0), 0);
+export const workerSlots = (state: GameState, id: BuildingId): number => state.buildings[id] > 0 ? Math.min(4, 1 + Math.floor(state.buildings[id] / 4)) : 0;
+
+/** Production bonus that one hero adds to a building. */
+export function workerBonus(hero: Hero, building: BuildingId): number {
+  const character = characterById(hero.characterId);
+  const affinity = character.traits.some(trait => WORK_AFFINITY[building].includes(trait)) ? 1.5 : 1;
+  return 0.1 * character.cost * STAR_POWER[hero.stars - 1] * affinity;
+}
+export function buildingMultiplier(state: GameState, building: BuildingId): number {
+  return 1 + state.heroes.filter(hero => hero.work === building).reduce((sum, hero) => sum + workerBonus(hero, building), 0);
+}
 
 export function getRates(state: GameState): Resources {
-  const bonus = 1 + (state.villageLevel - 1) * 0.12;
+  const bonus = (1 + (state.villageLevel - 1) * 0.12) * (1 + 0.25 * memory(state, 'raizes'));
+  const spirit = (resource: Resource) => 1 + chosenSpirits(state).reduce((sum, entry) => sum + (entry.passive.production?.[resource] ?? 0), 0);
   return {
-    wood: state.buildings.lumber * 1.5 * bonus,
-    food: state.buildings.hunt * 1.2 * bonus,
-    stone: state.buildings.quarry * 0.85 * bonus,
-    spirit: state.buildings.shrine * 0.3 * bonus,
+    wood: state.buildings.lumber * 1.5 * bonus * spirit('wood') * buildingMultiplier(state, 'lumber'),
+    food: state.buildings.hunt * 1.2 * bonus * spirit('food') * buildingMultiplier(state, 'hunt'),
+    stone: state.buildings.quarry * 0.85 * bonus * spirit('stone') * buildingMultiplier(state, 'quarry'),
+    spirit: state.buildings.shrine * 0.3 * bonus * spirit('spirit') * buildingMultiplier(state, 'shrine'),
   };
+}
+/** Components forged per second. */
+export function forgeRate(state: GameState): number {
+  const level = state.buildings.forge;
+  if (!level) return 0;
+  const speed = 1 + chosenSpirits(state).reduce((sum, spirit) => sum + (spirit.passive.forgeSpeed ?? 0), 0);
+  return level / 900 * buildingMultiplier(state, 'forge') * speed;
 }
 
 /** level is the current building level; this returns the price of its next level. */
 export function buildingCost(id: BuildingId, level: number): Resources {
   const growth = Math.pow(1.65, Math.max(0, level - 1));
+  if (id === 'forge') return { wood: Math.ceil(90 * growth), food: 0, stone: Math.ceil(80 * growth), spirit: Math.ceil(20 * growth) };
   return {
     wood: Math.ceil((id === 'lumber' ? 35 : 45) * growth),
     food: id === 'hunt' ? Math.ceil(15 * growth) : 0,
@@ -195,15 +253,24 @@ export function buildingCost(id: BuildingId, level: number): Resources {
 
 /** level is the current village level. */
 export function villageCost(level: number): Resources {
-  const growth = Math.pow(2.25, Math.max(0, level - 1));
-  return { wood: Math.ceil(120 * growth), food: Math.ceil(80 * growth), stone: Math.ceil(60 * growth), spirit: Math.ceil(20 * growth) };
+  // Each era costs about three times the previous one, so the ages pace the whole journey.
+  const growth = Math.pow(2.8, Math.max(0, level - 1));
+  return { wood: Math.ceil(160 * growth), food: Math.ceil(110 * growth), stone: Math.ceil(80 * growth), spirit: Math.ceil(30 * growth) };
 }
-export function recruitCost(characterId = 1): Resources {
+/** Each of the five stages of the Great Totem; stage is the number already raised. */
+export function wonderCost(stage: number): Resources {
+  const step = stage + 1;
+  return { wood: 2500 * step, food: 1800 * step, stone: 2200 * step, spirit: 1100 * step };
+}
+export function recruitCost(characterId = 1, state?: GameState): Resources {
   const price = recruitPrice(characterById(characterId).cost);
-  return { wood: 0, food: price.food, stone: 0, spirit: price.spirit };
+  const discount = state ? 1 - 0.08 * memory(state, 'fogueira') : 1;
+  return { wood: 0, food: Math.round(price.food * discount), stone: 0, spirit: Math.round(price.spirit * discount) };
 }
 export const REROLL_COST: Resources = { wood: 0, food: 0, stone: 0, spirit: 8 };
 export const GATHER_AMOUNT: Resources = { wood: 5, food: 4, stone: 3, spirit: 2 };
+/** Embers granted by raising the Great Totem now. */
+export const embersFor = (state: GameState): number => 8 + 2 * state.endlessBest + 2 * state.rebirths;
 
 export function getSynergies(state: GameState): Synergy[] {
   const counts = countTraits(state.heroes.filter(hero => hero.slot !== null).map(hero => hero.characterId));
@@ -212,6 +279,14 @@ export function getSynergies(state: GameState): Synergy[] {
     return { name, count, threshold: status.next, thresholds: status.thresholds, tier: status.tier, active: status.tier > 0, description: status.description };
   }).sort((a, b) => Number(b.active) - Number(a.active) || b.tier - a.tier || b.count - a.count || a.name.localeCompare(b.name));
 }
+
+/** The era reached but not yet consecrated to a patron spirit, if any. */
+export function pendingEra(state: GameState): number | null {
+  const era = state.spirits.length + 2;
+  return era <= state.villageLevel ? era : null;
+}
+export const stageUnlocked = (state: GameState, stageId: number): boolean =>
+  stageId === 0 ? state.progress >= FINAL_STAGE : stageId >= 1 && stageId <= Math.min(FINAL_STAGE, state.progress + 1) && regionOf(stageId).village <= state.villageLevel;
 
 const success = (message: string): ActionResult => ({ ok: true, message });
 const fail = (message: string): ActionResult => ({ ok: false, message });
@@ -237,35 +312,66 @@ export const clampToBoard = (entity: CombatEntity): void => {
   entity.y = Math.max(0, Math.min(BOARD.maxY, entity.y));
 };
 
+const starterHeroes = (): Hero[] => [
+  { uid: 'hero-1', characterId: 1, stars: 1, slot: 1, items: [], work: null },
+  { uid: 'hero-2', characterId: 3, stars: 1, slot: 2, items: [], work: null },
+  { uid: 'hero-3', characterId: 8, stars: 1, slot: 9, items: [], work: null },
+];
+
 function initialState(): GameState {
   return {
     resources: { wood: 120, food: 90, stone: 60, spirit: 75 },
     villageLevel: 1,
-    buildings: { lumber: 1, hunt: 1, quarry: 1, shrine: 1 },
-    heroes: [{ uid: 'hero-1', characterId: 1, stars: 1, slot: 1 }, { uid: 'hero-2', characterId: 3, stars: 1, slot: 2 }, { uid: 'hero-3', characterId: 8, stars: 1, slot: 9 }],
+    buildings: { lumber: 1, hunt: 1, quarry: 1, shrine: 1, forge: 0 },
+    heroes: starterHeroes(),
     shop: [1, 2, 4, 6], shopSeed: 7,
-    wave: 1, victories: 0, paused: false,
+    progress: 0, selectedStage: 1, endlessBest: 0, endlessRecord: 0,
+    inventory: [], lootSeed: 11, forgeProgress: 0,
+    spirits: [], wonder: 0, embers: 0, memories: {}, rebirths: 0,
+    settings: { speed: 1, autoRepeat: false },
+    paused: false,
   };
 }
 
-function sanitizeState(value: unknown): GameState {
+function sanitizeState(value: unknown, version: number): GameState {
   const input = record(value);
   const fallback = initialState();
   const resources = record(input.resources);
   const buildings = record(input.buildings);
+  const settings = record(input.settings);
+  const memories = record(input.memories);
+  // Version 1 counted linear waves; each cleared wave becomes a cleared stage.
+  const progress = version === 1 ? integer(input.wave, 1, 1, FINAL_STAGE + 1) - 1 : integer(input.progress, 0, 0, FINAL_STAGE);
   const state: GameState = {
     ...fallback,
-    resources: Object.fromEntries(RESOURCE_KEYS.map(key => [key, finite(resources[key], fallback.resources[key], 0, 10_000_000)])) as Resources,
-    buildings: Object.fromEntries(BUILDING_KEYS.map(key => [key, integer(buildings[key], 1, 1, MAX_BUILDING_LEVEL)])) as Record<BuildingId, number>,
+    resources: Object.fromEntries(RESOURCE_KEYS.map(key => [key, finite(resources[key], fallback.resources[key], 0, 1e12)])) as Resources,
+    buildings: Object.fromEntries(BUILDING_KEYS.map(key => [key, integer(buildings[key], fallback.buildings[key], key === 'forge' ? 0 : 1, MAX_BUILDING_LEVEL)])) as Record<BuildingId, number>,
     villageLevel: integer(input.villageLevel, 1, 1, MAX_VILLAGE_LEVEL),
-    wave: integer(input.wave, 1, 1, MAX_WAVE + 1),
-    victories: integer(input.victories, 0, 0, MAX_WAVE),
     paused: input.paused === true,
     // Saves from 0.3 stored a rotation index; it is a valid starting seed.
     shopSeed: integer(input.shopSeed ?? input.shopRotation, 7, 0, 4294967295),
+    lootSeed: integer(input.lootSeed, 11, 0, 4294967295),
+    progress,
+    endlessBest: integer(input.endlessBest, 0, 0, 10_000),
+    endlessRecord: integer(input.endlessRecord, 0, 0, 10_000),
+    forgeProgress: finite(input.forgeProgress, 0, 0, 1),
+    wonder: integer(input.wonder, 0, 0, WONDER_STAGES),
+    embers: integer(input.embers, 0, 0, 1_000_000),
+    rebirths: integer(input.rebirths, 0, 0, 100_000),
+    memories: Object.fromEntries(MEMORIES.map(entry => [entry.id, integer(memories[entry.id], 0, 0, entry.max)])),
+    settings: { speed: integer(settings.speed, 1, 1, 3), autoRepeat: settings.autoRepeat === true },
+    inventory: Array.isArray(input.inventory) ? input.inventory.filter(id => typeof id === 'string' && !!itemById(id)).slice(0, MAX_INVENTORY) as string[] : [],
   };
+  state.endlessRecord = Math.max(state.endlessRecord, state.endlessBest);
+  const spirits: SpiritId[] = [];
+  if (Array.isArray(input.spirits)) for (const [index, id] of input.spirits.entries()) {
+    const spirit = typeof id === 'string' ? spiritById(id) : undefined;
+    if (spirit && spirit.era === index + 2 && index + 2 <= state.villageLevel) spirits.push(spirit.id); else break;
+  }
+  state.spirits = spirits;
   const slots = new Set<number>();
   const uids = new Set<string>();
+  const workers = new Map<BuildingId, number>();
   if (Array.isArray(input.heroes)) {
     state.heroes = input.heroes.slice(0, MAX_ROSTER_SIZE).flatMap((value, index) => {
       const hero = record(value);
@@ -277,14 +383,20 @@ function sanitizeState(value: unknown): GameState {
       let slot: number | null = typeof hero.slot === 'number' && Number.isInteger(hero.slot) && hero.slot >= 0 && hero.slot < 12 ? hero.slot : null;
       if (slot !== null && (slots.has(slot) || slots.size >= capacity(state))) slot = null;
       if (slot !== null) slots.add(slot);
-      return [{ uid, characterId: hero.characterId as number, stars: integer(hero.stars, 1, 1, 3), slot }];
+      let work = slot === null && typeof hero.work === 'string' && BUILDING_KEYS.includes(hero.work as BuildingId) ? hero.work as BuildingId : null;
+      if (work && (workers.get(work) ?? 0) >= workerSlots(state, work)) work = null;
+      if (work) workers.set(work, (workers.get(work) ?? 0) + 1);
+      const items = Array.isArray(hero.items) ? hero.items.filter(id => typeof id === 'string' && !!itemById(id)).slice(0, MAX_ITEMS_PER_HERO) as string[] : [];
+      return [{ uid, characterId: hero.characterId as number, stars: integer(hero.stars, 1, 1, 3), slot, items, work }];
     });
-    if (!state.heroes.length) state.heroes = fallback.heroes;
+    if (!state.heroes.length) state.heroes = starterHeroes();
   }
   const allowed = (id: unknown) => PLAYABLE_IDS.includes(id as number) && characterById(id as number).cost <= unlockedCost(state.villageLevel);
   const shop = Array.isArray(input.shop) ? [...new Set(input.shop.filter(allowed))] as number[] : [];
-  state.shop = [...shop, ...PLAYABLE_IDS.filter(id => !shop.includes(id) && allowed(id))].slice(0, SHOP_SIZE);
-  state.victories = state.wave - 1;
+  state.shop = [...shop, ...PLAYABLE_IDS.filter(id => !shop.includes(id) && allowed(id))].slice(0, shopSize(state));
+  const selected = integer(input.selectedStage, Math.min(FINAL_STAGE, state.progress + 1), 0, FINAL_STAGE);
+  state.selectedStage = stageUnlocked(state, selected) ? selected : Math.max(1, Math.min(state.progress + 1, FINAL_STAGE));
+  while (state.selectedStage > 1 && !stageUnlocked(state, state.selectedStage)) state.selectedStage--;
   return state;
 }
 
@@ -299,23 +411,22 @@ export class Game {
   private summonCounter = 0;
   private zoneCounter = 0;
   private traitTiers = new Map<string, number>();
+  private healBonus = 0;
+  private summonBonus = 0;
 
   /** A save can be the serialized JSON string or the parsed versioned save object. */
   constructor(save?: unknown, now = Date.now()) {
     this.state = initialState();
     if (typeof save === 'string') { try { save = JSON.parse(save); } catch { return; } }
     const root = record(save);
-    if (root.version !== SAVE_VERSION) return;
-    this.state = sanitizeState(root.state);
+    if (root.version !== 1 && root.version !== SAVE_VERSION) return;
+    this.state = sanitizeState(root.state, root.version as number);
     const savedAt = finite(root.savedAt, now, 0, Number.MAX_SAFE_INTEGER);
     this.offlineSeconds = this.state.paused ? 0 : Math.min(OFFLINE_CAP_SECONDS, Math.max(0, (now - savedAt) / 1000));
     if (this.offlineSeconds > 0) {
-      this.offlineGains = emptyResources();
-      const rates = getRates(this.state);
-      for (const key of RESOURCE_KEYS) {
-        this.offlineGains[key] = rates[key] * this.offlineSeconds;
-        this.state.resources[key] = Math.min(10_000_000, this.state.resources[key] + this.offlineGains[key]);
-      }
+      const before = { ...this.state.resources };
+      this.produce(this.offlineSeconds);
+      this.offlineGains = Object.fromEntries(RESOURCE_KEYS.map(key => [key, this.state.resources[key] - before[key]])) as Resources;
     }
   }
 
@@ -331,24 +442,53 @@ export class Game {
     return true;
   }
   private addResources(resources: Resources): void {
-    for (const key of RESOURCE_KEYS) this.state.resources[key] = Math.min(10_000_000, this.state.resources[key] + resources[key]);
+    for (const key of RESOURCE_KEYS) this.state.resources[key] = Math.min(1e12, this.state.resources[key] + resources[key]);
   }
   private fighting(): boolean { return this.battle?.status === 'fighting'; }
+  private random(): number {
+    const roll = nextRandom(this.state.lootSeed);
+    this.state.lootSeed = roll.seed;
+    return roll.value;
+  }
+  private randomComponent(): string { return COMPONENT_IDS[Math.floor(this.random() * COMPONENT_IDS.length)]; }
+  private addItem(id: string): boolean {
+    if (this.state.inventory.length >= MAX_INVENTORY) return false;
+    this.state.inventory.push(id);
+    return true;
+  }
+
+  /** Village production and the forge; shared by the live clock and offline time. */
+  private produce(seconds: number): void {
+    const rates = getRates(this.state);
+    this.addResources(Object.fromEntries(RESOURCE_KEYS.map(key => [key, rates[key] * seconds])) as Resources);
+    const rate = forgeRate(this.state);
+    if (rate <= 0) return;
+    this.state.forgeProgress += rate * seconds;
+    while (this.state.forgeProgress >= 1 && this.addItem(this.randomComponent())) this.state.forgeProgress -= 1;
+    this.state.forgeProgress = Math.min(1, this.state.forgeProgress);
+  }
+
+  /** Production for time spent away from the page while it stays open (the battle clock does not run). */
+  catchUp(seconds: number): void {
+    if (this.state.paused || !Number.isFinite(seconds) || seconds <= 0) return;
+    this.produce(Math.min(OFFLINE_CAP_SECONDS, seconds));
+  }
 
   gather(resource: Resource): ActionResult {
     if (!RESOURCE_KEYS.includes(resource)) return fail('Recurso desconhecido.');
     if (this.state.paused) return fail('Retome o tempo para coletar.');
-    this.state.resources[resource] = Math.min(10_000_000, this.state.resources[resource] + GATHER_AMOUNT[resource]);
-    return success(`+${GATHER_AMOUNT[resource]}`);
+    this.state.resources[resource] = Math.min(1e12, this.state.resources[resource] + GATHER_AMOUNT[resource] * this.state.villageLevel);
+    return success(`+${GATHER_AMOUNT[resource] * this.state.villageLevel}`);
   }
 
   upgradeBuilding(id: BuildingId): ActionResult {
     if (!BUILDING_KEYS.includes(id)) return fail('Construção desconhecida.');
     const level = this.state.buildings[id];
     if (level >= MAX_BUILDING_LEVEL) return fail('Esta construção chegou ao nível máximo.');
+    if (id === 'forge' && this.state.villageLevel < 2) return fail('A Forja de Osso exige a aldeia de nível 2.');
     if (!this.spend(buildingCost(id, level))) return fail('Recursos insuficientes para melhorar a construção.');
     this.state.buildings[id]++;
-    return success(`Construção melhorada para o nível ${level + 1}.`);
+    return success(level === 0 ? 'A Forja de Osso foi erguida. Componentes começam a surgir.' : `Construção melhorada para o nível ${level + 1}.`);
   }
 
   upgradeVillage(): ActionResult {
@@ -357,7 +497,17 @@ export class Game {
     this.state.villageLevel++;
     // The new cost tier arrives immediately with a free visit.
     if (!this.fighting()) this.refreshShop();
-    return success(`Aldeia nível ${this.state.villageLevel}. Mais um lugar na formação e heróis de custo ${unlockedCost(this.state.villageLevel)} chegam à fogueira!`);
+    return success(`Era ${this.state.villageLevel}! Escolha um Espírito Protetor. Heróis de custo ${unlockedCost(this.state.villageLevel)} chegam à fogueira.`);
+  }
+
+  chooseSpirit(id: SpiritId): ActionResult {
+    const era = pendingEra(this.state);
+    if (!era) return fail('Nenhuma era aguarda um Espírito Protetor.');
+    const spirit = spiritsOfEra(era).find(entry => entry.id === id);
+    if (!spirit) return fail('Este espírito não pertence a esta era.');
+    this.state.spirits.push(spirit.id);
+    while (this.state.shop.length < shopSize(this.state)) this.state.shop.push(this.nextShopHero(this.state.shop));
+    return success(`O ${spirit.name} protege a tribo. Novo poder: ${spirit.power.name}.`);
   }
 
   private newUid(): string {
@@ -372,7 +522,7 @@ export class Game {
   }
   private refreshShop(): void {
     const next: number[] = [];
-    for (let i = 0; i < SHOP_SIZE; i++) next.push(this.nextShopHero(next));
+    for (let i = 0; i < shopSize(this.state); i++) next.push(this.nextShopHero(next));
     this.state.shop = next;
   }
   recruit(characterId: number): ActionResult {
@@ -383,18 +533,21 @@ export class Game {
     if (character.cost > unlockedCost(this.state.villageLevel)) return fail(`${character.name} só atende ao chamado de uma aldeia de nível ${character.cost}.`);
     const duplicates = this.state.heroes.filter(hero => hero.characterId === characterId && hero.stars === 1);
     if (this.state.heroes.length >= MAX_ROSTER_SIZE && duplicates.length < 2) return fail('A reserva está cheia. Combine ou libere um herói.');
-    const cost = recruitCost(characterId);
+    const cost = recruitCost(characterId, this.state);
     if (!this.spend(cost)) return fail(`O recrutamento custa ${cost.spirit} de espírito e ${cost.food} de alimento.`);
-    this.state.heroes.push({ uid: this.newUid(), characterId, stars: 1, slot: null });
+    this.state.heroes.push({ uid: this.newUid(), characterId, stars: 1, slot: null, items: [], work: null });
     let combined = false;
     for (const stars of [1, 2]) {
       let matching = this.state.heroes.filter(hero => hero.characterId === characterId && hero.stars === stars);
       while (matching.length >= 3) {
-        // Preserve a deployed instance and its position when the three copies merge.
-        matching.sort((a, b) => Number(b.slot !== null) - Number(a.slot !== null));
+        // Preserve a deployed (or working) instance and its place when the three copies merge.
+        matching.sort((a, b) => Number(b.slot !== null) - Number(a.slot !== null) || Number(b.work !== null) - Number(a.work !== null) || b.items.length - a.items.length);
         const [keeper, ...consumed] = matching.slice(0, 3);
         const consumedIds = new Set(consumed.map(hero => hero.uid));
         keeper.stars++;
+        for (const hero of consumed) for (const item of hero.items) {
+          if (keeper.items.length < MAX_ITEMS_PER_HERO) keeper.items.push(item); else this.addItem(item);
+        }
         this.state.heroes = this.state.heroes.filter(hero => !consumedIds.has(hero.uid));
         combined = true;
         matching = this.state.heroes.filter(hero => hero.characterId === characterId && hero.stars === stars);
@@ -421,7 +574,20 @@ export class Game {
     if (slot !== null && hero.slot === null && !occupant && deployed >= capacity(this.state)) return fail('Formação cheia. Expanda a aldeia para levar mais heróis.');
     if (occupant) occupant.slot = hero.slot;
     hero.slot = slot;
+    if (slot !== null) hero.work = null;
     return success(slot === null ? 'Herói movido para a reserva.' : 'Formação atualizada.');
+  }
+
+  assignWorker(uid: string, building: BuildingId | null): ActionResult {
+    if (this.fighting()) return fail('Aguarde o fim do combate.');
+    const hero = this.state.heroes.find(entry => entry.uid === uid);
+    if (!hero) return fail('Herói não encontrado.');
+    if (building === null) { hero.work = null; return success(`${characterById(hero.characterId).name} voltou a descansar.`); }
+    if (!BUILDING_KEYS.includes(building) || this.state.buildings[building] <= 0) return fail('Esta construção ainda não existe.');
+    const busy = this.state.heroes.filter(entry => entry.work === building && entry !== hero).length;
+    if (busy >= workerSlots(this.state, building)) return fail('Não há vagas de trabalho nesta construção. Melhore-a para abrir mais.');
+    hero.slot = null; hero.work = building;
+    return success(`${characterById(hero.characterId).name} começou a trabalhar.`);
   }
 
   sellHero(uid: string): ActionResult {
@@ -430,15 +596,102 @@ export class Game {
     const hero = this.state.heroes.find(entry => entry.uid === uid);
     if (!hero) return fail('Herói não encontrado.');
     this.state.heroes = this.state.heroes.filter(entry => entry.uid !== uid);
+    for (const item of hero.items) this.addItem(item);
     this.state.resources.spirit += sellRefund(characterById(hero.characterId).cost, hero.stars);
-    return success('Herói liberado. Parte do espírito foi devolvida.');
+    return success('Herói liberado. Parte do espírito foi devolvida e os itens voltaram à bolsa.');
+  }
+
+  equipItem(uid: string, inventoryIndex: number): ActionResult {
+    if (this.fighting()) return fail('Aguarde o fim do combate.');
+    const hero = this.state.heroes.find(entry => entry.uid === uid);
+    const id = this.state.inventory[inventoryIndex];
+    if (!hero || !id) return fail('Escolha um item da bolsa e um herói.');
+    if (isComponent(id)) {
+      // Like the auto battlers that inspired it, a component placed beside another completes the item.
+      const partner = hero.items.findIndex(owned => isComponent(owned));
+      if (partner >= 0) {
+        const result = recipeFor(hero.items[partner], id)!;
+        hero.items[partner] = result.id;
+        this.state.inventory.splice(inventoryIndex, 1);
+        return success(`${result.name} foi forjado em ${characterById(hero.characterId).name}.`);
+      }
+    }
+    if (hero.items.length >= MAX_ITEMS_PER_HERO) return fail('Este herói já carrega três itens.');
+    hero.items.push(id);
+    this.state.inventory.splice(inventoryIndex, 1);
+    return success(`${itemById(id)!.name} entregue a ${characterById(hero.characterId).name}.`);
+  }
+
+  unequipItem(uid: string, itemIndex: number): ActionResult {
+    if (this.fighting()) return fail('Aguarde o fim do combate.');
+    const hero = this.state.heroes.find(entry => entry.uid === uid);
+    const id = hero?.items[itemIndex];
+    if (!hero || !id) return fail('Item não encontrado.');
+    if (this.state.inventory.length >= MAX_INVENTORY) return fail('A bolsa está cheia.');
+    hero.items.splice(itemIndex, 1);
+    this.state.inventory.push(id);
+    return success(`${itemById(id)!.name} voltou à bolsa.`);
+  }
+
+  combineItems(first: number, second: number): ActionResult {
+    if (first === second) return fail('Escolha dois componentes diferentes da bolsa.');
+    const a = this.state.inventory[first], b = this.state.inventory[second];
+    if (!a || !b || !isComponent(a) || !isComponent(b)) return fail('Só componentes podem ser combinados.');
+    if (this.state.buildings.forge <= 0) return fail('Construa a Forja de Osso para combinar componentes na bolsa.');
+    const result = recipeFor(a, b)!;
+    this.state.inventory = this.state.inventory.filter((_, index) => index !== first && index !== second);
+    this.state.inventory.push(result.id);
+    return success(`${result.name} foi forjado.`);
+  }
+
+  selectStage(stageId: number): ActionResult {
+    if (this.fighting()) return fail('A expedição atual ainda está em andamento.');
+    if (!stageUnlocked(this.state, stageId)) return fail(stageId === 0 ? 'A Caçada Eterna desperta após o Primeiro Inverno.' : 'Esta expedição ainda não foi alcançada.');
+    this.state.selectedStage = stageId;
+    return success(stageId === 0 ? `Caçada Eterna · profundidade ${this.state.endlessBest + 1}.` : `${stageById(stageId)!.name} escolhida.`);
+  }
+
+  setSpeed(speed: number): void { this.state.settings.speed = Math.max(1, Math.min(3, Math.round(speed))); }
+  toggleAutoRepeat(): boolean { this.state.settings.autoRepeat = !this.state.settings.autoRepeat; return this.state.settings.autoRepeat; }
+
+  buildWonder(): ActionResult {
+    if (this.state.wonder >= WONDER_STAGES) return fail('O Grande Totem já está completo.');
+    if (this.state.villageLevel < MAX_VILLAGE_LEVEL || this.state.progress < 25) return fail('O Grande Totem exige a Era V e a vitória sobre o Leviatã do Pântano.');
+    if (!this.spend(wonderCost(this.state.wonder))) return fail('Recursos insuficientes para erguer esta parte do Grande Totem.');
+    this.state.wonder++;
+    return success(this.state.wonder === WONDER_STAGES ? 'O Grande Totem está completo. Os ancestrais aguardam o renascimento.' : `O Grande Totem cresce: ${this.state.wonder} de ${WONDER_STAGES}.`);
+  }
+
+  ascend(): ActionResult {
+    if (this.fighting()) return fail('Conclua a expedição antes do ritual.');
+    if (this.state.wonder < WONDER_STAGES || this.state.progress < FINAL_STAGE) return fail('O renascimento exige o Grande Totem completo e a vitória no Primeiro Inverno.');
+    const gained = embersFor(this.state);
+    const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, shopSeed: this.state.shopSeed, lootSeed: this.state.lootSeed };
+    this.state = { ...initialState(), ...keep };
+    const heritage = 150 * memory(this.state, 'heranca');
+    for (const key of RESOURCE_KEYS) this.state.resources[key] += heritage;
+    for (let i = 0; i < memory(this.state, 'forja'); i++) this.addItem(this.randomComponent());
+    this.battle = null; this.events = [];
+    return success(`A tribo renasce com ${gained} brasas ancestrais.`);
+  }
+
+  buyMemory(id: MemoryId): ActionResult {
+    const entry = MEMORIES.find(item => item.id === id);
+    if (!entry) return fail('Memória desconhecida.');
+    const level = memory(this.state, id);
+    if (level >= entry.max) return fail('Esta memória já está completa.');
+    const cost = memoryCost(entry, level);
+    if (this.state.embers < cost) return fail(`São necessárias ${cost} brasas.`);
+    this.state.embers -= cost;
+    this.state.memories[id] = level + 1;
+    return success(`${entry.name} alcançou o nível ${level + 1}.`);
   }
 
   togglePause(): boolean { this.state.paused = !this.state.paused; return this.state.paused; }
 
   private blankEntity(character: Character, team: Team, id: string, stars: number): CombatEntity {
     return {
-      id, characterId: character.id, team, name: character.name, stars, cost: character.cost,
+      id, characterId: character.id, team, name: character.name, stars, cost: character.cost, boss: false,
       x: 0, y: 0, hp: character.hp[stars - 1], maxHp: character.hp[stars - 1],
       mana: character.manaStart, manaMax: character.manaMax,
       attack: character.attack[stars - 1], armor: character.armor,
@@ -449,20 +702,23 @@ export class Game {
       stealth: 0, taunt: 0, wet: 0, hex: 0, hexDamage: 0, antiheal: 0, transform: 0, stacks: 0, omen: 0,
       reborn: false, shieldBurst: 0, deathBurst: 0, lifetime: 0,
       spellPower: 1, manaRegen: 0, regen: 0, manaRefund: 0, manaDrain: 0, scavenger: false, bonds: [], mods: [],
+      items: [], perks: {}, attackCount: 0, prevStun: 0, lowHpShieldUsed: false,
     };
   }
 
-  private entity(characterId: number, stars: number, team: Team, index: number, slot: number, uid?: string): CombatEntity {
+  private entity(characterId: number, stars: number, team: Team, index: number, slot: number, level: number, hero?: Hero, isBoss = false, region = 1): CombatEntity {
     const character = characterById(characterId);
     const entity = this.blankEntity(character, team, `${team}-${index}`, stars);
-    entity.uid = uid;
+    entity.uid = hero?.uid;
     entity.x = slot % 4;
     entity.y = team === 'ally' ? 3 + Math.floor(slot / 4) : 2 - Math.floor(slot / 4);
     entity.cooldown = index * 0.08;
     if (team === 'enemy') {
-      // Higher costs carry stronger canonical stats, so their wave scaling is softened.
-      const scale = (0.65 + this.state.wave * 0.055) / (1 + 0.1 * (character.cost - 1));
-      entity.hp *= scale; entity.maxHp *= scale; entity.attack *= scale;
+      const scale = enemyScale(level, character.cost);
+      const boss = bossScale(region);
+      entity.hp *= scale * (isBoss ? boss.hp : 1); entity.maxHp = entity.hp; entity.attack *= scale * (isBoss ? boss.attack : 1);
+      entity.boss = isBoss;
+      if (isBoss) { entity.name = `${character.name}, chefe`; entity.armor += 15; entity.magicResist += 15; }
       return entity;
     }
     for (const trait of character.traits) {
@@ -494,29 +750,77 @@ export class Game {
         }
       }
     }
+    // Patron spirits of the eras already reached.
+    for (const spirit of chosenSpirits(this.state)) {
+      const passive = spirit.passive;
+      entity.mana += passive.startMana ?? 0;
+      if (passive.traits && !character.traits.some(trait => passive.traits!.includes(trait))) continue;
+      entity.attack *= 1 + (passive.attackPct ?? 0); entity.maxHp *= 1 + (passive.hpPct ?? 0);
+      entity.attackSpeed *= 1 + (passive.attackSpeedPct ?? 0);
+      entity.armor += passive.armor ?? 0; entity.magicResist += passive.magicResist ?? 0;
+      entity.spellPower *= 1 + (passive.spellPower ?? 0);
+      if (passive.damageTaken) addMod(entity, 'damageTaken', passive.damageTaken, Infinity, `espirito-${spirit.id}`);
+    }
+    const blessing = 1 + 0.06 * memory(this.state, 'bencao');
+    entity.maxHp *= blessing; entity.attack *= blessing;
+    // Items: flat stats first, then perks.
+    entity.items = [...(hero?.items ?? [])];
+    let hpPct = 0;
+    for (const id of entity.items) {
+      const definition = itemById(id);
+      if (!definition) continue;
+      const stats = definition.stats;
+      entity.attack *= 1 + (stats.attackPct ?? 0); entity.attackSpeed *= 1 + (stats.attackSpeedPct ?? 0);
+      entity.armor += stats.armor ?? 0; entity.magicResist += stats.magicResist ?? 0;
+      entity.mana += stats.mana ?? 0; entity.maxHp += stats.hp ?? 0; hpPct += stats.hpPct ?? 0;
+      entity.spellPower *= 1 + (stats.spellPower ?? 0); entity.manaRegen += stats.manaRegen ?? 0; entity.regen += stats.regen ?? 0;
+      if (stats.lifesteal) addMod(entity, 'lifesteal', stats.lifesteal, Infinity, `item-${id}-${entity.mods.length}`);
+      for (const [key, value] of Object.entries(definition.perks ?? {}) as [keyof ItemPerks, number][]) entity.perks[key] = (entity.perks[key] ?? 0) + value;
+    }
+    // Percent life applies after every flat bonus, whatever the item order.
+    entity.maxHp *= 1 + hpPct;
+    entity.stealth = Math.max(entity.stealth, entity.perks.startStealth ?? 0);
+    entity.taunt = Math.max(entity.taunt, entity.perks.startTaunt ?? 0);
     entity.mana = Math.min(entity.manaMax, entity.mana);
     entity.manaRegen += 2 * (this.traitTiers.get('Totêmico') ?? 0);
     entity.hp = entity.maxHp;
     return entity;
   }
 
+  /** The stage the next expedition will fight. */
+  nextStage(): { stage: Stage; level: number; depth: number } {
+    if (this.state.selectedStage === 0) {
+      const depth = this.state.endlessBest + 1;
+      return { stage: endlessStage(depth), level: endlessLevel(depth), depth };
+    }
+    const stage = stageById(this.state.selectedStage) ?? stageById(1)!;
+    return { stage, level: stage.id, depth: 0 };
+  }
+
   startBattle(): ActionResult {
     if (this.state.paused) return fail('Retome o tempo antes de iniciar a expedição.');
     if (this.battle) return fail('Conclua ou feche a expedição atual.');
-    if (this.state.wave > MAX_WAVE) return fail(`Você concluiu as ${MAX_WAVE} expedições desta versão.`);
+    if (!stageUnlocked(this.state, this.state.selectedStage)) return fail('Escolha uma expedição já alcançada no mapa.');
     const party = this.state.heroes.filter(hero => hero.slot !== null);
     if (!party.length) return fail('Posicione pelo menos um herói no campo.');
     if (party.length > capacity(this.state)) return fail('Há heróis demais na formação.');
     this.traitTiers = new Map(getSynergies(this.state).filter(synergy => synergy.active).map(synergy => [synergy.name, synergy.tier]));
-    const allies = party.map((hero, index) => this.entity(hero.characterId, hero.stars, 'ally', index, hero.slot!, hero.uid));
-    const wave = this.state.wave;
-    const definition = WAVES[wave - 1];
+    const spirits = chosenSpirits(this.state);
+    this.healBonus = spirits.reduce((sum, spirit) => sum + (spirit.passive.healPower ?? 0), 0);
+    this.summonBonus = spirits.reduce((sum, spirit) => sum + (spirit.passive.summonPct ?? 0), 0);
+    const allies = party.map((hero, index) => this.entity(hero.characterId, hero.stars, 'ally', index, hero.slot!, 0, hero));
+    for (const ally of allies) {
+      if (!ally.perks.teamShield) continue;
+      for (const other of allies.filter(other => distance(other, ally) <= 1.1)) other.shield += ally.maxHp * ally.perks.teamShield;
+    }
+    const { stage, level, depth } = this.nextStage();
     const enemySlots = [1, 2, 5, 6, 0, 3, 8, 11];
-    const enemies = definition.units.map((unit, index) => this.entity(unit.id, unit.stars, 'enemy', index, enemySlots[index]));
+    const enemies = stage.units.map((unit, index) => this.entity(unit.id, unit.stars, 'enemy', index, enemySlots[index], level, undefined, !!unit.boss, stage.region));
     this.events = [];
     this.summonCounter = 0;
-    this.battle = { entities: [...allies, ...enemies], zones: [], time: 0, wave, name: definition.name, status: 'fighting', reward: null, prey: {}, lastCast: {} };
-    return success(`Expedição ${wave} · ${definition.name}: a caçada começou.`);
+    const firstClear = stage.id > 0 && stage.id > this.state.progress;
+    this.battle = { entities: [...allies, ...enemies], zones: [], time: 0, stage: stage.id, depth, region: stage.id ? stage.region : 6, name: stage.name, status: 'fighting', reward: null, loot: [], firstClear, prey: {}, lastCast: {}, powersUsed: [] };
+    return success(`${stage.name}: a caçada começou.`);
   }
 
   dismissBattle(): ActionResult {
@@ -526,13 +830,61 @@ export class Game {
     return success('De volta à aldeia.');
   }
 
+  /** Calls a patron spirit's power, once per expedition. */
+  usePower(id: SpiritId): ActionResult {
+    const battle = this.battle;
+    if (!battle || battle.status !== 'fighting') return fail('Os poderes espirituais só respondem durante uma expedição.');
+    if (this.state.paused) return fail('Retome o tempo para invocar os espíritos.');
+    const spirit = spiritById(id);
+    if (!spirit || !this.state.spirits.includes(id)) return fail('Este espírito ainda não protege a tribo.');
+    if (battle.powersUsed.includes(id)) return fail(`${spirit.power.name} já foi usado nesta expedição.`);
+    battle.powersUsed.push(id);
+    const allies = this.living('ally').filter(entity => !entity.summon);
+    const enemies = this.living('enemy');
+    const caster = allies[0] ?? battle.entities.find(entity => entity.team === 'ally')!;
+    this.emit('power', caster, caster, undefined, `${spirit.name}: ${spirit.power.name}`);
+    switch (id) {
+      case 'lobo': for (const ally of this.living('ally')) { addMod(ally, 'attackSpeed', 0.4, 6, 'poder-lobo'); addMod(ally, 'attack', 0.2, 6, 'poder-lobo-ataque'); } break;
+      case 'cervo': for (const ally of this.living('ally')) { ally.poison = 0; this.heal(caster, ally, ally.maxHp * 0.35); } break;
+      case 'corvo': for (const enemy of enemies) { this.damage(caster, enemy, enemy.maxHp * 0.1, true, true); addMod(enemy, 'armor', -20, 8, 'poder-corvo'); } break;
+      case 'serpente': for (const enemy of enemies) { enemy.poison = 6; enemy.poisonDamage = enemy.maxHp * 0.04; } break;
+      case 'coruja': for (const enemy of enemies) { enemy.mana = 0; enemy.slow = Math.max(enemy.slow, 5); } break;
+      case 'gorila': for (const enemy of enemies) enemy.stun = Math.max(enemy.stun, 1.75); break;
+      case 'crocodilo': {
+        const prey = [...enemies].sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+        for (const enemy of enemies) {
+          enemy.wet = Math.max(enemy.wet, 6);
+          if (enemy === prey && enemy.hp / enemy.maxHp < 0.4) this.damage(caster, enemy, enemy.hp + enemy.shield + 1, false, true);
+          else this.damage(caster, enemy, enemy.maxHp * 0.12, true, true);
+        }
+        break;
+      }
+      case 'elefante': for (const ally of this.living('ally')) this.giveShield(caster, ally, ally.maxHp * 0.3); break;
+      case 'aguia': for (const enemy of enemies) { enemy.marked = Math.max(enemy.marked, 10); enemy.stealth = 0; } break;
+      case 'urso':
+        for (const fallen of battle.entities.filter(entity => entity.team === 'ally' && entity.hp <= 0 && !entity.summon)) {
+          fallen.hp = fallen.maxHp * 0.35; fallen.action = 'idle'; fallen.stun = 0; fallen.poison = 0; fallen.mods = fallen.mods.filter(mod => mod.time === Infinity);
+          this.emit('revive', fallen, fallen, undefined, 'Despertar do Inverno');
+        }
+        break;
+      case 'jaguar': for (const ally of this.living('ally')) { ally.stealth = Math.max(ally.stealth, 2.5); addMod(ally, 'attack', 0.5, 6, 'poder-jaguar'); } break;
+      case 'aranha': for (const enemy of enemies) { enemy.stun = Math.max(enemy.stun, 1); enemy.slow = Math.max(enemy.slow, 6); } break;
+    }
+    return success(`${spirit.power.name}!`);
+  }
+
   /** Call each frame with elapsed simulation seconds. One call is capped at 60 s. */
   tick(dtSeconds: number): void {
     if (this.state.paused || !Number.isFinite(dtSeconds) || dtSeconds <= 0) return;
     const dt = Math.min(60, dtSeconds);
-    const rates = getRates(this.state);
-    this.addResources(Object.fromEntries(RESOURCE_KEYS.map(key => [key, rates[key] * dt])) as Resources);
-    let remaining = dt;
+    this.produce(dt);
+    this.advanceBattle(dt);
+  }
+
+  /** Extra combat time for the speed control; the economy keeps its own clock. */
+  advanceBattle(dtSeconds: number): void {
+    if (this.state.paused || !Number.isFinite(dtSeconds) || dtSeconds <= 0) return;
+    let remaining = Math.min(60, dtSeconds);
     while (remaining > 0.000001 && this.fighting()) {
       const step = Math.min(0.05, remaining);
       this.combatStep(step);
@@ -571,6 +923,10 @@ export class Game {
     this.emit('damage', source, target, Math.round(dealt));
     const lifesteal = source !== target ? modTotal(source, 'lifesteal') : 0;
     if (lifesteal > 0 && dealt > 0) this.heal(source, source, dealt * lifesteal);
+    if (!magic && source !== target && target.perks.thorns && source.hp > 0 && damage > 0) this.damage(target, source, damage * target.perks.thorns, true);
+    if (target.hp > 0 && target.perks.lowHpShield && !target.lowHpShieldUsed && target.hp / target.maxHp < 0.4) {
+      target.lowHpShieldUsed = true; this.giveShield(target, target, target.maxHp * target.perks.lowHpShield);
+    }
     if (target.hp <= 0) this.handleDeath(target, source);
     return dealt;
   }
@@ -594,6 +950,7 @@ export class Game {
       for (const enemy of this.opponents(target).filter(enemy => distance(target, enemy) <= 1.3)) this.damage(target, enemy, burst, true);
     }
     if (target.summon) return;
+    if (killer !== target && killer.hp > 0 && killer.perks.healOnKill) this.heal(killer, killer, killer.maxHp * killer.perks.healOnKill);
     for (const entity of this.battle!.entities) {
       if (entity.hp <= 0) continue;
       if (entity.characterId === 33 && !entity.summon) entity.stacks = Math.min(12, entity.stacks + 1);
@@ -605,14 +962,16 @@ export class Game {
   }
   private heal(source: CombatEntity, target: CombatEntity, amount: number): void {
     if (target.hp <= 0) return;
-    const healed = Math.min(amount * (target.antiheal > 0 ? 0.5 : 1), target.maxHp - target.hp);
+    const boost = source.team === 'ally' ? 1 + this.healBonus : 1;
+    const healed = Math.min(amount * boost * (target.antiheal > 0 ? 0.5 : 1), target.maxHp - target.hp);
     target.hp += healed;
     if (healed > 0) this.emit('heal', source, target, Math.round(healed));
   }
   private giveShield(source: CombatEntity, target: CombatEntity, amount: number): void {
     if (target.hp <= 0 || !(amount > 0)) return;
-    target.shield += amount;
-    this.emit('shield', source, target, Math.round(amount));
+    const value = amount * (source.team === 'ally' ? 1 + this.healBonus : 1);
+    target.shield += value;
+    this.emit('shield', source, target, Math.round(value));
   }
 
   private summon(owner: CombatEntity, kind: SummonKind, spec: SummonSpec): CombatEntity | null {
@@ -620,7 +979,7 @@ export class Game {
     if (battle.entities.filter(entity => entity.ownerId === owner.id && entity.hp > 0).length >= MAX_SUMMONS_PER_OWNER) return null;
     const character = characterById(spec.characterId ?? owner.characterId);
     const entity = this.blankEntity(character, owner.team, `${owner.team}-s${++this.summonCounter}`, spec.stars ?? owner.stars);
-    const boost = owner.team === 'ally' ? 1 + 0.4 * (this.traitTiers.get('Invocador') ?? 0) : 1;
+    const boost = owner.team === 'ally' ? (1 + 0.4 * (this.traitTiers.get('Invocador') ?? 0)) * (1 + this.summonBonus) : 1;
     const index = this.summonCounter;
     entity.summon = kind; entity.ownerId = owner.id;
     entity.name = kind === 'echo' ? `Eco de ${character.name}` : { spider: 'Cria de seda', crow: 'Corvo', beetle: 'Escaravelho', elephant: 'Espírito do marfim' }[kind];
@@ -663,7 +1022,11 @@ export class Game {
     this.emit('skill', source, target, undefined, characterById(source.characterId).ability.name);
     castAbility(this.api(), source.characterId, source, target, effectiveAttack(source) * source.spellPower);
     if (source.characterId !== 29) battle.lastCast[source.team] = source.characterId;
-    source.mana = Math.min(source.manaMax, source.mana + source.manaMax * source.manaRefund);
+    source.mana = Math.min(source.manaMax, source.mana + source.manaMax * source.manaRefund + (source.perks.manaAfterCast ?? 0));
+    if (source.perks.healAllyOnCast) {
+      const wounded = this.living(source.team).filter(ally => !ally.summon).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+      if (wounded) this.heal(source, wounded, wounded.maxHp * source.perks.healAllyOnCast);
+    }
     if (source.hex > 0 && source.hp > 0) {
       // Veyra's night punishes every enemy spell.
       this.damage(source, source, source.hexDamage, true);
@@ -721,13 +1084,20 @@ export class Game {
   private basicAttack(entity: CombatEntity, target: CombatEntity): void {
     entity.action = 'attack'; entity.actionTime = 0.25;
     if (target.huntMarked > 0) entity.haste = Math.max(entity.haste, 1.5);
+    entity.attackCount++;
+    const perks = entity.perks;
+    if (perks.asStack) addMod(entity, 'attackSpeed', perks.asStack * Math.min(10, entity.attackCount), Infinity, 'garra');
     entity.cooldown = 1 / attackRate(entity);
     this.emit('attack', entity, target);
+    const third = entity.attackCount % 3 === 0;
     const power = effectiveAttack(entity);
-    this.damage(entity, target, power);
+    this.damage(entity, target, power * (third && perks.crit3 ? 1 + perks.crit3 : 1));
     const cleave = modTotal(entity, 'cleave');
     if (cleave > 0) for (const other of this.opponents(entity).filter(other => other !== target && distance(other, target) <= 1.3)) this.damage(entity, other, power * cleave);
-    if (entity.manaMax > 0) entity.mana = Math.min(entity.manaMax, entity.mana + 12);
+    if (third && perks.chain3) for (const other of this.opponents(entity).filter(other => other !== target).sort((a, b) => distance(a, target) - distance(b, target)).slice(0, 2)) this.damage(entity, other, power * perks.chain3, true);
+    if (perks.shred) target.magicResist = Math.max(0, target.magicResist - perks.shred);
+    if (perks.healOnHit) this.heal(entity, entity, entity.maxHp * perks.healOnHit);
+    if (entity.manaMax > 0) entity.mana = Math.min(entity.manaMax, entity.mana + 12 + (perks.manaOnHit ?? 0));
     if (entity.manaDrain > 0) target.mana = Math.max(0, target.mana - entity.manaDrain);
     if (entity.empowered > 0) { target.poison = 4; target.poisonDamage = power * 0.45; }
   }
@@ -743,9 +1113,12 @@ export class Game {
     this.processZones(dt);
     for (const entity of [...battle.entities]) {
       if (entity.hp <= 0) continue;
+      // Item protection against crowd control cancels a freshly applied stun.
+      if (entity.stun > entity.prevStun + 0.01 && (entity.perks.ccShield ?? 0) > 0) { entity.stun = entity.prevStun; entity.perks.ccShield!--; }
       const wasGuarded = entity.guard > 0;
       const wasPoisoned = entity.poison > 0;
       for (const key of ['stun', 'slow', 'haste', 'guard', 'poison', 'marked', 'huntMarked', 'empowered', 'dodge', 'actionTime', 'cooldown', 'stealth', 'taunt', 'wet', 'hex', 'antiheal', 'transform', 'omen'] as const) entity[key] = Math.max(0, entity[key] - dt);
+      entity.prevStun = entity.stun;
       if (entity.mods.length) {
         for (const mod of entity.mods) mod.time -= dt;
         entity.mods = entity.mods.filter(mod => mod.time > 0);
@@ -790,11 +1163,22 @@ export class Game {
     battle.status = victory ? 'victory' : 'defeat';
     battle.zones = [];
     for (const entity of battle.entities) if (entity.summon && entity.hp > 0) { entity.hp = 0; entity.action = 'dead'; }
-    if (victory) {
-      battle.reward = { wood: 35 + battle.wave * 12, food: 30 + battle.wave * 10, stone: 20 + battle.wave * 8, spirit: 35 + battle.wave * 8 };
-      this.addResources(battle.reward);
-      this.state.wave = Math.min(MAX_WAVE + 1, battle.wave + 1);
-      this.state.victories = this.state.wave - 1;
+    if (!victory) return;
+    const endless = battle.stage === 0;
+    const level = endless ? endlessLevel(battle.depth) : battle.stage;
+    const base = stageReward(level, !endless && !battle.firstClear);
+    const loot = 1 + 0.2 * memory(this.state, 'botim');
+    battle.reward = Object.fromEntries(RESOURCE_KEYS.map(key => [key, Math.round(base[key] * loot)])) as Resources;
+    this.addResources(battle.reward);
+    const drops = endless ? (battle.depth % 5 === 0 ? 2 : 1) : battle.firstClear ? (stageById(battle.stage)!.index === 5 ? 2 : 1) : this.random() < 0.35 ? 1 : 0;
+    for (let i = 0; i < drops; i++) { const id = this.randomComponent(); if (this.addItem(id)) battle.loot.push(id); }
+    if (endless) {
+      this.state.endlessBest = Math.max(this.state.endlessBest, battle.depth);
+      this.state.endlessRecord = Math.max(this.state.endlessRecord, this.state.endlessBest);
+    } else if (battle.firstClear) {
+      this.state.progress = Math.max(this.state.progress, battle.stage);
+      // Move on to the next stage when it is open; otherwise keep farming the current one.
+      if (stageUnlocked(this.state, battle.stage + 1) && !this.state.settings.autoRepeat) this.state.selectedStage = battle.stage + 1;
     }
   }
 }

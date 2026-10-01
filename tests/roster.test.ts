@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { characters } from '../src/data/characters';
 import { ANIMALITY } from '../src/data/animality';
 import { Game, getSynergies, recruitCost, SKILL_NOTES } from '../src/game/simulation';
-import { SHOP_ODDS, WAVES, rollVisitor, sellRefund, unlockedCost } from '../src/game/roster';
+import { SHOP_ODDS, rollVisitor, sellRefund, unlockedCost } from '../src/game/roster';
+import { REGIONS, STAGES } from '../src/game/campaign';
 import { TRAIT_RULES } from '../src/game/synergies';
 
 const costOf = (id: number) => characters.find(character => character.id === id)!.cost;
@@ -73,7 +74,7 @@ describe('recruitment of the full roster', () => {
   it('restores saved heroes of every cost and drops a shop entry that is still locked', () => {
     const game = new Game();
     const data = JSON.parse(game.serialize(1000));
-    data.state.heroes.push({ uid: 'legend', characterId: 55, stars: 2, slot: null });
+    data.state.heroes.push({ uid: 'legend', characterId: 55, stars: 2, slot: null, items: [], work: null });
     data.state.shop = [55, 1, 2, 3];
     const loaded = new Game(data, 1000);
     expect(loaded.state.heroes.find(hero => hero.uid === 'legend')?.characterId).toBe(55);
@@ -97,8 +98,8 @@ describe('abilities, summons and traits', () => {
   it('keeps every ability at every star level finite, bounded and on the board', () => {
     for (const character of characters) for (const stars of [1, 2, 3]) {
       const game = new Game();
-      game.state.villageLevel = 5; game.state.wave = 8;
-      game.state.heroes = [character.id, character.id === 1 ? 2 : 1, 25].map((characterId, index) => ({ uid: `hero-${index}`, characterId, stars, slot: [1, 2, 9][index] }));
+      game.state.villageLevel = 5; game.state.progress = 20; game.state.selectedStage = 21;
+      game.state.heroes = [character.id, character.id === 1 ? 2 : 1, 25].map((characterId, index) => ({ uid: `hero-${index}`, characterId, stars, slot: [1, 2, 9][index] , items: [], work: null }));
       game.startBattle();
       const hero = game.battle!.entities.find(entity => entity.uid === 'hero-0')!;
       hero.mana = hero.manaMax;
@@ -115,7 +116,7 @@ describe('abilities, summons and traits', () => {
 
   it('summons expire, never decide the battle and are removed at the end', () => {
     const game = new Game();
-    game.state.heroes = [{ uid: 'nima', characterId: 2, stars: 3, slot: 1 }];
+    game.state.heroes = [{ uid: 'nima', characterId: 2, stars: 3, slot: 1, items: [], work: null }];
     game.startBattle();
     const nima = game.battle!.entities.find(entity => entity.uid === 'nima')!;
     nima.mana = nima.manaMax;
@@ -132,7 +133,7 @@ describe('abilities, summons and traits', () => {
   it("revives Ssar'ka once with her renewed form", () => {
     const game = new Game();
     game.state.villageLevel = 5;
-    game.state.heroes = [{ uid: 'ssarka', characterId: 53, stars: 2, slot: 1 }, { uid: 'akru', characterId: 1, stars: 3, slot: 2 }];
+    game.state.heroes = [{ uid: 'ssarka', characterId: 53, stars: 2, slot: 1, items: [], work: null }, { uid: 'akru', characterId: 1, stars: 3, slot: 2, items: [], work: null }];
     game.startBattle();
     const ssarka = game.battle!.entities.find(entity => entity.uid === 'ssarka')!;
     const enemy = game.battle!.entities.find(entity => entity.team === 'enemy')!;
@@ -147,7 +148,7 @@ describe('abilities, summons and traits', () => {
   it('activates tiered traits and lone spirits from distinct deployed characters', () => {
     const game = new Game();
     game.state.villageLevel = 5;
-    game.state.heroes = [9, 15, 19, 24, 49].map((characterId, index) => ({ uid: `g-${index}`, characterId, stars: 1, slot: index }));
+    game.state.heroes = [9, 15, 19, 24, 49].map((characterId, index) => ({ uid: `g-${index}`, characterId, stars: 1, slot: index , items: [], work: null }));
     const synergies = getSynergies(game.state);
     expect(synergies.find(entry => entry.name === 'Guardião')).toMatchObject({ count: 5, tier: 2, active: true });
     expect(synergies.find(entry => entry.name === 'Espírito do Urso')).toMatchObject({ count: 1, tier: 1, active: true });
@@ -158,29 +159,30 @@ describe('abilities, summons and traits', () => {
 });
 
 describe('expeditions', () => {
-  it('defines twelve themed waves with valid characters that grow in cost', () => {
-    expect(WAVES).toHaveLength(12);
-    for (const wave of WAVES) for (const unit of wave.units) {
-      expect(costOf(unit.id)).toBeGreaterThanOrEqual(1);
-      expect([1, 2, 3]).toContain(unit.stars);
+  it('defines six regions of five stages, each closed by a boss, growing in cost', () => {
+    expect(REGIONS).toHaveLength(6);
+    expect(STAGES).toHaveLength(30);
+    for (const stage of STAGES) {
+      expect(stage.units.filter(unit => unit.boss)).toHaveLength(stage.index === 5 ? 1 : 0);
+      for (const unit of stage.units) { expect(costOf(unit.id)).toBeGreaterThanOrEqual(1); expect([1, 2, 3]).toContain(unit.stars); }
     }
-    expect(Math.max(...WAVES[0].units.map(unit => costOf(unit.id)))).toBe(1);
-    expect(Math.max(...WAVES[11].units.map(unit => costOf(unit.id)))).toBe(5);
+    expect(Math.max(...STAGES[0].units.map(unit => costOf(unit.id)))).toBe(1);
+    expect(Math.max(...STAGES[29].units.map(unit => costOf(unit.id)))).toBe(5);
   });
 
-  it('asks the starter party to grow before the middle expeditions', () => {
-    const results = [1, 4, 5].map(wave => {
+  it('lets the starter party learn on the Alpha but asks it to grow before the River boss', () => {
+    const results = [1, 5, 10].map(stage => {
       const game = new Game();
-      game.state.wave = wave; game.startBattle(); fight(game);
+      game.state.villageLevel = 2; game.state.progress = stage - 1; game.state.selectedStage = stage; game.startBattle(); fight(game);
       return game.battle!.status;
     });
     expect(results).toEqual(['victory', 'victory', 'defeat']);
   });
 
-  it('lets an evolved mixed tribe with cost 4 heroes finish the campaign', () => {
+  it('lets an evolved tribe with cost 4 heroes defeat the King of Buffalo', () => {
     const game = new Game();
-    game.state.villageLevel = 5; game.state.wave = 12;
-    game.state.heroes = [39, 40, 28, 8, 25, 33, 1].map((characterId, index) => ({ uid: `final-${index}`, characterId, stars: 2, slot: [1, 2, 0, 9, 10, 5, 6][index] }));
+    game.state.villageLevel = 5; game.state.progress = 19; game.state.selectedStage = 20;
+    game.state.heroes = [39, 40, 28, 8, 25, 33, 1].map((characterId, index) => ({ uid: `final-${index}`, characterId, stars: 2, slot: [1, 2, 0, 9, 10, 5, 6][index] , items: [], work: null }));
     game.startBattle(); fight(game);
     expect(game.battle!.status).toBe('victory');
   });

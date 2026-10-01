@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
 
 export interface FxPoint { x: number; y: number }
-const colors:Record<number,number>={1:0xb7dfff,2:0xaadcca,3:0xd2ac78,4:0xa4df72,5:0xe5bd74,6:0x84d9d0,7:0xe6a189,8:0xd5cdf6,9:0xb3d6aa,10:0xc4e984,11:0xf2d486,12:0xf4dfa0,13:0xc7a3ec,
+export const SKILL_COLORS:Record<number,number>={1:0xb7dfff,2:0xaadcca,3:0xd2ac78,4:0xa4df72,5:0xe5bd74,6:0x84d9d0,7:0xe6a189,8:0xd5cdf6,9:0xb3d6aa,10:0xc4e984,11:0xf2d486,12:0xf4dfa0,13:0xc7a3ec,
  14:0x8fbf6a,15:0xc9c3b5,16:0xf2d27a,17:0x8fae5a,18:0x9a8fc4,19:0xc4a473,20:0xd9705a,21:0x7fc8d6,22:0xd96a6a,23:0xb7b0a0,24:0x8f94aa,25:0xbfe6a8,26:0xe0d2b0,
  27:0xcfd8ec,28:0xe8dcc0,29:0xd99a5f,30:0xf2d486,31:0xd9c25a,32:0x7fb8c8,33:0xa5a0b8,34:0xb8a88f,35:0x6f9fc8,36:0xf2b84f,37:0xd28a5e,38:0xe8ecf6,
  39:0xb7dfff,40:0xc0b49c,41:0x8faa5f,42:0xa98bd9,43:0xeadfc6,44:0xd8f0e4,45:0xe2b46a,46:0x6fd0a8,47:0x6fb4e8,48:0xc09d72,
  49:0xcfe9f7,50:0xffcf5a,51:0xf0e6cc,52:0x9d8ad8,53:0xe6e0a8,54:0xf4dfa0,55:0x7faa7a};
+const colors=SKILL_COLORS;
 type Recipe='leap'|'shield'|'allies'|'heal'|'line'|'nova'|'volley'|'aura'|'call'|'night'|'stampede'|'web'|'totems'|'swap'|'flurry'|'mark';
 /** Visual vocabulary for abilities 14–55; damage and positions come only from the simulation. */
 const RECIPES:Record<number,Recipe[]>={
@@ -148,6 +149,13 @@ export class CombatEffects {
     case 'mark':this.draw(700,(g,t)=>{const a=Math.sin(t*Math.PI),y=target.y-98;g.lineStyle(2,color,a);g.strokeCircle(target.x,y,11+t*4);g.lineBetween(target.x-17,y,target.x+17,y);g.lineBetween(target.x,y-17,target.x,y+17);});break;
    }
   }
+ }
+ /** A patron spirit answers: its glyph rises over the field with a wave in its color. */
+ power(texture:string,color:number,allies:FxPoint[],enemies:FxPoint[]){
+  const image=this.scene.add.image(672,330,texture).setDepth(1150).setAlpha(0).setScale(.6);this.layer.add(image);
+  this.scene.tweens.add({targets:image,alpha:{from:0,to:.85},scale:1.25,y:300,duration:this.reduced?200:520,yoyo:true,hold:this.reduced?100:380,ease:'Sine.easeOut',onComplete:()=>image.destroy()});
+  this.draw(1100,(g,t)=>{const a=Math.sin(Math.PI*t);g.lineStyle(3,color,a*.7);g.strokeEllipse(672,380,200+t*700,90+t*320);g.fillStyle(color,a*.06);g.fillEllipse(672,380,200+t*700,90+t*320);});
+  for(const p of [...allies,...enemies])this.ring(p,color,46,700,120);
  }
  clear(){for(const [g,tween] of this.active){tween.stop();g.destroy();}this.active.clear();}
 }
