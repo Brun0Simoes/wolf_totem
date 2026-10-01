@@ -8,7 +8,13 @@ O códice agora oferece uma prévia animada com seleção de estrelas, repouso, 
 
 O campo carrega folhas sob demanda e descarta texturas antigas que não estão em uso. As formas 2★/3★ usam seus atlas próprios quando disponíveis. O carregamento não precisa trazer as 165 imagens ao abrir o jogo. A pausa da prévia do códice é independente da pausa da economia.
 
-Os 13 personagens iniciais continuam recrutáveis. A criação das artes e das animações dos demais não implementa automaticamente suas habilidades, invocações ou desbloqueios: esses sistemas seguem como etapa de jogabilidade separada.
+Desde a versão 0.4 os 55 personagens são recrutáveis e suas habilidades funcionam em combate, independentemente da arte. Quando falta a folha de uma estrela, o campo usa a ilustração original (custo 1) ou a folha pronta mais próxima do mesmo personagem. Personagens sem nenhuma arte usam uma silhueta tingida pela cor do custo; invocações usam silhuetas luminosas programadas e metamorfoses aumentam e iluminam a figura enquanto duram.
+
+### Ordem sugerida para retomar a geração
+
+1. **1★ dos 23 personagens sem nenhuma arte** — são os únicos que ainda aparecem como silhueta: Suri, Kesh, Brak, Sena, Uru, Amaru, Vesh, Toru, Asha, Thari, Vahara, Zyri, Orun, Sakar, Aruun, Boro, Uruq, Akh'ra, Mahari, Veyra, Ssar'ka, N'Goro e Karkun (os sete últimos são lendários e aparecem na expedição final).
+2. **3★ dos Metamorfos** — a transformação é o momento mais visível do combate.
+3. **2★ e 3★ restantes**, por custo, do menor para o maior.
 
 ## Atualização 0.2: primeiro grupo animado
 

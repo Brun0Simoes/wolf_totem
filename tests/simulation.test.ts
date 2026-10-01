@@ -73,7 +73,7 @@ describe('versioned saves and offline time', () => {
     data.state.resources.wood = -10;
     data.state.resources.food = 'NaN';
     data.state.villageLevel = 999;
-    data.state.heroes.push({ uid: '<script>', characterId: 55, stars: 999, slot: 99 });
+    data.state.heroes.push({ uid: '<script>', characterId: 99, stars: 999, slot: 99 });
     data.state.heroes[1].slot = data.state.heroes[0].slot;
     data.battle = { status: 'victory', reward: { spirit: 1e9 } };
     const loaded = new Game(data, 1000);
@@ -123,8 +123,8 @@ describe('automatic combat', () => {
     expect(game.battle?.entities.filter(entity => entity.team === 'ally').every(entity => entity.hp === entity.maxHp)).toBe(true);
   });
 
-  it('executes each of the thirteen prototype skills with finite battle stats', () => {
-    for (let characterId = 1; characterId <= 13; characterId++) {
+  it('executes each of the 55 prototype skills with finite battle stats', () => {
+    for (let characterId = 1; characterId <= 55; characterId++) {
       const game = new Game();
       game.state.heroes = [{ uid: 'test-hero', characterId, stars: 2, slot: 1 }];
       game.startBattle();

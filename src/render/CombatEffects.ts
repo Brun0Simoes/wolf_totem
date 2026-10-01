@@ -1,7 +1,20 @@
 import Phaser from 'phaser';
 
 export interface FxPoint { x: number; y: number }
-const colors:Record<number,number>={1:0xb7dfff,2:0xaadcca,3:0xd2ac78,4:0xa4df72,5:0xe5bd74,6:0x84d9d0,7:0xe6a189,8:0xd5cdf6,9:0xb3d6aa,10:0xc4e984,11:0xf2d486,12:0xf4dfa0,13:0xc7a3ec};
+const colors:Record<number,number>={1:0xb7dfff,2:0xaadcca,3:0xd2ac78,4:0xa4df72,5:0xe5bd74,6:0x84d9d0,7:0xe6a189,8:0xd5cdf6,9:0xb3d6aa,10:0xc4e984,11:0xf2d486,12:0xf4dfa0,13:0xc7a3ec,
+ 14:0x8fbf6a,15:0xc9c3b5,16:0xf2d27a,17:0x8fae5a,18:0x9a8fc4,19:0xc4a473,20:0xd9705a,21:0x7fc8d6,22:0xd96a6a,23:0xb7b0a0,24:0x8f94aa,25:0xbfe6a8,26:0xe0d2b0,
+ 27:0xcfd8ec,28:0xe8dcc0,29:0xd99a5f,30:0xf2d486,31:0xd9c25a,32:0x7fb8c8,33:0xa5a0b8,34:0xb8a88f,35:0x6f9fc8,36:0xf2b84f,37:0xd28a5e,38:0xe8ecf6,
+ 39:0xb7dfff,40:0xc0b49c,41:0x8faa5f,42:0xa98bd9,43:0xeadfc6,44:0xd8f0e4,45:0xe2b46a,46:0x6fd0a8,47:0x6fb4e8,48:0xc09d72,
+ 49:0xcfe9f7,50:0xffcf5a,51:0xf0e6cc,52:0x9d8ad8,53:0xe6e0a8,54:0xf4dfa0,55:0x7faa7a};
+type Recipe='leap'|'shield'|'allies'|'heal'|'line'|'nova'|'volley'|'aura'|'call'|'night'|'stampede'|'web'|'totems'|'swap'|'flurry'|'mark';
+/** Visual vocabulary for abilities 14–55; damage and positions come only from the simulation. */
+const RECIPES:Record<number,Recipe[]>={
+ 14:['leap','flurry'],15:['shield','nova'],16:['leap'],17:['flurry','nova'],18:['call'],19:['allies','nova'],20:['flurry'],21:['swap'],22:['volley'],
+ 23:['leap','flurry'],24:['shield'],25:['heal'],26:['flurry','mark'],27:['aura','leap'],28:['allies','nova'],29:['call','volley'],30:['call'],31:['line'],
+ 32:['nova'],33:['volley'],34:['line','aura'],35:['nova'],36:['aura'],37:['line'],38:['allies'],39:['mark','leap'],40:['nova','aura'],41:['flurry','nova'],
+ 42:['flurry','aura'],43:['allies','nova'],44:['web','call'],45:['call','volley'],46:['aura','volley'],47:['leap','mark'],48:['stampede'],49:['aura','nova'],
+ 50:['leap','flurry','aura'],51:['allies','call'],52:['night'],53:['nova','heal'],54:['totems','allies','volley'],55:['leap','nova'],
+};
 
 /** Scene-only effects. They never apply damage or change simulation positions. */
 export class CombatEffects {
@@ -84,6 +97,56 @@ export class CombatEffects {
    case 12:for(const p of enemies.slice(0,3))this.projectile(source,p,12);break;
    case 13:
     for(let i=0;i<3;i++)this.draw(640,(g,t)=>{const x=Phaser.Math.Linear(source.x,target.x,t),y=Phaser.Math.Linear(source.y-43,target.y-43,t);g.lineStyle(2.5,color,(1-t)*.8);g.strokeEllipse(x,y,12+t*54,24+t*82);},i*100);break;
+   default:this.skillRecipe(id,source,target,allies,enemies);
+  }
+ }
+ leap(source:FxPoint,target:FxPoint,color:number){
+  this.draw(420,(g,t)=>{for(let i=0;i<6;i++){const p=Math.max(0,t-i*.05);const x=Phaser.Math.Linear(source.x,target.x,p),y=Phaser.Math.Linear(source.y,target.y,p)-60-Math.sin(Math.PI*p)*70;g.fillStyle(color,(1-t)*(.75-i*.11));g.fillCircle(x,y+20,4-i*.5);}});
+ }
+ nova(p:FxPoint,color:number,radius=95){this.ring(p,color,radius,700);this.ring(p,color,radius*.6,560,110);this.dust(p,color,9);}
+ beam(source:FxPoint,target:FxPoint,color:number){
+  const dx=target.x-source.x,dy=target.y-source.y,len=Math.hypot(dx,dy)||1,ex=source.x+dx/len*Math.max(len,320),ey=source.y+dy/len*Math.max(len,320);
+  this.draw(520,(g,t)=>{const a=Math.sin(Math.PI*t);g.lineStyle(7*a,color,.25*a);g.lineBetween(source.x,source.y-44,ex,ey-44);g.lineStyle(2.5*a,color,.9*a);g.lineBetween(source.x,source.y-44,Phaser.Math.Linear(source.x,ex,Math.min(1,t*2)),Phaser.Math.Linear(source.y,ey,Math.min(1,t*2))-44);});
+ }
+ aura(p:FxPoint,color:number){
+  this.draw(900,(g,t)=>{const a=Math.sin(Math.PI*t);for(let i=0;i<9;i++){const ang=i/9*Math.PI*2+t*2,x=p.x+Math.cos(ang)*34,y=p.y-20+Math.sin(ang)*12-t*70*((i%3)+1)/3;g.lineStyle(2,color,a*.75);g.lineBetween(x,y,x,y-14);}g.lineStyle(2,color,a*.5);g.strokeEllipse(p.x,p.y-48,80+t*30,120+t*30);});
+ }
+ summon(p:FxPoint,color:number){
+  this.ring(p,color,46,520);
+  this.draw(620,(g,t)=>{for(let i=0;i<7;i++){const a=i*.9+t*3,r=8+t*26;g.fillStyle(color,(1-t)*.8);g.fillCircle(p.x+Math.cos(a)*r,p.y-14+Math.sin(a)*r*.4-t*18,2);}});
+ }
+ revive(p:FxPoint){
+  this.ring(p,0xf1e7a8,90,900);
+  this.draw(1200,(g,t)=>{for(let i=0;i<14;i++){const a=i*.45+t*7,r=40*(1-t)+6,y=p.y-t*110+i*3;g.fillStyle(0xf3e6a5,Math.sin(Math.PI*t)*.85);g.fillCircle(p.x+Math.cos(a)*r,y-10+Math.sin(a)*r*.3,2.2);}});
+ }
+ night(points:FxPoint[]){
+  this.draw(1500,(g,t)=>{const a=Math.sin(Math.PI*t);g.fillStyle(0x140f24,.42*a);g.fillEllipse(672,420,980,470);for(const p of points){g.lineStyle(1.5,0x9d8ad8,a*.8);g.strokeEllipse(p.x-9,p.y-100,14,9);g.strokeEllipse(p.x+9,p.y-100,14,9);}});
+ }
+ stampede(points:FxPoint[],color:number){
+  for(let k=0;k<5;k++)this.draw(700,(g,t)=>{const y=380+k*42-k*k*3,x=Phaser.Math.Linear(260,1090,t);g.fillStyle(color,(1-t)*.5);g.fillEllipse(x,y,90,26);g.fillStyle(color,(1-t)*.8);g.fillTriangle(x+40,y-10,x+64,y-22,x+50,y);},k*70);
+  for(const p of points)this.dust(p,color,6);
+ }
+ private skillRecipe(id:number,source:FxPoint,target:FxPoint,allies:FxPoint[],enemies:FxPoint[]){
+  const color=colors[id]??0xe7d091;
+  for(const recipe of RECIPES[id]??['nova']){
+   switch(recipe){
+    case 'leap':this.leap(source,target,color);this.slash(source,target,color,1);break;
+    case 'flurry':this.slash(source,target,color,3);break;
+    case 'shield':this.shield(source);break;
+    case 'allies':for(const p of allies){this.ring(p,color,46,700,60);}break;
+    case 'heal':for(const p of allies)this.heal(p);break;
+    case 'line':this.beam(source,target,color);break;
+    case 'nova':this.nova(id===32||id===35||id===40||id===49?source:target,color);break;
+    case 'volley':for(const p of enemies.slice(0,6))this.projectile(source,p,id);break;
+    case 'aura':this.aura(source,color);break;
+    case 'call':this.summon(source,color);break;
+    case 'night':this.night(enemies);break;
+    case 'stampede':this.stampede(enemies,color);break;
+    case 'web':this.skill(2,source,target,allies,enemies);break;
+    case 'totems':this.skill(11,source,target,allies,enemies);break;
+    case 'swap':this.leap(source,target,color);this.shield(source);break;
+    case 'mark':this.draw(700,(g,t)=>{const a=Math.sin(t*Math.PI),y=target.y-98;g.lineStyle(2,color,a);g.strokeCircle(target.x,y,11+t*4);g.lineBetween(target.x-17,y,target.x+17,y);g.lineBetween(target.x,y-17,target.x,y+17);});break;
+   }
   }
  }
  clear(){for(const [g,tween] of this.active){tween.stop();g.destroy();}this.active.clear();}

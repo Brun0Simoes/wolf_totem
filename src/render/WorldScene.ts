@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { BuildingId, Game } from '../game/simulation';
 import { characters } from '../data/characters';
-import { animationSheets, getAnimation, frameRect, sheetKey } from './animationAssets';
+import { animationSheets, bestAnimation, getAnimation, frameRect, sheetKey } from './animationAssets';
 import { advanceMotion, createMotion, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState, type SheetDefinition } from './animationModel';
 import { CombatEffects } from './CombatEffects';
 
@@ -10,9 +10,12 @@ type Ctx = CanvasRenderingContext2D;
 type Point = [number, number];
 type Entity = NonNullable<Game['battle']>['entities'][number];
 type Callbacks = { onBuilding: (id: BuildingId) => void; onSlot: (slot: number) => void };
-type UnitView = { sprite: Phaser.GameObjects.Sprite; bars: Phaser.GameObjects.Graphics; name: Phaser.GameObjects.Text; ring: Phaser.GameObjects.Ellipse; baseTexture: string; desiredHeight: number; characterId: number; stars: number; motion: MotionState; x: number; y: number; lastHp: number; enemy: boolean };
+type UnitView = { summon?: string; transform: boolean; sprite: Phaser.GameObjects.Sprite; bars: Phaser.GameObjects.Graphics; name: Phaser.GameObjects.Text; ring: Phaser.GameObjects.Ellipse; baseTexture: string; desiredHeight: number; characterId: number; stars: number; motion: MotionState; x: number; y: number; lastHp: number; enemy: boolean };
 type Villager = { uid: string; view: UnitView; phase: number; work: BuildingId; lastWork: number };
 
+const COST_TINT = [0xdfd8c0, 0xc7dccf, 0xc3cde6, 0xdccbe6, 0xf1dca6];
+const SUMMON_HEIGHT: Record<string, number> = { spider: 34, crow: 40, beetle: 36, elephant: 82 };
+const ZONE_COLOR: Record<string, number> = { web: 0xc8ebd8, water: 0x7fc8d6, veil: 0x4f7fa8, domain: 0xa77d4f, frost: 0xcfe9f7 };
 const W = 1200;
 const H = 740;
 const BUILDINGS: { id: BuildingId; name: string; x: number; y: number; icon: string }[] = [
@@ -67,6 +70,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private fire!: Phaser.GameObjects.Graphics;
     private ambience!: Phaser.GameObjects.Graphics;
     private floorHover!: Phaser.GameObjects.Graphics;
+    private zoneLayer!: Phaser.GameObjects.Graphics;
     private stars: { x: number; y: number; phase: number; speed: number }[] = [];
     private activeView: View = 'village';
     private lastFormation = '';
@@ -461,6 +465,37 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         line(c, [[82, 140], [85, 32]], '#b5a177', 3); polygon(c, [[85, 18], [93, 40], [85, 36], [77, 39]], '#bfcec1');
         polygon(c, [[16, 78], [32, 84], [31, 108], [18, 119], [9, 103]], '#8c7955', '#c7b487', 2);
       });
+      this.paintSummons();
+      this.zoneLayer = this.add.graphics().setDepth(3); this.battlefield.add(this.zoneLayer);
+    }
+
+    /** Spirit creatures are luminous silhouettes until their own sprites are produced. */
+    private paintSummons(): void {
+      this.paint('summon-spider', 80, 60, c => {
+        glow(c, 40, 34, 30, '#c8ebd855');
+        for (const side of [-1, 1]) for (let i = 0; i < 4; i++) line(c, [[40, 34], [40 + side * (16 + i * 3), 24 + i * 6], [40 + side * (24 + i * 2), 44 + i * 3]], '#bfe3cf', 2);
+        ellipse(c, 40, 36, 13, 10, '#6f9c86'); ellipse(c, 40, 24, 8, 7, '#8fc0a6');
+        ellipse(c, 37, 23, 1.6, 1.6, '#f3fff5'); ellipse(c, 43, 23, 1.6, 1.6, '#f3fff5');
+      });
+      this.paint('summon-crow', 80, 70, c => {
+        glow(c, 40, 34, 32, '#b7a6d855');
+        polygon(c, [[8, 22], [36, 34], [40, 48], [44, 34], [72, 22], [56, 40], [40, 56], [24, 40]], '#2b2836', '#8f84b5', 1.5);
+        ellipse(c, 40, 30, 7, 7, '#3a3548'); polygon(c, [[46, 29], [55, 32], [46, 33]], '#c9b37a');
+        ellipse(c, 42, 28, 1.4, 1.4, '#f0e6ff');
+      });
+      this.paint('summon-beetle', 70, 60, c => {
+        glow(c, 35, 32, 30, '#f2d48666');
+        for (const side of [-1, 1]) for (let i = 0; i < 3; i++) line(c, [[35, 34 + i * 5], [35 + side * 22, 40 + i * 7]], '#8c6b2f', 2);
+        ellipse(c, 35, 34, 16, 13, '#b98a2f'); line(c, [[35, 22], [35, 47]], '#6b4f1c', 2);
+        ellipse(c, 35, 20, 8, 6, '#8a6a2a'); line(c, [[35, 15], [35, 6]], '#f2d486', 2);
+      });
+      this.paint('summon-elephant', 130, 110, c => {
+        glow(c, 65, 60, 60, '#e8dcc044');
+        ellipse(c, 70, 58, 38, 26, '#d8cfb8aa'); ellipse(c, 34, 46, 18, 16, '#e4dcc8bb');
+        polygon(c, [[18, 40], [30, 30], [40, 52], [24, 64]], '#cfc4aaaa');
+        line(c, [[22, 54], [16, 80], [22, 92]], '#e4dcc8bb', 7); line(c, [[30, 58], [36, 70]], '#fff7e4', 3);
+        for (const x of [48, 62, 84, 98]) line(c, [[x, 76], [x, 100]], '#d8cfb8aa', 9);
+      });
     }
 
     private highlightTile(x: number, y: number): void {
@@ -576,9 +611,17 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       return sheet;
     }
 
+    private ensureBestAtlas(characterId: number, stars: number): SheetDefinition | undefined {
+      const sheet = bestAnimation(characterId, stars);
+      return sheet ? this.ensureAtlas(sheet.characterId, sheet.stars ?? 1) : undefined;
+    }
+
     private evictAtlases(): void {
       if (this.atlasUsed.size <= 24) return;
-      const active = new Set([...this.units.values(), ...this.villageActors.map(a => a.view)].map(v => sheetKey(v.characterId, v.stars)));
+      const active = new Set([...this.units.values(), ...this.villageActors.map(a => a.view)].flatMap(v => {
+        const best = bestAnimation(v.characterId, v.stars);
+        return [sheetKey(v.characterId, v.stars), ...(best ? [sheetKey(best.characterId, best.stars)] : [])];
+      }));
       for (const [key, lastUsed] of [...this.atlasUsed].sort((a, b) => a[1] - b[1])) {
         if (this.atlasUsed.size <= 24) break;
         if (active.has(key) || this.loadingArt.has(key) || this.clock - lastUsed < 10) continue;
@@ -598,26 +641,28 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       return this.textures.exists(key) ? key : this.textures.exists('hero-' + characterId) ? 'hero-' + characterId : 'warrior';
     }
 
-    private makeUnit(characterId: number, enemy: boolean, stars: number, layer: Phaser.GameObjects.Layer, height: number): UnitView {
-      const key = this.resolveArt(characterId, stars);
+    private makeUnit(characterId: number, enemy: boolean, stars: number, layer: Phaser.GameObjects.Layer, height: number, summon?: string, label?: string): UnitView {
+      const key = summon && summon !== 'echo' ? 'summon-' + summon : this.resolveArt(characterId, stars);
       const character = characters.find(h => h.id === characterId);
       const sprite = this.add.sprite(0, 0, key).setOrigin(.5, 1);
       const ring = this.add.ellipse(0, 0, 55, 21, enemy ? 0xb16d52 : 0xa3b878, .2).setStrokeStyle(1, enemy ? 0xd69779 : 0xc7cf99, .55);
       const bars = this.add.graphics();
-      const name = this.add.text(0, 0, (character?.name ?? 'Guardião') + (stars > 1 ? ' ' + '✦'.repeat(stars) : ''), { fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#e7e3c8', stroke: '#24352c', strokeThickness: 3 }).setOrigin(.5);
+      const name = this.add.text(0, 0, summon ? (label ?? '') : (character?.name ?? 'Guardião') + (stars > 1 ? ' ' + '✦'.repeat(stars) : ''), { fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#e7e3c8', stroke: '#24352c', strokeThickness: 3 }).setOrigin(.5);
       layer.add([ring, sprite, bars, name]);
       const motion = createMotion(characterId * .173 + this.units.size * .11);
       motion.facing = enemy ? -1 : 1;
-      return { sprite, bars, name, ring, baseTexture: key, desiredHeight: height, characterId, stars, motion, x: 0, y: 0, lastHp: -1, enemy };
+      if (summon) { ring.setScale(.6); name.setFontSize(8).setAlpha(.8); }
+      return { summon, transform: false, sprite, bars, name, ring, baseTexture: key, desiredHeight: height, characterId, stars, motion, x: 0, y: 0, lastHp: -1, enemy };
     }
 
-    private unitView(id: string, characterId: number, enemy: boolean, stars: number): UnitView {
+    private unitView(id: string, characterId: number, enemy: boolean, stars: number, summon?: string, label?: string): UnitView {
+      const height = summon && summon !== 'echo' ? SUMMON_HEIGHT[summon] ?? 40 : 108 + (stars - 1) * 8;
       const found = this.units.get(id);
       if (found) {
-        found.stars = stars; found.desiredHeight = 108 + (stars - 1) * 8;
+        found.stars = stars; found.desiredHeight = height;
         return found;
       }
-      const view = this.makeUnit(characterId, enemy, stars, this.battlefield, 108 + (stars - 1) * 8);
+      const view = this.makeUnit(characterId, enemy, stars, this.battlefield, height, summon, label);
       this.units.set(id, view);
       return view;
     }
@@ -633,14 +678,18 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
 
     private presentUnit(view: UnitView, desired: MotionClip, dt: number, x: number, y: number, direction = 0): void {
       advanceMotion(view.motion, desired, dt, direction);
-      const sheet = this.ensureAtlas(view.characterId, view.stars);
-      const hasSheet = !!sheet && this.textures.exists(sheetKey(view.characterId, view.stars));
+      const creature = !!view.summon && view.summon !== 'echo';
+      const character = characters.find(h => h.id === view.characterId);
+      // Exact stage sheet, then the original illustration, then the closest animated stage.
+      const sheet = creature ? undefined : this.ensureAtlas(view.characterId, view.stars) ?? (character?.art ? undefined : this.ensureBestAtlas(view.characterId, view.stars));
+      const key = sheet ? sheetKey(sheet.characterId, sheet.stars) : '';
+      const hasSheet = !!sheet && this.textures.exists(key);
       const pose = poseForMotion(view.motion, hasSheet, this.reducedMotion);
-      view.baseTexture = this.resolveArt(view.characterId, view.stars);
+      if (!creature) view.baseTexture = this.resolveArt(view.characterId, view.stars);
       let scale: number;
       if (sheet && hasSheet) {
         const frame = frameForMotion(view.motion, sheet, this.reducedMotion);
-        view.sprite.setTexture(sheetKey(view.characterId, view.stars), frame);
+        view.sprite.setTexture(key, frame);
         const anchor = sheet.frameAnchors?.[frame] ?? { x: sheet.anchorX, y: sheet.anchorY };
         const footX = view.motion.facing < 0 ? view.sprite.width - anchor.x : anchor.x;
         view.sprite.setOrigin(footX / view.sprite.width, anchor.y / view.sprite.height);
@@ -649,10 +698,15 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         view.sprite.setTexture(view.baseTexture).setOrigin(.5, 1);
         scale = view.desiredHeight / view.sprite.height;
       }
+      // Metamorphs grow while their transformation lasts; summoned echoes stay translucent.
+      if (view.transform) scale *= 1.2;
       view.sprite.setFlipX(view.motion.facing < 0).setScale(scale * pose.scaleX, scale * pose.scaleY);
-      view.sprite.setPosition(x + pose.x, y + 5 + pose.y).setAngle(pose.angle).setAlpha(pose.alpha).setDepth(y + 10);
+      view.sprite.setPosition(x + pose.x, y + 5 + pose.y).setAngle(pose.angle).setAlpha(pose.alpha * (view.summon ? .82 : 1)).setDepth(y + 10);
       if (view.motion.hit > .12) view.sprite.setTintFill(0xf5d8b2);
+      else if (view.summon === 'echo') view.sprite.setTint(0xbfe0f2);
+      else if (view.transform) view.sprite.setTint(0xfff0c8);
       else if (view.enemy) view.sprite.setTint(0xdfc5b3);
+      else if (view.baseTexture === 'warrior' && !hasSheet) view.sprite.setTint(COST_TINT[(character?.cost ?? 1) - 1]);
       else view.sprite.clearTint();
       view.ring.setPosition(x, y + 5).setDepth(y - 1).setAlpha(desired === 'death' ? 0 : 1);
       view.name.setPosition(x, y + 34).setDepth(y + 125).setAlpha(desired === 'death' ? 0 : 1);
@@ -670,13 +724,14 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
           const [x, y] = iso(hero.slot % 4, 3 + Math.floor(hero.slot / 4));
           this.presentUnit(view, 'idle', dt, x, y); view.bars.clear();
         }
-        this.removeUnitsExcept(keep); return;
+        this.removeUnitsExcept(keep); this.zoneLayer.clear(); return;
       }
       const keep = new Set<string>();
       const positions = new Map<string, { x: number; y: number; dx: number; moving: boolean }>();
       for (const entity of battle.entities) {
         const id = String(entity.id); keep.add(id);
-        const view = this.unitView(id, entity.characterId, entity.team === 'enemy', entity.stars);
+        const view = this.unitView(id, entity.characterId, entity.team === 'enemy', entity.stars, entity.summon, entity.name);
+        view.transform = entity.transform > 0 && entity.hp > 0;
         const [x, y] = iso(entity.x, entity.y);
         const fresh = view.lastHp < 0;
         const blend = fresh ? 1 : dt > 0 ? 1 - Math.exp(-dt * 15) : 0;
@@ -685,6 +740,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         view.lastHp = entity.hp;
       }
       this.removeUnitsExcept(keep);
+      this.drawZones(battle.zones);
       const points = (team: 'ally' | 'enemy') => battle.entities.filter(e => e.team === team && e.hp > 0).map(e => positions.get(String(e.id))!);
       for (const event of game.events) {
         if (this.seenEvents.has(event.id)) continue;
@@ -705,10 +761,16 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
             if (event.text) this.floatText(event.text, a.x, a.y - 122, '#f4d79b', true);
           }
         } else if (event.type === 'damage' || event.type === 'heal') {
-          this.floatText((event.type === 'heal' ? '+' : '−') + Math.round(event.amount ?? 0), b.x, b.y - 88, event.type === 'heal' ? '#c0d997' : '#f3dbc0');
+          // Fully absorbed hits still flinch, without a "−0" label.
+          if (Math.round(event.amount ?? 0) > 0) this.floatText((event.type === 'heal' ? '+' : '−') + Math.round(event.amount ?? 0), b.x, b.y - 88, event.type === 'heal' ? '#c0d997' : '#f3dbc0');
           if (event.type === 'damage') { triggerMotion(target.motion, 'hurt'); this.effects.hit(b); }
           else this.effects.heal(b);
         } else if (event.type === 'shield') this.effects.shield(b);
+        else if (event.type === 'summon') this.effects.summon(b, target.enemy ? 0xd49a7c : 0xc8e3b0);
+        else if (event.type === 'revive') {
+          target.motion = createMotion(target.motion.seed); target.motion.facing = target.enemy ? -1 : 1;
+          this.effects.revive(b); if (event.text) this.floatText(event.text, b.x, b.y - 122, '#f4d79b', true);
+        }
         else if (event.type === 'death') {
           triggerMotion(target.motion, 'death'); this.effects.death(b, target.enemy ? 0xd49a7c : 0xc1d89d);
         }
@@ -721,6 +783,21 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         this.drawBars(view, entity, p.x, p.y + 14);
       }
       if (this.seenEvents.size > 1500) this.seenEvents = new Set(game.events.map(event => event.id));
+    }
+
+    private drawZones(zones: NonNullable<Game['battle']>['zones']): void {
+      const g = this.zoneLayer; g.clear();
+      const t = this.reducedMotion ? 0 : this.clock;
+      for (const zone of zones) {
+        const [x, y] = iso(zone.x, zone.y);
+        const color = ZONE_COLOR[zone.kind] ?? 0xd8d0a0;
+        const fade = Math.min(1, zone.time / .6, (zone.duration - zone.time + .05) / .35);
+        const rx = zone.radius * 73 * 1.2, ry = zone.radius * 36 * 1.2;
+        g.fillStyle(color, (zone.kind === 'veil' ? .16 : .1) * fade); g.fillEllipse(x, y, rx * 2, ry * 2);
+        g.lineStyle(1.5, color, .55 * fade); g.strokeEllipse(x, y, rx * 2, ry * 2);
+        if (zone.kind === 'web') for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.lineStyle(1, color, .35 * fade); g.lineBetween(x, y, x + Math.cos(a) * rx, y + Math.sin(a) * ry); }
+        else for (let i = 0; i < 3; i++) { const p = (t * .5 + i / 3) % 1; g.lineStyle(1, color, (1 - p) * .5 * fade); g.strokeEllipse(x, y, rx * 2 * p, ry * 2 * p); }
+      }
     }
 
     private destroyUnit(view: UnitView): void {

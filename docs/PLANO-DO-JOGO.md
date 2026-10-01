@@ -12,20 +12,20 @@ O ciclo inicial dura poucos minutos: observar a produção, escolher uma melhori
 |---|---|
 | Economia | Madeira, alimento, pedra e espírito; coleta manual e produção por segundo |
 | Aldeia | Quatro construções fixas com dez níveis; cinco níveis da aldeia |
-| Recrutamento | Viajantes de custo 1, reserva, renovação e fusão de três cópias |
+| Recrutamento | 55 viajantes em cinco custos liberados pelo nível da aldeia, reserva, renovação e fusão de três cópias |
 | Formação | Doze casas disponíveis; capacidade aumenta de três a sete heróis |
 | Combate | Vida, armadura, resistência mágica, mana, alcance, ataques e habilidades automáticas |
-| Características | Nove sinergias de duas unidades distintas, com números de protótipo |
-| Campanha | Doze expedições com dificuldade crescente |
+| Características | Regras para todas as 31 características (povos, funções e espíritos), em até dois níveis, com números de protótipo |
+| Campanha | Doze expedições temáticas; as últimas trazem custos 4 e um lendário |
 | Persistência | Save local versionado, importação/exportação e produção offline limitada |
 | Arte | Trinta e nove ilustrações originais e sequência de ataque de Akru |
-| Elenco | Cinquenta e cinco fichas completas no códice; treze heróis jogáveis |
+| Elenco | Cinquenta e cinco fichas completas no códice; os 55 jogáveis com habilidades, invocações e zonas |
 
 ## Produção em etapas
 
 ### 1. Validar o início do jogo
 
-Jogar a primeira sessão inteira com os 13 heróis disponíveis. Ajustar o tempo até a primeira melhoria, a frequência de recrutamento e o benefício de cada construção. Dar peso ao posicionamento e explicar as sinergias sem exigir leitura do plano.
+Jogar a primeira sessão inteira com o elenco completo. Ajustar o tempo até a primeira melhoria, a frequência de recrutamento e o benefício de cada construção. Dar peso ao posicionamento e explicar as sinergias sem exigir leitura do plano.
 
 Critério: um jogador novo deve conseguir melhorar a aldeia, recrutar, posicionar e concluir uma expedição sem instruções externas. Nenhum recurso essencial pode causar bloqueio permanente.
 

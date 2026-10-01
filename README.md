@@ -15,18 +15,21 @@ Abra **http://127.0.0.1:5173**. O servidor funciona enquanto esse terminal estiv
 
 ## Nesta versão
 
-A produção dos 55 personagens e suas três formas está em andamento: **32 personagens têm alguma forma animada; 41 das 165 formas estão prontas**, totalizando 123 sequências e 492 poses. Akru, Nima, Boru e Jara têm as três estrelas animadas. A geração parou pelo limite de uso da ferramenta.
+**Os 55 personagens são jogáveis.** Cada nível da aldeia abre um custo na fogueira (nível 1 → custo 1 … nível 5 → custo 5), as 55 habilidades funcionam em combate, todas as características têm sinergias e as 12 expedições usam o elenco completo.
 
-O [inventário de arte](docs/production/STATUS.md) lista cada entrega e as 124 formas pendentes. No códice, abra um personagem para escolher a estrela e experimentar seus movimentos. As folhas são carregadas sob demanda, com um limite para manter texturas antigas na memória. Os 13 heróis iniciais continuam recrutáveis; os novos personagens podem ser vistos no códice enquanto aguardam suas habilidades e desbloqueios de jogo.
+A arte segue em produção: **32 personagens têm alguma forma animada; 41 das 165 formas estão prontas**, totalizando 123 sequências e 492 poses. Akru, Nima, Boru e Jara têm as três estrelas animadas. A geração parou pelo limite de uso da ferramenta. Enquanto uma forma não tem arte própria, o jogo usa a forma pronta mais próxima do mesmo personagem; os 23 personagens ainda sem nenhuma arte aparecem como silhuetas na cor do custo.
+
+O [inventário de arte](docs/production/STATUS.md) lista cada entrega e as 124 formas pendentes. No códice, abra um personagem para escolher a estrela, experimentar seus movimentos, ler o efeito implementado e ver sua categoria de animalidade. As folhas são carregadas sob demanda, com um limite para manter texturas antigas na memória.
 
 - Aldeia isométrica com bosque, caça, pedreira e círculo dos espíritos.
 - Madeira, alimento, pedra e espírito: produção automática e coleta manual.
 - Cinco níveis de aldeia e dez níveis de cada construção.
-- Treze heróis de custo 1 recrutáveis, usando as 39 artes originais.
+- 55 heróis recrutáveis em cinco custos, com chances por nível da aldeia, preços por custo e visitas determinísticas salvas no progresso.
 - Três cópias com as mesmas estrelas se combinam até 3 estrelas.
-- Formação de até sete heróis, sinergias e 12 expedições com combate automático.
+- Formação de até sete heróis, sinergias em dois níveis para todas as características e 12 expedições temáticas com combate automático.
+- Invocações reais (crias de seda, corvos, escaravelhos, ecos e espíritos do marfim), zonas (teia, remanso, véu, domínio, gelo), provocação, furtividade, presa coletiva, metamorfoses e o renascimento de Ssar'ka.
 - Os 13 heróis de 1 estrela possuem repouso, caminhada e ataque em quatro quadros cada: 39 sequências e 156 poses.
-- Habilidades com efeitos próprios, reação a dano, queda, vitória e heróis circulando e trabalhando na aldeia.
+- Habilidades com efeitos visuais próprios para os 55, reação a dano, queda, vitória e heróis circulando e trabalhando na aldeia.
 - Códice com os 55 personagens e seus atributos, habilidades e estágios originais.
 - Salvamento automático local, exportação/importação e até duas horas de produção offline.
 - Pausa, sons opcionais e interface adaptada a telas menores.
@@ -34,7 +37,7 @@ O [inventário de arte](docs/production/STATUS.md) lista cada entrega e as 124 f
 ## Como jogar
 
 1. Melhore uma construção ou evolua a aldeia. A aldeia de nível 2 comporta quatro heróis.
-2. Recrute viajantes ao redor da fogueira. Recrutar custa 15 alimentos e 30 de espírito; renovar os viajantes custa 8 de espírito.
+2. Recrute viajantes ao redor da fogueira. Recrutar custa 15 de alimento e 30 de espírito por ponto de custo do herói (custo 3: 45 e 90); renovar os viajantes custa 8 de espírito. Cada nível da aldeia libera um custo maior.
 3. Na aba **Expedição**, selecione um herói e uma casa na metade próxima do tabuleiro. Também é possível escolher a posição pelo seletor numérico e clicar em **Posicionar**. Posicionar numa casa ocupada troca os heróis.
 4. Inicie a expedição. As habilidades são automáticas; uma derrota preserva os heróis.
 5. Combine cópias, altere a formação e use as recompensas para continuar.
@@ -43,11 +46,11 @@ Atalhos: `1` aldeia, `2` expedição, `3` códice, `P` pausar e `Esc` fechar di�
 
 ## Escopo e próximos passos
 
-Esta é a primeira versão para validar o ciclo de jogo. Os 42 heróis de custos 2–5 estão no códice e ainda não são recrutáveis. Há 126 artes de evolução restantes para completar três estágios de todos os 55 personagens. As artes atuais foram preservadas em `chars/`.
+Esta versão valida o ciclo de jogo com o elenco completo. Faltam **124 formas animadas** para completar as três estrelas dos 55 personagens; a lista está em [STATUS.md](docs/production/STATUS.md). As artes originais foram preservadas em `chars/`.
 
-Os atributos e textos originais permanecem em `src/data/characters.ts`. Como o plano não define todos os números de habilidades e sinergias, `src/game/simulation.ts` contém adaptações explícitas para o protótipo em `SKILL_NOTES`. O códice mostra o efeito implementado separadamente da descrição original. Por exemplo, as manifestações de Nima são representadas por dano periódico; unidades invocadas independentes ainda precisam ser implementadas.
+Os atributos e textos originais permanecem em `src/data/characters.ts`. Como o plano não define todos os números de habilidades e sinergias, `src/game/skills.ts` e `src/game/synergies.ts` contêm adaptações explícitas para o protótipo; o códice mostra o efeito implementado separadamente da descrição original. A classificação de animalidade completa os exemplos do plano com uma **proposta** para os demais, marcada como tal no códice e em [PERSONAGENS.md](docs/PERSONAGENS.md).
 
-Não há multiplayer, servidor de contas, construção livre no mapa, exploração RTS nem animações completas de todos os personagens. Os estágios 2 e 3 mantêm suas artes próprias e usam movimentos programados; suas folhas de poses ainda serão produzidas. O tabuleiro inicial usa células quadradas em perspectiva isométrica; a migração para hexágonos deve acompanhar o desenho definitivo das habilidades.
+Não há multiplayer, servidor de contas, construção livre no mapa, exploração RTS nem animações completas de todos os personagens. Invocações e metamorfoses usam silhuetas e efeitos programados até receberem folhas próprias. O tabuleiro inicial usa células quadradas em perspectiva isométrica; a migração para hexágonos deve acompanhar o desenho definitivo das habilidades.
 
 - [Plano de desenvolvimento](docs/PLANO-DO-JOGO.md)
 - [Inventário dos personagens](docs/PERSONAGENS.md)
@@ -58,12 +61,16 @@ Não há multiplayer, servidor de contas, construção livre no mapa, exploraç�
 
 ```text
 chars/                     Artes originais, intactas
-public/assets/animations/  Folhas dos 13 heróis, recortes e âncoras
+public/assets/animations/  Folhas de animação (v2: 13 heróis 1★; v3: novas formas)
 src/data/characters.ts     Os 55 personagens do plano original
+src/data/animality.ts      Categoria de animalidade (plano + proposta)
 src/game/simulation.ts     Economia, combate, formação e saves
+src/game/skills.ts         As 55 habilidades e suas notas no códice
+src/game/synergies.ts      Regras de todas as características
+src/game/roster.ts         Desbloqueios, chances da fogueira, preços e expedições
 src/render/WorldScene.ts   Cenário e animações em Phaser
 src/main.ts                Interface, ações e salvamento no navegador
-tests/simulation.test.ts   Testes das regras e progressão
+tests/                     Regras, elenco completo, progressão e atlas
 docs/                      Plano, inventário e processo de arte
 ```
 
