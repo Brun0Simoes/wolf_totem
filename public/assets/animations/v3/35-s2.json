@@ -1,0 +1,252 @@
+{
+  "characterId": 35,
+  "stars": 2,
+  "name": "Mako",
+  "image": "/assets/animations/v3/35-s2.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 249,
+  "anchorX": 177.5,
+  "anchorY": 429,
+  "portrait": {
+    "x": 55,
+    "y": 180,
+    "width": 224,
+    "height": 249
+  },
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 324,
+      "height": 492
+    },
+    {
+      "x": 324,
+      "y": 0,
+      "width": 306,
+      "height": 492
+    },
+    {
+      "x": 630,
+      "y": 0,
+      "width": 321,
+      "height": 492
+    },
+    {
+      "x": 951,
+      "y": 0,
+      "width": 303,
+      "height": 492
+    },
+    {
+      "x": 0,
+      "y": 492,
+      "width": 332,
+      "height": 354
+    },
+    {
+      "x": 332,
+      "y": 492,
+      "width": 307,
+      "height": 354
+    },
+    {
+      "x": 639,
+      "y": 492,
+      "width": 309,
+      "height": 354
+    },
+    {
+      "x": 948,
+      "y": 492,
+      "width": 306,
+      "height": 354
+    },
+    {
+      "x": 0,
+      "y": 846,
+      "width": 321,
+      "height": 408
+    },
+    {
+      "x": 321,
+      "y": 846,
+      "width": 311,
+      "height": 408
+    },
+    {
+      "x": 632,
+      "y": 846,
+      "width": 337,
+      "height": 408
+    },
+    {
+      "x": 969,
+      "y": 846,
+      "width": 285,
+      "height": 408
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 177.5,
+      "y": 429
+    },
+    {
+      "x": 167.5,
+      "y": 430
+    },
+    {
+      "x": 168.5,
+      "y": 429
+    },
+    {
+      "x": 170.0,
+      "y": 430
+    },
+    {
+      "x": 215.5,
+      "y": 311
+    },
+    {
+      "x": 208.5,
+      "y": 311
+    },
+    {
+      "x": 168.0,
+      "y": 310
+    },
+    {
+      "x": 187.0,
+      "y": 306
+    },
+    {
+      "x": 181.0,
+      "y": 314
+    },
+    {
+      "x": 151.5,
+      "y": 312
+    },
+    {
+      "x": 164.5,
+      "y": 314
+    },
+    {
+      "x": 153.5,
+      "y": 314
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Use explicit frameRects and local frameAnchors. Canonical star appearance is in evolution. Image output copied unchanged; first playable animation draft awaiting in-engine motion review.",
+  "evolution": "manto começa a flutuar como se estivesse submerso e duas extensões de água surgem nos braços.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        55,
+        180,
+        279,
+        429
+      ],
+      [
+        45,
+        179,
+        272,
+        430
+      ],
+      [
+        35,
+        180,
+        274,
+        429
+      ],
+      [
+        48,
+        178,
+        270,
+        430
+      ],
+      [
+        37,
+        62,
+        306,
+        311
+      ],
+      [
+        28,
+        63,
+        285,
+        311
+      ],
+      [
+        23,
+        65,
+        277,
+        310
+      ],
+      [
+        32,
+        64,
+        283,
+        306
+      ],
+      [
+        47,
+        43,
+        300,
+        314
+      ],
+      [
+        22,
+        74,
+        295,
+        312
+      ],
+      [
+        16,
+        48,
+        310,
+        314
+      ],
+      [
+        28,
+        73,
+        265,
+        314
+      ]
+    ],
+    "allFramesDistinct": true,
+    "sourceOutputUnmodified": true
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-238bcde7-ebfa-46e3-8971-cc2111a49473.png",
+    "promptDocument": "docs/production/characters-35-55.md"
+  }
+}

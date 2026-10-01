@@ -1,0 +1,166 @@
+{
+  "characterId": 30,
+  "stars": 1,
+  "name": "Khepri",
+  "image": "/assets/animations/v3/30-s1.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 314,
+  "anchorX": 178,
+  "anchorY": 421,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 425
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 425
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 425
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 425
+    },
+    {
+      "x": 0,
+      "y": 425,
+      "width": 313,
+      "height": 411
+    },
+    {
+      "x": 313,
+      "y": 425,
+      "width": 314,
+      "height": 411
+    },
+    {
+      "x": 627,
+      "y": 425,
+      "width": 313,
+      "height": 411
+    },
+    {
+      "x": 940,
+      "y": 425,
+      "width": 314,
+      "height": 411
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 309,
+      "height": 418
+    },
+    {
+      "x": 622,
+      "y": 836,
+      "width": 329,
+      "height": 418
+    },
+    {
+      "x": 951,
+      "y": 836,
+      "width": 303,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 178,
+      "y": 421
+    },
+    {
+      "x": 178,
+      "y": 421
+    },
+    {
+      "x": 146,
+      "y": 421
+    },
+    {
+      "x": 140,
+      "y": 421
+    },
+    {
+      "x": 185,
+      "y": 381
+    },
+    {
+      "x": 172,
+      "y": 383
+    },
+    {
+      "x": 155,
+      "y": 384
+    },
+    {
+      "x": 154,
+      "y": 382
+    },
+    {
+      "x": 181,
+      "y": 340
+    },
+    {
+      "x": 162,
+      "y": 340
+    },
+    {
+      "x": 121,
+      "y": 340
+    },
+    {
+      "x": 136,
+      "y": 340
+    }
+  ],
+  "portrait": {
+    "x": 85,
+    "y": 108,
+    "width": 192,
+    "height": 314
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import type { BuildingId, Game } from '../game/simulation';
 import { characters } from '../data/characters';
-import { animationSheets, sheetKey } from './animationAssets';
-import { advanceMotion, createMotion, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState } from './animationModel';
+import { animationSheets, getAnimation, frameRect, sheetKey } from './animationAssets';
+import { advanceMotion, createMotion, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState, type SheetDefinition } from './animationModel';
 import { CombatEffects } from './CombatEffects';
 
 type View = 'village' | 'battle';
@@ -62,6 +62,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private units = new Map<string, UnitView>();
     private seenEvents = new Set<number>();
     private loadingArt = new Set<string>();
+    private atlasUsed = new Map<string, number>();
+    private lastAtlasSweep = 0;
     private fire!: Phaser.GameObjects.Graphics;
     private ambience!: Phaser.GameObjects.Graphics;
     private floorHover!: Phaser.GameObjects.Graphics;
@@ -74,23 +76,16 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     constructor() { super({ key: 'WolfTotemWorld' }); }
 
     preload(): void {
-      for (const character of characters) {
-        if (character.art) this.load.image(`hero-${character.id}`, `/chars/${character.art}-1star.png`);
-      }
+      const initial = new Set(game.state.heroes.slice(0, 6).map(h => `${h.characterId}:${h.stars}`));
       for (const sheet of animationSheets.values()) {
-        this.load.image(sheetKey(sheet.characterId), sheet.image);
+        if (initial.has(`${sheet.characterId}:${sheet.stars ?? 1}`)) this.load.image(sheetKey(sheet.characterId, sheet.stars), sheet.image);
       }
     }
 
     create(): void {
       scene = this;
       for (const sheet of animationSheets.values()) {
-        const texture = this.textures.get(sheetKey(sheet.characterId));
-        if (!this.textures.exists(sheetKey(sheet.characterId))) continue;
-        for (let i = 0; i < sheet.columns * sheet.rows; i++) {
-          const rect = sheet.frameRects?.[i] ?? { x: i % sheet.columns * sheet.frameWidth, y: Math.floor(i / sheet.columns) * sheet.frameHeight, width: sheet.frameWidth, height: sheet.frameHeight };
-          texture.add(i, 0, rect.x, rect.y, rect.width, rect.height);
-        }
+        if (this.textures.exists(sheetKey(sheet.characterId, sheet.stars))) this.registerAtlas(sheet);
       }
       this.cameras.main.setBackgroundColor('#111a17');
       this.paint('land', W, H, (c) => this.paintLandscape(c));
@@ -248,7 +243,6 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         const level = this.add.text(b.x, b.y + 36, '', { fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#bbc29d' }).setOrigin(.5).setDepth(1001);
         this.village.add([bg, badge, level]); this.labels.set(b.id, level);
       }
-      this.syncVillageRoster();
       this.fire = this.add.graphics().setDepth(465); this.village.add(this.fire);
       // Small flag claims the center, leaving the place itself as the hero of the screen.
       const centerTitle = this.add.text(610, 429, 'TOTEM DO LOBO', { fontFamily: 'Georgia, serif', fontSize: '11px', color: '#f4dda1', letterSpacing: 1.8 }).setOrigin(.5).setDepth(1001);
@@ -496,6 +490,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       if (this.activeView === 'village') this.updateVillage(this.clock * 1000, dt);
       else this.syncBattle(dt);
       this.updateAmbience(this.clock * 1000);
+      if (this.clock - this.lastAtlasSweep > 5) { this.evictAtlases(); this.lastAtlasSweep = this.clock; }
     }
 
     private updateVillage(time: number, dt: number): void {
@@ -556,10 +551,46 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       }
     }
 
+    private registerAtlas(sheet: SheetDefinition): void {
+      const key = sheetKey(sheet.characterId, sheet.stars);
+      const texture = this.textures.get(key);
+      for (let i = 0; i < sheet.columns * sheet.rows; i++) {
+        if (texture.has(String(i))) continue;
+        const rect = frameRect(sheet, i);
+        texture.add(i, 0, rect.x, rect.y, rect.width, rect.height);
+      }
+      this.atlasUsed.set(key, this.clock);
+    }
+
+    private ensureAtlas(characterId: number, stars: number): SheetDefinition | undefined {
+      const sheet = getAnimation(characterId, stars);
+      if (!sheet) return undefined;
+      const key = sheetKey(characterId, stars);
+      this.atlasUsed.set(key, this.clock);
+      if (!this.textures.exists(key) && !this.loadingArt.has(key)) {
+        this.loadingArt.add(key);
+        this.load.once(`filecomplete-image-${key}`, () => { this.registerAtlas(sheet); this.loadingArt.delete(key); });
+        this.load.image(key, sheet.image);
+        if (!this.load.isLoading()) this.load.start();
+      }
+      return sheet;
+    }
+
+    private evictAtlases(): void {
+      if (this.atlasUsed.size <= 24) return;
+      const active = new Set([...this.units.values(), ...this.villageActors.map(a => a.view)].map(v => sheetKey(v.characterId, v.stars)));
+      for (const [key, lastUsed] of [...this.atlasUsed].sort((a, b) => a[1] - b[1])) {
+        if (this.atlasUsed.size <= 24) break;
+        if (active.has(key) || this.loadingArt.has(key) || this.clock - lastUsed < 10) continue;
+        if (this.textures.exists(key)) this.textures.remove(key);
+        this.atlasUsed.delete(key);
+      }
+    }
+
     private resolveArt(characterId: number, stars: number): string {
       const character = characters.find(h => h.id === characterId);
       const key = stars === 1 ? 'hero-' + characterId : 'hero-' + characterId + '-' + stars;
-      if (stars > 1 && character?.art && !this.textures.exists(key) && !this.loadingArt.has(key)) {
+      if (!getAnimation(characterId, stars) && character?.art && !this.textures.exists(key) && !this.loadingArt.has(key)) {
         this.loadingArt.add(key);
         this.load.image(key, '/chars/' + character.art + '-' + stars + 'star.png');
         if (!this.load.isLoading()) this.load.start();
@@ -602,14 +633,14 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
 
     private presentUnit(view: UnitView, desired: MotionClip, dt: number, x: number, y: number, direction = 0): void {
       advanceMotion(view.motion, desired, dt, direction);
-      const sheet = view.stars === 1 ? animationSheets.get(view.characterId) : undefined;
-      const hasSheet = !!sheet && this.textures.exists(sheetKey(view.characterId));
+      const sheet = this.ensureAtlas(view.characterId, view.stars);
+      const hasSheet = !!sheet && this.textures.exists(sheetKey(view.characterId, view.stars));
       const pose = poseForMotion(view.motion, hasSheet, this.reducedMotion);
       view.baseTexture = this.resolveArt(view.characterId, view.stars);
       let scale: number;
       if (sheet && hasSheet) {
         const frame = frameForMotion(view.motion, sheet, this.reducedMotion);
-        view.sprite.setTexture(sheetKey(view.characterId), frame);
+        view.sprite.setTexture(sheetKey(view.characterId, view.stars), frame);
         const anchor = sheet.frameAnchors?.[frame] ?? { x: sheet.anchorX, y: sheet.anchorY };
         const footX = view.motion.facing < 0 ? view.sprite.width - anchor.x : anchor.x;
         view.sprite.setOrigin(footX / view.sprite.width, anchor.y / view.sprite.height);

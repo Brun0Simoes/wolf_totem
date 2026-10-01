@@ -1,0 +1,166 @@
+{
+  "characterId": 20,
+  "stars": 1,
+  "name": "Zakka",
+  "image": "/assets/animations/v3/20-s1.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 251,
+  "anchorX": 187,
+  "anchorY": 377,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 339,
+      "height": 418
+    },
+    {
+      "x": 652,
+      "y": 836,
+      "width": 306,
+      "height": 418
+    },
+    {
+      "x": 958,
+      "y": 836,
+      "width": 296,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 187,
+      "y": 377
+    },
+    {
+      "x": 183,
+      "y": 377
+    },
+    {
+      "x": 164,
+      "y": 376
+    },
+    {
+      "x": 156,
+      "y": 377
+    },
+    {
+      "x": 186,
+      "y": 354
+    },
+    {
+      "x": 180,
+      "y": 355
+    },
+    {
+      "x": 176,
+      "y": 351
+    },
+    {
+      "x": 165,
+      "y": 355
+    },
+    {
+      "x": 186,
+      "y": 289
+    },
+    {
+      "x": 139,
+      "y": 288
+    },
+    {
+      "x": 112,
+      "y": 290
+    },
+    {
+      "x": 158,
+      "y": 290
+    }
+  ],
+  "portrait": {
+    "x": 99,
+    "y": 127,
+    "width": 154,
+    "height": 251
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

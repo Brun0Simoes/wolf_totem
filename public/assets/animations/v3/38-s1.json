@@ -1,0 +1,252 @@
+{
+  "characterId": 38,
+  "stars": 1,
+  "name": "Yara",
+  "image": "/assets/animations/v3/38-s1.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 257,
+  "anchorX": 169.0,
+  "anchorY": 395,
+  "portrait": {
+    "x": 96,
+    "y": 138,
+    "width": 151,
+    "height": 257
+  },
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 322,
+      "height": 453
+    },
+    {
+      "x": 322,
+      "y": 0,
+      "width": 304,
+      "height": 453
+    },
+    {
+      "x": 626,
+      "y": 0,
+      "width": 306,
+      "height": 453
+    },
+    {
+      "x": 932,
+      "y": 0,
+      "width": 322,
+      "height": 453
+    },
+    {
+      "x": 0,
+      "y": 453,
+      "width": 328,
+      "height": 371
+    },
+    {
+      "x": 328,
+      "y": 453,
+      "width": 308,
+      "height": 371
+    },
+    {
+      "x": 636,
+      "y": 453,
+      "width": 306,
+      "height": 371
+    },
+    {
+      "x": 942,
+      "y": 453,
+      "width": 312,
+      "height": 371
+    },
+    {
+      "x": 0,
+      "y": 824,
+      "width": 322,
+      "height": 430
+    },
+    {
+      "x": 322,
+      "y": 824,
+      "width": 298,
+      "height": 430
+    },
+    {
+      "x": 620,
+      "y": 824,
+      "width": 344,
+      "height": 430
+    },
+    {
+      "x": 964,
+      "y": 824,
+      "width": 290,
+      "height": 430
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 169.0,
+      "y": 395
+    },
+    {
+      "x": 152.0,
+      "y": 395
+    },
+    {
+      "x": 153.0,
+      "y": 396
+    },
+    {
+      "x": 152.5,
+      "y": 395
+    },
+    {
+      "x": 189.0,
+      "y": 328
+    },
+    {
+      "x": 195.5,
+      "y": 328
+    },
+    {
+      "x": 172.0,
+      "y": 328
+    },
+    {
+      "x": 185.5,
+      "y": 327
+    },
+    {
+      "x": 174.0,
+      "y": 352
+    },
+    {
+      "x": 163.0,
+      "y": 352
+    },
+    {
+      "x": 173.0,
+      "y": 352
+    },
+    {
+      "x": 146.5,
+      "y": 351
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Use explicit frameRects and local frameAnchors. Canonical star appearance is in evolution. Image output copied unchanged; first playable animation draft awaiting in-engine motion review.",
+  "evolution": "sacerdotisa com máscara branca lisa e cajado lunar.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        96,
+        138,
+        247,
+        395
+      ],
+      [
+        77,
+        137,
+        227,
+        395
+      ],
+      [
+        79,
+        137,
+        230,
+        396
+      ],
+      [
+        77,
+        137,
+        228,
+        395
+      ],
+      [
+        79,
+        58,
+        267,
+        328
+      ],
+      [
+        61,
+        58,
+        252,
+        328
+      ],
+      [
+        57,
+        59,
+        246,
+        328
+      ],
+      [
+        60,
+        58,
+        242,
+        327
+      ],
+      [
+        76,
+        45,
+        265,
+        352
+      ],
+      [
+        59,
+        82,
+        238,
+        352
+      ],
+      [
+        62,
+        127,
+        280,
+        352
+      ],
+      [
+        66,
+        83,
+        226,
+        351
+      ]
+    ],
+    "allFramesDistinct": true,
+    "sourceOutputUnmodified": true
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-324be5db-101c-447d-965b-7bb8fd36bae3.png",
+    "promptDocument": "docs/production/characters-35-55.md"
+  }
+}

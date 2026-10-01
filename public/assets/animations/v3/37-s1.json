@@ -1,0 +1,252 @@
+{
+  "characterId": 37,
+  "stars": 1,
+  "name": "Nilo",
+  "image": "/assets/animations/v3/37-s1.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 311,
+  "anchorX": 178.5,
+  "anchorY": 398,
+  "portrait": {
+    "x": 74,
+    "y": 87,
+    "width": 196,
+    "height": 311
+  },
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 328,
+      "height": 440
+    },
+    {
+      "x": 328,
+      "y": 0,
+      "width": 303,
+      "height": 440
+    },
+    {
+      "x": 631,
+      "y": 0,
+      "width": 305,
+      "height": 440
+    },
+    {
+      "x": 936,
+      "y": 0,
+      "width": 318,
+      "height": 440
+    },
+    {
+      "x": 0,
+      "y": 440,
+      "width": 334,
+      "height": 407
+    },
+    {
+      "x": 334,
+      "y": 440,
+      "width": 284,
+      "height": 407
+    },
+    {
+      "x": 618,
+      "y": 440,
+      "width": 334,
+      "height": 407
+    },
+    {
+      "x": 952,
+      "y": 440,
+      "width": 302,
+      "height": 407
+    },
+    {
+      "x": 0,
+      "y": 847,
+      "width": 287,
+      "height": 407
+    },
+    {
+      "x": 287,
+      "y": 847,
+      "width": 377,
+      "height": 407
+    },
+    {
+      "x": 664,
+      "y": 847,
+      "width": 290,
+      "height": 407
+    },
+    {
+      "x": 954,
+      "y": 847,
+      "width": 300,
+      "height": 407
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 178.5,
+      "y": 398
+    },
+    {
+      "x": 158.0,
+      "y": 400
+    },
+    {
+      "x": 159.5,
+      "y": 400
+    },
+    {
+      "x": 162.5,
+      "y": 400
+    },
+    {
+      "x": 214.0,
+      "y": 358
+    },
+    {
+      "x": 153.0,
+      "y": 353
+    },
+    {
+      "x": 219.0,
+      "y": 357
+    },
+    {
+      "x": 165.5,
+      "y": 355
+    },
+    {
+      "x": 101.5,
+      "y": 326
+    },
+    {
+      "x": 230.0,
+      "y": 324
+    },
+    {
+      "x": 201.5,
+      "y": 333
+    },
+    {
+      "x": 78.5,
+      "y": 331
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Use explicit frameRects and local frameAnchors. Canonical star appearance is in evolution. Image output copied unchanged; first playable animation draft awaiting in-engine motion review.",
+  "evolution": "guerreiro alto com antebraços enormes e uma arma flexível enrolada na cintura.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        74,
+        87,
+        270,
+        398
+      ],
+      [
+        59,
+        82,
+        247,
+        400
+      ],
+      [
+        57,
+        93,
+        251,
+        400
+      ],
+      [
+        54,
+        94,
+        249,
+        400
+      ],
+      [
+        58,
+        53,
+        293,
+        358
+      ],
+      [
+        41,
+        44,
+        224,
+        353
+      ],
+      [
+        60,
+        44,
+        293,
+        357
+      ],
+      [
+        43,
+        42,
+        243,
+        355
+      ],
+      [
+        62,
+        59,
+        257,
+        326
+      ],
+      [
+        31,
+        58,
+        366,
+        324
+      ],
+      [
+        11,
+        59,
+        259,
+        333
+      ],
+      [
+        31,
+        50,
+        236,
+        331
+      ]
+    ],
+    "allFramesDistinct": true,
+    "sourceOutputUnmodified": true
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-4da39f60-cd1f-4c6e-82d1-c50cd6bd9f8f.png",
+    "promptDocument": "docs/production/characters-35-55.md"
+  }
+}

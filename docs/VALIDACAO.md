@@ -1,5 +1,17 @@
 # Verificação
 
+## Versão 0.3 — expansão do elenco e prévia
+
+- `npm test`: 57 testes passaram, incluindo 41 atlas e o registro por personagem/estrela.
+- `npm run build`: TypeScript e Vite concluíram sem erros.
+- Prévia de Jara testada no códice: caminhada, ataque, espelhamento e pausa. Akru 3★ também foi carregado e observado em movimento. Nima 3★ conferida com sua silhueta espiritual; Jara 3★ conferida em tela de 390 × 844.
+- Formas evoluídas conferidas no campo com uma jornada de teste em origem separada; o save da prévia principal foi preservado.
+- Registro novo carrega folhas por personagem e estrela; imagens da cena são carregadas sob demanda. Os testes conferem resolução do registro, recortes, âncoras, dimensões, retrato e clipes.
+- Os arquivos de arte foram revisados pelos lotes de produção. O total é 41 formas para 32 personagens; quatro personagens têm as três formas. A geração parou por cota, com 124 formas pendentes.
+- Impacto, queda e vitória usam movimento programado; ataque e habilidade compartilham poses. O trabalho entregue é de protótipo: ainda há refinamentos artísticos e de transição a fazer.
+
+Detalhes por lote e prompts completos em `docs/production/`.
+
 ## Versão 0.2 — animações
 
 - `npm test`: 29 testes passaram em três arquivos.

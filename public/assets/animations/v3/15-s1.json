@@ -1,0 +1,166 @@
+{
+  "characterId": 15,
+  "stars": 1,
+  "name": "Grom",
+  "image": "/assets/animations/v3/15-s1.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 297,
+  "anchorX": 176,
+  "anchorY": 415,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 324,
+      "height": 418
+    },
+    {
+      "x": 951,
+      "y": 836,
+      "width": 303,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 176,
+      "y": 415
+    },
+    {
+      "x": 184,
+      "y": 415
+    },
+    {
+      "x": 173,
+      "y": 415
+    },
+    {
+      "x": 164,
+      "y": 415
+    },
+    {
+      "x": 158,
+      "y": 400
+    },
+    {
+      "x": 172,
+      "y": 396
+    },
+    {
+      "x": 162,
+      "y": 402
+    },
+    {
+      "x": 166,
+      "y": 402
+    },
+    {
+      "x": 172,
+      "y": 361
+    },
+    {
+      "x": 184,
+      "y": 361
+    },
+    {
+      "x": 165,
+      "y": 361
+    },
+    {
+      "x": 160,
+      "y": 362
+    }
+  ],
+  "portrait": {
+    "x": 70,
+    "y": 119,
+    "width": 200,
+    "height": 297
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

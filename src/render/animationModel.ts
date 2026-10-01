@@ -10,6 +10,7 @@ export interface MotionState {
 }
 export interface SheetDefinition {
   characterId: number;
+  stars?: number;
   name: string;
   image: string;
   columns: number;
@@ -21,6 +22,9 @@ export interface SheetDefinition {
   anchorY: number;
   frameAnchors?: { x: number; y: number }[];
   frameRects?: { x: number; y: number; width: number; height: number }[];
+  imageWidth?: number;
+  imageHeight?: number;
+  portrait?: { x: number; y: number; width: number; height: number };
   clips: { idle: number[]; walk: number[]; attack: number[] };
   notes?: string;
 }

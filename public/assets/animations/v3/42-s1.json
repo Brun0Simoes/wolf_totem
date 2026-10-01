@@ -1,0 +1,252 @@
+{
+  "characterId": 42,
+  "stars": 1,
+  "name": "Nyala",
+  "image": "/assets/animations/v3/42-s1.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 318,
+  "anchorX": 170.0,
+  "anchorY": 404,
+  "portrait": {
+    "x": 75,
+    "y": 86,
+    "width": 192,
+    "height": 318
+  },
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 327,
+      "height": 444
+    },
+    {
+      "x": 327,
+      "y": 0,
+      "width": 306,
+      "height": 444
+    },
+    {
+      "x": 633,
+      "y": 0,
+      "width": 313,
+      "height": 444
+    },
+    {
+      "x": 946,
+      "y": 0,
+      "width": 308,
+      "height": 444
+    },
+    {
+      "x": 0,
+      "y": 444,
+      "width": 332,
+      "height": 414
+    },
+    {
+      "x": 332,
+      "y": 444,
+      "width": 302,
+      "height": 414
+    },
+    {
+      "x": 634,
+      "y": 444,
+      "width": 322,
+      "height": 414
+    },
+    {
+      "x": 956,
+      "y": 444,
+      "width": 298,
+      "height": 414
+    },
+    {
+      "x": 0,
+      "y": 858,
+      "width": 322,
+      "height": 396
+    },
+    {
+      "x": 322,
+      "y": 858,
+      "width": 307,
+      "height": 396
+    },
+    {
+      "x": 629,
+      "y": 858,
+      "width": 347,
+      "height": 396
+    },
+    {
+      "x": 976,
+      "y": 858,
+      "width": 278,
+      "height": 396
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 170.0,
+      "y": 404
+    },
+    {
+      "x": 157.5,
+      "y": 404
+    },
+    {
+      "x": 164.0,
+      "y": 404
+    },
+    {
+      "x": 164.0,
+      "y": 404
+    },
+    {
+      "x": 229.0,
+      "y": 363
+    },
+    {
+      "x": 188.0,
+      "y": 363
+    },
+    {
+      "x": 215.5,
+      "y": 363
+    },
+    {
+      "x": 215.0,
+      "y": 363
+    },
+    {
+      "x": 157.0,
+      "y": 308
+    },
+    {
+      "x": 138.5,
+      "y": 308
+    },
+    {
+      "x": 147.0,
+      "y": 308
+    },
+    {
+      "x": 141.5,
+      "y": 308
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Use explicit frameRects and local frameAnchors. Canonical star appearance is in evolution. Image output copied unchanged; first playable animation draft awaiting in-engine motion review.",
+  "evolution": "assassina completamente vestida em preto, apenas olhos violetas visíveis.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        75,
+        86,
+        267,
+        404
+      ],
+      [
+        61,
+        87,
+        250,
+        404
+      ],
+      [
+        57,
+        86,
+        260,
+        404
+      ],
+      [
+        54,
+        86,
+        258,
+        404
+      ],
+      [
+        49,
+        43,
+        289,
+        363
+      ],
+      [
+        45,
+        44,
+        258,
+        363
+      ],
+      [
+        46,
+        40,
+        273,
+        363
+      ],
+      [
+        50,
+        44,
+        246,
+        363
+      ],
+      [
+        44,
+        89,
+        312,
+        308
+      ],
+      [
+        10,
+        64,
+        299,
+        308
+      ],
+      [
+        9,
+        54,
+        335,
+        308
+      ],
+      [
+        14,
+        51,
+        258,
+        308
+      ]
+    ],
+    "allFramesDistinct": true,
+    "sourceOutputUnmodified": true
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-a47f26e4-d8c9-4d4b-8153-9571d56ccd82.png",
+    "promptDocument": "docs/production/characters-35-55.md"
+  }
+}

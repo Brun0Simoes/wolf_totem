@@ -1,0 +1,252 @@
+{
+  "characterId": 41,
+  "stars": 1,
+  "name": "Makara",
+  "image": "/assets/animations/v3/41-s1.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 215,
+  "anchorX": 168.5,
+  "anchorY": 384,
+  "portrait": {
+    "x": 95,
+    "y": 169,
+    "width": 145,
+    "height": 215
+  },
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 467
+    },
+    {
+      "x": 320,
+      "y": 0,
+      "width": 308,
+      "height": 467
+    },
+    {
+      "x": 628,
+      "y": 0,
+      "width": 308,
+      "height": 467
+    },
+    {
+      "x": 936,
+      "y": 0,
+      "width": 318,
+      "height": 467
+    },
+    {
+      "x": 0,
+      "y": 467,
+      "width": 324,
+      "height": 379
+    },
+    {
+      "x": 324,
+      "y": 467,
+      "width": 312,
+      "height": 379
+    },
+    {
+      "x": 636,
+      "y": 467,
+      "width": 314,
+      "height": 379
+    },
+    {
+      "x": 950,
+      "y": 467,
+      "width": 304,
+      "height": 379
+    },
+    {
+      "x": 0,
+      "y": 846,
+      "width": 324,
+      "height": 408
+    },
+    {
+      "x": 324,
+      "y": 846,
+      "width": 313,
+      "height": 408
+    },
+    {
+      "x": 637,
+      "y": 846,
+      "width": 337,
+      "height": 408
+    },
+    {
+      "x": 974,
+      "y": 846,
+      "width": 280,
+      "height": 408
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 168.5,
+      "y": 384
+    },
+    {
+      "x": 159.5,
+      "y": 385
+    },
+    {
+      "x": 153.0,
+      "y": 385
+    },
+    {
+      "x": 157.0,
+      "y": 385
+    },
+    {
+      "x": 177.0,
+      "y": 298
+    },
+    {
+      "x": 166.0,
+      "y": 298
+    },
+    {
+      "x": 161.5,
+      "y": 298
+    },
+    {
+      "x": 161.5,
+      "y": 298
+    },
+    {
+      "x": 172.5,
+      "y": 279
+    },
+    {
+      "x": 159.5,
+      "y": 281
+    },
+    {
+      "x": 133.0,
+      "y": 282
+    },
+    {
+      "x": 122.5,
+      "y": 286
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Use explicit frameRects and local frameAnchors. Canonical star appearance is in evolution. Image output copied unchanged; first playable animation draft awaiting in-engine motion review.",
+  "evolution": "guerreiro ancestral enorme com arma dentada e pele marcada.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        95,
+        169,
+        240,
+        384
+      ],
+      [
+        83,
+        166,
+        231,
+        385
+      ],
+      [
+        77,
+        168,
+        227,
+        385
+      ],
+      [
+        81,
+        167,
+        231,
+        385
+      ],
+      [
+        84,
+        83,
+        250,
+        298
+      ],
+      [
+        75,
+        83,
+        238,
+        298
+      ],
+      [
+        74,
+        84,
+        241,
+        298
+      ],
+      [
+        73,
+        83,
+        230,
+        298
+      ],
+      [
+        89,
+        81,
+        257,
+        279
+      ],
+      [
+        67,
+        94,
+        275,
+        281
+      ],
+      [
+        39,
+        96,
+        295,
+        282
+      ],
+      [
+        44,
+        81,
+        198,
+        286
+      ]
+    ],
+    "allFramesDistinct": true,
+    "sourceOutputUnmodified": true
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-f23e34e1-263e-4a54-81ef-45af59440d7f.png",
+    "promptDocument": "docs/production/characters-35-55.md"
+  }
+}

@@ -8,7 +8,11 @@ Os vetores `hp`, `attack` e `evolution` seguem a ordem 1★, 2★, 3★. A veloc
 
 Qualquer balanceamento provisório do combate deve ficar separado desse catálogo, para não substituir os dados do plano por valores inventados.
 
-## Inventário das artes
+## Produção atual
+
+Novas formas e animações são entregues em `public/assets/animations/v3`. O [inventário de produção](production/STATUS.md) registra as 165 formas planejadas e distingue as prontas das pendentes. Para personagens novos, o retrato do códice é um recorte da primeira pose; o PNG permanece intacto.
+
+## Inventário inicial das artes recebidas
 
 | Custo | Personagens | Com arte nas três estrelas | Sem arte |
 | --- | ---: | ---: | ---: |
@@ -64,4 +68,3 @@ O plano sugere aproximadamente **8 a 12 metamorfos verdadeiros** no elenco. Há 
 - 13 personagens com os três arquivos de arte encontrados em disco.
 - Distribuição de custos conferida: 13 / 13 / 12 / 10 / 7.
 - Texto original copiado sem conversão de conteúdo.
-

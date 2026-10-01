@@ -1,0 +1,166 @@
+{
+  "characterId": 2,
+  "stars": 3,
+  "name": "Nima",
+  "image": "/assets/animations/v3/02-s3.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 313,
+  "frameHeight": 418,
+  "bodyHeight": 151,
+  "anchorX": 177.5,
+  "anchorY": 349,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 451
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 315,
+      "height": 451
+    },
+    {
+      "x": 628,
+      "y": 0,
+      "width": 313,
+      "height": 451
+    },
+    {
+      "x": 941,
+      "y": 0,
+      "width": 313,
+      "height": 451
+    },
+    {
+      "x": 0,
+      "y": 451,
+      "width": 319,
+      "height": 381
+    },
+    {
+      "x": 319,
+      "y": 451,
+      "width": 310,
+      "height": 381
+    },
+    {
+      "x": 629,
+      "y": 451,
+      "width": 318,
+      "height": 381
+    },
+    {
+      "x": 947,
+      "y": 451,
+      "width": 307,
+      "height": 381
+    },
+    {
+      "x": 0,
+      "y": 832,
+      "width": 317,
+      "height": 422
+    },
+    {
+      "x": 317,
+      "y": 832,
+      "width": 314,
+      "height": 422
+    },
+    {
+      "x": 631,
+      "y": 832,
+      "width": 340,
+      "height": 422
+    },
+    {
+      "x": 971,
+      "y": 832,
+      "width": 283,
+      "height": 422
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 177.5,
+      "y": 349
+    },
+    {
+      "x": 176.0,
+      "y": 349
+    },
+    {
+      "x": 177.5,
+      "y": 349
+    },
+    {
+      "x": 177.0,
+      "y": 349
+    },
+    {
+      "x": 171.0,
+      "y": 280
+    },
+    {
+      "x": 172.0,
+      "y": 279
+    },
+    {
+      "x": 181.5,
+      "y": 281
+    },
+    {
+      "x": 175.5,
+      "y": 280
+    },
+    {
+      "x": 168.0,
+      "y": 271
+    },
+    {
+      "x": 167.0,
+      "y": 271
+    },
+    {
+      "x": 157.5,
+      "y": 271
+    },
+    {
+      "x": 139.5,
+      "y": 273
+    }
+  ],
+  "portrait": {
+    "x": 91,
+    "y": 170,
+    "width": 134,
+    "height": 179
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in ImageGen edit of the original matching star form. Original PNG copied unchanged. Custom rectangles preserve isolated poses. Geometry uses alpha >64 and ignores sparse edge noise; foot anchors are local to each rectangle. Single body scale used for the full sheet."
+}

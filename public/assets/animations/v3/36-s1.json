@@ -1,0 +1,252 @@
+{
+  "characterId": 36,
+  "stars": 1,
+  "name": "Sava",
+  "image": "/assets/animations/v3/36-s1.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 357,
+  "anchorX": 109.5,
+  "anchorY": 400,
+  "portrait": {
+    "x": 76,
+    "y": 43,
+    "width": 202,
+    "height": 357
+  },
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 335,
+      "height": 426
+    },
+    {
+      "x": 335,
+      "y": 0,
+      "width": 301,
+      "height": 426
+    },
+    {
+      "x": 636,
+      "y": 0,
+      "width": 320,
+      "height": 426
+    },
+    {
+      "x": 956,
+      "y": 0,
+      "width": 298,
+      "height": 426
+    },
+    {
+      "x": 0,
+      "y": 426,
+      "width": 334,
+      "height": 416
+    },
+    {
+      "x": 334,
+      "y": 426,
+      "width": 310,
+      "height": 416
+    },
+    {
+      "x": 644,
+      "y": 426,
+      "width": 305,
+      "height": 416
+    },
+    {
+      "x": 949,
+      "y": 426,
+      "width": 305,
+      "height": 416
+    },
+    {
+      "x": 0,
+      "y": 842,
+      "width": 315,
+      "height": 412
+    },
+    {
+      "x": 315,
+      "y": 842,
+      "width": 338,
+      "height": 412
+    },
+    {
+      "x": 653,
+      "y": 842,
+      "width": 329,
+      "height": 412
+    },
+    {
+      "x": 982,
+      "y": 842,
+      "width": 272,
+      "height": 412
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 109.5,
+      "y": 400
+    },
+    {
+      "x": 87.5,
+      "y": 399
+    },
+    {
+      "x": 95.5,
+      "y": 400
+    },
+    {
+      "x": 92.5,
+      "y": 399
+    },
+    {
+      "x": 207.0,
+      "y": 380
+    },
+    {
+      "x": 182.5,
+      "y": 383
+    },
+    {
+      "x": 165.5,
+      "y": 383
+    },
+    {
+      "x": 194.5,
+      "y": 383
+    },
+    {
+      "x": 74.5,
+      "y": 364
+    },
+    {
+      "x": 42.5,
+      "y": 364
+    },
+    {
+      "x": 40.0,
+      "y": 364
+    },
+    {
+      "x": 122.5,
+      "y": 361
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Use explicit frameRects and local frameAnchors. Canonical star appearance is in evolution. Image output copied unchanged; first playable animation draft awaiting in-engine motion review.",
+  "evolution": "guerreira musculosa com duas manoplas e linhas douradas pintadas no corpo.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        76,
+        43,
+        278,
+        400
+      ],
+      [
+        58,
+        43,
+        255,
+        399
+      ],
+      [
+        48,
+        44,
+        263,
+        400
+      ],
+      [
+        57,
+        44,
+        262,
+        399
+      ],
+      [
+        81,
+        32,
+        276,
+        380
+      ],
+      [
+        58,
+        30,
+        245,
+        383
+      ],
+      [
+        65,
+        30,
+        251,
+        383
+      ],
+      [
+        55,
+        28,
+        267,
+        383
+      ],
+      [
+        52,
+        33,
+        293,
+        364
+      ],
+      [
+        23,
+        37,
+        323,
+        364
+      ],
+      [
+        16,
+        36,
+        306,
+        364
+      ],
+      [
+        23,
+        37,
+        233,
+        361
+      ]
+    ],
+    "allFramesDistinct": true,
+    "sourceOutputUnmodified": true
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-aa79e1dc-752d-44fb-b1b0-e3959b1f254c.png",
+    "promptDocument": "docs/production/characters-35-55.md"
+  }
+}

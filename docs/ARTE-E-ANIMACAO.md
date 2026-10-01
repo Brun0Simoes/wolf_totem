@@ -1,5 +1,15 @@
 # Wolf Totem — arte e animação
 
+## Expansão 0.3
+
+A produção abrange os 55 personagens e suas três estrelas. Consulte o [estado atualizado](production/STATUS.md) para as entregas efetivas: a geração foi interrompida pelo limite de uso da ferramenta antes de completar as 165 formas.
+
+O códice agora oferece uma prévia animada com seleção de estrelas, repouso, caminhada, ataque, habilidade, impacto, queda, vitória, pausa e espelhamento. As folhas novas ficam em `v3`; as 13 folhas anteriores permanecem em `v2`. Cada personagem/estrela tem seu próprio registro. O retrato dos novos personagens usa a primeira pose da folha, preservando o arquivo gerado.
+
+O campo carrega folhas sob demanda e descarta texturas antigas que não estão em uso. As formas 2★/3★ usam seus atlas próprios quando disponíveis. O carregamento não precisa trazer as 165 imagens ao abrir o jogo. A pausa da prévia do códice é independente da pausa da economia.
+
+Os 13 personagens iniciais continuam recrutáveis. A criação das artes e das animações dos demais não implementa automaticamente suas habilidades, invocações ou desbloqueios: esses sistemas seguem como etapa de jogabilidade separada.
+
 ## Atualização 0.2: primeiro grupo animado
 
 Os 13 personagens de uma estrela têm três sequências desenhadas: repouso, caminhada e ataque/conjuração. Cada sequência usa quatro poses: **39 sequências e 156 quadros**, em `public/assets/animations/v2` (caminho relativo ao projeto).

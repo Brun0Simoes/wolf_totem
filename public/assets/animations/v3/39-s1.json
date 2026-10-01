@@ -1,0 +1,252 @@
+{
+  "characterId": 39,
+  "stars": 1,
+  "name": "Fenra",
+  "image": "/assets/animations/v3/39-s1.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 371,
+  "anchorX": 111.5,
+  "anchorY": 420,
+  "portrait": {
+    "x": 72,
+    "y": 49,
+    "width": 190,
+    "height": 371
+  },
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 438
+    },
+    {
+      "x": 320,
+      "y": 0,
+      "width": 306,
+      "height": 438
+    },
+    {
+      "x": 626,
+      "y": 0,
+      "width": 315,
+      "height": 438
+    },
+    {
+      "x": 941,
+      "y": 0,
+      "width": 313,
+      "height": 438
+    },
+    {
+      "x": 0,
+      "y": 438,
+      "width": 326,
+      "height": 396
+    },
+    {
+      "x": 326,
+      "y": 438,
+      "width": 308,
+      "height": 396
+    },
+    {
+      "x": 634,
+      "y": 438,
+      "width": 306,
+      "height": 396
+    },
+    {
+      "x": 940,
+      "y": 438,
+      "width": 314,
+      "height": 396
+    },
+    {
+      "x": 0,
+      "y": 834,
+      "width": 316,
+      "height": 420
+    },
+    {
+      "x": 316,
+      "y": 834,
+      "width": 364,
+      "height": 420
+    },
+    {
+      "x": 680,
+      "y": 834,
+      "width": 284,
+      "height": 420
+    },
+    {
+      "x": 964,
+      "y": 834,
+      "width": 290,
+      "height": 420
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 111.5,
+      "y": 420
+    },
+    {
+      "x": 105.0,
+      "y": 420
+    },
+    {
+      "x": 112.5,
+      "y": 419
+    },
+    {
+      "x": 111.0,
+      "y": 419
+    },
+    {
+      "x": 173.5,
+      "y": 381
+    },
+    {
+      "x": 161.5,
+      "y": 380
+    },
+    {
+      "x": 170.0,
+      "y": 382
+    },
+    {
+      "x": 155.0,
+      "y": 380
+    },
+    {
+      "x": 85.5,
+      "y": 364
+    },
+    {
+      "x": 53.5,
+      "y": 359
+    },
+    {
+      "x": 43.5,
+      "y": 370
+    },
+    {
+      "x": 88.0,
+      "y": 368
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Use explicit frameRects and local frameAnchors. Canonical star appearance is in evolution. Image output copied unchanged; first playable animation draft awaiting in-engine motion review.",
+  "evolution": "líder veterana de cabelos grisalhos, lança longa e cicatrizes antigas.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        72,
+        49,
+        262,
+        420
+      ],
+      [
+        58,
+        59,
+        241,
+        420
+      ],
+      [
+        65,
+        53,
+        246,
+        419
+      ],
+      [
+        70,
+        53,
+        263,
+        419
+      ],
+      [
+        54,
+        20,
+        277,
+        381
+      ],
+      [
+        49,
+        21,
+        260,
+        380
+      ],
+      [
+        50,
+        21,
+        255,
+        382
+      ],
+      [
+        53,
+        21,
+        264,
+        380
+      ],
+      [
+        36,
+        81,
+        311,
+        364
+      ],
+      [
+        7,
+        88,
+        358,
+        359
+      ],
+      [
+        8,
+        29,
+        242,
+        370
+      ],
+      [
+        43,
+        16,
+        253,
+        368
+      ]
+    ],
+    "allFramesDistinct": true,
+    "sourceOutputUnmodified": true
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-b56f3d35-1558-4c6d-b8f2-25e99dae8e47.png",
+    "promptDocument": "docs/production/characters-35-55.md"
+  }
+}

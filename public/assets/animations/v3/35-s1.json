@@ -1,0 +1,252 @@
+{
+  "characterId": 35,
+  "stars": 1,
+  "name": "Mako",
+  "image": "/assets/animations/v3/35-s1.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 301,
+  "anchorX": 175.0,
+  "anchorY": 387,
+  "portrait": {
+    "x": 53,
+    "y": 86,
+    "width": 218,
+    "height": 301
+  },
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 438
+    },
+    {
+      "x": 320,
+      "y": 0,
+      "width": 312,
+      "height": 438
+    },
+    {
+      "x": 632,
+      "y": 0,
+      "width": 314,
+      "height": 438
+    },
+    {
+      "x": 946,
+      "y": 0,
+      "width": 308,
+      "height": 438
+    },
+    {
+      "x": 0,
+      "y": 438,
+      "width": 317,
+      "height": 400
+    },
+    {
+      "x": 317,
+      "y": 438,
+      "width": 313,
+      "height": 400
+    },
+    {
+      "x": 630,
+      "y": 438,
+      "width": 314,
+      "height": 400
+    },
+    {
+      "x": 944,
+      "y": 438,
+      "width": 310,
+      "height": 400
+    },
+    {
+      "x": 0,
+      "y": 838,
+      "width": 332,
+      "height": 416
+    },
+    {
+      "x": 332,
+      "y": 838,
+      "width": 302,
+      "height": 416
+    },
+    {
+      "x": 634,
+      "y": 838,
+      "width": 314,
+      "height": 416
+    },
+    {
+      "x": 948,
+      "y": 838,
+      "width": 306,
+      "height": 416
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 175.0,
+      "y": 387
+    },
+    {
+      "x": 169.0,
+      "y": 387
+    },
+    {
+      "x": 154.5,
+      "y": 387
+    },
+    {
+      "x": 153.0,
+      "y": 388
+    },
+    {
+      "x": 216.5,
+      "y": 355
+    },
+    {
+      "x": 206.5,
+      "y": 356
+    },
+    {
+      "x": 208.5,
+      "y": 356
+    },
+    {
+      "x": 170.0,
+      "y": 349
+    },
+    {
+      "x": 177.0,
+      "y": 343
+    },
+    {
+      "x": 155.0,
+      "y": 342
+    },
+    {
+      "x": 155.5,
+      "y": 344
+    },
+    {
+      "x": 163.0,
+      "y": 345
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Use explicit frameRects and local frameAnchors. Canonical star appearance is in evolution. Image output copied unchanged; first playable animation draft awaiting in-engine motion review.",
+  "evolution": "sacerdotisa de rio com manto muito largo e achatado.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        53,
+        86,
+        271,
+        387
+      ],
+      [
+        49,
+        88,
+        263,
+        387
+      ],
+      [
+        49,
+        87,
+        268,
+        387
+      ],
+      [
+        46,
+        88,
+        267,
+        388
+      ],
+      [
+        44,
+        55,
+        280,
+        355
+      ],
+      [
+        38,
+        51,
+        273,
+        356
+      ],
+      [
+        41,
+        55,
+        278,
+        356
+      ],
+      [
+        37,
+        52,
+        267,
+        349
+      ],
+      [
+        44,
+        56,
+        313,
+        343
+      ],
+      [
+        21,
+        58,
+        293,
+        342
+      ],
+      [
+        10,
+        45,
+        289,
+        344
+      ],
+      [
+        25,
+        58,
+        268,
+        345
+      ]
+    ],
+    "allFramesDistinct": true,
+    "sourceOutputUnmodified": true
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-d47814c9-055b-4f3a-bf26-02ba73a1c601.png",
+    "promptDocument": "docs/production/characters-35-55.md"
+  }
+}

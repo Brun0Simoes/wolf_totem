@@ -1,0 +1,166 @@
+{
+  "characterId": 1,
+  "stars": 2,
+  "name": "Akru",
+  "image": "/assets/animations/v3/01-s2.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 313,
+  "frameHeight": 418,
+  "bodyHeight": 160,
+  "anchorX": 164.5,
+  "anchorY": 357,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 318,
+      "height": 457
+    },
+    {
+      "x": 318,
+      "y": 0,
+      "width": 311,
+      "height": 457
+    },
+    {
+      "x": 629,
+      "y": 0,
+      "width": 313,
+      "height": 457
+    },
+    {
+      "x": 942,
+      "y": 0,
+      "width": 312,
+      "height": 457
+    },
+    {
+      "x": 0,
+      "y": 457,
+      "width": 326,
+      "height": 379
+    },
+    {
+      "x": 326,
+      "y": 457,
+      "width": 311,
+      "height": 379
+    },
+    {
+      "x": 637,
+      "y": 457,
+      "width": 311,
+      "height": 379
+    },
+    {
+      "x": 948,
+      "y": 457,
+      "width": 306,
+      "height": 379
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 302,
+      "height": 418
+    },
+    {
+      "x": 615,
+      "y": 836,
+      "width": 358,
+      "height": 418
+    },
+    {
+      "x": 973,
+      "y": 836,
+      "width": 281,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 164.5,
+      "y": 357
+    },
+    {
+      "x": 158.0,
+      "y": 357
+    },
+    {
+      "x": 159.0,
+      "y": 357
+    },
+    {
+      "x": 161.5,
+      "y": 356
+    },
+    {
+      "x": 165.0,
+      "y": 269
+    },
+    {
+      "x": 155.5,
+      "y": 270
+    },
+    {
+      "x": 157.0,
+      "y": 268
+    },
+    {
+      "x": 161.5,
+      "y": 269
+    },
+    {
+      "x": 148.5,
+      "y": 248
+    },
+    {
+      "x": 152.0,
+      "y": 248
+    },
+    {
+      "x": 127.5,
+      "y": 248
+    },
+    {
+      "x": 134.5,
+      "y": 248
+    }
+  ],
+  "portrait": {
+    "x": 107,
+    "y": 197,
+    "width": 112,
+    "height": 160
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in ImageGen edit of the original matching star form. Original PNG copied unchanged. Custom rectangles preserve isolated poses. Geometry uses alpha >64 and ignores sparse edge noise; foot anchors are local to each rectangle. Single body scale used for the full sheet."
+}

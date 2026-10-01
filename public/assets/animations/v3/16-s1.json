@@ -1,0 +1,166 @@
+{
+  "characterId": 16,
+  "stars": 1,
+  "name": "Ilya",
+  "image": "/assets/animations/v3/16-s1.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 256,
+  "anchorX": 150,
+  "anchorY": 386,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 150,
+      "y": 386
+    },
+    {
+      "x": 166,
+      "y": 386
+    },
+    {
+      "x": 150,
+      "y": 386
+    },
+    {
+      "x": 152,
+      "y": 386
+    },
+    {
+      "x": 158,
+      "y": 369
+    },
+    {
+      "x": 162,
+      "y": 372
+    },
+    {
+      "x": 164,
+      "y": 372
+    },
+    {
+      "x": 152,
+      "y": 372
+    },
+    {
+      "x": 170,
+      "y": 325
+    },
+    {
+      "x": 180,
+      "y": 281
+    },
+    {
+      "x": 174,
+      "y": 324
+    },
+    {
+      "x": 189,
+      "y": 325
+    }
+  ],
+  "portrait": {
+    "x": 62,
+    "y": 131,
+    "width": 223,
+    "height": 256
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

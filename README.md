@@ -15,6 +15,10 @@ Abra **http://127.0.0.1:5173**. O servidor funciona enquanto esse terminal estiv
 
 ## Nesta versão
 
+A produção dos 55 personagens e suas três formas está em andamento: **32 personagens têm alguma forma animada; 41 das 165 formas estão prontas**, totalizando 123 sequências e 492 poses. Akru, Nima, Boru e Jara têm as três estrelas animadas. A geração parou pelo limite de uso da ferramenta.
+
+O [inventário de arte](docs/production/STATUS.md) lista cada entrega e as 124 formas pendentes. No códice, abra um personagem para escolher a estrela e experimentar seus movimentos. As folhas são carregadas sob demanda, com um limite para manter texturas antigas na memória. Os 13 heróis iniciais continuam recrutáveis; os novos personagens podem ser vistos no códice enquanto aguardam suas habilidades e desbloqueios de jogo.
+
 - Aldeia isométrica com bosque, caça, pedreira e círculo dos espíritos.
 - Madeira, alimento, pedra e espírito: produção automática e coleta manual.
 - Cinco níveis de aldeia e dez níveis de cada construção.

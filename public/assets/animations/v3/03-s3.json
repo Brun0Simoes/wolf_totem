@@ -1,0 +1,166 @@
+{
+  "characterId": 3,
+  "stars": 3,
+  "name": "Boru",
+  "image": "/assets/animations/v3/03-s3.png",
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 313,
+  "frameHeight": 418,
+  "bodyHeight": 300,
+  "anchorX": 163.5,
+  "anchorY": 419,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 333,
+      "height": 445
+    },
+    {
+      "x": 333,
+      "y": 0,
+      "width": 303,
+      "height": 445
+    },
+    {
+      "x": 636,
+      "y": 0,
+      "width": 308,
+      "height": 445
+    },
+    {
+      "x": 944,
+      "y": 0,
+      "width": 310,
+      "height": 445
+    },
+    {
+      "x": 0,
+      "y": 445,
+      "width": 331,
+      "height": 370
+    },
+    {
+      "x": 331,
+      "y": 445,
+      "width": 311,
+      "height": 370
+    },
+    {
+      "x": 642,
+      "y": 445,
+      "width": 303,
+      "height": 370
+    },
+    {
+      "x": 945,
+      "y": 445,
+      "width": 309,
+      "height": 370
+    },
+    {
+      "x": 0,
+      "y": 815,
+      "width": 330,
+      "height": 439
+    },
+    {
+      "x": 330,
+      "y": 815,
+      "width": 324,
+      "height": 439
+    },
+    {
+      "x": 654,
+      "y": 815,
+      "width": 313,
+      "height": 439
+    },
+    {
+      "x": 967,
+      "y": 815,
+      "width": 287,
+      "height": 439
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 163.5,
+      "y": 419
+    },
+    {
+      "x": 160.5,
+      "y": 420
+    },
+    {
+      "x": 155.0,
+      "y": 419
+    },
+    {
+      "x": 157.0,
+      "y": 419
+    },
+    {
+      "x": 190.0,
+      "y": 355
+    },
+    {
+      "x": 182.5,
+      "y": 357
+    },
+    {
+      "x": 146.0,
+      "y": 358
+    },
+    {
+      "x": 161.5,
+      "y": 358
+    },
+    {
+      "x": 184.5,
+      "y": 381
+    },
+    {
+      "x": 156.0,
+      "y": 382
+    },
+    {
+      "x": 149.0,
+      "y": 389
+    },
+    {
+      "x": 136.5,
+      "y": 394
+    }
+  ],
+  "portrait": {
+    "x": 41,
+    "y": 79,
+    "width": 262,
+    "height": 340
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in ImageGen edit of the original matching star form. Original PNG copied unchanged. Custom rectangles preserve isolated poses. Geometry uses alpha >64 and ignores sparse edge noise; foot anchors are local to each rectangle. Single body scale used for the full sheet."
+}

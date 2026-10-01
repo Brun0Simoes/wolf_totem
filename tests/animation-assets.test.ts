@@ -3,16 +3,21 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { SheetDefinition } from '../src/render/animationModel';
+import { getAnimation, frameRect } from '../src/render/animationAssets';
 
 const publicDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '../public');
-const atlasDirectory = resolve(publicDirectory, 'assets/animations/v2');
-const manifests = readdirSync(atlasDirectory)
+const manifests = ['v2', 'v3'].flatMap(version => {
+ const atlasDirectory = resolve(publicDirectory, 'assets/animations', version);
+ if (!existsSync(atlasDirectory)) return [];
+ return readdirSync(atlasDirectory)
   .filter(file => file.endsWith('.json'))
   .sort()
   .map(file => ({
     file,
+    version,
     sheet: JSON.parse(readFileSync(resolve(atlasDirectory, file), 'utf8')) as SheetDefinition,
   }));
+});
 const frameIndices = Array.from({ length: 12 }, (_, index) => index);
 
 function pngDimensions(file: string): { width: number; height: number } {
@@ -34,19 +39,34 @@ function expectFinite(value: number, label: string): void {
 }
 
 describe('shipped character animation atlases', () => {
-  it('ships one atlas for each playable character ID from 1 through 13', () => {
+  it('preserves the first roster and assigns each character stage a unique atlas', () => {
     const ids = manifests.map(({ sheet }) => sheet.characterId);
-    expect(manifests).toHaveLength(13);
-    expect(new Set(ids).size).toBe(13);
+    const keys = manifests.map(({sheet}) => `${sheet.characterId}:${sheet.stars ?? 1}`);
+    expect(new Set(keys).size).toBe(manifests.length);
     expect(ids.every(id => Number.isInteger(id))).toBe(true);
-    expect([...ids].sort((a, b) => a - b)).toEqual(Array.from({ length: 13 }, (_, index) => index + 1));
+    expect(ids.every(id => id >= 1 && id <= 55)).toBe(true);
+    for (let id = 1; id <= 13; id++) expect(keys).toContain(`${id}:1`);
+    expect(manifests.every(({sheet}) => [1,2,3].includes(sheet.stars ?? 1))).toBe(true);
   });
 
-  it.each(manifests)('$file contains complete clips and valid PNG rectangles and anchors', ({ file, sheet }) => {
-    expect(sheet.image).toBe(`/assets/animations/v2/${file.replace(/\.json$/, '.png')}`);
+  it.each(manifests)('$file contains complete clips and valid PNG rectangles and anchors', ({ file, version, sheet }) => {
+    expect(getAnimation(sheet.characterId, sheet.stars ?? 1)?.image).toBe(sheet.image);
+    expect(sheet.image).toBe(`/assets/animations/${version}/${file.replace(/\.json$/, '.png')}`);
     const imagePath = resolve(publicDirectory, sheet.image.slice(1));
     expect(existsSync(imagePath), sheet.image).toBe(true);
     const image = pngDimensions(imagePath);
+    if (version === 'v3') {
+      expect(sheet.imageWidth).toBe(image.width);
+      expect(sheet.imageHeight).toBe(image.height);
+      expect(sheet.portrait).toBeDefined();
+      const portrait = sheet.portrait!;
+      expect(portrait.x).toBeGreaterThanOrEqual(0);
+      expect(portrait.y).toBeGreaterThanOrEqual(0);
+      expect(portrait.width).toBeGreaterThan(0);
+      expect(portrait.height).toBeGreaterThan(0);
+      expect(portrait.x + portrait.width).toBeLessThanOrEqual(image.width);
+      expect(portrait.y + portrait.height).toBeLessThanOrEqual(image.height);
+    }
 
     expect(sheet.columns).toBe(4);
     expect(sheet.rows).toBe(3);
@@ -67,6 +87,7 @@ describe('shipped character animation atlases', () => {
       .toEqual(frameIndices);
 
     sheet.frameRects!.forEach((rect, index) => {
+      expect(frameRect(sheet, index)).toEqual(rect);
       const label = `${file}, frame ${index}`;
       for (const value of [rect.x, rect.y, rect.width, rect.height]) {
         expect(Number.isInteger(value), label).toBe(true);
