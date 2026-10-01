@@ -1,0 +1,236 @@
+{
+  "characterId": 11,
+  "name": "Ayo",
+  "image": "/assets/animations/v2/ayo.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 261,
+  "anchorX": 190,
+  "anchorY": 421,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 344,
+      "height": 472
+    },
+    {
+      "x": 344,
+      "y": 0,
+      "width": 302,
+      "height": 472
+    },
+    {
+      "x": 646,
+      "y": 0,
+      "width": 308,
+      "height": 472
+    },
+    {
+      "x": 954,
+      "y": 0,
+      "width": 300,
+      "height": 472
+    },
+    {
+      "x": 0,
+      "y": 472,
+      "width": 344,
+      "height": 374
+    },
+    {
+      "x": 344,
+      "y": 472,
+      "width": 302,
+      "height": 374
+    },
+    {
+      "x": 646,
+      "y": 472,
+      "width": 308,
+      "height": 374
+    },
+    {
+      "x": 954,
+      "y": 472,
+      "width": 300,
+      "height": 374
+    },
+    {
+      "x": 0,
+      "y": 846,
+      "width": 344,
+      "height": 408
+    },
+    {
+      "x": 344,
+      "y": 846,
+      "width": 302,
+      "height": 408
+    },
+    {
+      "x": 646,
+      "y": 846,
+      "width": 308,
+      "height": 408
+    },
+    {
+      "x": 954,
+      "y": 846,
+      "width": 300,
+      "height": 408
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 190,
+      "y": 421
+    },
+    {
+      "x": 148.5,
+      "y": 422
+    },
+    {
+      "x": 146,
+      "y": 421
+    },
+    {
+      "x": 138,
+      "y": 421
+    },
+    {
+      "x": 197,
+      "y": 320
+    },
+    {
+      "x": 161.5,
+      "y": 319
+    },
+    {
+      "x": 148,
+      "y": 320
+    },
+    {
+      "x": 148.5,
+      "y": 320
+    },
+    {
+      "x": 199.5,
+      "y": 319
+    },
+    {
+      "x": 151.5,
+      "y": 319
+    },
+    {
+      "x": 143,
+      "y": 319
+    },
+    {
+      "x": 145,
+      "y": 326
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Original 1-star identity retained. Twelve generated animation poses. Use explicit frameRects: padding and row heights are irregular, so equal automatic slicing would clip the art. Rectangles follow transparent corridors and foot anchors are local to each rectangle. Prototype awaiting in-engine playback review.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        99,
+        160,
+        269,
+        421
+      ],
+      [
+        58,
+        160,
+        226,
+        422
+      ],
+      [
+        60,
+        160,
+        223,
+        421
+      ],
+      [
+        49,
+        159,
+        211,
+        421
+      ],
+      [
+        104,
+        51,
+        280,
+        320
+      ],
+      [
+        66,
+        54,
+        236,
+        319
+      ],
+      [
+        57,
+        55,
+        230,
+        320
+      ],
+      [
+        53,
+        52,
+        225,
+        320
+      ],
+      [
+        101,
+        54,
+        287,
+        319
+      ],
+      [
+        60,
+        74,
+        251,
+        319
+      ],
+      [
+        51,
+        81,
+        258,
+        319
+      ],
+      [
+        54,
+        79,
+        233,
+        326
+      ]
+    ],
+    "originalOutputUnmodified": true
+  }
+}

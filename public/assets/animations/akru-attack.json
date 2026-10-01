@@ -1,0 +1,41 @@
+{
+  "characterId": 1,
+  "characterName": "Akru",
+  "star": 1,
+  "animation": "attack",
+  "status": "prototype-engine-reviewed",
+  "image": "/assets/animations/akru-attack.png",
+  "imageWidth": 2172,
+  "imageHeight": 724,
+  "columns": 4,
+  "rows": 1,
+  "frameWidth": 543,
+  "frameHeight": 724,
+  "anchor": { "x": 271.5, "y": 570 },
+  "referenceBodyHeight": 320,
+  "loop": false,
+  "durationMs": 560,
+  "timingIsPrototypeTuning": true,
+  "frames": [
+    { "index": 0, "x": 0, "y": 0, "width": 543, "height": 724, "durationMs": 120, "pose": "ready", "alphaBounds": { "x": 160, "y": 251, "width": 260, "height": 319 } },
+    { "index": 1, "x": 543, "y": 0, "width": 543, "height": 724, "durationMs": 100, "pose": "windup", "alphaBounds": { "x": 143, "y": 232, "width": 255, "height": 338 } },
+    { "index": 2, "x": 1086, "y": 0, "width": 543, "height": 724, "durationMs": 140, "pose": "strike", "alphaBounds": { "x": 107, "y": 282, "width": 362, "height": 289 } },
+    { "index": 3, "x": 1629, "y": 0, "width": 543, "height": 724, "durationMs": 200, "pose": "recovery", "alphaBounds": { "x": 160, "y": 250, "width": 260, "height": 320 } }
+  ],
+  "validation": {
+    "mode": "RGBA",
+    "transparentFrameBoundaries": true,
+    "alphaBoundsThreshold": 16,
+    "baselineDriftPixels": 1,
+    "originalOutputUnmodified": true,
+    "enginePlaybackReviewed": true
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "mode": "edit",
+    "date": "2026-09-30",
+    "seed": "chars/Akru-1star.png",
+    "promptDocument": "docs/ARTE-E-ANIMACAO.md",
+    "generatedFile": "exec-eb1f5661-d7c5-4693-afc2-101fbc228431.png"
+  }
+}

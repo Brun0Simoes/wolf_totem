@@ -1,0 +1,157 @@
+{
+  "characterId": 1,
+  "name": "Akru",
+  "image": "/assets/animations/v2/akru.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 362,
+  "frameHeight": 362,
+  "bodyHeight": 246,
+  "anchorX": 200,
+  "anchorY": 353,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 362,
+      "height": 400
+    },
+    {
+      "x": 362,
+      "y": 0,
+      "width": 362,
+      "height": 400
+    },
+    {
+      "x": 724,
+      "y": 0,
+      "width": 362,
+      "height": 400
+    },
+    {
+      "x": 1086,
+      "y": 0,
+      "width": 362,
+      "height": 400
+    },
+    {
+      "x": 0,
+      "y": 400,
+      "width": 362,
+      "height": 340
+    },
+    {
+      "x": 362,
+      "y": 400,
+      "width": 362,
+      "height": 340
+    },
+    {
+      "x": 724,
+      "y": 400,
+      "width": 362,
+      "height": 340
+    },
+    {
+      "x": 1086,
+      "y": 400,
+      "width": 362,
+      "height": 340
+    },
+    {
+      "x": 0,
+      "y": 740,
+      "width": 362,
+      "height": 346
+    },
+    {
+      "x": 362,
+      "y": 740,
+      "width": 362,
+      "height": 346
+    },
+    {
+      "x": 724,
+      "y": 740,
+      "width": 362,
+      "height": 346
+    },
+    {
+      "x": 1086,
+      "y": 740,
+      "width": 362,
+      "height": 346
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 200,
+      "y": 353
+    },
+    {
+      "x": 201.5,
+      "y": 353
+    },
+    {
+      "x": 198.5,
+      "y": 353
+    },
+    {
+      "x": 200.5,
+      "y": 353
+    },
+    {
+      "x": 196,
+      "y": 279
+    },
+    {
+      "x": 185,
+      "y": 278
+    },
+    {
+      "x": 190,
+      "y": 279
+    },
+    {
+      "x": 189.5,
+      "y": 279
+    },
+    {
+      "x": 185,
+      "y": 257
+    },
+    {
+      "x": 131,
+      "y": 258
+    },
+    {
+      "x": 191,
+      "y": 257
+    },
+    {
+      "x": 206.5,
+      "y": 259
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen edit from original 1-star reference; spacing correction preserved. Exact source copied unchanged. Row boundaries 0/400/740/1086 prevent clipping. Geometry ignores alpha <=32 noise; frames inspected visually. Anchors use the lower 32 pixels of visible feet."
+}

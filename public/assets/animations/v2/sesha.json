@@ -1,0 +1,157 @@
+{
+  "characterId": 4,
+  "name": "Sesha",
+  "image": "/assets/animations/v2/sesha.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 313,
+  "frameHeight": 418,
+  "bodyHeight": 287,
+  "anchorX": 170.5,
+  "anchorY": 397,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 314,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 314,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 314,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 343,
+      "height": 418
+    },
+    {
+      "x": 970,
+      "y": 836,
+      "width": 284,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 170.5,
+      "y": 397
+    },
+    {
+      "x": 166.5,
+      "y": 398
+    },
+    {
+      "x": 165.5,
+      "y": 398
+    },
+    {
+      "x": 171,
+      "y": 398
+    },
+    {
+      "x": 163,
+      "y": 387
+    },
+    {
+      "x": 166,
+      "y": 387
+    },
+    {
+      "x": 168,
+      "y": 387
+    },
+    {
+      "x": 164,
+      "y": 387
+    },
+    {
+      "x": 160.5,
+      "y": 338
+    },
+    {
+      "x": 163.5,
+      "y": 338
+    },
+    {
+      "x": 163,
+      "y": 338
+    },
+    {
+      "x": 134.5,
+      "y": 338
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen edit from original 1-star reference; spacing correction preserved. Exact source copied unchanged. Custom frame rectangles preserve complete isolated poses. Geometry ignores alpha <=32 noise; frames inspected visually. Anatomical foot anchors exclude club in Boru impact poses."
+}

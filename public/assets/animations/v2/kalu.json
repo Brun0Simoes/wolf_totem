@@ -1,0 +1,236 @@
+{
+  "characterId": 12,
+  "name": "Kalu",
+  "image": "/assets/animations/v2/kalu.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 249,
+  "anchorX": 165,
+  "anchorY": 427,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 323,
+      "height": 480
+    },
+    {
+      "x": 323,
+      "y": 0,
+      "width": 317,
+      "height": 480
+    },
+    {
+      "x": 640,
+      "y": 0,
+      "width": 322,
+      "height": 480
+    },
+    {
+      "x": 962,
+      "y": 0,
+      "width": 292,
+      "height": 480
+    },
+    {
+      "x": 0,
+      "y": 480,
+      "width": 323,
+      "height": 381
+    },
+    {
+      "x": 323,
+      "y": 480,
+      "width": 317,
+      "height": 381
+    },
+    {
+      "x": 640,
+      "y": 480,
+      "width": 322,
+      "height": 381
+    },
+    {
+      "x": 962,
+      "y": 480,
+      "width": 292,
+      "height": 381
+    },
+    {
+      "x": 0,
+      "y": 861,
+      "width": 323,
+      "height": 393
+    },
+    {
+      "x": 323,
+      "y": 861,
+      "width": 317,
+      "height": 393
+    },
+    {
+      "x": 640,
+      "y": 861,
+      "width": 322,
+      "height": 393
+    },
+    {
+      "x": 962,
+      "y": 861,
+      "width": 292,
+      "height": 393
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 165,
+      "y": 427
+    },
+    {
+      "x": 162,
+      "y": 427
+    },
+    {
+      "x": 152.5,
+      "y": 427
+    },
+    {
+      "x": 151,
+      "y": 427
+    },
+    {
+      "x": 170,
+      "y": 318
+    },
+    {
+      "x": 163.5,
+      "y": 319
+    },
+    {
+      "x": 152,
+      "y": 319
+    },
+    {
+      "x": 154.5,
+      "y": 320
+    },
+    {
+      "x": 91.5,
+      "y": 311
+    },
+    {
+      "x": 85.5,
+      "y": 311
+    },
+    {
+      "x": 153.5,
+      "y": 311
+    },
+    {
+      "x": 87,
+      "y": 311
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Original 1-star identity retained. Twelve generated animation poses. Use explicit frameRects: padding and row heights are irregular, so equal automatic slicing would clip the art. Rectangles follow transparent corridors and foot anchors are local to each rectangle. Prototype awaiting in-engine playback review.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        61,
+        178,
+        266,
+        427
+      ],
+      [
+        57,
+        180,
+        266,
+        427
+      ],
+      [
+        55,
+        181,
+        257,
+        427
+      ],
+      [
+        58,
+        181,
+        255,
+        427
+      ],
+      [
+        73,
+        62,
+        279,
+        318
+      ],
+      [
+        57,
+        56,
+        262,
+        319
+      ],
+      [
+        44,
+        52,
+        245,
+        319
+      ],
+      [
+        50,
+        55,
+        251,
+        320
+      ],
+      [
+        47,
+        67,
+        305,
+        311
+      ],
+      [
+        18,
+        65,
+        299,
+        311
+      ],
+      [
+        17,
+        64,
+        284,
+        311
+      ],
+      [
+        38,
+        61,
+        261,
+        311
+      ]
+    ],
+    "originalOutputUnmodified": true
+  }
+}

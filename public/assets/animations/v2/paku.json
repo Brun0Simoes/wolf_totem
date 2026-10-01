@@ -1,0 +1,236 @@
+{
+  "characterId": 9,
+  "name": "Paku",
+  "image": "/assets/animations/v2/paku.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 255,
+  "anchorX": 165,
+  "anchorY": 407,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 314,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 314,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 314,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 165,
+      "y": 407
+    },
+    {
+      "x": 162,
+      "y": 407
+    },
+    {
+      "x": 151,
+      "y": 407
+    },
+    {
+      "x": 148,
+      "y": 407
+    },
+    {
+      "x": 134.5,
+      "y": 388
+    },
+    {
+      "x": 173,
+      "y": 387
+    },
+    {
+      "x": 156.5,
+      "y": 387
+    },
+    {
+      "x": 161.5,
+      "y": 387
+    },
+    {
+      "x": 157.5,
+      "y": 328
+    },
+    {
+      "x": 132.5,
+      "y": 327
+    },
+    {
+      "x": 134,
+      "y": 328
+    },
+    {
+      "x": 153.5,
+      "y": 328
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Original 1-star design preserved. Twelve distinct poses; all visible sprite content contained in cells. Border alpha at most 1/255. Explicit frameRects account for actual image dimensions; foot anchors vary per frame. Prototype awaiting in-engine playback review.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        62,
+        152,
+        277,
+        407
+      ],
+      [
+        58,
+        153,
+        273,
+        407
+      ],
+      [
+        47,
+        154,
+        263,
+        407
+      ],
+      [
+        47,
+        154,
+        257,
+        407
+      ],
+      [
+        61,
+        119,
+        282,
+        388
+      ],
+      [
+        64,
+        117,
+        283,
+        387
+      ],
+      [
+        55,
+        117,
+        279,
+        387
+      ],
+      [
+        47,
+        119,
+        274,
+        387
+      ],
+      [
+        52,
+        86,
+        289,
+        328
+      ],
+      [
+        34,
+        95,
+        301,
+        327
+      ],
+      [
+        31,
+        101,
+        295,
+        328
+      ],
+      [
+        51,
+        86,
+        274,
+        328
+      ]
+    ],
+    "originalOutputUnmodified": true
+  }
+}

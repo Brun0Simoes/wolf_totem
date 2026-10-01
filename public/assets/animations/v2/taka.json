@@ -1,0 +1,157 @@
+{
+  "characterId": 7,
+  "name": "Taka",
+  "image": "/assets/animations/v2/taka.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 285,
+  "anchorX": 156,
+  "anchorY": 419,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 314,
+      "height": 460
+    },
+    {
+      "x": 314,
+      "y": 0,
+      "width": 313,
+      "height": 460
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 460
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 460
+    },
+    {
+      "x": 0,
+      "y": 460,
+      "width": 314,
+      "height": 390
+    },
+    {
+      "x": 314,
+      "y": 460,
+      "width": 313,
+      "height": 390
+    },
+    {
+      "x": 627,
+      "y": 460,
+      "width": 313,
+      "height": 390
+    },
+    {
+      "x": 940,
+      "y": 460,
+      "width": 314,
+      "height": 390
+    },
+    {
+      "x": 0,
+      "y": 850,
+      "width": 314,
+      "height": 404
+    },
+    {
+      "x": 314,
+      "y": 850,
+      "width": 313,
+      "height": 404
+    },
+    {
+      "x": 627,
+      "y": 850,
+      "width": 313,
+      "height": 404
+    },
+    {
+      "x": 940,
+      "y": 850,
+      "width": 314,
+      "height": 404
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 156,
+      "y": 419
+    },
+    {
+      "x": 152,
+      "y": 419
+    },
+    {
+      "x": 154,
+      "y": 419
+    },
+    {
+      "x": 156,
+      "y": 419
+    },
+    {
+      "x": 152,
+      "y": 345
+    },
+    {
+      "x": 154,
+      "y": 344
+    },
+    {
+      "x": 159,
+      "y": 343
+    },
+    {
+      "x": 158,
+      "y": 341
+    },
+    {
+      "x": 149,
+      "y": 317
+    },
+    {
+      "x": 154,
+      "y": 317
+    },
+    {
+      "x": 158,
+      "y": 316
+    },
+    {
+      "x": 152,
+      "y": 318
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Generated with built-in imagegen from original one-star character art, then one layout-only repair. Original pixels preserved. Atlas uses variable row bounds to retain entire figures. Anchors measured from both feet within lower 49px, excluding right-hand rain staff for Muru. Alpha threshold 64 confirms transparent margins on all 12 frame rectangles."
+}

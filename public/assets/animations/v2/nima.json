@@ -1,0 +1,157 @@
+{
+  "characterId": 2,
+  "name": "Nima",
+  "image": "/assets/animations/v2/nima.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 362,
+  "frameHeight": 362,
+  "bodyHeight": 267,
+  "anchorX": 208,
+  "anchorY": 375,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 362,
+      "height": 400
+    },
+    {
+      "x": 362,
+      "y": 0,
+      "width": 362,
+      "height": 400
+    },
+    {
+      "x": 724,
+      "y": 0,
+      "width": 362,
+      "height": 400
+    },
+    {
+      "x": 1086,
+      "y": 0,
+      "width": 362,
+      "height": 400
+    },
+    {
+      "x": 0,
+      "y": 400,
+      "width": 362,
+      "height": 340
+    },
+    {
+      "x": 362,
+      "y": 400,
+      "width": 362,
+      "height": 340
+    },
+    {
+      "x": 724,
+      "y": 400,
+      "width": 362,
+      "height": 340
+    },
+    {
+      "x": 1086,
+      "y": 400,
+      "width": 362,
+      "height": 340
+    },
+    {
+      "x": 0,
+      "y": 740,
+      "width": 362,
+      "height": 346
+    },
+    {
+      "x": 362,
+      "y": 740,
+      "width": 362,
+      "height": 346
+    },
+    {
+      "x": 724,
+      "y": 740,
+      "width": 362,
+      "height": 346
+    },
+    {
+      "x": 1086,
+      "y": 740,
+      "width": 362,
+      "height": 346
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 208,
+      "y": 375
+    },
+    {
+      "x": 199,
+      "y": 376
+    },
+    {
+      "x": 181,
+      "y": 377
+    },
+    {
+      "x": 167,
+      "y": 377
+    },
+    {
+      "x": 201,
+      "y": 312
+    },
+    {
+      "x": 205,
+      "y": 312
+    },
+    {
+      "x": 184,
+      "y": 314
+    },
+    {
+      "x": 170,
+      "y": 312
+    },
+    {
+      "x": 211,
+      "y": 283
+    },
+    {
+      "x": 208,
+      "y": 285
+    },
+    {
+      "x": 157,
+      "y": 284
+    },
+    {
+      "x": 175,
+      "y": 283
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen edit from original 1-star reference; spacing correction preserved. Exact source copied unchanged. Row boundaries 0/400/740/1086 prevent clipping. Geometry ignores alpha <=32 noise; frames inspected visually. Anchors use the lower 12 pixels of visible feet. Nima foot-center X anchors are visually corrected to exclude hanging dress and silk. Nima foot-center X anchors are visually corrected to exclude hanging dress and silk."
+}

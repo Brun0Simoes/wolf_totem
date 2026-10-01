@@ -1,0 +1,457 @@
+Wolf Totem — Set 1
+Custo 1
+1. Akru, Presa Cinzenta
+Traits: Presas • Caçador • Espírito do Lobo
+Tipo: Melee
+Status: HP 650/1170/2105 • AD 55/99/178 • ARM 35 • MR 25 • AS 0,75 • Mana 0/60 • Alcance 1
+Habilidade — Caçada Marcada: salta sobre o alvo, causa 150/225/340% AD e o marca por 5s. Aliados que atacam a presa recebem 10/15/25% AS.
+1★: jovem caçador de porte leve, cabelo cinza desgrenhado, lança curta, pés descalços e pintura branca nos olhos e mandíbula.
+2★: cabelo cresce formando uma silhueta semelhante a uma juba; caninos ficam discretamente maiores; braceletes desenvolvem pequenas garras de energia.
+3★: braços e pernas ficam parcialmente lupinos, olhos branco-azulados e uma enorme silhueta de lobo espiritual acompanha todos os seus movimentos.
+2. Nima, Tecelã de Orvalho
+Traits: Enxame • Invocador • Espírito da Aranha
+Tipo: Ranged
+Status: HP 520/935/1685 • AD 42/76/136 • ARM 20 • MR 30 • AS 0,70 • Mana 20/70 • Alcance 4
+Habilidade — Berçário de Seda: cria uma teia que reduz AS inimiga e invoca 2/3/5 pequenas manifestações.
+1★: jovem tecelã com longos fios presos aos braços, roupa feita de fibras sobrepostas e pequenas agulhas de madeira.
+2★: dois braços espectrais adicionais aparecem atrás dos ombros e seus fios passam a flutuar sozinhos.
+3★: manifesta seis braços espirituais de aranha, olhos adicionais luminosos surgem brevemente na testa e uma teia gigantesca forma uma auréola atrás dela.
+3. Boru, Presa de Barro
+Traits: Manada • Brigão
+Tipo: Melee
+Status: HP 720/1295/2335 • AD 60/108/194 • ARM 40 • MR 30 • AS 0,60 • Mana 0/70 • Alcance 1
+Habilidade — Investida Lamacenta: avança 2 hexes, causa dano, derruba e ganha escudo.
+1★: guerreiro baixo e extremamente robusto, coberto por argila seca, cabelo raspado e arma de impacto curta.
+2★: ombros engrossam e placas de barro endurecido recobrem o corpo; dois pequenos chifres espirituais aparecem na testa durante a corrida.
+3★: corpo fica enorme, nariz e mandíbula assumem traços de javali e presas espirituais curvas aparecem sempre que entra em combate.
+4. Sesha, Víbora Verde
+Traits: Escamas • Espreitador • Espírito da Serpente
+Tipo: Melee
+Status: HP 560/1010/1815 • AD 52/94/168 • ARM 25 • MR 25 • AS 0,80 • Mana 0/50 • Alcance 1
+Habilidade — Troca de Pele: remove controles, fica inalvejável brevemente e fortalece os próximos ataques com veneno.
+1★: assassina esguia, lâminas curvas, tranças longas e padrões verdes pintados ao longo dos braços.
+2★: pupilas tornam-se verticais, pele ganha pequenos padrões de escamas e seus movimentos ficam quase sem articulação aparente.
+3★: deixa constantemente uma imagem residual semelhante a uma pele abandonada; braços ficam alongados e uma cauda espiritual acompanha seus giros.
+5. Kiko, Mão-Ligeira
+Traits: Copa • Trapaceiro • Espírito do Macaco
+Tipo: Ranged 2
+Status: HP 600/1080/1945 • AD 48/86/156 • ARM 25 • MR 25 • AS 0,75 • Mana 30/80 • Alcance 2
+Habilidade — Roubo Travesso: salta sobre um inimigo, rouba parte de AD/AP e retorna.
+1★: adolescente acrobata com bastão curto, cabelo volumoso e dezenas de pequenos bolsos.
+2★: braços parecem ligeiramente mais longos e uma cauda espectral ajuda seus saltos.
+3★: três cópias espirituais imitam seus movimentos, mãos ficam parcialmente simiescas e sua cauda de energia passa a interagir fisicamente com inimigos.
+6. Muru, Voz da Chuva
+Traits: Rio • Místico
+Tipo: Ranged
+Status: HP 540/970/1750 • AD 40/72/130 • ARM 20 • MR 35 • AS 0,65 • Mana 40/90 • Alcance 4
+Habilidade — Chuva Curandeira: cria chuva que cura aliados e causa dano mágico a inimigos.
+1★: xamã corpulento com grandes contas de madeira, folhas largas sobre os ombros e bastão cheio de recipientes de água.
+2★: pele fica úmida e brilhante, garganta expande ao cantar e pequenos cogumelos surgem em seus acessórios.
+3★: olhos tornam-se enormes e luminosos, mãos desenvolvem membranas e uma criatura anfíbia espiritual colossal canta atrás dele.
+7. Taka, Hiena Risonha
+Traits: Presas • Brigão • Necrófago
+Tipo: Melee
+Status: HP 680/1225/2205 • AD 58/104/188 • ARM 35 • MR 25 • AS 0,70 • Mana 0/60 • Alcance 1
+Habilidade — Riso da Carcaça: causa mais dano contra inimigos feridos e recupera vida ao executar.
+1★: guerreiro magro, postura curvada, sorriso largo, cabelo irregular e duas pequenas lâminas serrilhadas.
+2★: mandíbula ganha marcas negras, ombros ficam mais altos e risadas geram ecos animais.
+3★: sorriso se transforma momentaneamente numa mandíbula espiritual gigantesca de hiena sempre que ataca uma presa enfraquecida.
+8. Ena, Olho do Crepúsculo
+Traits: Noturno • Caçador • Espírito da Coruja
+Tipo: Ranged
+Status: HP 560/1010/1815 • AD 50/90/162 • ARM 20 • MR 30 • AS 0,75 • Mana 20/70 • Alcance 4
+Habilidade — Olhar Noturno: marca o inimigo mais distante e fortalece ataques contra ele.
+1★: arqueira jovem usando máscara circular que amplia visualmente os olhos.
+2★: penas espirituais aparecem nos antebraços, máscara ganha dois grandes discos luminosos.
+3★: enormes asas translúcidas se abrem ao atacar e múltiplos olhos espirituais surgem ao redor da cabeça.
+9. Paku, Casco do Lodo
+Traits: Rio • Guardião
+Tipo: Melee
+Status: HP 760/1370/2460 • AD 45/81/146 • ARM 45 • MR 40 • AS 0,55 • Mana 30/90 • Alcance 1
+Habilidade — Casco Cerrado: reduz fortemente dano recebido e depois explode energia ao redor.
+1★: guerreiro baixo usando enorme escudo circular de madeira, pedra e musgo.
+2★: escudo passa a envolver ombros e costas como uma carapaça articulada.
+3★: ao defender, placas espirituais formam um casco completo ao redor do corpo; pequenas plantas surgem sobre ele.
+10. Zirri, Lâmina-Folha
+Traits: Enxame • Espreitador
+Tipo: Melee
+Status: HP 540/970/1750 • AD 62/112/201 • ARM 25 • MR 20 • AS 0,85 • Mana 0/50 • Alcance 1
+Habilidade — Três Cortes: desfere três golpes; o último provoca sangramento.
+1★: guerreira extremamente magra com duas lâminas longas presas aos antebraços.
+2★: cotovelos e antebraços ganham placas verdes de quitina espiritual.
+3★: braços transformam-se parcialmente em lâminas serrilhadas, enquanto grandes asas semelhantes a folhas aparecem durante ataques críticos.
+11. Ayo, Portador do Primeiro Totem
+Traits: Totêmico • Xamã
+Tipo: Ranged
+Status: HP 580/1045/1880 • AD 43/77/139 • ARM 25 • MR 35 • AS 0,65 • Mana 40/100 • Alcance 4
+Habilidade — Totem da Brisa: finca um Totem que concede AS e Mana.
+1★: jovem xamã carregando um pequeno Totem de madeira amarrado às costas.
+2★: o Totem flutua e inscrições de vento percorrem seus braços.
+3★: Totem torna-se quase do tamanho do personagem e manifesta uma enorme criatura alada abstrata sobre Ayo.
+12. Kalu, Chifre Veloz
+Traits: Manada • Caçador
+Tipo: Ranged
+Status: HP 620/1115/2010 • AD 54/97/175 • ARM 30 • MR 25 • AS 0,80 • Mana 0/60 • Alcance 3
+Habilidade — Dardo de Chifre: lança projétil que atravessa vários inimigos.
+1★: caçador alto e muito veloz, usando duas lanças leves e adornos curvos sobre a cabeça.
+2★: pernas tornam-se mais musculosas e chifres espirituais aparecem sobre a testa.
+3★: pernas assumem forma parcialmente ungulada, chifres enormes de energia surgem e seus deslocamentos deixam múltiplas imagens residuais.
+13. Viri, Asa de Fruta
+Traits: Noturno • Místico
+Tipo: Ranged
+Status: HP 500/900/1620 • AD 38/68/123 • ARM 20 • MR 40 • AS 0,70 • Mana 30/80 • Alcance 4
+Habilidade — Eco Noturno: emite cone sonoro que causa dano e reduz AS.
+1★: jovem curandeira noturna com tecido escuro formando grandes mangas.
+2★: orelhas tornam-se discretamente alongadas e as mangas funcionam como membranas de energia.
+3★: abre enormes asas espirituais de morcego e ondas sonoras visíveis percorrem todo o corpo.
+Custo 2
+14. Jara, Puma da Folhagem
+Traits: Noturno • Espreitador
+Tipo: Melee
+Status: HP 760/1370/2460 • AD 66/119/214 • ARM 35 • MR 30 • AS 0,80 • Mana 0/60 • Alcance 1
+Habilidade — Entre as Folhas: desaparece e ataca um inimigo isolado.
+1★: caçadora de cabelos curtos, duas facas e pintura verde-escura cobrindo metade do rosto.
+2★: mãos ganham garras espirituais e seus olhos refletem luz como os de um felino.
+3★: postura fica quase quadrúpede durante movimentos; braços, pernas e mandíbula assumem características de puma ao entrar em furtividade.
+15. Grom, Punho Jovem
+Traits: Copa • Guardião • Espírito do Gorila
+Tipo: Melee
+Status: HP 900/1620/2915 • AD 58/104/188 • ARM 45 • MR 35 • AS 0,65 • Mana 30/90 • Alcance 1
+Habilidade — Peito de Guerra: provoca inimigos e ganha grande escudo.
+1★: jovem enorme lutando de mãos nuas, antebraços protegidos por madeira grossa.
+2★: braços e costas crescem, cabelo forma uma faixa prateada e punhos ficam cobertos de energia.
+3★: assume aparência quase híbrida de grande símio, com braços enormes tocando o chão e silhueta espiritual duplicando seu tamanho.
+16. Ilya, Garra do Céu
+Traits: Copa • Caçador • Espírito da Águia
+Tipo: Ranged
+Status: HP 680/1225/2205 • AD 68/122/220 • ARM 25 • MR 30 • AS 0,80 • Mana 0/70 • Alcance 4
+Habilidade — Mergulho Celeste: sobe e mergulha sobre o inimigo com menor armadura.
+1★: lanceira ágil com capa curta de penas estilizadas.
+2★: olhos dourados e penas espirituais surgem nos braços.
+3★: braços se transformam parcialmente em asas durante o salto e pés desenvolvem garras de energia.
+17. Nask, Boca do Delta
+Traits: Rio • Escamas • Guardião • Espírito do Crocodilo
+Tipo: Melee
+Status: HP 880/1585/2850 • AD 62/112/201 • ARM 50 • MR 40 • AS 0,60 • Mana 20/80 • Alcance 1
+Habilidade — Giro da Morte: agarra o alvo, causa dano e recupera vida.
+1★: guerreiro de rio largo e musculoso, machado pesado e placas verdes nos ombros.
+2★: pele ganha textura escamosa, dentes ficam maiores e olhos amarelados.
+3★: mandíbula, costas e cauda tornam-se parcialmente crocodilianas durante combate corpo a corpo.
+18. Rava, Xamã das Penas Negras
+Traits: Totêmico • Xamã • Espírito do Corvo
+Tipo: Ranged
+Status: HP 700/1260/2270 • AD 48/86/156 • ARM 25 • MR 40 • AS 0,65 • Mana 40/100 • Alcance 4
+Habilidade — Presságio: invoca corvos; mortes posteriores geram Mana.
+1★: xamã de manto negro, cabelo longo e cajado fino.
+2★: várias penas flutuam permanentemente e olhos escurecem completamente.
+3★: corpo se desfaz parcialmente em corvos sempre que se move; enorme par de asas espectrais aparece ao conjurar.
+19. Tembu, Muralha de Chifres
+Traits: Manada • Guardião
+Tipo: Melee
+Status: HP 950/1710/3080 • AD 55/99/178 • ARM 50 • MR 35 • AS 0,55 • Mana 40/100 • Alcance 1
+Habilidade — Linha Inquebrável: aumenta resistência de aliados adjacentes e empurra inimigos.
+1★: soldado extremamente largo carregando escudo horizontal e dois adornos curvos no capacete.
+2★: pescoço e ombros engrossam, chifres espirituais crescem sobre a cabeça.
+3★: uma enorme cabeça espectral de búfalo envolve tronco e escudo, formando uma muralha viva.
+20. Zakka, Cauda Rubra
+Traits: Enxame • Espreitador
+Tipo: Melee
+Status: HP 720/1295/2335 • AD 72/130/233 • ARM 30 • MR 25 • AS 0,75 • Mana 0/60 • Alcance 1
+Habilidade — Ferrão Carmesim: golpeia, atordoa e aplica veneno.
+1★: duelista de pele pintada de vermelho e arma curva presa ao antebraço.
+2★: placas de quitina aparecem nos ombros e uma cauda espiritual curta surge.
+3★: longa cauda de escorpião espiritual cresce das costas e ataca independentemente junto de Zakka.
+21. Omi, Risonho das Águas
+Traits: Rio • Trapaceiro
+Tipo: Ranged
+Status: HP 740/1330/2400 • AD 50/90/162 • ARM 30 • MR 35 • AS 0,70 • Mana 30/90 • Alcance 3
+Habilidade — Troca de Correnteza: troca de posição com um aliado ferido e protege ambos.
+1★: guerreiro pequeno e extremamente ágil, usando funda e pedras polidas.
+2★: cabelos ficam permanentemente molhados e água começa a correr ao redor de seus pés.
+3★: mãos e pés ganham membranas espirituais e Omi desliza pelo campo sobre uma lontra de água translúcida.
+22. Suri, Coral de Sangue
+Traits: Escamas • Xamã • Espírito da Serpente
+Tipo: Ranged
+Status: HP 700/1260/2270 • AD 46/83/149 • ARM 25 • MR 35 • AS 0,70 • Mana 30/80 • Alcance 3
+Habilidade — Veneno Saltante: veneno ricocheteia entre inimigos e reduz cura.
+1★: xamã de roupas vermelhas, pinturas em anéis e bastão curvo.
+2★: pequenas escamas vermelhas aparecem no rosto e pescoço.
+3★: parte inferior do corpo torna-se uma longa cauda espiritual enquanto várias serpentes de energia se enrolam em seus braços.
+23. Kesh, Leopardo Nebuloso
+Traits: Copa • Espreitador
+Tipo: Melee
+Status: HP 720/1295/2335 • AD 74/133/240 • ARM 30 • MR 25 • AS 0,85 • Mana 0/60 • Alcance 1
+Habilidade — Salto entre Galhos: salta grandes distâncias e realiza dois ataques.
+1★: assassino esguio com lâminas nos pés e mãos.
+2★: manchas escuras aparecem sobre braços e costas; olhos tornam-se felinos.
+3★: braços e pernas ficam parcialmente felinos e longos, enquanto galhos espirituais surgem sob seus pés a cada salto.
+24. Brak, Casco de Quitina
+Traits: Enxame • Guardião
+Tipo: Melee
+Status: HP 920/1655/2980 • AD 55/99/178 • ARM 55 • MR 45 • AS 0,55 • Mana 30/90 • Alcance 1
+Habilidade — Carapaça de Guerra: cria escudo que explode quando destruído.
+1★: guerreiro pesado usando armadura de placas negras sobrepostas.
+2★: placas começam a crescer diretamente sobre braços e costas.
+3★: enormes placas espirituais formam uma carapaça completa e um grande chifre frontal aparece durante investidas.
+25. Sena, Guardiã da Gazela
+Traits: Manada • Místico • Espírito do Cervo
+Tipo: Ranged
+Status: HP 680/1225/2205 • AD 45/81/146 • ARM 25 • MR 40 • AS 0,70 • Mana 40/100 • Alcance 4
+Habilidade — Passos da Primavera: cura aliados e aumenta AS.
+1★: curandeira alta e leve, tecidos claros e pequenas flores trançadas no cabelo.
+2★: pequenos chifres espirituais aparecem e plantas brotam após seus passos.
+3★: grandes galhadas luminosas crescem sobre a cabeça, pernas ficam parcialmente cervídeas e uma floresta efêmera nasce durante a habilidade.
+26. Uru, Chacal do Osso
+Traits: Presas • Trapaceiro • Necrófago
+Tipo: Melee
+Status: HP 760/1370/2460 • AD 64/115/207 • ARM 35 • MR 25 • AS 0,75 • Mana 0/70 • Alcance 1
+Habilidade — Rouba-Ossos: causa dano e rouba ARM/MR.
+1★: saqueador rápido com máscara alongada e duas pequenas lâminas.
+2★: máscara se funde parcialmente ao rosto e unhas viram garras.
+3★: forma uma cabeça espiritual de chacal sobre a própria cabeça e ossos etéreos orbitam o corpo como troféus.
+Custo 3
+27. Amaru, Jaguar da Lua
+Traits: Noturno • Presas • Espreitador • Espírito do Jaguar
+Tipo: Melee
+Status: HP 850/1530/2755 • AD 78/140/253 • ARM 35 • MR 30 • AS 0,85 • Mana 0/70 • Alcance 1
+Habilidade — Forma Lunar: transforma-se por 8s, ganhando AS e saltando através dos inimigos.
+1★: guerreira de cabelos negros, duas lâminas curvas e pintura prateada em manchas.
+2★: olhos tornam-se prateados, garras aparecem e manchas começam a emitir luz.
+3★: mesmo fora da habilidade apresenta uma forma humano-jaguar elegante; ao conjurar, transforma-se quase completamente em uma fera bípede lunar.
+28. Duma, Matriarca do Marfim
+Traits: Manada • Guardião • Espírito do Elefante
+Tipo: Melee
+Status: HP 1100/1980/3565 • AD 62/112/201 • ARM 55 • MR 45 • AS 0,55 • Mana 50/120 • Alcance 1
+Habilidade — Chamado da Matriarca: protege aliados e empurra inimigos.
+1★: líder alta e robusta carregando um enorme bastão e grandes adornos claros nos ombros.
+2★: braços engrossam e pequenas presas espirituais surgem ao lado do rosto.
+3★: pele assume textura espessa, orelhas espirituais gigantes aparecem e uma cabeça ancestral de elefante cobre sua silhueta.
+29. Roko, Oráculo da Copa
+Traits: Copa • Xamã • Espírito do Macaco
+Tipo: Ranged
+Status: HP 850/1530/2755 • AD 56/101/181 • ARM 35 • MR 45 • AS 0,65 • Mana 50/110 • Alcance 3
+Habilidade — Eco da Última Palavra: repete uma versão da última habilidade aliada.
+1★: ancião alto de braços longos, cabelo avermelhado e cajado retorcido.
+2★: braços ficam ainda mais longos, mãos maiores e uma cauda espiritual aparece.
+3★: postura e proporções lembram um grande primata ancestral, enquanto três duplicatas espirituais repetem suas conjurações.
+30. Khepri, Escaravelho Solar
+Traits: Enxame • Invocador
+Tipo: Ranged
+Status: HP 820/1475/2655 • AD 50/90/162 • ARM 45 • MR 45 • AS 0,60 • Mana 40/100 • Alcance 3
+Habilidade — Ninhada Solar: invoca escaravelhos que bloqueiam golpes e explodem.
+1★: sacerdote de torso coberto por placas douradas arredondadas.
+2★: placas criam uma carapaça parcial; dois pequenos chifres aparecem na testa.
+3★: costas abrem-se em asas luminosas e um enorme escaravelho solar espectral paira sobre ele.
+31. Vesh, Rei Cobra
+Traits: Escamas • Xamã • Espírito da Serpente
+Tipo: Ranged
+Status: HP 820/1475/2655 • AD 52/94/168 • ARM 30 • MR 45 • AS 0,70 • Mana 30/90 • Alcance 3
+Habilidade — Veneno do Rei: lança veneno em linha; alvos muito envenenados são paralisados.
+1★: sacerdote alto com grande gola semicircular e cajado em espiral.
+2★: gola se abre como um capuz, olhos ficam dourados e língua torna-se bifurcada.
+3★: pescoço se alonga durante casts e várias cabeças de cobra espirituais surgem atrás de sua própria cabeça.
+32. Toru, Senhor do Remanso
+Traits: Rio • Guardião
+Tipo: Melee
+Status: HP 1150/2070/3725 • AD 66/119/214 • ARM 55 • MR 45 • AS 0,55 • Mana 40/110 • Alcance 1
+Habilidade — Remanso Violento: cria uma área de água onde regenera rapidamente.
+1★: guerreiro gigantesco e pesado, quase sempre coberto de lama e carregando um martelo curto.
+2★: corpo ganha enorme volume, nariz fica largo e presas espirituais surgem na mandíbula.
+3★: assume aspecto parcialmente hipopótamo, com mandíbula colossal e pele de água e lama endurecida.
+33. Asha, Corvo da Cinza
+Traits: Ancestral • Caçador • Espírito do Corvo
+Tipo: Ranged
+Status: HP 780/1405/2525 • AD 70/126/227 • ARM 25 • MR 40 • AS 0,80 • Mana 20/80 • Alcance 4
+Habilidade — Penas dos Mortos: mortes geram penas; Asha dispara todas ao conjurar.
+1★: arqueira de cabelos cinza, roupa negra e flechas semelhantes a penas.
+2★: cabelos tornam-se parcialmente penas e sombra se movimenta de forma independente.
+3★: braços podem abrir como asas durante os tiros e dezenas de corvos ancestrais orbitam seu corpo.
+34. Thari, Chifre de Guerra
+Traits: Manada • Brigão
+Tipo: Melee
+Status: HP 1050/1890/3400 • AD 74/133/240 • ARM 50 • MR 35 • AS 0,60 • Mana 0/80 • Alcance 1
+Habilidade — Rompe-Linhas: investe através da formação inimiga.
+1★: guerreiro pesado usando enorme chifre frontal em seu capacete.
+2★: pele engrossa sobre ombros, pernas ficam mais maciças e o chifre aumenta.
+3★: durante movimento assume uma forma humanoide-rinoceronte completa da cintura para cima.
+35. Mako, Arraia de Água Negra
+Traits: Rio • Místico
+Tipo: Ranged
+Status: HP 800/1440/2590 • AD 48/86/156 • ARM 30 • MR 50 • AS 0,65 • Mana 40/100 • Alcance 4
+Habilidade — Véu de Água Negra: cria região que protege aliados e danifica inimigos.
+1★: sacerdotisa de rio com manto muito largo e achatado.
+2★: manto começa a flutuar como se estivesse submerso e duas extensões de água surgem nos braços.
+3★: corpo desliza levemente acima do chão e o manto espiritual assume a forma inteira de uma gigantesca arraia.
+36. Sava, Tigresa Dourada
+Traits: Presas • Espreitador
+Tipo: Melee
+Status: HP 860/1550/2785 • AD 82/148/266 • ARM 35 • MR 30 • AS 0,80 • Mana 0/70 • Alcance 1
+Habilidade — Frenesi Dourado: transforma-se, ganhando sustain e ataques em cone.
+1★: guerreira musculosa com duas manoplas e linhas douradas pintadas no corpo.
+2★: dentes, garras e olhos tornam-se felinos; cabelo cresce como pequena juba.
+3★: fora do cast já possui traços híbridos; durante Frenesi transforma-se numa tigresa humanoide dourada quase completa.
+37. Nilo, Quebra-Cupins
+Traits: Copa • Guardião
+Tipo: Melee
+Status: HP 1000/1800/3240 • AD 68/122/220 • ARM 50 • MR 40 • AS 0,60 • Mana 30/100 • Alcance 1
+Habilidade — Língua de Guerra: atinge inimigos em linha e puxa o primeiro.
+1★: guerreiro alto com antebraços enormes e uma arma flexível enrolada na cintura.
+2★: mãos tornam-se grandes garras e rosto ganha linhas alongadas.
+3★: focinho espiritual se sobrepõe ao rosto e sua língua energética pode alcançar vários metros.
+38. Yara, Voz da Lua Branca
+Traits: Totêmico • Místico • Espírito da Coruja
+Tipo: Ranged
+Status: HP 760/1370/2460 • AD 45/81/146 • ARM 30 • MR 55 • AS 0,65 • Mana 50/120 • Alcance 4
+Habilidade — Ritual da Lua: cria escudos e resistência mágica para aliados.
+1★: sacerdotisa com máscara branca lisa e cajado lunar.
+2★: máscara ganha grandes olhos luminosos e penas aparecem no manto.
+3★: máscara funde-se ao rosto, braços ganham asas brancas translúcidas e uma lua enorme acompanha seu cast.
+Custo 4
+39. Fenra, Matriarca da Matilha
+Traits: Presas • Caçador • Espírito do Lobo
+Tipo: Melee
+Status: HP 950/1710/3080 • AD 88/158/285 • ARM 40 • MR 35 • AS 0,85 • Mana 0/80 • Alcance 1
+Habilidade — A Grande Caçada: marca uma presa e inicia uma caçada coletiva.
+1★: líder veterana de cabelos grisalhos, lança longa e cicatrizes antigas.
+2★: orelhas e olhos tornam-se lupinos; garras espirituais recobrem suas mãos.
+3★: assume forma híbrida de loba durante combate, com pernas digitígradas e grande juba; uma matilha de espíritos corre ao seu redor.
+40. Koru, Costas de Prata
+Traits: Copa • Brigão • Espírito do Gorila
+Tipo: Melee
+Status: HP 1250/2250/4050 • AD 84/151/272 • ARM 55 • MR 45 • AS 0,60 • Mana 30/100 • Alcance 1
+Habilidade — Domínio: cria território onde fica muito mais poderoso.
+1★: guerreiro gigantesco, cabelos grisalhos e braços desproporcionalmente grandes.
+2★: costas, braços e mandíbula assumem traços de grande símio.
+3★: transforma-se num colosso humano-gorila com braços quase tocando o chão e aura territorial de raízes quebradas.
+41. Makara, Mandíbula Antiga
+Traits: Rio • Escamas • Brigão • Espírito do Crocodilo
+Tipo: Melee
+Status: HP 1200/2160/3890 • AD 90/162/292 • ARM 55 • MR 45 • AS 0,65 • Mana 20/90 • Alcance 1
+Habilidade — Giro Ancestral: imobiliza brutalmente um inimigo e causa dano percentual.
+1★: guerreiro ancestral enorme com arma dentada e pele marcada.
+2★: placas escamosas cobrem grande parte das costas, mandíbula fica mais larga.
+3★: da cintura para cima parece um híbrido crocodiliano colossal, com cauda espiritual extremamente pesada.
+42. Nyala, Pantera do Eclipse
+Traits: Noturno • Espreitador • Espírito do Jaguar
+Tipo: Melee
+Status: HP 900/1620/2915 • AD 96/173/311 • ARM 35 • MR 30 • AS 0,90 • Mana 0/70 • Alcance 1
+Habilidade — Passo do Eclipse: desaparece e realiza múltiplos golpes entre inimigos.
+1★: assassina completamente vestida em preto, apenas olhos violetas visíveis.
+2★: dedos desenvolvem garras, sombra assume silhueta felina independente.
+3★: corpo é parcialmente composto por escuridão; rosto, mãos e pernas tornam-se felinos durante cada teleporte.
+43. Vahara, Coração de Marfim
+Traits: Manada • Guardião • Espírito do Elefante
+Tipo: Melee
+Status: HP 1350/2430/4375 • AD 72/130/233 • ARM 60 • MR 55 • AS 0,55 • Mana 60/130 • Alcance 1
+Habilidade — Marcha das Memórias: avança protegendo aliados atrás dele.
+1★: chefe guerreiro idoso de enorme porte, usando grande escudo frontal.
+2★: pequenas presas espirituais surgem e sua pele ganha textura espessa.
+3★: cabeça e ombros são envolvidos por um elefante ancestral transparente, fazendo Vahara parecer um híbrido colossal.
+44. Zyri, Mãe das Mil Teias
+Traits: Enxame • Invocador • Espírito da Aranha
+Tipo: Ranged
+Status: HP 900/1620/2915 • AD 52/94/168 • ARM 35 • MR 50 • AS 0,65 • Mana 50/120 • Alcance 4
+Habilidade — Reino de Seda: cobre grandes áreas com teia e invoca manifestações.
+1★: matriarca de longos cabelos brancos e oito agulhas presas às costas.
+2★: quatro braços espirituais extras surgem e olhos adicionais aparecem no rosto.
+3★: oito membros aracnídeos completos emergem das costas, permitindo que ela flutue acima do chão enquanto mantém torso humano.
+45. Orun, Xamã das Mil Máscaras
+Traits: Totêmico • Xamã • Espírito do Macaco
+Tipo: Ranged
+Status: HP 850/1530/2755 • AD 58/104/188 • ARM 30 • MR 55 • AS 0,70 • Mana 60/130 • Alcance 4
+Habilidade — Três Máscaras: alterna entre Jaguar, Elefante e Coruja.
+1★: xamã jovem carregando três máscaras presas ao corpo.
+2★: máscaras flutuam independentemente e modificam seus olhos/postura quando ativadas.
+3★: dezenas de máscaras orbitam Orun; cada uma projeta partes animalescas diferentes sobre seu corpo sem que ele deixe de ser humano.
+46. Sakar, Serpente Emplumada
+Traits: Escamas • Copa • Xamã • Espírito da Serpente
+Tipo: Ranged
+Status: HP 900/1620/2915 • AD 60/108/194 • ARM 35 • MR 55 • AS 0,75 • Mana 30/100 • Alcance 4
+Habilidade — Muda Celeste: ganha voo temporário e dispara penas venenosas.
+1★: xamã extremamente alto com manto comprido de padrões coloridos.
+2★: escamas aparecem nos braços e grandes penas crescem sobre ombros.
+3★: pernas transformam-se em longa cauda serpentiforme espiritual enquanto enormes asas emplumadas surgem durante o voo.
+47. Aruun, Garra das Correntes
+Traits: Rio • Caçador • Espírito da Águia
+Tipo: Ranged
+Status: HP 880/1585/2850 • AD 92/166/298 • ARM 30 • MR 35 • AS 0,85 • Mana 0/80 • Alcance 4
+Habilidade — Predador da Corrente: mergulha sobre um alvo e fortalece ataques contra inimigos molhados.
+1★: caçador de rio usando arpão longo e capa de tecido azul.
+2★: penas azuis e douradas aparecem nos braços e olhos ficam extremamente claros.
+3★: ganha asas espirituais permanentes; pés viram garras de ave durante mergulho e água forma uma segunda águia ao seu redor.
+48. Boro, Rei dos Búfalos
+Traits: Manada • Brigão
+Tipo: Melee
+Status: HP 1300/2340/4210 • AD 80/144/259 • ARM 60 • MR 45 • AS 0,55 • Mana 40/110 • Alcance 1
+Habilidade — Estouro da Manada: invoca uma carga espiritual de búfalos.
+1★: chefe enorme com dois grandes chifres artificiais presos ao elmo.
+2★: chifres espirituais verdadeiros atravessam a aura ao redor de sua cabeça e pescoço engrossa.
+3★: parte superior torna-se um híbrido de búfalo, com pelagem espiritual sobre ombros e enormes cascos energéticos durante investidas.
+Custo 5 — Lendários
+49. Uruq, Urso do Primeiro Inverno
+Traits: Ancestral • Guardião • Espírito do Urso
+Tipo: Melee
+Status: HP 1500/2700/4860 • AD 100/180/324 • ARM 70 • MR 60 • AS 0,60 • Mana 40/120 • Alcance 1
+Habilidade — Primeiro Inverno: transforma-se em uma criatura colossal, ganha vida e resistências e congela o território.
+1★: ancião gigantesco de cabelo branco, barba longa e corpo marcado pelo frio; ainda completamente humano.
+2★: braços ficam cobertos por pelagem branca espiritual, mãos ganham garras e olhos tornam-se azuis.
+3★: forma base já parece um híbrido humano-urso. Ao conjurar, transforma-se em um gigantesco Avatar do Urso formado por gelo, carne e energia ancestral.
+50. Akh'ra, Jaguar Solar
+Traits: Presas • Ancestral • Espreitador • Espírito do Jaguar
+Tipo: Melee
+Status: HP 1100/1980/3565 • AD 110/198/356 • ARM 45 • MR 40 • AS 0,95 • Mana 0/80 • Alcance 1
+Habilidade — Devorar o Sol: realiza múltiplos saltos executores.
+1★: guerreiro de elite com pele pintada de dourado e duas enormes lâminas curvas.
+2★: manchas solares surgem no corpo, rosto assume traços felinos e garras crescem.
+3★: corpo alterna continuamente entre humano e jaguar dourado; durante a habilidade vira uma criatura bípede de luz solar quase inteiramente felina.
+51. Mahari, Memória do Rebanho
+Traits: Manada • Ancestral • Guardião • Espírito do Elefante
+Tipo: Melee
+Status: HP 1600/2880/5185 • AD 85/153/275 • ARM 75 • MR 70 • AS 0,55 • Mana 80/160 • Alcance 1
+Habilidade — Todos Caminham Conosco: invoca ecos de aliados mortos.
+1★: matriarca extremamente idosa com enorme bastão e pinturas brancas por todo o corpo.
+2★: orelhas espirituais e pequenas presas surgem enquanto diversas mãos ancestrais aparecem ao seu redor.
+3★: seu corpo torna-se translúcido e dentro dele é possível ver várias gerações de guerreiros e enormes elefantes espirituais caminhando.
+52. Veyra, A Coruja Sem Lua
+Traits: Noturno • Ancestral • Místico • Espírito da Coruja
+Tipo: Ranged
+Status: HP 1050/1890/3400 • AD 70/126/227 • ARM 40 • MR 70 • AS 0,75 • Mana 60/130 • Alcance 4
+Habilidade — Noite Absoluta: escurece o campo e pune conjurações inimigas.
+1★: oráculo humano vendado usando manto branco e preto.
+2★: dezenas de pequenos olhos aparecem sobre o manto e penas crescem nos braços.
+3★: rosto é substituído visualmente por uma máscara viva de coruja; quatro asas enormes de sombra cobrem grande parte do campo ao conjurar.
+53. Ssar'ka, Serpente da Renovação
+Traits: Escamas • Ancestral • Xamã • Espírito da Serpente
+Tipo: Ranged
+Status: HP 1150/2070/3725 • AD 76/137/246 • ARM 45 • MR 65 • AS 0,80 • Mana 50/120 • Alcance 3
+Habilidade — Pele Sem Fim: ao morrer, abandona sua pele e renasce numa forma mais poderosa.
+1★: xamã humana de pele clara marcada por padrões geométricos de escamas.
+2★: pernas ficam parcialmente serpentinas, pupilas verticais e cabelo se move como pequenas cobras de energia.
+3★: começa humanoide, mas ao morrer abandona literalmente essa aparência e renasce como uma grande forma humano-serpente ancestral.
+54. N'Goro, Primeiro Xamã
+Traits: Totêmico • Ancestral • Xamã
+Tipo: Ranged
+Status: HP 1200/2160/3890 • AD 72/130/233 • ARM 50 • MR 75 • AS 0,70 • Mana 70/150 • Alcance 4
+Habilidade — Conselho dos Primeiros Espíritos: manifesta Totens do Lobo, Urso e Águia simultaneamente.
+1★: ancião humano magro e aparentemente frágil com um único cajado simples.
+2★: três Totens flutuam ao redor e projeções de animais aparecem sobre braços e rosto conforme cada poder entra em ação.
+3★: N'Goro continua essencialmente humano — justamente para diferenciá-lo dos metamorfos — mas sua silhueta fica cercada por Lobo, Urso e Águia colossais, todos agindo simultaneamente.
+55. Karkun, Leviatã do Pântano
+Traits: Rio • Ancestral • Brigão • Espírito do Crocodilo
+Tipo: Melee
+Status: HP 1700/3060/5510 • AD 105/189/340 • ARM 75 • MR 60 • AS 0,60 • Mana 50/130 • Alcance 1
+Habilidade — O Pântano Tem Fome: submerge, atravessa o campo e emerge no maior grupo inimigo; pode devorar alvos muito feridos.
+1★: chefe colossal de pântano, quase dois metros e meio, carregando enorme arma de pedra e madeira.
+2★: costas cobertas por escamas, mandíbula ampliada, cauda espiritual e olhos completamente reptilianos.
+3★: aparência base já é um híbrido crocodiliano enorme. Quando conjura, braços tocam o chão, mandíbula cresce absurdamente e ele assume uma forma quadrúpede de Leviatã Primal, ainda mantendo traços reconhecíveis do guerreiro original.
+Regra visual que eu usaria daqui para frente
+Com essa mudança, eu definiria quatro níveis de animalidade, porque isso vai evitar que o elenco vire simplesmente “55 pessoas que viram furry no 3★”:
+Categoria	Transformação
+Manifestador	Continua humano; animal aparece externamente. Ex.: N'Goro, Rava, Yara.
+Marcado	Olhos, garras, escamas, penas etc., mas continua majoritariamente humano. Ex.: Ena, Kalu, Sena.
+Híbrido	Partes significativas do corpo mudam. Ex.: Fenra, Koru, Duma.
+Metamorfo	A habilidade permite assumir outra forma. Ex.: Amaru, Sava, Uruq, Akh'ra, Ssar'ka, Karkun.
+
+
+Eu deixaria apenas cerca de 8–12 dos 55 como Metamorfos verdadeiros. Assim, quando alguém realmente se transforma durante a batalha, isso continua sendo especial. Os demais expressam seu animal através de magia, postura, armas, sombras, Totens, membros espirituais ou mutações parciais.
+Essa versão também cria uma linguagem visual clara: olhando uma unidade, o jogador consegue distinguir qual é o povo, qual animal a influencia e até que ponto aquele indivíduo se entregou ao espírito primal.

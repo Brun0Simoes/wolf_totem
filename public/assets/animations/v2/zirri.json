@@ -1,0 +1,236 @@
+{
+  "characterId": 10,
+  "name": "Zirri",
+  "image": "/assets/animations/v2/zirri.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "bodyHeight": 291,
+  "anchorX": 186,
+  "anchorY": 408,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 336,
+      "height": 460
+    },
+    {
+      "x": 336,
+      "y": 0,
+      "width": 316,
+      "height": 460
+    },
+    {
+      "x": 652,
+      "y": 0,
+      "width": 316,
+      "height": 460
+    },
+    {
+      "x": 968,
+      "y": 0,
+      "width": 286,
+      "height": 460
+    },
+    {
+      "x": 0,
+      "y": 460,
+      "width": 336,
+      "height": 395
+    },
+    {
+      "x": 336,
+      "y": 460,
+      "width": 316,
+      "height": 395
+    },
+    {
+      "x": 652,
+      "y": 460,
+      "width": 316,
+      "height": 395
+    },
+    {
+      "x": 968,
+      "y": 460,
+      "width": 286,
+      "height": 395
+    },
+    {
+      "x": 0,
+      "y": 855,
+      "width": 336,
+      "height": 399
+    },
+    {
+      "x": 336,
+      "y": 855,
+      "width": 316,
+      "height": 399
+    },
+    {
+      "x": 652,
+      "y": 855,
+      "width": 316,
+      "height": 399
+    },
+    {
+      "x": 968,
+      "y": 855,
+      "width": 286,
+      "height": 399
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 186,
+      "y": 408
+    },
+    {
+      "x": 160,
+      "y": 406
+    },
+    {
+      "x": 146,
+      "y": 408
+    },
+    {
+      "x": 138,
+      "y": 407
+    },
+    {
+      "x": 201.5,
+      "y": 343
+    },
+    {
+      "x": 168.5,
+      "y": 339
+    },
+    {
+      "x": 169.5,
+      "y": 339
+    },
+    {
+      "x": 162,
+      "y": 343
+    },
+    {
+      "x": 174,
+      "y": 307
+    },
+    {
+      "x": 151,
+      "y": 304
+    },
+    {
+      "x": 154.5,
+      "y": 305
+    },
+    {
+      "x": 136.5,
+      "y": 305
+    }
+  ],
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Original 1-star identity retained. Twelve generated animation poses. Use explicit frameRects: padding and row heights are irregular, so equal automatic slicing would clip the art. Rectangles follow transparent corridors and foot anchors are local to each rectangle. Prototype awaiting in-engine playback review.",
+  "validation": {
+    "rgba": true,
+    "maxCellBorderAlpha": 1,
+    "alphaBounds": [
+      [
+        90,
+        117,
+        281,
+        408
+      ],
+      [
+        67,
+        117,
+        255,
+        406
+      ],
+      [
+        54,
+        117,
+        239,
+        408
+      ],
+      [
+        43,
+        117,
+        230,
+        407
+      ],
+      [
+        94,
+        52,
+        284,
+        343
+      ],
+      [
+        70,
+        51,
+        252,
+        339
+      ],
+      [
+        55,
+        52,
+        258,
+        339
+      ],
+      [
+        50,
+        52,
+        236,
+        343
+      ],
+      [
+        86,
+        54,
+        260,
+        307
+      ],
+      [
+        52,
+        59,
+        279,
+        304
+      ],
+      [
+        36,
+        61,
+        273,
+        305
+      ],
+      [
+        47,
+        52,
+        227,
+        305
+      ]
+    ],
+    "originalOutputUnmodified": true
+  }
+}
