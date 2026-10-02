@@ -5,6 +5,8 @@ import { COMPONENT_IDS, isComponent, itemById, MAX_ITEMS_PER_HERO, recipeFor, ty
 import { castAbility, SKILL_NOTES } from './skills';
 import { MEMORIES, memoryCost, spiritById, spiritsOfEra, type MemoryId, type SpiritId } from './spirits';
 import { countTraits, TRAIT_RULES, traitStatus } from './synergies';
+import { questById } from './quests';
+import { EVENT_TEXT, FIRST_EVENT_AT, nextEventDelay, OMEN_BONUS, OMEN_DURATION, RAID_PENALTY, raidStage, rollEvent, TRIBUTE, type VillageEvent } from './events';
 
 export { SKILL_NOTES, FINAL_STAGE };
 
@@ -36,11 +38,19 @@ export interface GameState {
   memories: Partial<Record<MemoryId, number>>;
   rebirths: number;
   settings: { speed: number; autoRepeat: boolean };
+  /** Claimed journal objectives (kept through rebirths) and the counters they read. */
+  quests: string[];
+  stats: { recruits: number; powers: number; victories: number };
+  /** Seconds of village time, offline included. */
+  clock: number;
+  event: VillageEvent | null;
+  nextEventAt: number;
+  omen: { resource: Resource; until: number } | null;
   paused: boolean;
 }
 export interface ActionResult { ok: boolean; message: string }
 export interface Synergy { name: string; count: number; threshold: number; thresholds: number[]; tier: number; active: boolean; description: string }
-export type SummonKind = 'spider' | 'crow' | 'beetle' | 'echo' | 'elephant';
+export type SummonKind = 'spider' | 'crow' | 'beetle' | 'echo' | 'elephant' | 'wolf';
 export type ModStat = 'attack' | 'attackSpeed' | 'armor' | 'magicResist' | 'lifesteal' | 'damageTaken' | 'cleave' | 'wetBonus';
 export interface Modifier { stat: ModStat; value: number; time: number; tag?: string }
 export interface CombatEntity {
@@ -109,10 +119,17 @@ export interface CombatEntity {
   attackCount: number;
   prevStun: number;
   lowHpShieldUsed: boolean;
+  /** Battle summary: damage dealt (summons credit their owner), damage taken, healing and shields given. */
+  dealt: number;
+  taken: number;
+  healed: number;
+  shielded: number;
+  /** Bosses unleash their mechanic once, below half life. */
+  phased: boolean;
 }
 export interface CombatEvent {
   id: number;
-  type: 'attack' | 'skill' | 'damage' | 'heal' | 'death' | 'shield' | 'summon' | 'revive' | 'power';
+  type: 'attack' | 'skill' | 'damage' | 'heal' | 'death' | 'shield' | 'summon' | 'revive' | 'power' | 'phase';
   sourceId: string;
   targetId?: string;
   amount?: number;
@@ -223,7 +240,8 @@ export function buildingMultiplier(state: GameState, building: BuildingId): numb
 
 export function getRates(state: GameState): Resources {
   const bonus = (1 + (state.villageLevel - 1) * 0.12) * (1 + 0.25 * memory(state, 'raizes'));
-  const spirit = (resource: Resource) => 1 + chosenSpirits(state).reduce((sum, entry) => sum + (entry.passive.production?.[resource] ?? 0), 0);
+  const omen = (resource: Resource) => state.omen && state.omen.resource === resource && state.clock < state.omen.until ? 1 + OMEN_BONUS : 1;
+  const spirit = (resource: Resource) => (1 + chosenSpirits(state).reduce((sum, entry) => sum + (entry.passive.production?.[resource] ?? 0), 0)) * omen(resource);
   return {
     wood: state.buildings.lumber * 1.5 * bonus * spirit('wood') * buildingMultiplier(state, 'lumber'),
     food: state.buildings.hunt * 1.2 * bonus * spirit('food') * buildingMultiplier(state, 'hunt'),
@@ -329,8 +347,29 @@ function initialState(): GameState {
     inventory: [], lootSeed: 11, forgeProgress: 0,
     spirits: [], wonder: 0, embers: 0, memories: {}, rebirths: 0,
     settings: { speed: 1, autoRepeat: false },
+    quests: [], stats: { recruits: 0, powers: 0, victories: 0 }, clock: 0,
+    event: null, nextEventAt: FIRST_EVENT_AT, omen: null,
     paused: false,
   };
+}
+
+function sanitizeEvent(value: unknown): VillageEvent | null {
+  const input = record(value);
+  if (!(typeof input.kind === 'string' && input.kind in EVENT_TEXT) || typeof input.expires !== 'number' || !Number.isFinite(input.expires)) return null;
+  const event: VillageEvent = { kind: input.kind as VillageEvent['kind'], expires: input.expires };
+  if (event.kind === 'merchant') {
+    const price = record(input.price);
+    if (typeof input.item !== 'string' || !itemById(input.item)) return null;
+    event.item = input.item;
+    event.price = Object.fromEntries(RESOURCE_KEYS.map(key => [key, finite(price[key], 0, 0, 1e9)])) as Resources;
+  }
+  if (event.kind === 'omen') { if (!RESOURCE_KEYS.includes(input.resource as Resource)) return null; event.resource = input.resource as Resource; }
+  if (event.kind === 'traveler') { if (!PLAYABLE_IDS.includes(input.characterId as number)) return null; event.characterId = input.characterId as number; }
+  return event;
+}
+function sanitizeOmen(value: unknown): GameState['omen'] {
+  const input = record(value);
+  return RESOURCE_KEYS.includes(input.resource as Resource) && typeof input.until === 'number' && Number.isFinite(input.until) ? { resource: input.resource as Resource, until: input.until } : null;
 }
 
 function sanitizeState(value: unknown, version: number): GameState {
@@ -340,6 +379,7 @@ function sanitizeState(value: unknown, version: number): GameState {
   const buildings = record(input.buildings);
   const settings = record(input.settings);
   const memories = record(input.memories);
+  const stats = record(input.stats);
   // Version 1 counted linear waves; each cleared wave becomes a cleared stage.
   const progress = version === 1 ? integer(input.wave, 1, 1, FINAL_STAGE + 1) - 1 : integer(input.progress, 0, 0, FINAL_STAGE);
   const state: GameState = {
@@ -361,7 +401,13 @@ function sanitizeState(value: unknown, version: number): GameState {
     memories: Object.fromEntries(MEMORIES.map(entry => [entry.id, integer(memories[entry.id], 0, 0, entry.max)])),
     settings: { speed: integer(settings.speed, 1, 1, 3), autoRepeat: settings.autoRepeat === true },
     inventory: Array.isArray(input.inventory) ? input.inventory.filter(id => typeof id === 'string' && !!itemById(id)).slice(0, MAX_INVENTORY) as string[] : [],
+    quests: Array.isArray(input.quests) ? [...new Set(input.quests.filter(id => typeof id === 'string' && !!questById(id)))] as string[] : [],
+    stats: { recruits: integer(stats.recruits, 0, 0, 1e9), powers: integer(stats.powers, 0, 0, 1e9), victories: integer(stats.victories, 0, 0, 1e9) },
+    clock: finite(input.clock, 0, 0, 1e12),
+    event: sanitizeEvent(input.event),
+    omen: sanitizeOmen(input.omen),
   };
+  state.nextEventAt = finite(input.nextEventAt, state.clock + FIRST_EVENT_AT, 0, state.clock + 3600);
   state.endlessRecord = Math.max(state.endlessRecord, state.endlessBest);
   const spirits: SpiritId[] = [];
   if (Array.isArray(input.spirits)) for (const [index, id] of input.spirits.entries()) {
@@ -459,6 +505,8 @@ export class Game {
 
   /** Village production and the forge; shared by the live clock and offline time. */
   private produce(seconds: number): void {
+    this.state.clock += seconds;
+    this.updateEvents();
     const rates = getRates(this.state);
     this.addResources(Object.fromEntries(RESOURCE_KEYS.map(key => [key, rates[key] * seconds])) as Resources);
     const rate = forgeRate(this.state);
@@ -466,6 +514,60 @@ export class Game {
     this.state.forgeProgress += rate * seconds;
     while (this.state.forgeProgress >= 1 && this.addItem(this.randomComponent())) this.state.forgeProgress -= 1;
     this.state.forgeProgress = Math.min(1, this.state.forgeProgress);
+  }
+
+  /** Unanswered raiders steal provisions; a quiet village sees a new event every few minutes from the second era. */
+  private updateEvents(): void {
+    const s = this.state;
+    if (s.omen && s.clock >= s.omen.until) s.omen = null;
+    if (s.event && s.clock > s.event.expires) {
+      if (s.event.kind === 'raid') { s.resources.wood *= 1 - RAID_PENALTY; s.resources.food *= 1 - RAID_PENALTY; }
+      s.event = null;
+    }
+    if (!s.event && s.villageLevel >= 2 && s.clock >= s.nextEventAt) {
+      const rolled = rollEvent(s.lootSeed, s.clock, s.villageLevel, s.heroes.length >= MAX_ROSTER_SIZE);
+      const delay = nextEventDelay(rolled.seed);
+      s.event = rolled.event; s.lootSeed = delay.seed; s.nextEventAt = s.clock + delay.delay;
+    }
+  }
+
+  /** Answers the current village event. Accepting a raid starts the defence battle. */
+  answerEvent(accept: boolean): ActionResult {
+    const s = this.state, event = s.event;
+    if (!event) return fail('Nenhum acontecimento aguarda a tribo.');
+    if (this.fighting()) return fail('Conclua a expedição atual primeiro.');
+    const text = EVENT_TEXT[event.kind];
+    if (event.kind === 'raid') {
+      if (accept) {
+        if (this.battle) return fail('Feche a expedição anterior antes de defender a aldeia.');
+        const raid = raidStage(s.lootSeed, s.progress, s.villageLevel);
+        s.lootSeed = raid.seed;
+        const result = this.beginBattle(raid.stage, raid.level, 0);
+        if (result.ok) s.event = null;
+        return result;
+      }
+      s.resources.food *= 1 - TRIBUTE; s.resources.spirit *= 1 - TRIBUTE;
+      s.event = null;
+      return success('O tributo foi pago. Os saqueadores partem.');
+    }
+    s.event = null;
+    if (!accept) return success(`${text.title}: a tribo seguiu seu caminho.`);
+    switch (event.kind) {
+      case 'merchant':
+        if (!event.price || !event.item) return fail('Oferta inválida.');
+        if (s.inventory.length >= MAX_INVENTORY) { s.event = event; return fail('A bolsa está cheia.'); }
+        if (!this.spend(event.price)) { s.event = event; return fail('Recursos insuficientes para a troca.'); }
+        this.addItem(event.item);
+        return success(`${itemById(event.item)!.name} foi para a bolsa.`);
+      case 'omen':
+        s.omen = { resource: event.resource!, until: s.clock + OMEN_DURATION };
+        return success('O presságio se cumpre: a produção cresce por 3 minutos.');
+      case 'traveler':
+        if (s.heroes.length >= MAX_ROSTER_SIZE) { s.event = event; return fail('A reserva está cheia.'); }
+        s.heroes.push({ uid: this.newUid(), characterId: event.characterId!, stars: 1, slot: null, items: [], work: null });
+        return success(`${characterById(event.characterId!).name} juntou-se à tribo.`);
+    }
+    return fail('Acontecimento desconhecido.');
   }
 
   /** Production for time spent away from the page while it stays open (the battle clock does not run). */
@@ -536,6 +638,7 @@ export class Game {
     const cost = recruitCost(characterId, this.state);
     if (!this.spend(cost)) return fail(`O recrutamento custa ${cost.spirit} de espírito e ${cost.food} de alimento.`);
     this.state.heroes.push({ uid: this.newUid(), characterId, stars: 1, slot: null, items: [], work: null });
+    this.state.stats.recruits++;
     let combined = false;
     for (const stars of [1, 2]) {
       let matching = this.state.heroes.filter(hero => hero.characterId === characterId && hero.stars === stars);
@@ -666,13 +769,26 @@ export class Game {
     if (this.fighting()) return fail('Conclua a expedição antes do ritual.');
     if (this.state.wonder < WONDER_STAGES || this.state.progress < FINAL_STAGE) return fail('O renascimento exige o Grande Totem completo e a vitória no Primeiro Inverno.');
     const gained = embersFor(this.state);
-    const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, shopSeed: this.state.shopSeed, lootSeed: this.state.lootSeed };
+    const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, shopSeed: this.state.shopSeed, lootSeed: this.state.lootSeed, quests: [...this.state.quests], stats: { ...this.state.stats }, clock: this.state.clock };
     this.state = { ...initialState(), ...keep };
     const heritage = 150 * memory(this.state, 'heranca');
     for (const key of RESOURCE_KEYS) this.state.resources[key] += heritage;
     for (let i = 0; i < memory(this.state, 'forja'); i++) this.addItem(this.randomComponent());
     this.battle = null; this.events = [];
     return success(`A tribo renasce com ${gained} brasas ancestrais.`);
+  }
+
+  claimQuest(id: string): ActionResult {
+    const quest = questById(id);
+    if (!quest) return fail('Objetivo desconhecido.');
+    if (this.state.quests.includes(id)) return fail('Esta recompensa já foi recebida.');
+    if (!quest.done(this.state)) return fail('Este objetivo ainda não foi cumprido.');
+    this.state.quests.push(id);
+    const reward = quest.reward;
+    this.addResources({ ...emptyResources(), ...reward.resources });
+    for (let i = 0; i < (reward.components ?? 0); i++) this.addItem(this.randomComponent());
+    this.state.embers += reward.embers ?? 0;
+    return success(`Objetivo cumprido: ${quest.title}.`);
   }
 
   buyMemory(id: MemoryId): ActionResult {
@@ -703,6 +819,7 @@ export class Game {
       reborn: false, shieldBurst: 0, deathBurst: 0, lifetime: 0,
       spellPower: 1, manaRegen: 0, regen: 0, manaRefund: 0, manaDrain: 0, scavenger: false, bonds: [], mods: [],
       items: [], perks: {}, attackCount: 0, prevStun: 0, lowHpShieldUsed: false,
+      dealt: 0, taken: 0, healed: 0, shielded: 0, phased: false,
     };
   }
 
@@ -801,6 +918,13 @@ export class Game {
     if (this.state.paused) return fail('Retome o tempo antes de iniciar a expedição.');
     if (this.battle) return fail('Conclua ou feche a expedição atual.');
     if (!stageUnlocked(this.state, this.state.selectedStage)) return fail('Escolha uma expedição já alcançada no mapa.');
+    const { stage, level, depth } = this.nextStage();
+    return this.beginBattle(stage, level, depth);
+  }
+
+  /** Shared by expeditions, the endless hunt and village raids. */
+  private beginBattle(stage: Stage, level: number, depth: number): ActionResult {
+    if (this.state.paused) return fail('Retome o tempo antes do combate.');
     const party = this.state.heroes.filter(hero => hero.slot !== null);
     if (!party.length) return fail('Posicione pelo menos um herói no campo.');
     if (party.length > capacity(this.state)) return fail('Há heróis demais na formação.');
@@ -813,13 +937,13 @@ export class Game {
       if (!ally.perks.teamShield) continue;
       for (const other of allies.filter(other => distance(other, ally) <= 1.1)) other.shield += ally.maxHp * ally.perks.teamShield;
     }
-    const { stage, level, depth } = this.nextStage();
     const enemySlots = [1, 2, 5, 6, 0, 3, 8, 11];
     const enemies = stage.units.map((unit, index) => this.entity(unit.id, unit.stars, 'enemy', index, enemySlots[index], level, undefined, !!unit.boss, stage.region));
     this.events = [];
     this.summonCounter = 0;
     const firstClear = stage.id > 0 && stage.id > this.state.progress;
     this.battle = { entities: [...allies, ...enemies], zones: [], time: 0, stage: stage.id, depth, region: stage.id ? stage.region : 6, name: stage.name, status: 'fighting', reward: null, loot: [], firstClear, prey: {}, lastCast: {}, powersUsed: [] };
+    if (stage.id < 0) this.battle.region = stage.region;
     return success(`${stage.name}: a caçada começou.`);
   }
 
@@ -839,6 +963,7 @@ export class Game {
     if (!spirit || !this.state.spirits.includes(id)) return fail('Este espírito ainda não protege a tribo.');
     if (battle.powersUsed.includes(id)) return fail(`${spirit.power.name} já foi usado nesta expedição.`);
     battle.powersUsed.push(id);
+    this.state.stats.powers++;
     const allies = this.living('ally').filter(entity => !entity.summon);
     const enemies = this.living('enemy');
     const caster = allies[0] ?? battle.entities.find(entity => entity.team === 'ally')!;
@@ -899,6 +1024,10 @@ export class Game {
   }
 
   private insideZone(entity: CombatEntity, zone: CombatZone): boolean { return distance(entity, zone) <= zone.radius; }
+  /** Summons and echoes credit their summoner in the battle summary. */
+  private creditOf(entity: CombatEntity): CombatEntity {
+    return entity.ownerId ? this.battle!.entities.find(other => other.id === entity.ownerId) ?? entity : entity;
+  }
 
   private damage(source: CombatEntity, target: CombatEntity, raw: number, magic = false, trueDamage = false): number {
     if (target.hp <= 0 || target.dodge > 0 || !(raw > 0)) return 0;
@@ -919,6 +1048,8 @@ export class Game {
     }
     const dealt = Math.min(target.hp, damage - absorbed);
     target.hp = Math.max(0, target.hp - dealt);
+    target.taken += dealt + absorbed;
+    if (source !== target) this.creditOf(source).dealt += dealt + absorbed;
     target.mana = Math.min(target.manaMax, target.mana + 5);
     this.emit('damage', source, target, Math.round(dealt));
     const lifesteal = source !== target ? modTotal(source, 'lifesteal') : 0;
@@ -927,8 +1058,61 @@ export class Game {
     if (target.hp > 0 && target.perks.lowHpShield && !target.lowHpShieldUsed && target.hp / target.maxHp < 0.4) {
       target.lowHpShieldUsed = true; this.giveShield(target, target, target.maxHp * target.perks.lowHpShield);
     }
+    if (target.boss && !target.phased && target.hp > 0 && target.hp <= target.maxHp * 0.5) this.bossPhase(target);
     if (target.hp <= 0) this.handleDeath(target, source);
     return dealt;
+  }
+
+  /** Each campaign boss answers half its life with its own mechanic; endless alphas grow furious. */
+  private bossPhase(boss: CombatEntity): void {
+    boss.phased = true;
+    const foes = this.opponents(boss), api = this.api(), power = effectiveAttack(boss) * boss.spellPower;
+    const announce = (name: string) => this.emit('phase', boss, boss, undefined, name);
+    const center = (list: CombatEntity[]) => [...list].sort((a, b) => list.filter(o => distance(o, b) <= 1.5).length - list.filter(o => distance(o, a) <= 1.5).length)[0];
+    switch (this.battle!.stage ? boss.characterId : 0) {
+      case 1:
+        announce('Uivo do Alfa');
+        for (let i = 0; i < 2; i++) this.summon(boss, 'wolf', { hp: boss.maxHp * 0.18, attack: boss.attack * 0.45, range: 1, lifetime: 20, attackSpeed: 0.9 });
+        for (const ally of this.living(boss.team)) addMod(ally, 'attackSpeed', 0.3, 8, 'uivo-alfa');
+        break;
+      case 17:
+        announce('Mergulho no Delta');
+        boss.stealth = 1.5; this.heal(boss, boss, boss.maxHp * 0.25);
+        api.addZone({ kind: 'water', team: boss.team, sourceId: boss.id, followId: boss.id, x: boss.x, y: boss.y, radius: 1.8, time: 8, ownerHeal: 0.03, slow: true, wet: true });
+        break;
+      case 29: {
+        announce('Coro dos Ecos');
+        const choir = this.living(boss.team).filter(ally => ally !== boss && !ally.summon).slice(0, 2);
+        for (const ally of choir) { const target = this.chooseTarget(boss); if (target) castAbility(api, ally.characterId, boss, target, power * 0.8); }
+        boss.mana = Math.min(boss.manaMax, boss.mana + 60);
+        break;
+      }
+      case 48: {
+        announce('Fúria da Manada');
+        addMod(boss, 'attackSpeed', 0.5, Infinity, 'furia-manada'); addMod(boss, 'attack', 0.3, Infinity, 'furia-manada-ataque');
+        const target = this.chooseTarget(boss);
+        if (target) castAbility(api, 48, boss, target, power);
+        break;
+      }
+      case 55: {
+        announce('Fome Abissal');
+        const focus = center(foes);
+        if (focus) { boss.x = focus.x; boss.y = focus.y - (boss.team === 'ally' ? -0.7 : 0.7); clampToBoard(boss); }
+        boss.transform = 3;
+        for (const foe of foes.filter(foe => focus && distance(foe, focus) <= 1.6)) { this.damage(boss, foe, foe.maxHp * 0.2, false, true); foe.stun = Math.max(foe.stun, 1); foe.wet = Math.max(foe.wet, 5); }
+        this.giveShield(boss, boss, boss.maxHp * 0.25);
+        break;
+      }
+      case 49:
+        announce('Nevasca Eterna');
+        api.addZone({ kind: 'frost', team: boss.team, sourceId: boss.id, x: 1.5, y: 2.5, radius: 4.5, time: 12, dps: power * 0.35, slow: true });
+        { const target = this.chooseTarget(boss); if (target) castAbility(api, 49, boss, target, power); }
+        break;
+      default:
+        announce('Fúria do Alfa');
+        addMod(boss, 'attackSpeed', 0.4, Infinity, 'furia-alfa'); addMod(boss, 'attack', 0.2, Infinity, 'furia-alfa-ataque');
+        this.giveShield(boss, boss, boss.maxHp * 0.2);
+    }
   }
 
   private handleDeath(target: CombatEntity, killer: CombatEntity): void {
@@ -965,12 +1149,13 @@ export class Game {
     const boost = source.team === 'ally' ? 1 + this.healBonus : 1;
     const healed = Math.min(amount * boost * (target.antiheal > 0 ? 0.5 : 1), target.maxHp - target.hp);
     target.hp += healed;
-    if (healed > 0) this.emit('heal', source, target, Math.round(healed));
+    if (healed > 0) { this.creditOf(source).healed += healed; this.emit('heal', source, target, Math.round(healed)); }
   }
   private giveShield(source: CombatEntity, target: CombatEntity, amount: number): void {
     if (target.hp <= 0 || !(amount > 0)) return;
     const value = amount * (source.team === 'ally' ? 1 + this.healBonus : 1);
     target.shield += value;
+    this.creditOf(source).shielded += value;
     this.emit('shield', source, target, Math.round(value));
   }
 
@@ -982,7 +1167,7 @@ export class Game {
     const boost = owner.team === 'ally' ? (1 + 0.4 * (this.traitTiers.get('Invocador') ?? 0)) * (1 + this.summonBonus) : 1;
     const index = this.summonCounter;
     entity.summon = kind; entity.ownerId = owner.id;
-    entity.name = kind === 'echo' ? `Eco de ${character.name}` : { spider: 'Cria de seda', crow: 'Corvo', beetle: 'Escaravelho', elephant: 'Espírito do marfim' }[kind];
+    entity.name = kind === 'echo' ? `Eco de ${character.name}` : { spider: 'Cria de seda', crow: 'Corvo', beetle: 'Escaravelho', elephant: 'Espírito do marfim', wolf: 'Lobo cinzento' }[kind];
     entity.hp = entity.maxHp = spec.hp * boost;
     entity.attack = spec.attack * boost;
     entity.armor = owner.armor * 0.6; entity.magicResist = owner.magicResist * 0.6;
@@ -1163,7 +1348,18 @@ export class Game {
     battle.status = victory ? 'victory' : 'defeat';
     battle.zones = [];
     for (const entity of battle.entities) if (entity.summon && entity.hp > 0) { entity.hp = 0; entity.action = 'dead'; }
+    // Raiders who win the fight still escape with provisions.
+    if (!victory && battle.stage < 0) { this.state.resources.wood *= 1 - RAID_PENALTY; this.state.resources.food *= 1 - RAID_PENALTY; }
     if (!victory) return;
+    this.state.stats.victories++;
+    if (battle.stage < 0) {
+      // A defended village: a generous reward and a guaranteed component.
+      const base = stageReward(Math.max(2, this.state.progress * 0.85), false);
+      battle.reward = Object.fromEntries(RESOURCE_KEYS.map(key => [key, Math.round(base[key] * 1.2 * (1 + 0.2 * memory(this.state, 'botim')))])) as Resources;
+      this.addResources(battle.reward);
+      const id = this.randomComponent(); if (this.addItem(id)) battle.loot.push(id);
+      return;
+    }
     const endless = battle.stage === 0;
     const level = endless ? endlessLevel(battle.depth) : battle.stage;
     const base = stageReward(level, !endless && !battle.firstClear);

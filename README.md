@@ -23,6 +23,8 @@ Abra **http://127.0.0.1:5173**. O servidor funciona enquanto esse terminal estiv
 | **Itens e laços (TFT)** | 6 componentes e 21 itens, até 3 por herói; dois componentes no mesmo herói se combinam sozinhos. As 31 características (povos, funções e espíritos animais) ativam laços em dois níveis. |
 | **Campanha** | 6 regiões com 5 expedições cada, sempre fechadas por um chefe. Expedições vencidas podem ser repetidas para farmar, com velocidade 1–3× e repetição automática. |
 | **Fim de jogo** | Caçada Eterna sem fim e o Grande Totem (maravilha em 5 partes). Completo o Totem, a tribo renasce com brasas ancestrais, gastas em 6 Memórias permanentes. |
+| **Vida da aldeia (1.1)** | Diário com 24 objetivos (tutorial guiado até o renascimento); eventos a cada poucos minutos: mercador, presságio, viajante perdido e incursões de saqueadores para defender. |
+| **Combate (1.1)** | Chefes com uma mecânica própria abaixo de 50% da vida e resumo de cada batalha (dano causado, recebido, cura e escudo, com destaque para o melhor da luta). |
 
 Números e regras completas: [Sistemas do jogo](docs/SISTEMAS.md).
 
@@ -62,6 +64,8 @@ src/game/roster.ts         Desbloqueios, chances da fogueira e preços
 src/game/campaign.ts       Regiões, expedições, chefes e Caçada Eterna
 src/game/items.ts          Componentes e itens
 src/game/spirits.ts        Eras, espíritos protetores e memórias
+src/game/quests.ts         Diário de objetivos
+src/game/events.ts         Eventos da aldeia e incursões
 src/render/                Phaser: aldeia, campo, efeitos, figuras procedurais e glifos
 src/audio.ts               Efeitos e música sintetizados
 src/main.ts                Interface e ciclo do jogo

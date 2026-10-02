@@ -11,6 +11,8 @@ import { COMPONENTS, ITEMS, MAX_ITEMS_PER_HERO, isComponent, itemById } from './
 import { shopOdds, unlockedCost } from './game/roster';
 import { ERA_NAMES, MEMORIES, memoryCost, spiritById, spiritsOfEra, type MemoryId, type SpiritId } from './game/spirits';
 import { TRAIT_RULES } from './game/synergies';
+import { QUESTS, openQuests, rewardText } from './game/quests';
+import { EVENT_TEXT } from './game/events';
 import {
   BUILDING_KEYS, Game, GATHER_AMOUNT, MAX_BUILDING_LEVEL, MAX_INVENTORY, REROLL_COST, SKILL_NOTES, WONDER_STAGES, WORK_AFFINITY,
   buildingCost, capacity, embersFor, forgeRate, getRates, getSynergies, pendingEra, recruitCost, shopSize, stageUnlocked, villageCost,
@@ -90,11 +92,12 @@ $('#app').innerHTML = `
     <div class="world-badge"><span class="live-dot"></span><span id="world-badge-text">Clareira do Lobo</span>${icon('sun')}</div>
     <div class="world-caption"><span class="map-coordinate">23° N &nbsp; / &nbsp; 07° L</span><span id="world-hint"></span></div>
     <div id="power-bar" class="power-bar" hidden></div>
+    <div id="event-card" class="event-card" hidden></div>
     <div id="pause-overlay" class="pause-overlay" hidden><span>${icon('pause')}O tempo descansa.</span><button class="primary" data-action="pause">Retomar jornada</button></div>
     <div id="battle-result" class="battle-result" hidden></div>
    </section><aside class="side-panel" id="side-panel" aria-label="Ações"></aside></div>
    <section class="camp-section"><div class="section-heading"><div><p class="eyebrow">HERÓIS & ESPÍRITOS</p><h2 id="camp-title">Ao redor da fogueira</h2></div><button class="text-button" data-action="reroll" id="reroll">${icon('refresh-cw')}Novos viajantes <span class="small-cost">${REROLL_COST.spirit} ${icon('flame')}</span></button></div><div id="camp-content"></div></section>
-   <footer><span><span class="live-dot"></span><span id="save-status">Progresso salvo neste navegador</span></span><span>WOLF TOTEM <b>·</b> VERSÃO 1.0</span><button class="text-button" data-action="help">Guia da tribo ${icon('arrow-up-right')}</button></footer>
+   <footer><span><span class="live-dot"></span><span id="save-status">Progresso salvo neste navegador</span></span><span>WOLF TOTEM <b>·</b> VERSÃO 1.1</span><button class="text-button" data-action="help">Guia da tribo ${icon('arrow-up-right')}</button></footer>
   </main>
  </div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -136,6 +139,13 @@ function renderMetrics() {
     $(`#rate-${r.id}`).textContent = `+${rates[r.id].toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/s`;
   }
   $('#embers-chip').hidden = !game.state.embers && !game.state.rebirths;
+  const claimable = openQuests(game.state).some(q => q.done(game.state));
+  document.querySelector('.nav-button[data-view="village"]')?.classList.toggle('has-reward', claimable || !!game.state.event);
+  for (const r of RESOURCES) {
+    const omen = game.state.omen?.resource === r.id && game.state.clock < game.state.omen.until;
+    document.querySelector(`.resource.${r.id}`)?.classList.toggle('omen', omen);
+  }
+  renderEvent();
   $('#res-embers').textContent = fmt(game.state.embers);
   $('#pause-overlay').hidden = !game.state.paused;
   const pause = $('[data-action="pause"]');
@@ -167,6 +177,27 @@ function objective(): { title: string; text: string } {
   return { title: 'Os ancestrais chamam.', text: 'Renasça no Totem para ganhar brasas, ou aprofunde a Caçada Eterna.' };
 }
 
+/** The next journal objective, or the general next step once the journal is complete. */
+function journalHTML(goal: { title: string; text: string }): string {
+  const quest = openQuests(game.state)[0];
+  const done = QUESTS.length - openQuests(game.state).length;
+  if (!quest) return `<div class="objective"><span class="objective-symbol">${icon('compass')}</span><div><small>O PRÓXIMO PASSO</small><strong>${esc(goal.title)}</strong><p>${esc(goal.text)}</p></div></div>`;
+  const ready = quest.done(game.state);
+  return `<div class="objective journal ${ready ? 'ready' : ''}"><span class="objective-symbol">${icon(ready ? 'gift' : 'scroll-text')}</span><div>
+   <small>DIÁRIO DA TRIBO · ${done}/${QUESTS.length}</small><strong>${esc(quest.title)}</strong><p>${esc(quest.hint)}</p>
+   <p class="quest-reward">${icon('gift')} ${esc(rewardText(quest.reward))}</p>
+   <div class="quest-actions">${ready ? `<button class="primary compact" data-quest="${quest.id}">Receber recompensa</button>` : ''}<button class="text-button" data-action="journal">Ver diário ${icon('arrow-right')}</button></div></div></div>`;
+}
+
+function showJournal() {
+  const open = openQuests(game.state), next = open[0]?.id;
+  showModal('journal', `<p class="eyebrow">DIÁRIO DA TRIBO</p><h2>Os caminhos da tribo</h2><p class="modal-intro">Objetivos em ordem: os primeiros ensinam o jogo, os últimos apontam o próximo grande marco. As recompensas recebidas valem para sempre, mesmo depois de um renascimento.</p>
+   <ol class="journal-list">${QUESTS.map(q => {
+     const claimed = game.state.quests.includes(q.id), ready = !claimed && q.done(game.state);
+     return `<li class="${claimed ? 'claimed' : ready ? 'ready' : q.id === next ? 'current' : ''}"><span class="quest-mark">${claimed ? icon('check') : ready ? icon('gift') : ''}</span><div><b>${esc(q.title)}</b><p>${esc(q.hint)}</p><small>${icon('gift')} ${esc(rewardText(q.reward))}</small></div>${ready ? `<button class="primary compact" data-quest="${q.id}">Receber</button>` : ''}</li>`;
+   }).join('')}</ol>`);
+}
+
 function renderSide() {
   if (view === 'village') renderVillageSide(); else renderBattleSide();
   refreshIcons(); renderMetrics();
@@ -185,7 +216,7 @@ function renderVillageSide() {
    <div class="panel-kicker">SUA ALDEIA <span>ERA ${roman(s.villageLevel)}</span></div>
    <div class="village-summary"><span class="large-seal">${icon('tent-tree')}</span><h2>Clã da Primeira Chama</h2><p>${s.heroes.length} heróis · ${capacity(s)} vagas na formação</p>
     ${s.spirits.length ? `<div class="spirit-row">${s.spirits.map(sp => `<span class="spirit-badge" title="${esc(`${spiritById(sp)!.name}: ${spiritById(sp)!.passiveText}`)}">${spiritGlyph(sp)}</span>`).join('')}</div>` : ''}</div>
-   <div class="objective ${era ? 'urgent' : ''}"><span class="objective-symbol">${icon(era ? 'sparkles' : 'compass')}</span><div><small>O PRÓXIMO PASSO</small><strong>${esc(goal.title)}</strong><p>${esc(goal.text)}</p>${era ? `<button class="primary compact" data-action="spirit-choice">${icon('feather')}Escolher espírito da Era ${roman(era)}</button>` : ''}</div></div>
+   ${era ? `<div class="objective urgent"><span class="objective-symbol">${icon('sparkles')}</span><div><small>O PRÓXIMO PASSO</small><strong>${esc(goal.title)}</strong><p>${esc(goal.text)}</p><button class="primary compact" data-action="spirit-choice">${icon('feather')}Escolher espírito da Era ${roman(era)}</button></div></div>` : journalHTML(goal)}
    <div class="building-tabs">${BUILDING_KEYS.map(key => `<button data-building="${key}" class="${key === id ? 'active' : ''}" title="${BUILDINGS[key].name}" aria-label="${BUILDINGS[key].name}">${icon(BUILDINGS[key].icon)}</button>`).join('')}</div>
    <div class="building-details"><div class="detail-heading"><h3>${b.name}</h3><span>${level ? `NV. ${level}` : 'A CONSTRUIR'}</span></div><p>${b.desc}</p>${forgeLine}
     <button class="outline-button" data-action="building-upgrade" data-max="${level >= MAX_BUILDING_LEVEL}" ${costAttr(cost)}>${icon('hammer')} ${level >= MAX_BUILDING_LEVEL ? 'Nível máximo' : level ? 'Melhorar' : 'Construir'} <span class="cost">${costHTML(cost)}</span></button>
@@ -198,24 +229,34 @@ function renderVillageSide() {
    <div class="village-upgrade">${s.villageLevel < 5 ? `<button class="primary" data-action="village-upgrade" ${costAttr(vc)}>${icon('chevrons-up')}Avançar para a Era ${roman(s.villageLevel + 1)} <span>Nv. ${s.villageLevel + 1}</span></button><div class="upgrade-cost cost">${costHTML(vc)}</div>` : `<button class="outline-button" data-action="ancestors">${icon('landmark')} Grande Totem · ${s.wonder}/${WONDER_STAGES}</button>`}</div>`;
 }
 
+/** The battle on screen (an expedition, the endless hunt or a raid), else the next selected expedition. */
+function encounter() {
+  const b = game.battle;
+  if (b) {
+    const units = b.entities.filter(e => e.team === 'enemy' && !e.summon).map(e => ({ id: e.characterId, stars: e.stars, boss: e.boss }));
+    return { id: b.stage, name: b.name, region: b.stage > 0 ? regionOf(b.stage) : b.stage < 0 ? regionOf(Math.max(1, b.region * 5)) : null, index: b.stage > 0 ? stageById(b.stage)!.index : 0, units, depth: b.depth, raid: b.stage < 0 };
+  }
+  const { stage, depth } = game.nextStage();
+  return { id: stage.id, name: stage.name, region: stage.id ? regionOf(stage.id) : null, index: stage.index, units: stage.units, depth, raid: false };
+}
+
 function enemyPreview(): string {
-  const { stage } = game.nextStage();
+  const stage = encounter();
   return `<div class="enemy-preview">${stage.units.map(u => `<span class="enemy-chip ${u.boss ? 'boss' : ''}" title="${characterOf(u.id).name} ${'★'.repeat(u.stars)}${u.boss ? ' · chefe' : ''}">${glyphSVG(CHARACTER_ANIMAL[u.id], u.boss ? '#e3b46b' : '#d0a38a')}<b>${'★'.repeat(u.stars)}</b></span>`).join('')}</div>`;
 }
 
 function renderBattleSide() {
   const s = game.state, deployed = s.heroes.filter(h => h.slot !== null), syn = getSynergies(s);
-  const { stage, depth } = game.nextStage();
-  const region = stage.id ? regionOf(stage.id) : null;
+  const stage = encounter(), depth = stage.depth, region = stage.region;
   const fighting = game.battle?.status === 'fighting';
-  const reward = stage.id ? stageReward(stage.id, stage.id <= s.progress) : null;
+  const reward = stage.id > 0 ? stageReward(stage.id, stage.id <= s.progress && !(game.battle?.firstClear)) : null;
   $('#side-panel').innerHTML = `
-   <div class="panel-kicker">EXPEDIÇÃO <span>${stage.id ? `${region!.id}·${stage.index} · ${s.progress}/${FINAL_STAGE}` : `∞ · ${depth}`}</span></div>
+   <div class="panel-kicker">${stage.raid ? 'DEFESA' : 'EXPEDIÇÃO'} <span>${stage.raid ? 'ALDEIA' : stage.id ? `${region!.id}·${stage.index} · ${s.progress}/${FINAL_STAGE}` : `∞ · ${depth}`}</span></div>
    <div class="stage-card">
-    <p class="eyebrow">${stage.id ? esc(region!.name.toUpperCase()) : 'CAÇADA ETERNA'}</p>
+    <p class="eyebrow">${stage.raid ? 'INCURSÃO NA ALDEIA' : stage.id ? esc(region!.name.toUpperCase()) : 'CAÇADA ETERNA'}</p>
     <h2>${esc(stage.name)}</h2>
     ${enemyPreview()}
-    <p class="stage-reward">${reward ? `${stage.id <= s.progress ? 'Repetição' : 'Primeira vitória'}: <span class="cost">${costHTML(reward)}</span>` : `Recorde: ${s.endlessBest} · cada vitória aprofunda a caçada`}</p>
+    <p class="stage-reward">${stage.raid ? 'Vitória: recursos e um componente garantido.' : reward ? `${stage.id <= s.progress && !game.battle?.firstClear ? 'Repetição' : 'Primeira vitória'}: <span class="cost">${costHTML(reward)}</span>` : `Recorde: ${s.endlessBest} · cada vitória aprofunda a caçada`}</p>
     <button class="outline-button" data-action="map" ${fighting ? 'disabled' : ''}>${icon('map')}Mapa das expedições <kbd>M</kbd></button>
    </div>
    <div class="formation-count"><span>Sua formação</span><strong>${deployed.length}<small> / ${capacity(s)}</small></strong></div>
@@ -241,6 +282,27 @@ function renderPowers() {
     const spirit = spiritById(id)!, used = battle?.powersUsed.includes(id) ?? false;
     return `<button class="power-button ${used ? 'used' : ''}" data-power="${id}" ${battle?.status !== 'fighting' || used || game.state.paused ? 'disabled' : ''} title="${esc(`${spirit.power.name}: ${spirit.power.text}`)}" style="--spirit:${spirit.color}">${spiritGlyph(id, false)}<span>${esc(spirit.power.name)}</span></button>`;
   }).join('')}`;
+}
+
+/** The village event card, with its countdown; raids can also be answered from the expedition view. */
+function renderEvent() {
+  const card = $('#event-card'), event = game.state.event;
+  const show = !!event && (view === 'village' || (event.kind === 'raid' && !game.battle));
+  card.hidden = !show;
+  if (!show || !event) { card.dataset.key = ''; return; }
+  const left = Math.max(0, Math.ceil(event.expires - game.state.clock));
+  const key = `${event.kind}|${event.expires}|${left}|${game.state.paused}`;
+  if (card.dataset.key === key) return;
+  card.dataset.key = key;
+  const text = EVENT_TEXT[event.kind];
+  const detail = event.kind === 'merchant' ? `<div class="event-offer">${itemChip(event.item!)}<span class="cost">${costHTML(event.price!)}</span></div>`
+    : event.kind === 'omen' ? `<p class="event-detail">+60% de ${RESOURCES.find(r => r.id === event.resource)!.name.toLowerCase()} por 3 minutos.</p>`
+    : event.kind === 'traveler' ? `<p class="event-detail">${portraitHTML(characterOf(event.characterId!))}<span><b>${characterOf(event.characterId!).name}</b>, ${characterOf(event.characterId!).title} · custo ${characterOf(event.characterId!).cost}</span></p>`
+    : '<p class="event-detail">Vencer rende recursos e um componente. O tributo custa 10% do alimento e do espírito; ignorar custa 6% da madeira e do alimento.</p>';
+  card.className = `event-card ${event.kind}`;
+  card.innerHTML = `<div class="event-head"><span class="eyebrow">ACONTECIMENTO</span><span class="event-timer">${icon('hourglass')}${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}</span></div><h3>${text.title}</h3><p>${text.text}</p>${detail}
+   <div class="event-actions"><button class="primary compact" data-event="accept" ${event.kind === 'merchant' && !game.canAfford(event.price!) ? 'disabled' : ''}>${text.accept}</button><button class="outline-button" data-event="decline">${text.decline}</button></div>`;
+  refreshIcons();
 }
 
 function heroStatus(h: Hero): string {
@@ -281,11 +343,11 @@ function renderAll() {
   if (selectedHero && !game.state.heroes.some(h => h.uid === selectedHero)) selectedHero = null;
   if (selectedItem !== null && selectedItem >= game.state.inventory.length) selectedItem = null;
   document.querySelectorAll<HTMLButtonElement>('.nav-button[data-view]').forEach(n => n.classList.toggle('active', n.dataset.view === view));
-  const s = game.state, { stage } = game.nextStage();
+  const s = game.state, stage = encounter();
   $('#rail-era').textContent = roman(s.villageLevel);
-  $('#era-label').textContent = view === 'village' ? `ERA ${ERA_NAMES[s.villageLevel - 1].toUpperCase()}` : `EXPEDIÇÕES · ${stage.id ? regionOf(stage.id).name.toUpperCase() : 'CAÇADA ETERNA'}`;
+  $('#era-label').textContent = view === 'village' ? `ERA ${ERA_NAMES[s.villageLevel - 1].toUpperCase()}` : stage.raid ? 'DEFESA DA ALDEIA' : `EXPEDIÇÕES · ${stage.region ? stage.region.name.toUpperCase() : 'CAÇADA ETERNA'}`;
   $('#world-title').textContent = view === 'village' ? ['O primeiro fogo.', 'O chamado dos espíritos.', 'A floresta desperta.', 'As grandes manadas.', 'A era dos ancestrais.'][s.villageLevel - 1] : stage.name + '.';
-  $('#world-subtitle').textContent = view === 'village' ? 'Uma pequena chama. O início de uma grande tribo.' : stage.id ? regionOf(stage.id).subtitle : 'Feras cada vez mais fortes. Até onde a tribo chega?';
+  $('#world-subtitle').textContent = view === 'village' ? 'Uma pequena chama. O início de uma grande tribo.' : stage.raid ? 'Saqueadores rondam as cabanas. A tribo defende o que construiu.' : stage.region ? stage.region.subtitle : 'Feras cada vez mais fortes. Até onde a tribo chega?';
   $('#world-badge-text').textContent = view === 'village' ? 'Clareira do Lobo' : game.battle?.status === 'fighting' ? `Em combate · ${s.settings.speed}×` : 'Preparação';
   $('#world-hint').textContent = view === 'village' ? 'Selecione uma construção para evoluir sua aldeia.' : 'Selecione um herói abaixo e uma posição no campo.';
   renderSide(); renderCamp(); renderMetrics(); renderResult();
@@ -297,13 +359,27 @@ function renderResult() {
   if (el.hidden || !b) return;
   const victory = b.status === 'victory';
   const repeating = victory && game.state.settings.autoRepeat;
-  el.innerHTML = `<span class="result-icon">${icon(victory ? 'crown' : 'shield')}</span><p class="eyebrow">${victory ? b.firstClear ? 'PRIMEIRA VITÓRIA' : 'A TRIBO PERMANECE' : 'OS ESPÍRITOS ENSINAM'}</p><h2>${victory ? b.stage === 0 ? `Profundidade ${b.depth} vencida.` : 'Uma nova conquista.' : 'É hora de reagrupar.'}</h2>
+  el.innerHTML = `<span class="result-icon">${icon(victory ? 'crown' : 'shield')}</span><p class="eyebrow">${victory ? b.firstClear ? 'PRIMEIRA VITÓRIA' : 'A TRIBO PERMANECE' : 'OS ESPÍRITOS ENSINAM'}</p><h2>${victory ? b.stage < 0 ? 'A aldeia está a salvo.' : b.stage === 0 ? `Profundidade ${b.depth} vencida.` : 'Uma nova conquista.' : b.stage < 0 ? 'Os saqueadores escaparam.' : 'É hora de reagrupar.'}</h2>
    <p>${victory ? `${esc(b.name)} concluída. Sua aldeia recebe os frutos da jornada.` : 'Evolua heróis, troque itens, busque sinergias ou use os poderes espirituais.'}</p>
    ${b.reward ? `<div class="reward cost">${costHTML(b.reward)}</div>` : ''}
    ${b.loot.length ? `<div class="loot">${b.loot.map(id => itemChip(id)).join('')}</div>` : ''}
+   ${summaryHTML(b)}
    ${repeating ? `<p class="small muted">${icon('repeat')} Repetindo automaticamente…</p>` : ''}
-   <div class="result-actions"><button class="outline-button" data-action="battle-dismiss">${victory ? 'Voltar à preparação' : 'Preparar novamente'}</button>${victory ? `<button class="primary" data-action="battle-again">${b.stage === 0 ? 'Mais fundo' : game.state.selectedStage === b.stage ? 'Repetir' : 'Próxima expedição'}${icon('arrow-right')}</button>` : ''}</div>`;
+   <div class="result-actions"><button class="outline-button" data-action="battle-dismiss">${b.stage < 0 ? 'Voltar à aldeia' : victory ? 'Voltar à preparação' : 'Preparar novamente'}</button>${victory && b.stage >= 0 ? `<button class="primary" data-action="battle-again">${b.stage === 0 ? 'Mais fundo' : game.state.selectedStage === b.stage ? 'Repetir' : 'Próxima expedição'}${icon('arrow-right')}</button>` : ''}</div>`;
   refreshIcons();
+}
+
+/** TFT-style recap: who dealt, absorbed and healed the most. */
+function summaryHTML(b: NonNullable<typeof game.battle>): string {
+  const allies = b.entities.filter(e => e.team === 'ally' && !e.summon).sort((x, y) => y.dealt - x.dealt);
+  if (!allies.length) return '';
+  const top = Math.max(1, ...allies.map(e => Math.max(e.dealt, e.taken, e.healed + e.shielded)));
+  const bar = (value: number, kind: string, label: string) => `<span class="sum-bar ${kind}" style="--w:${Math.max(2, value / top * 100)}%" title="${label}: ${fmt(value)}"></span>`;
+  return `<details class="battle-summary" ${allies.length ? 'open' : ''}><summary>Resumo da batalha</summary>
+   <div class="sum-legend"><span class="dealt">Dano causado</span><span class="taken">Recebido</span><span class="support">Cura e escudo</span></div>
+   ${allies.map((e, i) => `<div class="sum-row ${e.hp <= 0 ? 'fallen' : ''}"><span class="sum-name">${i === 0 && e.dealt > 0 ? icon('crown') : ''}${esc(characterOf(e.characterId).name)} <small>${'★'.repeat(e.stars)}</small></span>
+    <span class="sum-bars">${bar(e.dealt, 'dealt', 'Dano causado')}${bar(e.taken, 'taken', 'Dano recebido')}${e.healed + e.shielded > 0 ? bar(e.healed + e.shielded, 'support', 'Cura e escudo') : ''}</span><b>${fmt(e.dealt)}</b></div>`).join('')}
+  </details>`;
 }
 
 function showModal(name: string, html: string) {
@@ -449,6 +525,13 @@ document.addEventListener('click', event => {
   if (d.stage !== undefined) { const r = game.selectStage(Number(d.stage)); toast(r.message); if (r.ok) { save(); closeModal(); if (view !== 'battle') setView('battle'); else renderAll(); } return; }
   if (d.spirit) { const r = game.chooseSpirit(d.spirit as SpiritId); if (r.ok) closeModal(); act(r, 'era'); return; }
   if (d.power) { const r = game.usePower(d.power as SpiritId); toast(r.message); if (r.ok) sound.play('power'); renderPowers(); return; }
+  if (d.event) {
+    const accept = d.event === 'accept', raid = game.state.event?.kind === 'raid';
+    const r = game.answerEvent(accept);
+    if (r.ok && raid && accept) { setView('battle'); sound.play('power'); }
+    act(r, accept ? 'recruit' : 'click'); return;
+  }
+  if (d.quest) { const r = game.claimQuest(d.quest); act(r, 'item'); if (activeModal === 'journal') showJournal(); return; }
   if (d.memory) { act(game.buyMemory(d.memory as MemoryId), 'upgrade'); showAncestors(); return; }
   switch (d.action) {
     case 'preview-flip': preview.flip(); break;
@@ -466,6 +549,7 @@ document.addEventListener('click', event => {
     case 'speed': game.setSpeed(game.state.settings.speed % 3 + 1); save(); renderAll(); break;
     case 'auto-repeat': toast(game.toggleAutoRepeat() ? 'Repetição automática ligada: após cada vitória a expedição recomeça.' : 'Repetição automática desligada.'); save(); renderAll(); break;
     case 'map': showMap(); break;
+    case 'journal': showJournal(); break;
     case 'ancestors': confirmAscend = false; showAncestors(); break;
     case 'wonder': act(game.buildWonder(), 'era'); showAncestors(); break;
     case 'ascend':
@@ -531,7 +615,7 @@ function playBattleSounds() {
   for (const event of game.events) {
     if (event.id <= lastEventId) continue;
     lastEventId = event.id;
-    const sfx: Partial<Record<typeof event.type, Sfx>> = { damage: 'hit', skill: 'cast', heal: 'heal', death: 'death', summon: 'summon', revive: 'era', power: 'power' };
+    const sfx: Partial<Record<typeof event.type, Sfx>> = { damage: 'hit', skill: 'cast', heal: 'heal', death: 'death', summon: 'summon', revive: 'era', power: 'power', phase: 'power' };
     if (sfx[event.type]) sound.play(sfx[event.type]!);
   }
 }
@@ -557,7 +641,7 @@ function frame(now: number) {
     if (status === 'victory' || status === 'defeat') {
       save();
       if (previous === 'fighting') sound.play(status === 'victory' ? 'victory' : 'defeat');
-      if (status === 'victory' && game.state.settings.autoRepeat) repeatTimer = window.setTimeout(() => { if (game.battle?.status === 'victory') startNext(); }, 1600);
+      if (status === 'victory' && game.state.settings.autoRepeat && (game.battle?.stage ?? 0) >= 0) repeatTimer = window.setTimeout(() => { if (game.battle?.status === 'victory') startNext(); }, 1600);
       if (status === 'defeat' && game.state.settings.autoRepeat) { game.toggleAutoRepeat(); toast('Derrota: a repetição automática foi desligada.'); }
     }
   }

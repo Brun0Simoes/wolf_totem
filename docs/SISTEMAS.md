@@ -1,4 +1,4 @@
-# Wolf Totem 1.0 — sistemas do jogo
+# Wolf Totem 1.1 — sistemas do jogo
 
 Todos os números abaixo são decisões de protótipo, calibradas por simulação, e ficam fora do catálogo canônico de `src/data/characters.ts`.
 
@@ -134,3 +134,44 @@ Cada herói carrega até 3 itens; ao fundir cópias, os itens passam ao herói q
 - A versão 1 é migrada: cada onda vencida vira uma expedição vencida, e os heróis recebem espaços de item e de trabalho.
 - Combate em andamento nunca é salvo.
 - Valores inválidos são saneados: itens desconhecidos, espíritos fora da ordem das eras e trabalhadores acima das vagas.
+
+## Diário da tribo (1.1)
+
+24 objetivos em ordem, mostrados um por vez no painel da aldeia e todos no diário (botão **Ver diário**):
+
+- **Os primeiros ensinam o jogo:** vencer a primeira expedição, recrutar, melhorar uma construção, avançar de era, honrar um espírito, formar um 2★, pôr um herói para trabalhar, construir a forja, completar um item e usar um poder.
+- **Os seguintes apontam os marcos:** os seis chefes, as eras III a V, um laço no segundo nível, um herói 3★, o Grande Totem, a profundidade 5 da Caçada Eterna e o renascimento.
+
+As recompensas são recursos, componentes ou brasas. Cada objetivo paga uma vez e continua resgatado depois de renascer. Um ponto dourado no botão **Aldeia** avisa quando há recompensa ou evento esperando.
+
+## Chefes com fase (1.1)
+
+Abaixo de 50% da vida, cada chefe dispara uma vez a sua mecânica, anunciada por um estandarte no campo:
+
+| Chefe | Mecânica |
+| --- | --- |
+| O Alfa Cinzento | **Uivo do Alfa:** 2 lobos cinzentos e +30% de velocidade de ataque para a matilha por 8 s |
+| A Boca do Delta | **Mergulho no Delta:** some por 1,5 s, cura 25% e cria um remanso que o acompanha |
+| O Oráculo da Copa | **Coro dos Ecos:** conjura as habilidades de dois aliados e ganha 60 de mana |
+| O Rei dos Búfalos | **Fúria da Manada:** +50% de velocidade e +30% de ataque até o fim, e uma nova carga de búfalos |
+| O Leviatã do Pântano | **Fome Abissal:** emerge no maior grupo da tribo, causa 20% da vida máxima e ganha escudo de 25% |
+| O Primeiro Inverno | **Nevasca Eterna:** gelo sobre o campo inteiro por 12 s e o Primeiro Inverno conjurado |
+| Alfas da Caçada Eterna | **Fúria do Alfa:** +40% de velocidade, +20% de ataque e escudo de 20% |
+
+Com as fases, a equipe inicial com três heróis 1★ perde para o Alfa, enquanto equipes com alguns 2★ vencem. O Primeiro Inverno continua exigindo heróis 3★.
+
+## Eventos da aldeia (1.1)
+
+- A partir da Era II, um acontecimento surge a cada 4 a 7 minutos de jogo (o tempo offline conta) e expira em 2,5 minutos.
+- **Mercador errante:** vende um componente ou, com 35% de chance, um item completo. O preço sobe com a era.
+- **Presságio favorável:** +60% de produção de um recurso por 3 minutos. O recurso fica dourado no topo da tela.
+- **Viajante perdido:** um herói 1★ de custo até 3 junta-se à tribo, se houver vaga.
+- **Incursão de saqueadores:**
+  - **Defender:** uma batalha com 2 + era inimigos, ajustados ao progresso. A vitória rende 120% da recompensa de uma expedição e um componente. A derrota custa 6% da madeira e do alimento.
+  - **Pagar tributo:** custa 10% do alimento e do espírito.
+  - **Ignorar:** custa 6% da madeira e do alimento.
+  - Incursões não mexem no progresso da campanha.
+
+## Resumo da batalha (1.1)
+
+Ao fim de cada luta, o cartão de resultado lista os heróis com barras de dano causado, dano recebido (incluindo o absorvido por escudos) e cura mais escudos dados. O dano das invocações conta para quem as chamou.

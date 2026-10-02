@@ -19,7 +19,7 @@ type UnitView = { summon?: string; transform: boolean; layer: Phaser.GameObjects
 type Villager = { uid: string; view: UnitView; phase: number; work: BuildingId | null; lastWork: number };
 
 const COST_TINT = [0xdfd8c0, 0xc7dccf, 0xc3cde6, 0xdccbe6, 0xf1dca6];
-const SUMMON_HEIGHT: Record<string, number> = { spider: 34, crow: 40, beetle: 36, elephant: 82 };
+const SUMMON_HEIGHT: Record<string, number> = { spider: 34, crow: 40, beetle: 36, elephant: 82, wolf: 48 };
 const ZONE_COLOR: Record<string, number> = { web: 0xc8ebd8, water: 0x7fc8d6, veil: 0x4f7fa8, domain: 0xa77d4f, frost: 0xcfe9f7 };
 const W = 1200;
 const H = 740;
@@ -594,6 +594,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         ellipse(c, 35, 34, 16, 13, '#b98a2f'); line(c, [[35, 22], [35, 47]], '#6b4f1c', 2);
         ellipse(c, 35, 20, 8, 6, '#8a6a2a'); line(c, [[35, 15], [35, 6]], '#f2d486', 2);
       });
+      this.paint('summon-wolf', 110, 110, c => { glow(c, 55, 55, 54, '#b7dfff44'); paintGlyph(c, 'wolf', 55, 56, 96, '#b9c7d4', 1, '#1b1712'); });
       this.paint('summon-elephant', 130, 110, c => {
         glow(c, 65, 60, 60, '#e8dcc044');
         ellipse(c, 70, 58, 38, 26, '#d8cfb8aa'); ellipse(c, 34, 46, 18, 16, '#e4dcc8bb');
@@ -824,7 +825,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       if (art?.kind === 'painted' || art?.kind === 'standin') { sheet = this.ensureAtlas(art.sheet!.characterId, art.sheet!.stars ?? 1); key = sheetKey(art.sheet!.characterId, art.sheet!.stars); }
       else if (art?.kind === 'procedural') { sheet = this.ensureProcedural(view.characterId, view.stars); key = procKey(view.characterId, view.stars); }
       const hasSheet = !!sheet && this.textures.exists(key);
-      this.updateAura(view, art?.kind === 'standin' && view.stars >= 2, x, y);
+      this.updateAura(view, art?.kind === 'standin' && view.stars >= 2 && desired !== 'death', x, y);
       const pose = poseForMotion(view.motion, hasSheet, this.reducedMotion);
       if (!creature) view.baseTexture = this.resolveArt(view.characterId, view.stars);
       let scale: number;
@@ -843,7 +844,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       if (view.transform) scale *= 1.12;
       view.sprite.setFlipX(view.motion.facing < 0).setScale(scale * pose.scaleX, scale * pose.scaleY);
       view.sprite.setPosition(x + pose.x, y + 5 + pose.y).setAngle(pose.angle).setAlpha(pose.alpha * (view.summon ? .82 : 1)).setDepth(y + 10);
-      if (view.motion.hit > .12) view.sprite.setTintFill(0xf5d8b2);
+      if (view.motion.hit > .16) view.sprite.setTintFill(0xf5d8b2);
       else if (view.summon === 'echo') view.sprite.setTint(0xbfe0f2);
       else if (view.transform) view.sprite.setTint(0xfff0c8);
       else if (view.enemy) view.sprite.setTint(0xdfc5b3);
@@ -919,6 +920,12 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
           else this.effects.heal(b);
         } else if (event.type === 'shield') this.effects.shield(b);
         else if (event.type === 'summon') this.effects.summon(b, target.enemy ? 0xd49a7c : 0xc8e3b0);
+        else if (event.type === 'phase') {
+          // A boss reaches half life: a banner, a shockwave and a short tremor.
+          this.effects.nova(b, 0xe9a35f, 140); this.effects.aura(b, 0xe9a35f);
+          this.banner(event.text ?? '', '#f2b36b');
+          if (!this.reducedMotion) this.cameras.main.shake(320, 0.004);
+        }
         else if (event.type === 'power') {
           const spirit = SPIRITS.find(entry => event.text?.startsWith(entry.name + ':'));
           if (spirit) {
@@ -984,6 +991,13 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private pulse(x: number, y: number, color: number, layer: Phaser.GameObjects.Layer): void {
       const ring = this.add.ellipse(x, y, 22, 11).setStrokeStyle(2, color, .9).setDepth(1100); layer.add(ring);
       this.tweens.add({ targets: ring, scaleX: 3.4, scaleY: 3.4, alpha: 0, duration: this.reducedMotion ? 140 : 500, ease: 'Quad.easeOut', onComplete: () => ring.destroy() });
+    }
+
+    /** A large title over the battlefield for boss phases. */
+    private banner(text: string, color: string): void {
+      const label = this.add.text(672, 200, text.toUpperCase(), { fontFamily: 'Georgia, serif', fontSize: '30px', color, stroke: '#19281f', strokeThickness: 6, letterSpacing: 3 }).setOrigin(.5).setDepth(1350).setAlpha(0).setScale(.8);
+      this.battlefield.add(label); this.floating.push(label);
+      this.tweens.add({ targets: label, alpha: 1, scale: 1, duration: this.reducedMotion ? 80 : 260, ease: 'Back.easeOut', hold: 1100, yoyo: true, onComplete: () => { label.destroy(); this.floating = this.floating.filter(v => v !== label); } });
     }
 
     private floatText(text: string, x: number, y: number, color: string, skill = false): void {
