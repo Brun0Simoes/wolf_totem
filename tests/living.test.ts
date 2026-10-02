@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { EVENT_DURATION, FIRST_EVENT_AT, OMEN_BONUS, RAID_PENALTY, TRIBUTE } from '../src/game/events';
 import { QUESTS } from '../src/game/quests';
-import { allySlotCenter, cellCenter, enemySlotCenter, hexCorners, MIDLINE } from '../src/game/board';
-import { Game, getRates, MAX_ROSTER_SIZE, OVERTIME_START, overtimeDamage, overtimeHealing, type Hero } from '../src/game/simulation';
+import { allySlotCenter, cellCenter, COLUMNS, enemyFormation, enemySlotCenter, FORMATION_SLOTS, hexCorners, MIDLINE, migrateSlot } from '../src/game/board';
+import { Game, getRates, MAX_ROSTER_SIZE, newHero, OVERTIME_START, overtimeDamage, overtimeHealing, type Hero } from '../src/game/simulation';
 
-const hero = (uid: string, characterId: number, stars = 1, slot: number | null = null, items: string[] = []): Hero => ({ uid, characterId, stars, slot, items, work: null });
+/** Slots are written in the 1.2 layout and placed on the larger board as old saves are. */
+const hero = (uid: string, characterId: number, stars = 1, slot: number | null = null, items: string[] = []): Hero => ({ ...newHero(uid, characterId, stars, slot === null ? null : migrateSlot(slot)), items });
 const fight = (game: Game) => { for (let i = 0; i < 160 && game.battle?.status === 'fighting'; i++) game.tick(1); };
 const advanceVillage = (game: Game, seconds: number) => { for (let t = 0; t < seconds; t += 10) game.tick(10); };
 
@@ -151,11 +152,14 @@ describe('village events', () => {
 
 describe('hex board and twilight', () => {
   it('lays out offset rows whose hexes tile without gaps, the tribe below the midline', () => {
-    for (let slot = 0; slot < 12; slot++) {
+    for (let slot = 0; slot < FORMATION_SLOTS; slot++) {
       expect(allySlotCenter(slot).y).toBeGreaterThan(MIDLINE);
       expect(enemySlotCenter(slot).y).toBeLessThan(MIDLINE);
     }
-    expect(Math.abs(allySlotCenter(4).x - allySlotCenter(0).x)).toBeCloseTo(0.5);
+    expect(FORMATION_SLOTS).toBe(28);
+    expect(Math.abs(allySlotCenter(COLUMNS).x - allySlotCenter(0).x)).toBeCloseTo(0.5);
+    // Old formations keep their row and land in the middle columns.
+    expect(migrateSlot(1)).toBe(3); expect(migrateSlot(9)).toBe(17);
     // A hex shares its lower-right edge with the neighbour below and to the right.
     const [a, b] = [hexCorners(cellCenter(1, 2)), hexCorners(cellCenter(1, 3))];
     expect(a[0].x).toBeCloseTo(b[4].x); expect(a[0].y).toBeCloseTo(b[4].y);

@@ -1,4 +1,4 @@
-# Wolf Totem 1.2 — sistemas do jogo
+# Wolf Totem 1.3 — sistemas do jogo
 
 Todos os números abaixo são decisões de protótipo, calibradas por simulação, e ficam fora do catálogo canônico de `src/data/characters.ts`.
 
@@ -11,16 +11,22 @@ Aldeia produz ─► recrutar / fundir / equipar ─► expedição automática 
 Primeiro Inverno ─► Caçada Eterna + Grande Totem ─► renascimento ─► memórias permanentes
 ```
 
-Ritmo medido durante o desenvolvimento com um jogador automático simples (melhora construções, avança eras, recruta um núcleo de equipe e tenta sempre a próxima expedição):
+Ritmo da 1.3, medido com um jogador automático. Ele:
+- melhora construções e avança eras;
+- recruta, juntando cópias e preferindo custos altos, e equipa itens;
+- manda a reserva caçar e leva a formação às cerimônias;
+- tenta sempre a próxima expedição.
+
+A jornada ficou bem mais longa e exigente que na 1.2:
 
 | Marco | Tempo de jogo |
 | --- | --- |
-| Era II | ~1 min |
-| Era III / IV / V | ~3 / ~10 / ~20 min |
-| Chefe da região 5 (Leviatã) | ~25 min |
-| Primeiro Inverno | entre 30 min e 1h40, conforme a equipe chega a 3★ |
-| Grande Totem completo e primeiro renascimento | ~1h10–1h40 |
-| Segundo ciclo até a região 5 | ~20 min (com memórias) |
+| Primeira expedição (Akru sozinho) | menos de 1 min |
+| O Alfa Cinzento | ~3 min |
+| A Boca do Delta | ~35 min: o primeiro muro, que pede quatro heróis 2★ perto do nível 5 |
+| O Rei dos Búfalos | ~50 min |
+| O Leviatã do Pântano | ~1h25 |
+| O Primeiro Inverno | exige heróis 3★ de custo alto, perto do nível 10, com itens e cerimônias |
 
 ## Aldeia
 
@@ -31,6 +37,7 @@ Ritmo medido durante o desenvolvimento com um jogador automático simples (melho
 | Pedreira ancestral | 0,85 pedra/s | Brigão, Guardião, Manada |
 | Círculo dos espíritos | 0,3 espírito/s | Xamã, Místico, Totêmico |
 | Forja de Osso (Era II) | 1 componente a cada 900/nível s | Ancestral, Escamas, Trapaceiro |
+| Casa de Cura | cerimônias (ver abaixo) | Xamã, Rio, Noturno |
 
 - Construções vão até o nível 15; o custo cresce 1,65× por nível.
 - Produção total = base × nível × (1 + 12% por era) × espíritos × (1 + 25% por Raízes Profundas) × trabalhadores.
@@ -107,7 +114,12 @@ Cada herói carrega até 3 itens; ao fundir cópias, os itens passam ao herói q
 | 5. Pântano Ancestral | V | O Leviatã do Pântano (Karkun) |
 | 6. Montanhas do Primeiro Inverno | V | O Primeiro Inverno (Uruq) |
 
-- **Força dos inimigos:** (0,56 + 0,03·L + 0,0009·L²) ÷ (1 + 0,12 × (custo − 1)). Um chefe tem vida × (1,7 + 0,12 × região), ataque × (1,12 + 0,02 × região) e +15 de armadura e resistência.
+- **Força dos inimigos:** (0,56 + 0,03·L + 0,0009·L²) ÷ (1 + 0,12 × (custo − 1)) × dificuldade × (1 + 5% × (nível esperado − 1)).
+  - A dificuldade vai de 1,25 na primeira expedição a 1,1 na última: o começo ficou bem mais duro que na 1.2.
+  - O **nível esperado** dos heróis na expedição L é 1 + 9 × ((L − 1)/29)^0,7: nível 4 no Alfa, ~6 na Boca do Delta e 10 no Primeiro Inverno. O cartão da expedição mostra esse nível e o do herói mais forte da tribo.
+  - Um chefe tem vida × (1,66 + 0,06 × região), ataque × (1,12 + 0,02 × região) e +15 de armadura e resistência.
+- **Posição dos inimigos:** combatentes corpo a corpo ocupam a fileira da frente, do centro para fora; atiradores e conjuradores, as de trás.
+- **Primeiras expedições:** a primeira tem um só inimigo, para Akru vencer sozinho; a partir da terceira, as regiões 1 a 3 trazem um inimigo a mais que na 1.2.
 - **Recompensa:** madeira 40 + 14·L, alimento 35 + 12·L, pedra 25 + 10·L e espírito 40 + 10·L. A repetição paga metade.
 - **Caçada Eterna:** composições geradas por semente, que crescem em quantidade, estrelas e custo; o nível equivale a 30 + 1,6 × profundidade.
 
@@ -137,7 +149,7 @@ Cada herói carrega até 3 itens; ao fundir cópias, os itens passam ao herói q
 
 ## Diário da tribo (1.1)
 
-24 objetivos em ordem, mostrados um por vez no painel da aldeia e todos no diário (botão **Ver diário**):
+31 objetivos em ordem (sete novos na 1.3: caçar, nível 3, Casa de Cura, rapé, roda de cacau, ayahuasca e nível 7), mostrados um por vez no painel da aldeia e todos no diário (botão **Ver diário**):
 
 - **Os primeiros ensinam o jogo:** vencer a primeira expedição, recrutar, melhorar uma construção, avançar de era, honrar um espírito, formar um 2★, pôr um herói para trabalhar, construir a forja, completar um item e usar um poder.
 - **Os seguintes apontam os marcos:** os seis chefes, as eras III a V, um laço no segundo nível, um herói 3★, o Grande Totem, a profundidade 5 da Caçada Eterna e o renascimento.
@@ -158,7 +170,7 @@ Abaixo de 50% da vida, cada chefe dispara uma vez a sua mecânica, anunciada por
 | O Primeiro Inverno | **Nevasca Eterna:** gelo sobre o campo inteiro por 12 s e o Primeiro Inverno conjurado |
 | Alfas da Caçada Eterna | **Fúria do Alfa:** +40% de velocidade, +20% de ataque e escudo de 20% |
 
-Com as fases, a equipe inicial de três heróis 1★ só vence o Alfa na formação de partida, com Ena atrás de Akru e Boru; com a atiradora na linha de frente, perde. Equipes com alguns 2★ vencem com folga. O Primeiro Inverno continua exigindo heróis 3★ e uma formação com os tanques na frente.
+Com as fases e a dificuldade da 1.3, três heróis 1★ perdem para o Alfa; um grupo com alguns 2★ vence. O Rei dos Búfalos pede os espíritos das eras ou as cerimônias a quem estiver atrás no nível. O Primeiro Inverno exige heróis 3★, de preferência de custo alto, com itens e cerimônias.
 
 ## Eventos da aldeia (1.1)
 
@@ -176,10 +188,10 @@ Com as fases, a equipe inicial de três heróis 1★ só vence o Alfa na formaç
 
 Ao fim de cada luta, o cartão de resultado lista os heróis com barras de dano causado, dano recebido (incluindo o absorvido por escudos) e cura mais escudos dados. O dano das invocações conta para quem as chamou.
 
-## Campo hexagonal (1.2)
+## Campo hexagonal (1.2, ampliado na 1.3)
 
-- O campo tem 4 colunas e 6 fileiras de casas hexagonais, em fileiras alternadas deslocadas meia casa. As fileiras 0–2 são do inimigo (a 2 é a frente dele) e as fileiras 3–5 são da tribo (a 3 é a frente).
-- As 12 casas da formação seguem numeradas de 1 a 12, quatro por fileira, da frente para trás. Saves antigos mantêm as posições.
+- Como no TFT, o campo tem 7 colunas e 8 fileiras de casas hexagonais, em fileiras alternadas deslocadas meia casa. As fileiras 0–3 são do inimigo (a 3 é a frente dele) e as fileiras 4–7 são da tribo (a 4 é a frente).
+- As 28 casas da formação são numeradas de 1 a 28, sete por fileira, da frente para trás. Saves da 1.2 levam a formação de 4 × 3 para as colunas do meio, na mesma fileira.
 - Colunas ficam a 1 unidade e fileiras a 1 unidade de profundidade. Por isso, alcances e áreas das habilidades valem o mesmo que antes. O vizinho diagonal fica a 1,12, ainda dentro do alcance corpo a corpo.
 - O campo é visto de frente, em leve perspectiva: as fileiras da tribo ficam mais largas e próximas, e as unidades do fundo ficam um pouco menores.
 - Cada região tem cenário próprio: pinheiros na Clareira, rio na Margem, copas na Copa Alta, acácias e sol baixo na Savana, árvores mortas e poças no Pântano, picos nevados nas Montanhas.
@@ -204,3 +216,63 @@ O limite de 150 s continua valendo: se ninguém vencer até lá, a tribo perde.
   - **Movimento:** segue o sistema, completo ou reduzido. O reduzido acalma tremores de câmera, ondas e animações da interface.
   - **Números de dano e cura:** podem ser desligados.
   - **Jornada:** exportar, importar, voltar à tela inicial e apagar a jornada. Apagar pede uma segunda confirmação e recomeça direto no guia.
+
+## Níveis e experiência (1.3)
+
+- A jornada começa com **Akru sozinho**. Recrutar mais duas cópias dele logo no início já forma um Akru 2★.
+- Cada herói tem nível de 1 a 10. Para sair do nível n são precisos 50 × n^1,6 pontos de experiência: 50 para o nível 2 e cerca de 6,7 mil no total para o nível 10.
+- **Cada nível:** +7% de vida e +5% de ataque.
+- **Batalhas:** todos os heróis que marcharam ganham (14 + 5 × nível da expedição), multiplicado conforme o resultado e o tipo de luta:
+
+  | Resultado | Multiplicador |
+  | --- | --- |
+  | Primeira vitória | × 1,5 |
+  | Repetição vencida | × 0,3 |
+  | Derrota | × 0,25 |
+  | Chefe (sobre os anteriores) | × 1,5 |
+
+- **Aprendizes:** um herói mais de um nível abaixo do mais forte da tribo ganha +25% de experiência por nível de diferença além do primeiro, até o dobro. Assim, recrutas novos alcançam o grupo.
+- **Fusão:** ao juntar três cópias, o herói evoluído fica com a experiência da cópia mais experiente mais metade da das outras, a melhor contagem de cada cerimônia e a menor panema.
+
+## Caçadas (1.3)
+
+- Heróis em **Caçadas** seguem uma trilha por um tempo real de jogo, que corre também com o jogo fechado.
+- Enquanto caçam, guardam o lugar na formação, mas não lutam nem trabalham.
+- **Vagas de caçadores:** 1 + nível do Acampamento de caça ÷ 4, no máximo 4.
+
+| Trilha | Tempo | Exige | Experiência | Alimento | Componente |
+| --- | --- | --- | --- | --- | --- |
+| Margem do igarapé | 2 min | nível 1 | 40 | 35 | 5% |
+| Mata de terra firme | 5 min | nível 2 | 115 | 100 | 15% |
+| Várzea alagada | 12 min | Era II, nível 4 | 320 | 250 | 25% |
+| Serra das antas | 25 min | Era III, nível 6 | 720 | 520 | 40% |
+| Cabeceiras do rio | 45 min | Era IV, nível 8 | 1450 | 900 | 60% |
+
+- **Sucesso:** 86% + 4% por estrela além da primeira + 4% por sananga − 14% por ponto de panema, entre 30% e 98%.
+  - Com sucesso, o herói traz o alimento (+15% por estrela além da primeira) e, com a chance da tabela, um componente.
+  - Sem sucesso, traz 40% da experiência e ganha 1 de panema.
+- **Panema** é a palavra amazônica, de origem tupi, para o azar do caçador: a flecha que erra, a caça que foge.
+  - Vai de 0 a 3. Cada ponto tira 14% da chance de sucesso e 15% da experiência das caçadas.
+  - A sananga tira 1 ponto e o kambô tira todos.
+- O herói pode ser chamado de volta antes da hora, sem caça.
+
+## Casa de Cura e cerimônias (1.3)
+
+A Casa de Cura é a maloca onde o pajé conduz as cerimônias. Ela se constrói desde a Era I e sobe até o nível 15. Cada cerimônia tem custo e tempo. O herói fica fora das expedições durante a cerimônia e a integração, e ajudantes na maloca (afinidade: Xamã, Rio e Noturno) encurtam esse tempo.
+
+| Prática | Povos | No jogo | Exige | Tempo |
+| --- | --- | --- | --- | --- |
+| **Rapé** (rume) | Huni Kuin, Yawanawá, Noke Koî | +5% de velocidade de ataque por cerimônia (até 3) e foco na próxima caçada: +50% de experiência | Casa nível 1 | 30 s |
+| **Sananga** (colírio da floresta) | Matsés, Huni Kuin, Tikuna | Tira 1 de panema; +6% de dano e +4% de sucesso na caça por cerimônia (até 3) | Casa nível 1, herói nível 2 | 45 s |
+| **Kambô** (kampô) | Noke Koî, Matsés, Yawanawá, Huni Kuin | Tira toda a panema; +8% de vida máxima por cerimônia (até 3) | Casa nível 2, Era II, herói nível 3 | 3 min |
+| **Ayahuasca** (nixi pae) | Huni Kuin e outros povos da Amazônia | +20% de poder de habilidade e +25 de mana inicial, uma vez por herói | Casa nível 3, Era III, herói nível 5, um rapé antes | 10 min |
+| **Roda de cacau** | Mayo-Chinchipe da Alta Amazônia; depois maias | Toda a tribo por 10 min: +25% de experiência e +10% de cura e escudos | Casa nível 2, Era II | — |
+
+- O custo de cada cerimônia cresce 80% a cada vez que o mesmo herói a repete.
+- **Pesquisa e respeito:** os textos seguem fontes etnográficas e de divulgação sobre essas práticas:
+  - nixi pae, "o encanto do cipó", e os cantos huni meka da cerimônia Huni Kuin;
+  - rapé (rume) soprado pelo tepi ou pelo kuripe;
+  - sananga e kambô contra a panema dos caçadores;
+  - cacau domesticado na Alta Amazônia há cerca de 5.300 anos.
+
+  O jogo trata as práticas como cultura da tribo, sem promessas de cura. A Casa de Cura lembra que, fora do jogo, algumas têm riscos sérios à saúde e só fazem sentido no seu contexto tradicional.

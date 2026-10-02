@@ -6,13 +6,15 @@ import { endlessStage, FINAL_STAGE, stageReward } from '../src/game/campaign';
 import { COMPONENT_IDS, ITEMS, recipeFor } from '../src/game/items';
 import { SPIRITS, spiritsOfEra, type SpiritId } from '../src/game/spirits';
 import {
-  Game, buildingCost, embersFor, forgeRate, getRates, pendingEra, recruitCost, shopSize, stageUnlocked, wonderCost, workerSlots,
+  Game, buildingCost, embersFor, forgeRate, getRates, newHero, pendingEra, recruitCost, shopSize, stageUnlocked, wonderCost, workerSlots,
   WONDER_STAGES, type Hero,
 } from '../src/game/simulation';
+import { migrateSlot } from '../src/game/board';
 
 const fixture = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), 'fixtures/journey.json'), 'utf8');
 const rich = (game: Game) => { game.state.resources = { wood: 1e7, food: 1e7, stone: 1e7, spirit: 1e7 }; };
-const hero = (uid: string, characterId: number, stars = 1, slot: number | null = null, items: string[] = []): Hero => ({ uid, characterId, stars, slot, items, work: null });
+/** Slots are written in the 1.2 layout and placed on the larger board as old saves are. */
+const hero = (uid: string, characterId: number, stars = 1, slot: number | null = null, items: string[] = []): Hero => ({ ...newHero(uid, characterId, stars, slot === null ? null : migrateSlot(slot)), items });
 const fight = (game: Game) => { for (let i = 0; i < 160 && game.battle?.status === 'fighting'; i++) game.tick(1); };
 
 describe('saves', () => {
@@ -20,9 +22,10 @@ describe('saves', () => {
     const loaded = new Game(fixture, 1790800000000);
     expect(loaded.state.progress).toBe(0);
     expect(loaded.state.selectedStage).toBe(1);
-    expect(loaded.state.heroes.map(h => [h.characterId, h.stars, h.items, h.work])).toEqual([[1, 3, [], null], [3, 2, [], null], [8, 1, [], null]]);
+    expect(loaded.state.heroes.map(h => [h.characterId, h.stars, h.items, h.work, h.level])).toEqual([[1, 3, [], null, 1], [3, 2, [], null, 1], [8, 1, [], null, 1]]);
     expect(loaded.state.buildings.forge).toBe(0);
-    expect(JSON.parse(loaded.serialize()).version).toBe(2);
+    expect(loaded.state.buildings.cura).toBe(0);
+    expect(JSON.parse(loaded.serialize()).version).toBe(3);
     const later = JSON.parse(fixture); later.state.wave = 7;
     expect(new Game(later, 1790800000000).state.progress).toBe(6);
   });
@@ -54,6 +57,7 @@ describe('items and the bone forge', () => {
     const game = new Game();
     game.state.inventory = ['presa', 'arco', 'couro', 'manto', 'raiz'];
     const uid = game.state.heroes[0].uid;
+    game.state.heroes.push(hero('companion', 3));
     expect(game.equipItem(uid, 0).ok).toBe(true);
     expect(game.equipItem(uid, 0).ok).toBe(true);
     expect(game.state.heroes[0].items).toEqual(['garra']);
@@ -228,7 +232,7 @@ describe('the Great Totem and rebirth', () => {
     expect(embers).toBe(8 + 6);
     expect(game.ascend().ok).toBe(true);
     expect(game.state).toMatchObject({ villageLevel: 1, progress: 0, wonder: 0, embers, rebirths: 1, endlessRecord: 3, endlessBest: 0, spirits: [], inventory: [] });
-    expect(game.state.heroes.map(h => h.characterId)).toEqual([1, 3, 8]);
+    expect(game.state.heroes.map(h => h.characterId)).toEqual([1]);
   });
 
   it('turns embers into permanent memories', () => {
