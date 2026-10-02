@@ -4,6 +4,7 @@ import { ANIMALITY } from '../src/data/animality';
 import { Game, getSynergies, recruitCost, SKILL_NOTES } from '../src/game/simulation';
 import { SHOP_ODDS, rollVisitor, sellRefund, unlockedCost } from '../src/game/roster';
 import { REGIONS, STAGES } from '../src/game/campaign';
+import { BOARD } from '../src/game/board';
 import { TRAIT_RULES } from '../src/game/synergies';
 
 const costOf = (id: number) => characters.find(character => character.id === id)!.cost;
@@ -108,7 +109,7 @@ describe('abilities, summons and traits', () => {
         for (const entity of game.battle!.entities) {
           expect([entity.hp, entity.maxHp, entity.mana, entity.attack, entity.shield, entity.x, entity.y].every(Number.isFinite), `${character.name} ${stars}★`).toBe(true);
           expect(entity.maxHp, `${character.name} ${stars}★`).toBeLessThan(30_000);
-          expect(entity.x >= 0 && entity.x <= 3 && entity.y >= 0 && entity.y <= 5, `${character.name} ${stars}★`).toBe(true);
+          expect(entity.x >= 0 && entity.x <= BOARD.maxX && entity.y >= 0 && entity.y <= BOARD.maxY, `${character.name} ${stars}★`).toBe(true);
         }
       }
     }

@@ -6,19 +6,19 @@ O jogador guia um pequeno clã numa floresta ancestral. Reúne recursos, desenvo
 
 O ciclo inicial dura poucos minutos: observar a produção, escolher uma melhoria, recrutar ou combinar um herói, organizar a formação, vencer uma expedição e investir a recompensa. A derrota deve incentivar outra composição sem destruir o progresso permanente.
 
-## O que já funciona (versão 1.0)
+## O que já funciona (versão 1.2)
 
 | Sistema | Implementação inicial |
 |---|---|
 | Economia | Madeira, alimento, pedra e espírito; coleta manual, produção por segundo e trabalhadores nas construções |
 | Aldeia | Cinco construções (com a Forja de Osso) até o nível 15; cinco eras com Espíritos Protetores |
 | Recrutamento | 55 viajantes em cinco custos liberados pelo nível da aldeia, reserva, renovação e fusão de três cópias |
-| Formação | Doze casas disponíveis; capacidade de três a sete heróis; itens (6 componentes, 21 receitas) |
-| Combate | Vida, armadura, resistência mágica, mana, alcance, ataques e habilidades automáticas |
+| Formação | Doze casas hexagonais; capacidade de três a sete heróis; itens (6 componentes, 21 receitas) |
+| Combate | Vida, armadura, resistência mágica, mana, alcance, ataques e habilidades automáticas; chefes com fase e Crepúsculo depois de 75 s |
 | Características | Regras para todas as 31 características (povos, funções e espíritos), em até dois níveis, com números de protótipo |
 | Campanha | 6 regiões × 5 expedições com chefes, repetição, velocidade, Caçada Eterna e renascimento no Grande Totem |
-| Persistência | Save v2 com migração da v1, importação/exportação e produção offline limitada |
-| Arte | 41 formas pintadas; demais formas com figuras procedurais e auras; glifos de 27 animais; som sintetizado |
+| Persistência | Save v2 com migração da v1, importação/exportação, produção offline limitada e preferências do aparelho à parte |
+| Arte | 41 formas pintadas; demais formas com figuras procedurais sombreadas e auras; arena por região; glifos de 27 animais; som sintetizado |
 | Elenco | Cinquenta e cinco fichas completas no códice; os 55 jogáveis com habilidades, invocações e zonas |
 
 ## Produção em etapas

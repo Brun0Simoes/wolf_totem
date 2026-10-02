@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { ARENA_CENTER as C, ARENA_SPAN as S } from './battleArena';
 
 export interface FxPoint { x: number; y: number }
 export const SKILL_COLORS:Record<number,number>={1:0xb7dfff,2:0xaadcca,3:0xd2ac78,4:0xa4df72,5:0xe5bd74,6:0x84d9d0,7:0xe6a189,8:0xd5cdf6,9:0xb3d6aa,10:0xc4e984,11:0xf2d486,12:0xf4dfa0,13:0xc7a3ec,
@@ -20,7 +21,7 @@ const RECIPES:Record<number,Recipe[]>={
 /** Scene-only effects. They never apply damage or change simulation positions. */
 export class CombatEffects {
  private active=new Map<Phaser.GameObjects.Graphics, Phaser.Tweens.Tween>();
- constructor(private scene:Phaser.Scene,private layer:Phaser.GameObjects.Layer,private reduced=false){}
+ constructor(private scene:Phaser.Scene,private layer:Phaser.GameObjects.Layer,public reduced=false){}
 
  private draw(duration:number,paint:(g:Phaser.GameObjects.Graphics,t:number)=>void,delay=0){
   const g=this.scene.add.graphics().setDepth(1100);this.layer.add(g);
@@ -121,10 +122,10 @@ export class CombatEffects {
   this.draw(1200,(g,t)=>{for(let i=0;i<14;i++){const a=i*.45+t*7,r=40*(1-t)+6,y=p.y-t*110+i*3;g.fillStyle(0xf3e6a5,Math.sin(Math.PI*t)*.85);g.fillCircle(p.x+Math.cos(a)*r,y-10+Math.sin(a)*r*.3,2.2);}});
  }
  night(points:FxPoint[]){
-  this.draw(1500,(g,t)=>{const a=Math.sin(Math.PI*t);g.fillStyle(0x140f24,.42*a);g.fillEllipse(672,420,980,470);for(const p of points){g.lineStyle(1.5,0x9d8ad8,a*.8);g.strokeEllipse(p.x-9,p.y-100,14,9);g.strokeEllipse(p.x+9,p.y-100,14,9);}});
+  this.draw(1500,(g,t)=>{const a=Math.sin(Math.PI*t);g.fillStyle(0x140f24,.42*a);g.fillEllipse(C.x,C.y,S.right-S.left+260,S.bottom-S.top+200);for(const p of points){g.lineStyle(1.5,0x9d8ad8,a*.8);g.strokeEllipse(p.x-9,p.y-100,14,9);g.strokeEllipse(p.x+9,p.y-100,14,9);}});
  }
  stampede(points:FxPoint[],color:number){
-  for(let k=0;k<5;k++)this.draw(700,(g,t)=>{const y=380+k*42-k*k*3,x=Phaser.Math.Linear(260,1090,t);g.fillStyle(color,(1-t)*.5);g.fillEllipse(x,y,90,26);g.fillStyle(color,(1-t)*.8);g.fillTriangle(x+40,y-10,x+64,y-22,x+50,y);},k*70);
+  for(let k=0;k<5;k++)this.draw(700,(g,t)=>{const y=S.top+k*(C.y-S.top)/4,x=Phaser.Math.Linear(S.left-120,S.right+120,t);g.fillStyle(color,(1-t)*.5);g.fillEllipse(x,y,90,26);g.fillStyle(color,(1-t)*.8);g.fillTriangle(x+40,y-10,x+64,y-22,x+50,y);},k*70);
   for(const p of points)this.dust(p,color,6);
  }
  private skillRecipe(id:number,source:FxPoint,target:FxPoint,allies:FxPoint[],enemies:FxPoint[]){
@@ -152,9 +153,9 @@ export class CombatEffects {
  }
  /** A patron spirit answers: its glyph rises over the field with a wave in its color. */
  power(texture:string,color:number,allies:FxPoint[],enemies:FxPoint[]){
-  const image=this.scene.add.image(672,330,texture).setDepth(1150).setAlpha(0).setScale(.6);this.layer.add(image);
-  this.scene.tweens.add({targets:image,alpha:{from:0,to:.85},scale:1.25,y:300,duration:this.reduced?200:520,yoyo:true,hold:this.reduced?100:380,ease:'Sine.easeOut',onComplete:()=>image.destroy()});
-  this.draw(1100,(g,t)=>{const a=Math.sin(Math.PI*t);g.lineStyle(3,color,a*.7);g.strokeEllipse(672,380,200+t*700,90+t*320);g.fillStyle(color,a*.06);g.fillEllipse(672,380,200+t*700,90+t*320);});
+  const image=this.scene.add.image(C.x,C.y-60,texture).setDepth(1150).setAlpha(0).setScale(.6);this.layer.add(image);
+  this.scene.tweens.add({targets:image,alpha:{from:0,to:.85},scale:1.25,y:C.y-90,duration:this.reduced?200:520,yoyo:true,hold:this.reduced?100:380,ease:'Sine.easeOut',onComplete:()=>image.destroy()});
+  this.draw(1100,(g,t)=>{const a=Math.sin(Math.PI*t);g.lineStyle(3,color,a*.7);g.strokeEllipse(C.x,C.y,200+t*700,90+t*320);g.fillStyle(color,a*.06);g.fillEllipse(C.x,C.y,200+t*700,90+t*320);});
   for(const p of [...allies,...enemies])this.ring(p,color,46,700,120);
  }
  clear(){for(const [g,tween] of this.active){tween.stop();g.destroy();}this.active.clear();}

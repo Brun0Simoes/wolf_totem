@@ -1,5 +1,22 @@
 # Wolf Totem — arte e animação
 
+## Versão 1.2: arena hexagonal e figuras refinadas
+
+- **Arena** (`src/render/battleArena.ts`): uma vista frontal em leve perspectiva substitui o losango isométrico nas expedições.
+  - Cada região tem um fundo pintado pelo código: céu, cordilheira, linha de árvores do bioma, chão com textura e névoa.
+  - O tabuleiro é uma plataforma de pedra com 24 hexágonos chanfrados: tons quentes na metade inimiga e verdes na metade da tribo.
+  - A linha dourada do meio segue as bordas das casas. Dois totens entalhados marcam as pontas dessa linha.
+  - Unidades, zonas, efeitos e cliques passam pela mesma projeção (`project`). As unidades do fundo aparecem um pouco menores.
+- **Crepúsculo:** depois de 75 s de luta o campo escurece em tom violeta, com o estandarte do Crepúsculo.
+- **Lampejo de dano:** dura 0,07 s e acontece no máximo a cada 0,4 s por unidade, para que lutas cheias mantenham as cores.
+- **Figuras procedurais refinadas:**
+  - membros afunilados com articulações e sombreado de luz frontal;
+  - cabeça de perfil com nariz, queixo, orelha, olho com brilho, sobrancelha e pintura no rosto;
+  - cabelo em camadas com mechas;
+  - colar de contas com dente, braçadeiras, tornozeleiras e sandálias;
+  - cintos e tangas com faixa tribal em zigue-zague e franjas;
+  - vestes com barra decorada, mantos com gola de pele e armaduras com rebites.
+
 ## Versão 1.0: figuras procedurais e glifos
 
 Enquanto as folhas pintadas não chegam, o jogo completa o visual com código (`src/render/proceduralArt.ts` e `src/render/spiritGlyphs.ts`):

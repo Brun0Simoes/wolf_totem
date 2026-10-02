@@ -7,6 +7,8 @@ export class SoundSystem {
   private context?: AudioContext;
   private master?: GainNode;
   private musicGain?: GainNode;
+  private effectsGain?: GainNode;
+  private volumes = { effects: 0.8, music: 0.5 };
   private last = new Map<Sfx, number>();
   private timer = 0;
   private step = 0;
@@ -19,7 +21,9 @@ export class SoundSystem {
       if (!this.context) {
         this.context = new AudioContext();
         this.master = this.context.createGain(); this.master.gain.value = 0.55; this.master.connect(this.context.destination);
-        this.musicGain = this.context.createGain(); this.musicGain.gain.value = 0.32; this.musicGain.connect(this.master);
+        this.musicGain = this.context.createGain(); this.musicGain.connect(this.master);
+        this.effectsGain = this.context.createGain(); this.effectsGain.connect(this.master);
+        this.applyVolumes();
       }
       void this.context.resume();
       return this.context;
@@ -27,10 +31,27 @@ export class SoundSystem {
   }
 
   toggle(): boolean {
-    this.muted = !this.muted;
-    if (this.muted) { window.clearInterval(this.timer); this.timer = 0; }
-    else { this.ensure(); this.startMusic(); this.play('click'); }
+    this.setMuted(!this.muted);
+    if (!this.muted) this.play('click');
     return this.muted;
+  }
+
+  /** Unmuting must come from a user gesture, as browsers require for audio. */
+  setMuted(muted: boolean): void {
+    this.muted = muted;
+    if (muted) { window.clearInterval(this.timer); this.timer = 0; }
+    else { this.ensure(); this.startMusic(); }
+  }
+
+  /** Both levels go from 0 to 1; the defaults match the original mix. */
+  setVolumes(effects: number, music: number): void {
+    this.volumes = { effects, music };
+    this.applyVolumes();
+  }
+
+  private applyVolumes(): void {
+    if (this.effectsGain) this.effectsGain.gain.value = this.volumes.effects * 1.25;
+    if (this.musicGain) this.musicGain.gain.value = this.volumes.music * 0.64;
   }
 
   private tone(frequency: number, start: number, duration: number, type: OscillatorType, volume: number, slideTo?: number, destination?: AudioNode): void {
@@ -41,7 +62,7 @@ export class SoundSystem {
     gain.gain.setValueAtTime(0.0001, start);
     gain.gain.exponentialRampToValueAtTime(volume, start + Math.min(0.02, duration / 4));
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    oscillator.connect(gain).connect(destination ?? this.master!);
+    oscillator.connect(gain).connect(destination ?? this.effectsGain!);
     oscillator.start(start); oscillator.stop(start + duration + 0.02);
   }
 
@@ -53,7 +74,7 @@ export class SoundSystem {
     const source = context.createBufferSource(), filter = context.createBiquadFilter(), gain = context.createGain();
     source.buffer = buffer; filter.type = 'bandpass'; filter.frequency.value = frequency; filter.Q.value = 0.9;
     gain.gain.value = volume;
-    source.connect(filter).connect(gain).connect(destination ?? this.master!);
+    source.connect(filter).connect(gain).connect(destination ?? this.effectsGain!);
     source.start(start);
   }
 

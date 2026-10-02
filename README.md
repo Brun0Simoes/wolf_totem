@@ -25,6 +25,8 @@ Abra **http://127.0.0.1:5173**. O servidor funciona enquanto esse terminal estiv
 | **Fim de jogo** | Caçada Eterna sem fim e o Grande Totem (maravilha em 5 partes). Completo o Totem, a tribo renasce com brasas ancestrais, gastas em 6 Memórias permanentes. |
 | **Vida da aldeia (1.1)** | Diário com 24 objetivos (tutorial guiado até o renascimento); eventos a cada poucos minutos: mercador, presságio, viajante perdido e incursões de saqueadores para defender. |
 | **Combate (1.1)** | Chefes com uma mecânica própria abaixo de 50% da vida e resumo de cada batalha (dano causado, recebido, cura e escudo, com destaque para o melhor da luta). |
+| **Campo hexagonal (1.2)** | Tabuleiro de casas hexagonais em vista frontal, com cenário próprio em cada região. Depois de 75 s de luta vem o Crepúsculo: a cura enfraquece e os golpes ficam mais fortes, para nenhuma batalha empacar. |
+| **Tela inicial e configurações (1.2)** | A história da tribo e o resumo da jornada na abertura. Volume de efeitos e música, movimento reduzido, números de dano e apagar a jornada com confirmação. |
 
 Números e regras completas: [Sistemas do jogo](docs/SISTEMAS.md).
 
@@ -49,7 +51,7 @@ Atalhos: `1` aldeia, `2` expedição, `3` códice, `4` totem, `M` mapa, `P` paus
 
 Quando uma folha pintada nova entra em `public/assets/animations/v3`, ela substitui a figura sem mudar código. O [inventário de arte](docs/production/STATUS.md) lista as 124 formas pendentes. Detalhes em [Arte e animação](docs/ARTE-E-ANIMACAO.md).
 
-Os espíritos, invocações, estandartes e o Grande Totem usam glifos de máscara de totem (27 animais) desenhados em SVG/Canvas. Som e música são sintetizados com WebAudio; ative-os no ícone de volume.
+Os espíritos, invocações, estandartes e o Grande Totem usam glifos de máscara de totem (27 animais) desenhados em SVG/Canvas. A arena de cada região e as figuras provisórias, com sombreado, rosto e roupas detalhadas, também são pintadas pelo código. Som e música são sintetizados com WebAudio: ative-os no ícone de volume ou nas configurações.
 
 ## Estrutura
 
@@ -66,7 +68,9 @@ src/game/items.ts          Componentes e itens
 src/game/spirits.ts        Eras, espíritos protetores e memórias
 src/game/quests.ts         Diário de objetivos
 src/game/events.ts         Eventos da aldeia e incursões
-src/render/                Phaser: aldeia, campo, efeitos, figuras procedurais e glifos
+src/game/board.ts          Campo hexagonal: casas, limites e vizinhança
+src/render/                Phaser: aldeia, arena, efeitos, figuras procedurais e glifos
+src/prefs.ts               Preferências do aparelho (som, movimento, números)
 src/audio.ts               Efeitos e música sintetizados
 src/main.ts                Interface e ciclo do jogo
 tests/                     Regras, elenco, sistemas, campanha e atlas

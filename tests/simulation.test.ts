@@ -147,7 +147,7 @@ describe('automatic combat', () => {
     game.state.villageLevel = 5; game.state.progress = 29; game.state.selectedStage = 30;
     game.state.spirits = ['lobo', 'coruja', 'elefante', 'urso'];
     const items = [['garra', 'presa', 'talisma'], ['muralha', 'pele-urso'], ['espinhos'], ['obsidiana', 'garra'], ['cajado-vida'], ['tempestade', 'lanca'], ['carvalho']];
-    game.state.heroes = [[39, 3], [28, 3], [40, 2], [8, 3], [25, 2], [33, 2], [49, 2]].map(([characterId, stars], index) => ({ uid: `final-${index}`, characterId, stars, slot: [1, 2, 0, 9, 10, 5, 6][index], items: items[index], work: null }));
+    game.state.heroes = [[39, 3], [28, 3], [40, 2], [8, 3], [25, 2], [33, 2], [49, 2]].map(([characterId, stars], index) => ({ uid: `final-${index}`, characterId, stars, slot: [1, 2, 0, 9, 10, 5, 3][index], items: items[index], work: null }));
     expect(stageUnlocked(game.state, 0)).toBe(false);
     game.startBattle();
     for (let i = 0; i < 160 && game.battle?.status === 'fighting'; i++) game.tick(1);

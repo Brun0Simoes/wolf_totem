@@ -1,5 +1,6 @@
 import { characters } from '../data/characters';
 import type { CombatApi, CombatEntity } from './simulation';
+import { clampX, clampY } from './board';
 
 /**
  * Prototype implementations of the 55 Set 1 abilities. The plan states intent and only a few numbers;
@@ -8,7 +9,7 @@ import type { CombatApi, CombatEntity } from './simulation';
 type StarValues = [number, number, number];
 const byStar = (entity: CombatEntity, values: StarValues): number => values[Math.min(2, Math.max(0, entity.stars - 1))];
 const distance = (a: { x: number; y: number }, b: { x: number; y: number }): number => Math.hypot(a.x - b.x, a.y - b.y);
-const clamp = (entity: CombatEntity): void => { entity.x = Math.max(0, Math.min(3, entity.x)); entity.y = Math.max(0, Math.min(5, entity.y)); };
+const clamp = (entity: CombatEntity): void => { entity.x = clampX(entity.x); entity.y = clampY(entity.y); };
 /** +1 moves toward the enemy half for allies (they stand on rows 3–5). */
 const forward = (entity: CombatEntity): number => entity.team === 'ally' ? -1 : 1;
 const nearest = (point: { x: number; y: number }, list: CombatEntity[]): CombatEntity[] => [...list].sort((a, b) => distance(point, a) - distance(point, b));
@@ -57,7 +58,7 @@ export function castAbility(api: CombatApi, abilityId: number, source: CombatEnt
       break;
     }
     case 3:
-      source.x = Math.max(0, Math.min(3, target.x)); source.y = Math.max(0, Math.min(5, target.y - forward(source) * 0.7));
+      source.x = clampX(target.x); source.y = clampY(target.y - forward(source) * 0.7);
       api.damage(source, target, power * 1.5); target.stun = 1; api.shield(source, source, source.maxHp * 0.2);
       break;
     case 4:

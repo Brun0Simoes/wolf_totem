@@ -6,6 +6,7 @@ import { castAbility, SKILL_NOTES } from './skills';
 import { MEMORIES, memoryCost, spiritById, spiritsOfEra, type MemoryId, type SpiritId } from './spirits';
 import { countTraits, TRAIT_RULES, traitStatus } from './synergies';
 import { questById } from './quests';
+import { allySlotCenter, BOARD_CENTER, clampX, clampY, ENEMY_SLOTS, enemySlotCenter } from './board';
 import { EVENT_TEXT, FIRST_EVENT_AT, nextEventDelay, OMEN_BONUS, OMEN_DURATION, RAID_PENALTY, raidStage, rollEvent, TRIBUTE, type VillageEvent } from './events';
 
 export { SKILL_NOTES, FINAL_STAGE };
@@ -129,7 +130,7 @@ export interface CombatEntity {
 }
 export interface CombatEvent {
   id: number;
-  type: 'attack' | 'skill' | 'damage' | 'heal' | 'death' | 'shield' | 'summon' | 'revive' | 'power' | 'phase';
+  type: 'attack' | 'skill' | 'damage' | 'heal' | 'death' | 'shield' | 'summon' | 'revive' | 'power' | 'phase' | 'overtime';
   sourceId: string;
   targetId?: string;
   amount?: number;
@@ -209,7 +210,10 @@ export const MAX_ROSTER_SIZE = 18;
 export const MAX_INVENTORY = 30;
 export const WONDER_STAGES = 5;
 const MAX_SUMMONS_PER_OWNER = 6;
-const BOARD = { maxX: 3, maxY: 5 };
+/** Twilight: past this second, healing fades and every blow lands harder, so no battle stalls. */
+export const OVERTIME_START = 75;
+export const overtimeDamage = (time: number) => 1 + Math.max(0, time - OVERTIME_START) * 0.03;
+export const overtimeHealing = (time: number) => Math.max(0.15, 1 - Math.max(0, time - OVERTIME_START) * 0.02);
 const STAR_POWER = [1, 2.2, 4];
 /** Heroes whose traits match a building work 50% better there. */
 export const WORK_AFFINITY: Record<BuildingId, string[]> = {
@@ -326,8 +330,8 @@ export function addMod(entity: CombatEntity, stat: ModStat, value: number, time:
   entity.mods.push({ stat, value, time, tag });
 }
 export const clampToBoard = (entity: CombatEntity): void => {
-  entity.x = Math.max(0, Math.min(BOARD.maxX, entity.x));
-  entity.y = Math.max(0, Math.min(BOARD.maxY, entity.y));
+  entity.x = clampX(entity.x);
+  entity.y = clampY(entity.y);
 };
 
 const starterHeroes = (): Hero[] => [
@@ -827,8 +831,8 @@ export class Game {
     const character = characterById(characterId);
     const entity = this.blankEntity(character, team, `${team}-${index}`, stars);
     entity.uid = hero?.uid;
-    entity.x = slot % 4;
-    entity.y = team === 'ally' ? 3 + Math.floor(slot / 4) : 2 - Math.floor(slot / 4);
+    const cell = team === 'ally' ? allySlotCenter(slot) : enemySlotCenter(slot);
+    entity.x = cell.x; entity.y = cell.y;
     entity.cooldown = index * 0.08;
     if (team === 'enemy') {
       const scale = enemyScale(level, character.cost);
@@ -937,8 +941,7 @@ export class Game {
       if (!ally.perks.teamShield) continue;
       for (const other of allies.filter(other => distance(other, ally) <= 1.1)) other.shield += ally.maxHp * ally.perks.teamShield;
     }
-    const enemySlots = [1, 2, 5, 6, 0, 3, 8, 11];
-    const enemies = stage.units.map((unit, index) => this.entity(unit.id, unit.stars, 'enemy', index, enemySlots[index], level, undefined, !!unit.boss, stage.region));
+    const enemies = stage.units.map((unit, index) => this.entity(unit.id, unit.stars, 'enemy', index, ENEMY_SLOTS[index], level, undefined, !!unit.boss, stage.region));
     this.events = [];
     this.summonCounter = 0;
     const firstClear = stage.id > 0 && stage.id > this.state.progress;
@@ -1033,7 +1036,7 @@ export class Game {
     if (target.hp <= 0 || target.dodge > 0 || !(raw > 0)) return 0;
     const resist = trueDamage ? 0 : Math.max(0, magic ? effectiveMagicResist(target) : effectiveArmor(target));
     let multiplier = 100 / (100 + resist) * (target.guard > 0 ? 0.45 : 1) * (target.marked > 0 ? 1.2 : 1);
-    multiplier *= Math.max(0.2, 1 + modTotal(target, 'damageTaken'));
+    multiplier *= Math.max(0.2, 1 + modTotal(target, 'damageTaken')) * overtimeDamage(this.battle!.time);
     if (target.wet > 0) multiplier *= 1 + modTotal(source, 'wetBonus');
     for (const zone of this.battle!.zones) if (zone.protect && zone.team === target.team && this.insideZone(target, zone)) multiplier *= 1 - zone.protect;
     const damage = raw * multiplier;
@@ -1105,7 +1108,7 @@ export class Game {
       }
       case 49:
         announce('Nevasca Eterna');
-        api.addZone({ kind: 'frost', team: boss.team, sourceId: boss.id, x: 1.5, y: 2.5, radius: 4.5, time: 12, dps: power * 0.35, slow: true });
+        api.addZone({ kind: 'frost', team: boss.team, sourceId: boss.id, x: BOARD_CENTER.x, y: BOARD_CENTER.y, radius: 4.5, time: 12, dps: power * 0.35, slow: true });
         { const target = this.chooseTarget(boss); if (target) castAbility(api, 49, boss, target, power); }
         break;
       default:
@@ -1147,13 +1150,13 @@ export class Game {
   private heal(source: CombatEntity, target: CombatEntity, amount: number): void {
     if (target.hp <= 0) return;
     const boost = source.team === 'ally' ? 1 + this.healBonus : 1;
-    const healed = Math.min(amount * boost * (target.antiheal > 0 ? 0.5 : 1), target.maxHp - target.hp);
+    const healed = Math.min(amount * boost * (target.antiheal > 0 ? 0.5 : 1) * overtimeHealing(this.battle!.time), target.maxHp - target.hp);
     target.hp += healed;
     if (healed > 0) { this.creditOf(source).healed += healed; this.emit('heal', source, target, Math.round(healed)); }
   }
   private giveShield(source: CombatEntity, target: CombatEntity, amount: number): void {
     if (target.hp <= 0 || !(amount > 0)) return;
-    const value = amount * (source.team === 'ally' ? 1 + this.healBonus : 1);
+    const value = amount * (source.team === 'ally' ? 1 + this.healBonus : 1) * overtimeHealing(this.battle!.time);
     target.shield += value;
     this.creditOf(source).shielded += value;
     this.emit('shield', source, target, Math.round(value));
@@ -1289,7 +1292,9 @@ export class Game {
 
   private combatStep(dt: number): void {
     const battle = this.battle!;
+    const wasTwilight = battle.time >= OVERTIME_START;
     battle.time += dt;
+    if (!wasTwilight && battle.time >= OVERTIME_START) { const first = battle.entities.find(entity => entity.hp > 0); if (first) this.emit('overtime', first, undefined, undefined, 'Crepúsculo'); }
     this.events = this.events.filter(event => battle.time - event.time < 2);
     for (const team of ['ally', 'enemy'] as const) {
       const prey = battle.prey[team];
@@ -1321,7 +1326,7 @@ export class Game {
         if (entity.dotClock >= 1) { entity.dotClock -= 1; this.damage(entity, entity, entity.poisonDamage, true); }
       } else entity.dotClock = 0;
       if (entity.hp <= 0) continue;
-      if (entity.regen > 0) entity.hp = Math.min(entity.maxHp, entity.hp + entity.maxHp * entity.regen * dt * (entity.antiheal > 0 ? 0.5 : 1));
+      if (entity.regen > 0) entity.hp = Math.min(entity.maxHp, entity.hp + entity.maxHp * entity.regen * dt * (entity.antiheal > 0 ? 0.5 : 1) * overtimeHealing(battle.time));
       if (entity.manaRegen > 0 && entity.manaMax > 0) entity.mana = Math.min(entity.manaMax, entity.mana + entity.manaRegen * dt);
       if (entity.stun > 0 && !(entity.characterId === 4 && entity.mana >= entity.manaMax)) { entity.action = 'idle'; continue; }
       const target = this.chooseTarget(entity);

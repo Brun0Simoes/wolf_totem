@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { EVENT_DURATION, FIRST_EVENT_AT, OMEN_BONUS, RAID_PENALTY, TRIBUTE } from '../src/game/events';
 import { QUESTS } from '../src/game/quests';
-import { Game, getRates, MAX_ROSTER_SIZE, type Hero } from '../src/game/simulation';
+import { allySlotCenter, cellCenter, enemySlotCenter, hexCorners, MIDLINE } from '../src/game/board';
+import { Game, getRates, MAX_ROSTER_SIZE, OVERTIME_START, overtimeDamage, overtimeHealing, type Hero } from '../src/game/simulation';
 
 const hero = (uid: string, characterId: number, stars = 1, slot: number | null = null, items: string[] = []): Hero => ({ uid, characterId, stars, slot, items, work: null });
 const fight = (game: Game) => { for (let i = 0; i < 160 && game.battle?.status === 'fighting'; i++) game.tick(1); };
@@ -145,5 +146,31 @@ describe('village events', () => {
     const broken = new Game(data, 1000);
     expect(broken.state.event).toBeNull();
     expect(broken.state.omen).toBeNull();
+  });
+});
+
+describe('hex board and twilight', () => {
+  it('lays out offset rows whose hexes tile without gaps, the tribe below the midline', () => {
+    for (let slot = 0; slot < 12; slot++) {
+      expect(allySlotCenter(slot).y).toBeGreaterThan(MIDLINE);
+      expect(enemySlotCenter(slot).y).toBeLessThan(MIDLINE);
+    }
+    expect(Math.abs(allySlotCenter(4).x - allySlotCenter(0).x)).toBeCloseTo(0.5);
+    // A hex shares its lower-right edge with the neighbour below and to the right.
+    const [a, b] = [hexCorners(cellCenter(1, 2)), hexCorners(cellCenter(1, 3))];
+    expect(a[0].x).toBeCloseTo(b[4].x); expect(a[0].y).toBeCloseTo(b[4].y);
+    expect(a[1].x).toBeCloseTo(b[3].x); expect(a[1].y).toBeCloseTo(b[3].y);
+  });
+
+  it('fades healing and hardens blows after the twilight so long fights resolve', () => {
+    expect(overtimeDamage(OVERTIME_START - 10)).toBe(1);
+    expect(overtimeHealing(OVERTIME_START)).toBe(1);
+    expect(overtimeDamage(OVERTIME_START + 50)).toBeGreaterThan(2);
+    expect(overtimeHealing(OVERTIME_START + 200)).toBeGreaterThan(0);
+    const game = new Game();
+    game.startBattle();
+    game.battle!.time = OVERTIME_START - 0.05;
+    game.tick(0.1);
+    expect(game.events.some(event => event.type === 'overtime')).toBe(true);
   });
 });

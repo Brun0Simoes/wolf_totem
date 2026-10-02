@@ -84,7 +84,7 @@ function stroke(c: CanvasRenderingContext2D, points: [number, number][], width: 
   if (outline) { path(); c.strokeStyle = OUTLINE; c.lineWidth = width + 3.2; c.stroke(); }
   path(); c.strokeStyle = color; c.lineWidth = width; c.stroke();
 }
-function shape(c: CanvasRenderingContext2D, points: [number, number][], fill: string, outline = true): void {
+function shape(c: CanvasRenderingContext2D, points: [number, number][], fill: string | CanvasGradient, outline = true): void {
   c.beginPath(); points.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath();
   c.fillStyle = fill; c.fill();
   if (outline) { c.strokeStyle = OUTLINE; c.lineWidth = 2.2; c.lineJoin = 'round'; c.stroke(); }
@@ -107,6 +107,71 @@ function animalFeatures(animal: AnimalId) {
   };
 }
 
+type P = [number, number];
+/** Light comes from the front and above: the side facing it is lit, the far side falls into shade. */
+const LIGHT: P = [0.55, -0.83];
+
+/** A gradient across a segment, dark on the shaded side and warm on the lit edge. */
+function across(c: CanvasRenderingContext2D, a: P, b: P, width: number, base: string): CanvasGradient {
+  const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1;
+  let nx = -dy / len, ny = dx / len;
+  if (nx * LIGHT[0] + ny * LIGHT[1] < 0) { nx = -nx; ny = -ny; }
+  const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, half = width / 2 + 1;
+  const g = c.createLinearGradient(mx - nx * half, my - ny * half, mx + nx * half, my + ny * half);
+  g.addColorStop(0, shade(base, -0.3)); g.addColorStop(0.42, base); g.addColorStop(0.82, shade(base, 0.06)); g.addColorStop(1, shade(base, 0.24));
+  return g;
+}
+/** A horizontal gradient for broad shapes such as the torso, robes and mantles. */
+function sideLight(c: CanvasRenderingContext2D, left: number, right: number, base: string): CanvasGradient {
+  const g = c.createLinearGradient(left, 0, right, 0);
+  g.addColorStop(0, shade(base, -0.28)); g.addColorStop(0.5, base); g.addColorStop(0.88, shade(base, 0.08)); g.addColorStop(1, shade(base, 0.2));
+  return g;
+}
+/** A jointed, tapering limb: widths are given at each joint. The outline wraps the whole limb. */
+function limb(c: CanvasRenderingContext2D, points: P[], widths: number[], base: string, outline = true): void {
+  const segments: Path2D[] = [], joints: Path2D[] = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    const [a, b] = [points[i], points[i + 1]], [wa, wb] = [widths[i] / 2, widths[i + 1] / 2];
+    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
+    const path = new Path2D();
+    path.moveTo(a[0] + nx * wa, a[1] + ny * wa); path.lineTo(b[0] + nx * wb, b[1] + ny * wb);
+    path.lineTo(b[0] - nx * wb, b[1] - ny * wb); path.lineTo(a[0] - nx * wa, a[1] - ny * wa); path.closePath();
+    segments.push(path);
+  }
+  points.forEach(([x, y], i) => { const path = new Path2D(); path.arc(x, y, widths[i] / 2, 0, Math.PI * 2); joints.push(path); });
+  if (outline) { c.strokeStyle = OUTLINE; c.lineWidth = 3.4; c.lineJoin = 'round'; for (const path of [...segments, ...joints]) c.stroke(path); }
+  segments.forEach((path, i) => { c.fillStyle = across(c, points[i], points[i + 1], Math.max(widths[i], widths[i + 1]), base); c.fill(path); });
+  joints.forEach((path, i) => { const j = Math.min(i, points.length - 2); c.fillStyle = across(c, points[j], points[j + 1], widths[i], base); c.fill(path); });
+}
+const lerp = (a: P, b: P, t: number): P => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+/** A wrapped band around a limb, between two fractions of a segment. */
+function band(c: CanvasRenderingContext2D, a: P, b: P, from: number, to: number, width: number, color: string): void {
+  const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1, nx = -dy / len * width / 2, ny = dx / len * width / 2;
+  const [p, q] = [lerp(a, b, from), lerp(a, b, to)];
+  shape(c, [[p[0] + nx, p[1] + ny], [q[0] + nx, q[1] + ny], [q[0] - nx, q[1] - ny], [p[0] - nx, p[1] - ny]], across(c, p, q, width, color));
+  const mid = lerp(a, b, (from + to) / 2);
+  stroke(c, [[mid[0] + nx * 0.7, mid[1] + ny * 0.7], [mid[0] - nx * 0.7, mid[1] - ny * 0.7]], 0.9, shade(color, -0.35), false);
+}
+/** Short hanging strands along a hem. */
+function fringe(c: CanvasRenderingContext2D, from: P, to: P, count: number, length: number, color: string): void {
+  for (let i = 0; i <= count; i++) {
+    const [x, y] = lerp(from, to, i / count);
+    stroke(c, [[x, y - 1], [x - 0.5, y + length * (0.8 + (i % 2) * 0.35)]], 1.6, color);
+  }
+}
+/** A tribal zigzag between two points. */
+function zigzag(c: CanvasRenderingContext2D, from: P, to: P, teeth: number, height: number, color: string, width = 1.5): void {
+  const points: P[] = [];
+  for (let i = 0; i <= teeth * 2; i++) { const [x, y] = lerp(from, to, i / (teeth * 2)); points.push([x, y + (i % 2 ? height : 0)]); }
+  stroke(c, points, width, color, false);
+}
+function foot(c: CanvasRenderingContext2D, ankle: P, length: number, skin: string, strap: string): void {
+  const [x, y] = ankle;
+  shape(c, [[x - 4, y - 3], [x + 2, y - 4], [x + length * 0.7, y - 1], [x + length, y + 2], [x + length - 1, y + 5], [x - 5, y + 5]], skin);
+  stroke(c, [[x - 5, y + 4.6], [x + length - 0.5, y + 4.6]], 2, shade(strap, -0.25), false);
+  stroke(c, [[x - 1, y - 2], [x + 4, y + 3]], 1.6, strap, false);
+}
+
 /** Paints one frame. x/y are the feet; the figure faces right. */
 function paintFigure(c: CanvasRenderingContext2D, id: number, stars: number, pose: Pose, clip: 'idle' | 'walk' | 'attack'): void {
   const spec = figureSpec(id), dim = DIMENSIONS[spec.build], animal = CHARACTER_ANIMAL[id] ?? 'wolf';
@@ -115,15 +180,17 @@ function paintFigure(c: CanvasRenderingContext2D, id: number, stars: number, pos
   const unit = 1.02 * scale;
   const footY = FOOT_Y, cx = CENTER_X;
   const legLen = 25 * unit, shinLen = 25 * unit, torsoLen = 40 * unit, armLen = 22 * unit, foreLen = 21 * unit;
-  const hipY = footY - legLen - shinLen + 4 + pose.bob;
+  const hipY = footY - legLen - shinLen + 1 + pose.bob;
   const lean = pose.lean + dim.hunch;
-  const hip: [number, number] = [cx, hipY];
-  const neck: [number, number] = [cx + Math.sin(lean) * torsoLen, hipY - Math.cos(lean) * torsoLen];
-  const shoulderB: [number, number] = [neck[0] - dim.shoulder * 0.35, neck[1] + 6];
-  const shoulderF: [number, number] = [neck[0] + dim.shoulder * 0.35, neck[1] + 6];
-  const headC: [number, number] = [neck[0] + 3 + Math.sin(lean) * 8, neck[1] - dim.head - 2];
+  const hip: P = [cx, hipY];
+  const neck: P = [cx + Math.sin(lean) * torsoLen, hipY - Math.cos(lean) * torsoLen];
+  const shoulderB: P = [neck[0] - dim.shoulder * 0.35, neck[1] + 6];
+  const shoulderF: P = [neck[0] + dim.shoulder * 0.35, neck[1] + 6];
+  const headC: P = [neck[0] + 3 + Math.sin(lean) * 8, neck[1] - dim.head - 2];
   const skinDark = shade(spec.skin, -0.2), clothDark = shade(spec.cloth, -0.25);
   const glow = stars >= 2;
+  const L = dim.limb, heavy = spec.build === 'heavy' || spec.build === 'giant';
+  const markColor = glow ? spec.accent : spec.paint;
 
   // 3★ avatar: the spirit animal towers behind the figure.
   if (stars === 3) {
@@ -136,15 +203,19 @@ function paintFigure(c: CanvasRenderingContext2D, id: number, stars: number, pos
   if (stars >= 2 && feature.wings) {
     const spread = stars === 3 ? 1 : 0.6, flap = clip === 'attack' ? pose.cast * 0.3 : 0;
     c.globalAlpha = stars === 3 ? 0.7 : 0.45;
-    for (const side of [-1, 1]) shape(c, [[neck[0], neck[1] + 8], [neck[0] + side * 48 * spread, neck[1] - 30 - flap * 30], [neck[0] + side * 62 * spread, neck[1] + 10], [neck[0] + side * 40 * spread, neck[1] + 4], [neck[0] + side * 30 * spread, neck[1] + 30]], spec.accent, false);
+    for (const side of [-1, 1]) {
+      const root: P = [neck[0], neck[1] + 8];
+      shape(c, [root, [neck[0] + side * 48 * spread, neck[1] - 30 - flap * 30], [neck[0] + side * 62 * spread, neck[1] + 10], [neck[0] + side * 40 * spread, neck[1] + 4], [neck[0] + side * 30 * spread, neck[1] + 30]], spec.accent, false);
+      for (let i = 1; i < 4; i++) stroke(c, [root, [neck[0] + side * (30 + i * 9) * spread, neck[1] - 18 + i * 9 - flap * 20]], 1, shade(spec.accent, 0.35), false);
+    }
     c.globalAlpha = 1;
   }
   if (stars >= 2 && feature.arms) {
     c.globalAlpha = stars === 3 ? 0.75 : 0.5;
     const pairs = stars === 3 ? 3 : 1;
     for (let i = 0; i < pairs; i++) for (const side of [-1, 1]) {
-      const base: [number, number] = [neck[0] + side * 4, neck[1] + 12 + i * 8];
-      const knee: [number, number] = [base[0] + side * (26 + i * 4), base[1] - 18 + i * 10 + pose.bob];
+      const base: P = [neck[0] + side * 4, neck[1] + 12 + i * 8];
+      const knee: P = [base[0] + side * (26 + i * 4), base[1] - 18 + i * 10 + pose.bob];
       stroke(c, [base, knee, [knee[0] + side * 10, knee[1] + 26]], 3.4, spec.accent, false);
     }
     c.globalAlpha = 1;
@@ -153,100 +224,208 @@ function paintFigure(c: CanvasRenderingContext2D, id: number, stars: number, pos
     const sway = Math.sin(pose.bob + pose.legF * 2) * 6;
     c.globalAlpha = stars === 3 ? 0.9 : 0.6;
     const long = stars === 3 ? 1 : 0.7;
-    stroke(c, [[hip[0] - 8, hip[1] + 4], [hip[0] - 22 * long, hip[1] + 18 + sway], [hip[0] - 36 * long, hip[1] + 22 + sway], [hip[0] - 46 * long, hip[1] + 12 + sway]], stars === 3 ? 8 : 6, stars === 3 ? spec.accent : shade(spec.accent, -0.15));
+    limb(c, [[hip[0] - 8, hip[1] + 4], [hip[0] - 22 * long, hip[1] + 18 + sway], [hip[0] - 36 * long, hip[1] + 20 + sway], [hip[0] - 46 * long, hip[1] + 10 + sway]], stars === 3 ? [9, 8, 6, 3] : [7, 6, 4, 2], stars === 3 ? spec.accent : shade(spec.accent, -0.15));
     c.globalAlpha = 1;
   }
-  if (stars >= 2 && feature.shell) oval(c, neck[0] - 9, neck[1] + 20, 15 * unit, 22 * unit, shade(spec.accent, -0.35));
+  if (stars >= 2 && feature.shell) {
+    const sx = neck[0] - 9, sy = neck[1] + 20, color = shade(spec.accent, -0.35);
+    oval(c, sx, sy, 15 * unit, 22 * unit, color);
+    for (let i = -1; i <= 1; i++) stroke(c, [[sx - 12 * unit, sy + i * 9], [sx + 12 * unit, sy + i * 9]], 1.2, shade(color, -0.3), false);
+  }
   if (spec.weapon === 'needles') for (let i = 0; i < 8; i++) {
     const a = -1.2 + i * 0.34;
     stroke(c, [[neck[0] - 6, neck[1] + 14], at(neck[0] - 6, neck[1] + 14, Math.PI + a, 34)], 2, '#d8cdb0');
   }
-  if (spec.top === 'cape' || spec.top === 'mantle') shape(c, [[shoulderB[0] - 4, shoulderB[1] - 2], [shoulderF[0] + 2, shoulderF[1] - 2], [hip[0] - 4 + (spec.top === 'mantle' ? 0 : 6), hip[1] + 18], [hip[0] - 20, hip[1] + (spec.top === 'mantle' ? 30 : 14)]], spec.top === 'cape' ? spec.cloth : clothDark);
+  // Cape or mantle hanging behind the body.
+  if (spec.top === 'cape' || spec.top === 'mantle') {
+    const mantle = spec.top === 'mantle';
+    const back: P[] = [[shoulderB[0] - 4, shoulderB[1] - 2], [shoulderF[0] + 2, shoulderF[1] - 2], [hip[0] - 4 + (mantle ? 0 : 6), hip[1] + 18], [hip[0] - 20, hip[1] + (mantle ? 30 : 14)]];
+    shape(c, back, mantle ? clothDark : spec.cloth);
+    zigzag(c, lerp(back[3], back[2], 0.08), lerp(back[3], back[2], 0.92), 4, -3, shade(spec.clothAlt, -0.1));
+    fringe(c, back[3], back[2], 6, 4, shade(mantle ? clothDark : spec.cloth, -0.1));
+  }
+  // Rear flap of the loincloth.
+  if (spec.top !== 'robe') shape(c, [[hip[0] - dim.hip + 2, hip[1] - 1], [hip[0] - 3, hip[1] - 1], [hip[0] - 7, hip[1] + 19], [hip[0] - dim.hip - 2, hip[1] + 17]], clothDark);
 
-  // Back arm and leg.
+  // Back arm and leg, in shade.
   const elbowB = at(...shoulderB, pose.armB, armLen), handB = at(...elbowB, pose.armB + pose.elbowB, foreLen);
-  stroke(c, [shoulderB, elbowB, handB], dim.limb - 1, skinDark);
-  const kneeB = at(hip[0] - 4, hip[1], pose.legB, legLen), footB = at(...kneeB, pose.legB - pose.kneeB, shinLen);
-  stroke(c, [[hip[0] - 4, hip[1]], kneeB, footB], dim.limb + 1, skinDark);
-  stroke(c, [footB, [footB[0] + 9, footB[1]]], 5, shade(skinDark, -0.1));
+  limb(c, [shoulderB, elbowB, handB], [L * (heavy ? 1.15 : 1), L * 0.78, L * 0.62], skinDark);
+  band(c, elbowB, handB, 0.62, 0.8, L * 0.72, shade(spec.clothAlt, -0.2));
+  const hipB: P = [hip[0] - 4, hip[1]];
+  const kneeB = at(...hipB, pose.legB, legLen), footB = at(...kneeB, pose.legB - pose.kneeB, shinLen);
+  limb(c, [hipB, kneeB, footB], [L * 1.3, L * 0.86, L * 0.6], skinDark);
+  band(c, kneeB, footB, 0.72, 0.86, L * 0.7, shade(spec.clothAlt, -0.2));
+  foot(c, footB, 13 * unit, shade(skinDark, -0.06), shade(spec.cloth, -0.2));
 
-  // Torso.
+  // Torso, shaded from the far side to the lit front.
   const w = dim.shoulder, h = dim.hip;
-  const waist: [number, number] = [neck[0] * 0.4 + hip[0] * 0.6, neck[1] * 0.4 + hip[1] * 0.6];
-  const torso: [number, number][] = [[shoulderB[0] - 5, shoulderB[1] - 4], [shoulderF[0] + 5, shoulderF[1] - 4], [shoulderF[0] + 6, shoulderF[1] + 8], [waist[0] + w * 0.42, waist[1]], [hip[0] + h, hip[1] - 2], [hip[0] - h, hip[1] - 2], [waist[0] - w * 0.46, waist[1]], [shoulderB[0] - 6, shoulderB[1] + 8]];
-  shape(c, torso, spec.top === 'armor' ? spec.cloth : spec.skin);
-  if (spec.top !== 'armor') { c.globalAlpha = 0.35; shape(c, [[neck[0] + 2, neck[1] + 8], [shoulderF[0] + 3, shoulderF[1] + 2], [waist[0] + w * 0.32, waist[1] - 4], [neck[0] + 4, waist[1] - 8]], shade(spec.skin, 0.25), false); c.globalAlpha = 1; }
-  if (spec.top === 'armor') for (let i = 0; i < 3; i++) shape(c, [[neck[0] - w * 0.55, neck[1] + 12 + i * 11], [neck[0] + w * 0.55, neck[1] + 12 + i * 11], [neck[0] + w * 0.45, neck[1] + 21 + i * 11], [neck[0] - w * 0.45, neck[1] + 21 + i * 11]], i % 2 ? spec.clothAlt : shade(spec.cloth, 0.25));
-  else if (spec.top === 'robe') shape(c, [[neck[0] - w * 0.6, neck[1] + 6], [neck[0] + w * 0.6, neck[1] + 6], [hip[0] + h + 8, hip[1] + 42], [hip[0] - h - 6, hip[1] + 42]], spec.cloth);
+  const waist: P = [neck[0] * 0.4 + hip[0] * 0.6, neck[1] * 0.4 + hip[1] * 0.6];
+  const torso: P[] = [[shoulderB[0] - 5, shoulderB[1] - 4], [shoulderF[0] + 5, shoulderF[1] - 4], [shoulderF[0] + 6, shoulderF[1] + 8], [waist[0] + w * 0.42, waist[1]], [hip[0] + h, hip[1] - 2], [hip[0] - h, hip[1] - 2], [waist[0] - w * 0.46, waist[1]], [shoulderB[0] - 6, shoulderB[1] + 8]];
+  const torsoLeft = shoulderB[0] - 8, torsoRight = shoulderF[0] + 8;
+  shape(c, torso, sideLight(c, torsoLeft, torsoRight, spec.top === 'armor' ? spec.cloth : spec.skin));
+  if (spec.top === 'bare' || spec.top === 'cape' || spec.top === 'mantle') {
+    // Chest and belly read through soft creases.
+    const crease = shade(spec.skin, -0.32);
+    c.beginPath(); c.moveTo(neck[0] - 4, neck[1] + 19); c.quadraticCurveTo(neck[0] + 4, neck[1] + 24, shoulderF[0] + 3, neck[1] + 17);
+    c.strokeStyle = crease; c.lineWidth = 1.5; c.stroke();
+    for (let i = 0; i < 2; i++) stroke(c, [[waist[0] - 2, waist[1] - 6 + i * 7], [waist[0] + 6, waist[1] - 6.5 + i * 7]], 1.1, crease, false);
+    stroke(c, [[shoulderF[0] + 4, shoulderF[1] - 1], [waist[0] + w * 0.4, waist[1] - 2]], 1.6, shade(spec.skin, 0.32), false);
+  }
+  if (spec.top === 'armor') for (let i = 0; i < 3; i++) {
+    const y = neck[1] + 12 + i * 11;
+    shape(c, [[neck[0] - w * 0.55, y], [neck[0] + w * 0.55, y], [neck[0] + w * 0.45, y + 9], [neck[0] - w * 0.45, y + 9]], i % 2 ? spec.clothAlt : shade(spec.cloth, 0.25));
+    for (const dx of [-w * 0.35, 0, w * 0.35]) oval(c, neck[0] + dx, y + 4.5, 1.2, 1.2, shade(spec.clothAlt, 0.35), false);
+  } else if (spec.top === 'robe') {
+    const robe: P[] = [[neck[0] - w * 0.6, neck[1] + 6], [neck[0] + w * 0.6, neck[1] + 6], [hip[0] + h + 8, hip[1] + 42], [hip[0] - h - 6, hip[1] + 42]];
+    shape(c, robe, sideLight(c, robe[3][0], robe[2][0], spec.cloth));
+    stroke(c, [[neck[0] - 2, neck[1] + 8], [hip[0] + 1, hip[1] + 40]], 1.2, clothDark, false);
+  }
   // Body paint, glowing from the second star.
-  c.save(); c.globalAlpha = glow ? 0.95 : 0.8;
+  c.save(); c.globalAlpha = glow ? 0.95 : 0.85;
   if (glow) { c.shadowColor = spec.accent; c.shadowBlur = stars === 3 ? 10 : 6; }
-  stroke(c, [[neck[0] - 5, neck[1] + 16], [neck[0] + 2, neck[1] + 22], [neck[0] + 8, neck[1] + 16]], 2.4, glow ? spec.accent : spec.paint, false);
-  if (spec.spots || spec.scales) for (let i = 0; i < 5; i++) oval(c, neck[0] - 6 + (i % 3) * 7, neck[1] + 26 + Math.floor(i / 3) * 8, 2, 1.6, glow ? spec.accent : spec.paint, false);
+  if (spec.top !== 'robe' && spec.top !== 'armor') {
+    stroke(c, [[waist[0] - 6, waist[1] + 2], [waist[0] + 1, waist[1] + 7], [waist[0] + 8, waist[1] + 2]], 2, markColor, false);
+    if (spec.spots || spec.scales) for (let i = 0; i < 5; i++) oval(c, neck[0] - 7 + (i % 3) * 7, neck[1] + 28 + Math.floor(i / 3) * 7, spec.scales ? 2.2 : 1.8, spec.scales ? 1.4 : 1.8, markColor, false);
+  }
   c.restore();
-  // Belt and loincloth.
-  stroke(c, [[hip[0] - h - 1, hip[1] - 3], [hip[0] + h + 1, hip[1] - 3]], 4, spec.clothAlt);
-  if (spec.top !== 'robe') shape(c, [[hip[0] - h + 1, hip[1] - 2], [hip[0] + h - 1, hip[1] - 2], [hip[0] + 6, hip[1] + 24], [hip[0] - 7, hip[1] + 22]], spec.cloth);
-  if (spec.masks) for (let i = 0; i < 3; i++) oval(c, hip[0] - 9 + i * 9, hip[1] + 2, 4, 5, ['#d9a35e', '#e8e0cc', '#e8ecf6'][i]);
+  // Necklace of beads with a carved tooth.
+  {
+    const beads = 7;
+    for (let i = 0; i < beads; i++) {
+      const t = i / (beads - 1), x = neck[0] - 8 + t * 18, y = neck[1] + 7 + Math.sin(t * Math.PI) * 8;
+      oval(c, x, y, 1.9, 1.9, i % 2 ? spec.clothAlt : spec.paint);
+    }
+    shape(c, [[neck[0] + 0.5, neck[1] + 15], [neck[0] + 4.5, neck[1] + 15], [neck[0] + 2.5, neck[1] + 22]], '#efe6cf');
+  }
+  // Belt and front flap with a woven border.
+  stroke(c, [[hip[0] - h - 1, hip[1] - 3], [hip[0] + h + 1, hip[1] - 3]], 4.5, spec.clothAlt);
+  zigzag(c, [hip[0] - h + 1, hip[1] - 4.6], [hip[0] + h - 1, hip[1] - 4.6], 4, 2.4, shade(spec.clothAlt, -0.4), 1);
+  if (spec.top !== 'robe') {
+    const flap: P[] = [[hip[0] - h + 3, hip[1] - 1], [hip[0] + h - 1, hip[1] - 1], [hip[0] + 7, hip[1] + 24], [hip[0] - 6, hip[1] + 22]];
+    shape(c, flap, sideLight(c, flap[0][0], flap[1][0], spec.cloth));
+    zigzag(c, [hip[0] - 4, hip[1] + 12], [hip[0] + 6, hip[1] + 12], 2, 3, spec.clothAlt);
+    fringe(c, flap[3], flap[2], 4, 3.5, spec.cloth);
+  }
+  if (spec.masks) for (let i = 0; i < 3; i++) {
+    const x = hip[0] - 9 + i * 9, y = hip[1] + 2;
+    oval(c, x, y, 4, 5, ['#d9a35e', '#e8e0cc', '#e8ecf6'][i]);
+    oval(c, x - 1.2, y - 1, 0.8, 0.8, OUTLINE, false); oval(c, x + 1.4, y - 1, 0.8, 0.8, OUTLINE, false);
+  }
 
   // Front leg.
-  const kneeF = at(hip[0] + 4, hip[1], pose.legF, legLen), footF = at(...kneeF, pose.legF - pose.kneeF, shinLen);
-  stroke(c, [[hip[0] + 4, hip[1]], kneeF, footF], dim.limb + 1, spec.skin);
-  stroke(c, [[hip[0] + 6, hip[1] + 2], [kneeF[0] + 2, kneeF[1]]], dim.limb * 0.3, shade(spec.skin, 0.22), false);
-  stroke(c, [footF, [footF[0] + 10, footF[1]]], 5.5, skinDark);
-  if (spec.top === 'robe') shape(c, [[hip[0] - h - 4, hip[1] + 6], [hip[0] + h + 6, hip[1] + 6], [hip[0] + h + 12, hip[1] + 40], [hip[0] - h - 6, hip[1] + 40]], spec.cloth);
+  const hipF: P = [hip[0] + 4, hip[1]];
+  const kneeF = at(...hipF, pose.legF, legLen), footF = at(...kneeF, pose.legF - pose.kneeF, shinLen);
+  limb(c, [hipF, kneeF, footF], [L * 1.35, L * 0.9, L * 0.62], spec.skin);
+  if (glow) { c.save(); c.shadowColor = spec.accent; c.shadowBlur = 6; stroke(c, [lerp(hipF, kneeF, 0.3), lerp(hipF, kneeF, 0.55), lerp(hipF, kneeF, 0.75)].map(([x, y], i) => [x + (i % 2 ? 3 : 0), y] as P), 1.6, spec.accent, false); c.restore(); }
+  band(c, kneeF, footF, 0.72, 0.86, L * 0.74, spec.clothAlt);
+  foot(c, footF, 14 * unit, spec.skin, spec.cloth);
+  if (spec.top === 'robe') {
+    const hem: P[] = [[hip[0] - h - 4, hip[1] + 6], [hip[0] + h + 6, hip[1] + 6], [hip[0] + h + 12, hip[1] + 40], [hip[0] - h - 6, hip[1] + 40]];
+    shape(c, hem, sideLight(c, hem[3][0], hem[2][0], spec.cloth));
+    zigzag(c, [hem[3][0] + 2, hem[3][1] - 7], [hem[2][0] - 2, hem[2][1] - 7], 5, 3.5, spec.clothAlt, 1.8);
+    stroke(c, [[hem[3][0] + 1, hem[3][1] - 2], [hem[2][0] - 1, hem[2][1] - 2]], 2.2, shade(spec.clothAlt, -0.2), false);
+    fringe(c, hem[3], hem[2], 7, 3.5, spec.cloth);
+  }
 
-  // Head, hair and headgear: the hair mass sits behind the face.
+  // Head: neck, hair mass behind, the profile with its features, then the hair over the crown.
   const [hx, hy] = headC, r = dim.head;
-  stroke(c, [neck, [headC[0] - 2, headC[1] + r - 2]], dim.limb, skinDark);
-  if (spec.hairStyle === 'mane') oval(c, hx - 5, hy + 2, r * 1.45, r * 1.35, spec.hair);
-  if (spec.hairStyle === 'long') shape(c, [[hx - r, hy - 6], [hx + 2, hy - r], [hx - r * 0.2, hy + r * 2.4], [hx - r * 1.2, hy + r * 2.5], [hx - r * 1.35, hy + 4]], spec.hair);
-  if (spec.hairStyle === 'braids') for (const dx of [-r * 0.9, -r * 0.35]) stroke(c, [[hx + dx, hy], [hx + dx - 3, hy + r * 1.6], [hx + dx - 1, hy + r * 2.4]], 5.5, spec.hair);
+  limb(c, [neck, [headC[0] - 2, headC[1] + r - 3]], [L * 1.05, L * 0.95], skinDark);
+  if (spec.hairStyle === 'mane') { oval(c, hx - 5, hy + 2, r * 1.45, r * 1.35, spec.hair); for (let i = 0; i < 5; i++) stroke(c, [[hx - r * 1.2 + i * 3, hy - r * 0.6 + i * 6], [hx - r * 1.4 + i * 2, hy + r * 0.2 + i * 6]], 1.2, shade(spec.hair, 0.25), false); }
+  if (spec.hairStyle === 'long') {
+    shape(c, [[hx - r, hy - 6], [hx + 2, hy - r], [hx - r * 0.2, hy + r * 2.4], [hx - r * 1.2, hy + r * 2.5], [hx - r * 1.35, hy + 4]], spec.hair);
+    for (let i = 0; i < 3; i++) stroke(c, [[hx - r * 0.9 + i * 4, hy], [hx - r * 1.05 + i * 4, hy + r * 2.2]], 1, shade(spec.hair, 0.28), false);
+  }
+  if (spec.hairStyle === 'braids') for (const dx of [-r * 0.9, -r * 0.35]) {
+    stroke(c, [[hx + dx, hy], [hx + dx - 3, hy + r * 1.6], [hx + dx - 1, hy + r * 2.4]], 5.5, spec.hair);
+    oval(c, hx + dx - 2.6, hy + r * 1.7, 3.2, 2.2, spec.clothAlt);
+  }
   if (feature.ears && stars >= 2) {
     const tall = feature.pointed ? 16 : 9;
     shape(c, [[hx - 8, hy - r + 4], [hx - 12, hy - r - tall], [hx + 1, hy - r + 2]], stars === 3 ? spec.accent : spec.hair);
+    shape(c, [[hx - 7, hy - r + 3], [hx - 10, hy - r - tall + 6], [hx - 2, hy - r + 2]], shade(stars === 3 ? spec.accent : spec.hair, 0.35), false);
   }
-  if (spec.hairStyle !== 'shaved') oval(c, hx - 3, hy - 3, r * 1.04, r * 0.98, spec.hair);
-  oval(c, hx + 1.5, hy + 1.5, r * 0.86, r * 0.92, spec.skin);
-  if (spec.hairStyle !== 'shaved') shape(c, [[hx - r * 0.9, hy - 2], [hx - r * 0.6, hy - r * 0.85], [hx + r * 0.2, hy - r * 1.0], [hx + r * 0.85, hy - r * 0.55], [hx + r * 0.3, hy - r * 0.45], [hx - r * 0.3, hy - r * 0.2]], spec.hair, false);
-  else stroke(c, [[hx - r * 0.7, hy - r * 0.6], [hx + r * 0.4, hy - r * 0.85]], 2, skinDark, false);
-  if (spec.hairStyle === 'topknot') oval(c, hx - 4, hy - r - 4, 6, 5.5, spec.hair);
-  oval(c, hx + r * 0.82, hy + 4, 3.2, 3.6, skinDark, false);
-  stroke(c, [[hx + 2, hy - 4], [hx + 9, hy - 5]], 1.8, shade(spec.hair, -0.2), false);
-  // Eyes glow with the spirit from the second star.
+  const face = new Path2D();
+  face.arc(hx, hy, r, -0.6, 1.9, true);
+  face.lineTo(hx + r * 0.2, hy + r * 1.05); face.lineTo(hx + r * 0.7, hy + r * 0.94); face.lineTo(hx + r * 0.86, hy + r * 0.64);
+  face.lineTo(hx + r * 0.95, hy + r * 0.44); face.lineTo(hx + r * 1.15, hy + r * 0.24); face.lineTo(hx + r * 0.96, hy - r * 0.04);
+  face.lineTo(hx + r * 0.99, hy - r * 0.32); face.closePath();
+  c.strokeStyle = OUTLINE; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(face);
+  const skinLight = c.createRadialGradient(hx + r * 0.45, hy - r * 0.25, r * 0.2, hx, hy, r * 1.25);
+  skinLight.addColorStop(0, shade(spec.skin, 0.2)); skinLight.addColorStop(0.55, spec.skin); skinLight.addColorStop(1, shade(spec.skin, -0.28));
+  c.fillStyle = skinLight; c.fill(face);
+  // Ear, brow, eye, nose shadow, mouth and cheek paint.
+  oval(c, hx - r * 0.12, hy + r * 0.14, 3.2, 4.6, shade(spec.skin, -0.08));
+  stroke(c, [[hx - r * 0.12, hy + r * 0.02], [hx - r * 0.1, hy + r * 0.3]], 1.1, shade(spec.skin, -0.35), false);
   c.save();
   if (glow) { c.shadowColor = spec.accent; c.shadowBlur = 8; }
-  if (spec.head === 'blindfold') stroke(c, [[hx - r + 1, hy - 1], [hx + r, hy - 2]], 4.4, spec.clothAlt);
-  else { oval(c, hx + 6, hy, 2.8, 2.4, '#f4ecd8', false); oval(c, hx + 6.8, hy, 1.6, 1.8, glow ? spec.accent : '#1a1410', false); }
+  if (spec.head === 'blindfold') stroke(c, [[hx - r + 1, hy - 1], [hx + r * 1.02, hy - 2]], 4.6, spec.clothAlt);
+  else {
+    c.beginPath(); c.moveTo(hx + r * 0.38, hy + r * 0.03); c.quadraticCurveTo(hx + r * 0.58, hy - r * 0.16, hx + r * 0.8, hy + r * 0.02); c.quadraticCurveTo(hx + r * 0.58, hy + r * 0.14, hx + r * 0.38, hy + r * 0.03);
+    c.fillStyle = '#f4ecd8'; c.fill();
+    oval(c, hx + r * 0.62, hy + r * 0.0, 1.9, 2.1, glow ? spec.accent : '#2a1a10', false);
+    oval(c, hx + r * 0.66, hy - r * 0.05, 0.6, 0.6, '#ffffff', false);
+  }
   c.restore();
-  stroke(c, [[hx - 1, hy + 6], [hx + 10, hy + 5]], 2, glow ? spec.accent : spec.paint, false);
-  stroke(c, [[hx + 5, hy + 10], [hx + 10, hy + 9.5]], 1.4, shade(spec.skin, -0.35), false);
-  if (spec.head === 'mask-long') shape(c, [[hx - 2, hy - r + 2], [hx + r + 2, hy - 4], [hx + r + 14, hy + 4], [hx + r, hy + 8], [hx, hy + 6]], '#e3d6b6');
+  stroke(c, [[hx + r * 0.32, hy - r * 0.22], [hx + r * 0.62, hy - r * 0.28], [hx + r * 0.9, hy - r * 0.2]], 2, shade(spec.hairStyle === 'shaved' ? spec.skin : spec.hair, -0.3), false);
+  stroke(c, [[hx + r * 0.98, hy + r * 0.02], [hx + r * 0.92, hy + r * 0.3]], 1.1, shade(spec.skin, -0.3), false);
+  stroke(c, [[hx + r * 0.62, hy + r * 0.62], [hx + r * 0.86, hy + r * 0.6]], 1.4, shade(spec.skin, -0.42), false);
+  c.save(); if (glow) { c.shadowColor = spec.accent; c.shadowBlur = 6; }
+  for (let i = 0; i < 2; i++) stroke(c, [[hx + r * 0.22, hy + r * (0.3 + i * 0.2)], [hx + r * 0.58, hy + r * (0.32 + i * 0.2)]], 1.7, markColor, false);
+  c.restore();
+  // Hair over the crown.
+  if (spec.hairStyle !== 'shaved') {
+    const cap: P[] = [[hx + r * 0.9, hy - r * 0.42], [hx + r * 0.55, hy - r * 1.04], [hx - r * 0.35, hy - r * 1.14], [hx - r * 1.08, hy - r * 0.38], [hx - r * 1.02, hy + r * 0.42], [hx - r * 0.42, hy + r * 0.05], [hx - r * 0.05, hy - r * 0.5], [hx + r * 0.42, hy - r * 0.52]];
+    shape(c, cap, across(c, [hx - r, hy], [hx + r, hy - r * 0.6], r * 2, spec.hair));
+    for (let i = 0; i < 3; i++) stroke(c, [[hx - r * 0.6 + i * r * 0.35, hy - r * 0.95 + i * 1.5], [hx - r * 0.85 + i * r * 0.4, hy - r * 0.2 + i * 2]], 1, shade(spec.hair, 0.38), false);
+  } else {
+    c.save(); c.globalAlpha = 0.3; c.clip(face); oval(c, hx - r * 0.2, hy - r * 0.55, r * 1.05, r * 0.6, spec.hair, false); c.restore();
+  }
+  if (spec.hairStyle === 'topknot') { oval(c, hx - 4, hy - r - 4, 6, 5.5, spec.hair); stroke(c, [[hx - 8, hy - r - 1], [hx, hy - r - 1]], 2.2, spec.clothAlt); }
+  if (spec.head === 'mask-long') {
+    shape(c, [[hx - 2, hy - r + 2], [hx + r + 2, hy - 4], [hx + r + 14, hy + 4], [hx + r, hy + 8], [hx, hy + 6]], '#e3d6b6');
+    oval(c, hx + r * 0.62, hy - 1, 2, 1.6, OUTLINE, false);
+    stroke(c, [[hx + 2, hy + 3], [hx + r + 8, hy + 4]], 1, shade('#e3d6b6', -0.3), false);
+  }
   if (spec.head === 'horn-single' || (feature.horns && animal === 'rhino' && stars >= 2)) shape(c, [[hx + 2, hy - r + 2], [hx + r + 6, hy - r - 16], [hx + r - 1, hy - r + 6]], '#d9cdb0');
   if (spec.head === 'horns' || (feature.horns && stars >= 2 && animal !== 'rhino')) {
     const big = spec.head === 'horns' || stars === 3 ? 1 : 0.65;
-    for (const side of [-1, 1]) stroke(c, [[hx + side * 4, hy - r + 2], [hx + side * 16 * big, hy - r - 8 * big], [hx + side * 22 * big, hy - r - 20 * big]], 3.6, stars >= 2 && spec.head !== 'horns' ? spec.accent : '#e3d6b6');
+    for (const side of [-1, 1]) limb(c, [[hx + side * 4, hy - r + 2], [hx + side * 16 * big, hy - r - 8 * big], [hx + side * 22 * big, hy - r - 20 * big]], [5, 3.6, 1.6], stars >= 2 && spec.head !== 'horns' ? spec.accent : '#e3d6b6');
   }
-  if (spec.head === 'feathers') for (let i = 0; i < 3; i++) shape(c, [[hx - 6 + i * 3, hy - r + 2], [hx - 12 + i * 6, hy - r - 18 - i * 3], [hx - 4 + i * 6, hy - r + 1]], i === 1 ? spec.accent : spec.clothAlt);
-  if (spec.head === 'flowers') for (let i = 0; i < 3; i++) oval(c, hx - 8 + i * 7, hy - r + 2, 3.2, 3.2, ['#f2d5e0', '#f4f0c8', '#d8b8f0'][i]);
+  if (spec.head === 'feathers') for (let i = 0; i < 3; i++) {
+    const base: P = [hx - 6 + i * 3, hy - r + 2], tip: P = [hx - 12 + i * 6, hy - r - 18 - i * 3];
+    shape(c, [base, tip, [hx - 4 + i * 6, hy - r + 1]], i === 1 ? spec.accent : spec.clothAlt);
+    stroke(c, [base, tip], 0.9, shade(i === 1 ? spec.accent : spec.clothAlt, -0.35), false);
+  }
+  if (spec.head === 'flowers') for (let i = 0; i < 3; i++) {
+    const [fx, fy] = [hx - 8 + i * 7, hy - r + 2], color = ['#f2d5e0', '#f4f0c8', '#d8b8f0'][i];
+    for (let k = 0; k < 5; k++) { const a = k * Math.PI * 2 / 5; oval(c, fx + Math.cos(a) * 2.4, fy + Math.sin(a) * 2.4, 1.9, 1.9, color, false); }
+    oval(c, fx, fy, 1.2, 1.2, '#e8b84a', false);
+  }
   if (spec.head === 'collar') {
     c.globalAlpha = stars >= 2 ? 0.95 : 0.85;
     shape(c, [[hx - r - 10, hy + 14], [hx - r - 6, hy - r - 8], [hx, hy - r - 14], [hx + 6, hy - r - 4], [hx + 2, hy + 14]], stars >= 2 ? shade(spec.accent, -0.2) : spec.clothAlt);
-    oval(c, hx - 5, hy - 4, 5, 6, spec.skin, false);
+    for (let i = 0; i < 3; i++) oval(c, hx - r - 2 + i * 3, hy - r - 2 + i * 6, 2, 1.4, shade(stars >= 2 ? spec.accent : spec.clothAlt, 0.35), false);
     c.globalAlpha = 1;
-    oval(c, hx + 1.5, hy + 1.5, r * 0.86, r * 0.92, spec.skin);
-    oval(c, hx + 6, hy, 2.8, 2.4, '#f4ecd8', false); oval(c, hx + 6.8, hy, 1.6, 1.8, glow ? spec.accent : '#1a1410', false);
+    c.strokeStyle = OUTLINE; c.lineWidth = 3; c.stroke(face); c.fillStyle = skinLight; c.fill(face);
+    oval(c, hx + r * 0.62, hy, 1.9, 2.1, glow ? spec.accent : '#2a1a10', false);
+    stroke(c, [[hx + r * 0.32, hy - r * 0.22], [hx + r * 0.9, hy - r * 0.2]], 2, shade(spec.hair, -0.3), false);
   }
-  if (spec.head === 'beard') shape(c, [[hx - 2, hy + 4], [hx + r, hy + 3], [hx + r - 4, hy + 22], [hx + 2, hy + 26]], spec.hair);
+  if (spec.head === 'beard') {
+    shape(c, [[hx - 2, hy + 4], [hx + r * 0.78, hy + r * 0.48], [hx + r - 4, hy + 22], [hx + 2, hy + 26]], spec.hair);
+    for (let i = 0; i < 3; i++) stroke(c, [[hx + 2 + i * 3, hy + 9], [hx + 3 + i * 3, hy + 22]], 0.9, shade(spec.hair, -0.25), false);
+  }
 
   // Front arm and weapon.
   const elbowF = at(...shoulderF, pose.armF, armLen), handF = at(...elbowF, pose.armF + pose.elbowF, foreLen);
-  stroke(c, [shoulderF, elbowF, handF], dim.limb - 0.5, spec.skin);
-  stroke(c, [[shoulderF[0] + 1, shoulderF[1] + 1], elbowF], dim.limb * 0.28, shade(spec.skin, 0.22), false);
-  if (spec.build === 'heavy' || spec.build === 'giant') oval(c, shoulderF[0] + 2, shoulderF[1] + 2, dim.limb * 0.75, dim.limb * 0.7, spec.top === 'armor' ? spec.clothAlt : spec.skin);
-  if (stars >= 2) { c.save(); c.globalAlpha = 0.9; c.shadowColor = spec.accent; c.shadowBlur = 6; stroke(c, [[elbowF[0] * 0.5 + handF[0] * 0.5, elbowF[1] * 0.5 + handF[1] * 0.5], handF], 3, spec.accent, false); c.restore(); }
+  limb(c, [shoulderF, elbowF, handF], [L * (heavy ? 1.2 : 1.05), L * 0.82, L * 0.64], spec.skin);
+  if (heavy) oval(c, shoulderF[0] + 2, shoulderF[1] + 2, L * 0.78, L * 0.72, spec.top === 'armor' ? spec.clothAlt : spec.skin);
+  if (spec.top === 'mantle') for (let i = 0; i < 6; i++) oval(c, shoulderB[0] - 4 + i * (w * 0.15 + 1.5), shoulderB[1] - 3 + Math.sin(i * 1.7) * 1.4, 4.2, 3.6, shade(spec.clothAlt, i % 2 ? -0.08 : 0.06));
+  band(c, shoulderF, elbowF, 0.5, 0.64, L * 0.95, spec.clothAlt);
+  band(c, elbowF, handF, 0.66, 0.84, L * 0.74, spec.clothAlt);
+  if (glow) { c.save(); c.globalAlpha = 0.9; c.shadowColor = spec.accent; c.shadowBlur = 6; stroke(c, [lerp(elbowF, handF, 0.15), lerp(elbowF, handF, 0.55)], 2.4, spec.accent, false); c.restore(); }
   paintWeapon(c, spec, handF, handB, pose, clip, stars);
-  oval(c, handF[0], handF[1], dim.limb * 0.55, dim.limb * 0.55, spec.skin);
+  oval(c, handF[0], handF[1], L * 0.56, L * 0.56, spec.skin);
+  stroke(c, [[handF[0] - L * 0.2, handF[1] - L * 0.15], [handF[0] + L * 0.25, handF[1] - L * 0.1]], 1, shade(spec.skin, -0.35), false);
 }
 
 function paintWeapon(c: CanvasRenderingContext2D, spec: FigureSpec, hand: [number, number], back: [number, number], pose: Pose, clip: 'idle' | 'walk' | 'attack', stars: number): void {

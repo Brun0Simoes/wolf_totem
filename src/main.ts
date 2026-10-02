@@ -25,13 +25,26 @@ import { portraitHTML } from './render/portrait';
 import { proceduralImage } from './render/proceduralArt';
 import { CHARACTER_ANIMAL, glyphSVG, type AnimalId } from './render/spiritGlyphs';
 import { createWorld } from './render/WorldScene';
+import { DEFAULT_PREFS, loadPrefs, motionReduced, savePrefs, type Prefs } from './prefs';
 
 const preview = new CharacterPreview();
 const sound = new SoundSystem();
 const SAVE_KEY = 'wolf-totem-v1';
+/** Set right before a reload that starts a fresh journey, so the title screen is skipped once. */
+const FRESH_KEY = 'wolf-totem-fresh';
 let saved: unknown;
 try { saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { saved = undefined; }
 const game = new Game(saved);
+const hasJourney = !!saved && typeof saved === 'object';
+let freshStart = false;
+try { freshStart = sessionStorage.getItem(FRESH_KEY) === '1'; sessionStorage.removeItem(FRESH_KEY); } catch { freshStart = false; }
+
+const storage = (() => { try { return window.localStorage; } catch { return null; } })();
+const prefs: Prefs = storage ? loadPrefs(storage) : { ...DEFAULT_PREFS };
+const systemMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const reducedMotion = () => motionReduced(prefs, systemMotion.matches);
+sound.setVolumes(prefs.sfx, prefs.music);
+document.documentElement.classList.toggle('reduce-motion', reducedMotion());
 
 let view: 'village' | 'battle' = 'village';
 let selectedHero: string | null = null;
@@ -44,7 +57,12 @@ let lastVillage = game.state.villageLevel;
 let lastEventId = 0;
 let repeatTimer = 0;
 let confirmAscend = false;
+let confirmWipe = false;
+let confirmNew = false;
 let storageFailed = false;
+/** While a journey is being erased, nothing may write the old save back. */
+let wiping = false;
+let titleOpen = !freshStart;
 
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
 const icon = (name: string, cls = '') => `<i data-lucide="${name}" class="${cls}"></i>`;
@@ -97,10 +115,11 @@ $('#app').innerHTML = `
     <div id="battle-result" class="battle-result" hidden></div>
    </section><aside class="side-panel" id="side-panel" aria-label="Ações"></aside></div>
    <section class="camp-section"><div class="section-heading"><div><p class="eyebrow">HERÓIS & ESPÍRITOS</p><h2 id="camp-title">Ao redor da fogueira</h2></div><button class="text-button" data-action="reroll" id="reroll">${icon('refresh-cw')}Novos viajantes <span class="small-cost">${REROLL_COST.spirit} ${icon('flame')}</span></button></div><div id="camp-content"></div></section>
-   <footer><span><span class="live-dot"></span><span id="save-status">Progresso salvo neste navegador</span></span><span>WOLF TOTEM <b>·</b> VERSÃO 1.1</span><button class="text-button" data-action="help">Guia da tribo ${icon('arrow-up-right')}</button></footer>
+   <footer><span><span class="live-dot"></span><span id="save-status">Progresso salvo neste navegador</span></span><span>WOLF TOTEM <b>·</b> VERSÃO 1.2</span><button class="text-button" data-action="help">Guia da tribo ${icon('arrow-up-right')}</button></footer>
   </main>
  </div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+ <div id="title-screen" class="title-screen" role="dialog" aria-modal="true" aria-labelledby="title-name" ${titleOpen ? '' : 'hidden'}></div>
  <dialog id="modal"><div id="modal-content"></div></dialog>
  <input id="save-file" type="file" accept="application/json,.json" hidden />`;
 
@@ -110,7 +129,7 @@ const world = createWorld($('#world'), game, {
     if (!selectedHero) return toast('Escolha um herói abaixo e depois uma posição.');
     act(game.deploy(selectedHero, slot), 'click');
   },
-});
+}, { reducedMotion: reducedMotion(), numbers: prefs.numbers });
 
 let toastTimer = 0;
 function toast(message: string) {
@@ -118,6 +137,7 @@ function toast(message: string) {
   window.clearTimeout(toastTimer); toastTimer = window.setTimeout(() => $('#toast').classList.remove('show'), 3500);
 }
 function save() {
+  if (wiping) return;
   try { localStorage.setItem(SAVE_KEY, game.serialize()); storageFailed = false; }
   catch { storageFailed = true; }
   $('#save-status').textContent = storageFailed ? 'Salvamento indisponível · exporte sua jornada' : game.state.paused ? 'Jornada pausada' : 'Progresso salvo neste navegador';
@@ -485,7 +505,104 @@ function help() {
 }
 
 function settings() {
-  showModal('settings', `<p class="eyebrow">SUA JORNADA</p><h2>Memórias da tribo</h2><p class="modal-intro">O progresso é salvo automaticamente neste navegador. Ao voltar, a aldeia recebe até 2 horas de produção acumulada, inclusive da forja. Uma jornada pausada não acumula recursos.</p><div class="settings-buttons"><button class="outline-button" data-action="export">${icon('download')}Exportar progresso</button><button class="outline-button" data-action="import">${icon('upload')}Importar progresso</button><button class="outline-button" data-action="help">${icon('book-open')}Como jogar</button></div><p class="development-note">Importar substitui o progresso deste navegador. Saves da versão 0.x são convertidos automaticamente.</p>`);
+  const percent = (value: number) => `${Math.round(value * 100)}%`;
+  const slider = (key: 'sfx' | 'music', label: string) => `<label class="pref-row"><span>${label}</span><input type="range" min="0" max="100" step="5" value="${Math.round(prefs[key] * 100)}" data-pref="${key}" aria-label="${label}" ${prefs.sound ? '' : 'disabled'}><output>${percent(prefs[key])}</output></label>`;
+  const toggle = (key: 'sound' | 'numbers', label: string, hint: string) => `<label class="pref-row toggle"><span>${label}<small>${hint}</small></span><input type="checkbox" data-pref="${key}" ${prefs[key] ? 'checked' : ''}><i class="switch" aria-hidden="true"></i></label>`;
+  const motion = (value: Prefs['motion'], label: string) => `<option value="${value}" ${prefs.motion === value ? 'selected' : ''}>${label}</option>`;
+  showModal('settings', `<p class="eyebrow">CONFIGURAÇÕES</p><h2>A fogueira da tribo</h2>
+   <div class="settings-grid">
+    <section><h3>${icon('volume-2')}Som</h3>
+     ${toggle('sound', 'Sons e música', 'Efeitos de combate e a música da aldeia')}
+     ${slider('sfx', 'Efeitos')}${slider('music', 'Música')}
+    </section>
+    <section><h3>${icon('eye')}Visual</h3>
+     <label class="pref-row"><span>Movimento<small>Reduzido acalma tremores, ondas e animações da interface</small></span><select data-pref="motion">${motion('system', 'Seguir o sistema')}${motion('full', 'Completo')}${motion('reduced', 'Reduzido')}</select></label>
+     ${toggle('numbers', 'Números de dano e cura', 'Desligue para um campo mais limpo em lutas cheias')}
+    </section>
+    <section class="wide"><h3>${icon('book-marked')}Jornada</h3>
+     <p class="modal-intro">O progresso é salvo automaticamente neste navegador. Ao voltar, a aldeia recebe até 2 horas de produção acumulada, inclusive da forja. Uma jornada pausada não acumula recursos.</p>
+     <div class="settings-buttons"><button class="outline-button" data-action="export">${icon('download')}Exportar progresso</button><button class="outline-button" data-action="import">${icon('upload')}Importar progresso</button><button class="outline-button" data-action="help">${icon('book-open')}Como jogar</button><button class="outline-button" data-action="title-show">${icon('flame')}Tela inicial</button></div>
+     <p class="development-note">Importar substitui o progresso deste navegador. Saves da versão 0.x são convertidos automaticamente.</p>
+     <div class="danger-zone">${confirmWipe
+       ? `<p><b>Apagar tudo?</b> A aldeia, os heróis, as expedições, os renascimentos e as memórias deste navegador serão perdidos. Exporte antes se quiser guardar uma cópia.</p><div class="settings-buttons"><button class="outline-button" data-action="wipe-cancel">Manter a jornada</button><button class="primary danger" data-action="wipe-confirm">${icon('trash-2')}Apagar para sempre</button></div>`
+       : `<p>Recomeçar do zero apaga todo o progresso deste navegador.</p><button class="outline-button danger" data-action="wipe">${icon('trash-2')}Apagar jornada</button>`}</div>
+    </section>
+   </div>`);
+}
+
+/** Erases the journey and reloads into a fresh one, skipping the title screen once. */
+function wipeJourney() {
+  wiping = true;
+  try { localStorage.removeItem(SAVE_KEY); sessionStorage.setItem(FRESH_KEY, '1'); } catch { /* reload still starts clean */ }
+  location.reload();
+}
+
+function updatePref(key: string, value: string | boolean) {
+  if (key === 'sound') { prefs.sound = !!value; sound.setMuted(!prefs.sound); if (prefs.sound) sound.play('click'); }
+  else if (key === 'sfx' || key === 'music') { prefs[key] = Math.max(0, Math.min(1, Number(value) / 100)); sound.setVolumes(prefs.sfx, prefs.music); if (key === 'sfx') sound.play('hit'); }
+  else if (key === 'motion' && (value === 'system' || value === 'full' || value === 'reduced')) prefs.motion = value;
+  else if (key === 'numbers') prefs.numbers = !!value;
+  if (storage) savePrefs(storage, prefs);
+  document.documentElement.classList.toggle('reduce-motion', reducedMotion());
+  world.setOptions({ reducedMotion: reducedMotion(), numbers: prefs.numbers });
+  renderAudioButton();
+}
+
+function renderAudioButton() {
+  const button = $('[data-action="audio"]');
+  button.innerHTML = icon(sound.muted ? 'volume-x' : 'volume-2');
+  button.setAttribute('aria-label', sound.muted ? 'Ativar sons' : 'Silenciar sons');
+  refreshIcons();
+}
+
+function renderTitle() {
+  const s = game.state;
+  const summary = hasJourney
+    ? `<div class="title-journey"><span>Era ${roman(s.villageLevel)}</span><span>${s.progress}/${FINAL_STAGE} expedições</span><span>${s.heroes.length} herói${s.heroes.length === 1 ? '' : 's'}</span>${s.rebirths ? `<span>${s.rebirths} renascimento${s.rebirths === 1 ? '' : 's'}</span>` : ''}</div>`
+    : '';
+  $('#title-screen').innerHTML = `<div class="title-embers" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>
+   <div class="title-card">
+    <div class="title-emblem">${glyphSVG('wolf', '#d6ba79', '')}</div>
+    <p class="eyebrow">O DESPERTAR DA TRIBO</p>
+    <h1 id="title-name">WOLF <b>TOTEM</b></h1>
+    <div class="title-story">
+     <p>Antes das cidades e dos nomes escritos, as tribos caminhavam ao lado dos espíritos. Cada clã guardava um animal: o lobo que ensina a caçar em matilha, a coruja que enxerga no escuro, o urso que atravessa o inverno.</p>
+     <p>Agora o Primeiro Inverno desce das montanhas. Os rios congelam, as manadas fogem e os clãs se dispersam. Na Clareira do Lobo, uma pequena tribo acende a última fogueira e ouve um uivo antigo chamando por guardiões.</p>
+     <p>Faça a aldeia crescer pelas cinco eras, honre os Espíritos Protetores, reúna heróis de todos os povos e leve a tribo além do inverno, até erguer o Grande Totem.</p>
+    </div>
+    ${summary}
+    <div class="title-actions">
+     <button class="primary" data-action="title-continue">${icon(hasJourney ? 'play' : 'flame')}${hasJourney ? 'Continuar jornada' : 'Começar jornada'}</button>
+     ${hasJourney ? `<button class="outline-button ${confirmNew ? 'danger' : ''}" data-action="title-new">${icon(confirmNew ? 'triangle-alert' : 'sparkles')}${confirmNew ? 'Confirmar: apagar a jornada atual' : 'Nova jornada'}</button>` : ''}
+     <div class="title-links"><button class="text-button" data-action="settings">${icon('settings-2')}Configurações</button><button class="text-button" data-action="help">${icon('book-open')}Como jogar</button></div>
+    </div>
+    <p class="title-version">VERSÃO 1.2 · ${storage ? 'progresso salvo neste navegador' : 'salvamento indisponível neste navegador'}</p>
+   </div>`;
+  refreshIcons();
+}
+
+function closeTitle() {
+  titleOpen = false; confirmNew = false;
+  $('#title-screen').hidden = true;
+  // The click that leaves the title is the gesture browsers need before playing sound.
+  if (prefs.sound && sound.muted) { sound.setMuted(false); renderAudioButton(); }
+  lastTime = performance.now();
+  if (!hasJourney) help();
+  welcomeBack();
+}
+
+function showTitle() {
+  closeModal(); confirmNew = false; titleOpen = true; save();
+  renderTitle(); $('#title-screen').hidden = false;
+  $<HTMLButtonElement>('#title-screen .primary').focus();
+}
+
+let welcomed = false;
+function welcomeBack() {
+  if (welcomed) return;
+  welcomed = true;
+  if (game.offlineGains && game.offlineSeconds > 60) toast(`A aldeia trabalhou por ${Math.round(game.offlineSeconds / 60)} min enquanto você esteve fora.`);
+  if (pendingEra(game.state)) window.setTimeout(showSpiritChoice, 600);
 }
 
 function startNext() {
@@ -558,14 +675,35 @@ document.addEventListener('click', event => {
     case 'pause': game.togglePause(); save(); renderAll(); break;
     case 'codex': showCodex(); break;
     case 'help': help(); break;
-    case 'settings': settings(); break;
+    case 'settings': confirmWipe = false; settings(); break;
     case 'close': closeModal(); break;
-    case 'audio': { const muted = sound.toggle(); target.innerHTML = icon(muted ? 'volume-x' : 'volume-2'); target.setAttribute('aria-label', muted ? 'Ativar sons' : 'Silenciar sons'); refreshIcons(); break; }
+    case 'audio': updatePref('sound', sound.muted); break;
+    case 'title-continue': closeTitle(); break;
+    case 'title-new':
+      if (!confirmNew) { confirmNew = true; renderTitle(); break; }
+      wipeJourney(); break;
+    case 'title-show': showTitle(); break;
+    case 'wipe': confirmWipe = true; settings(); break;
+    case 'wipe-cancel': confirmWipe = false; settings(); break;
+    case 'wipe-confirm': wipeJourney(); break;
     case 'export': { const url = URL.createObjectURL(new Blob([game.serialize()], { type: 'application/json' })); const a = document.createElement('a'); a.href = url; a.download = 'wolf-totem-jornada.json'; a.click(); URL.revokeObjectURL(url); break; }
     case 'import': $<HTMLInputElement>('#save-file').click(); break;
   }
 });
 
+document.addEventListener('input', event => {
+  const input = event.target as HTMLInputElement;
+  if (input.dataset.pref !== 'sfx' && input.dataset.pref !== 'music') return;
+  updatePref(input.dataset.pref, input.value);
+  const output = input.nextElementSibling;
+  if (output) output.textContent = `${input.value}%`;
+});
+document.addEventListener('change', event => {
+  const input = event.target as HTMLInputElement | HTMLSelectElement;
+  const key = input.dataset.pref;
+  if (key === 'sound' || key === 'numbers') { updatePref(key, (input as HTMLInputElement).checked); if (key === 'sound') settings(); }
+  else if (key === 'motion') updatePref(key, input.value);
+});
 let searchTimer = 0;
 document.addEventListener('input', event => {
   const input = event.target as HTMLInputElement;
@@ -592,6 +730,7 @@ $<HTMLInputElement>('#save-file').addEventListener('change', async event => {
 document.addEventListener('keydown', event => {
   if ((event.target as HTMLElement).matches('input,textarea,select') || event.repeat) return;
   if ($<HTMLDialogElement>('#modal').open) return;
+  if (titleOpen) return;
   const key = event.key.toLowerCase();
   if (key === '1') setView('village');
   if (key === '2') setView('battle');
@@ -615,7 +754,7 @@ function playBattleSounds() {
   for (const event of game.events) {
     if (event.id <= lastEventId) continue;
     lastEventId = event.id;
-    const sfx: Partial<Record<typeof event.type, Sfx>> = { damage: 'hit', skill: 'cast', heal: 'heal', death: 'death', summon: 'summon', revive: 'era', power: 'power', phase: 'power' };
+    const sfx: Partial<Record<typeof event.type, Sfx>> = { damage: 'hit', skill: 'cast', heal: 'heal', death: 'death', summon: 'summon', revive: 'era', power: 'power', phase: 'power', overtime: 'era' };
     if (sfx[event.type]) sound.play(sfx[event.type]!);
   }
 }
@@ -624,7 +763,7 @@ let lastTime = performance.now(), uiElapsed = 0, saveElapsed = 0;
 function frame(now: number) {
   const dt = Math.min((now - lastTime) / 1000, 0.1);
   lastTime = now;
-  if (!document.hidden) {
+  if (!document.hidden && !titleOpen) {
     game.tick(dt);
     if (game.battle?.status === 'fighting' && game.state.settings.speed > 1) game.advanceBattle(dt * (game.state.settings.speed - 1));
     playBattleSounds();
@@ -650,7 +789,8 @@ function frame(now: number) {
 }
 
 renderAll();
-if (game.offlineGains && game.offlineSeconds > 60) toast(`A aldeia trabalhou por ${Math.round(game.offlineSeconds / 60)} min enquanto você esteve fora.`);
-if (pendingEra(game.state)) window.setTimeout(showSpiritChoice, 600);
+renderAudioButton();
+if (titleOpen) { renderTitle(); $<HTMLButtonElement>('#title-screen .primary').focus(); }
+else { help(); welcomeBack(); }
 requestAnimationFrame(frame);
 window.addEventListener('beforeunload', () => { save(); world.destroy(); });

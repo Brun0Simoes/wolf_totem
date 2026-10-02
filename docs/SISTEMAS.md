@@ -1,4 +1,4 @@
-# Wolf Totem 1.1 — sistemas do jogo
+# Wolf Totem 1.2 — sistemas do jogo
 
 Todos os números abaixo são decisões de protótipo, calibradas por simulação, e ficam fora do catálogo canônico de `src/data/characters.ts`.
 
@@ -158,7 +158,7 @@ Abaixo de 50% da vida, cada chefe dispara uma vez a sua mecânica, anunciada por
 | O Primeiro Inverno | **Nevasca Eterna:** gelo sobre o campo inteiro por 12 s e o Primeiro Inverno conjurado |
 | Alfas da Caçada Eterna | **Fúria do Alfa:** +40% de velocidade, +20% de ataque e escudo de 20% |
 
-Com as fases, a equipe inicial com três heróis 1★ perde para o Alfa, enquanto equipes com alguns 2★ vencem. O Primeiro Inverno continua exigindo heróis 3★.
+Com as fases, a equipe inicial de três heróis 1★ só vence o Alfa na formação de partida, com Ena atrás de Akru e Boru; com a atiradora na linha de frente, perde. Equipes com alguns 2★ vencem com folga. O Primeiro Inverno continua exigindo heróis 3★ e uma formação com os tanques na frente.
 
 ## Eventos da aldeia (1.1)
 
@@ -175,3 +175,32 @@ Com as fases, a equipe inicial com três heróis 1★ perde para o Alfa, enquant
 ## Resumo da batalha (1.1)
 
 Ao fim de cada luta, o cartão de resultado lista os heróis com barras de dano causado, dano recebido (incluindo o absorvido por escudos) e cura mais escudos dados. O dano das invocações conta para quem as chamou.
+
+## Campo hexagonal (1.2)
+
+- O campo tem 4 colunas e 6 fileiras de casas hexagonais, em fileiras alternadas deslocadas meia casa. As fileiras 0–2 são do inimigo (a 2 é a frente dele) e as fileiras 3–5 são da tribo (a 3 é a frente).
+- As 12 casas da formação seguem numeradas de 1 a 12, quatro por fileira, da frente para trás. Saves antigos mantêm as posições.
+- Colunas ficam a 1 unidade e fileiras a 1 unidade de profundidade. Por isso, alcances e áreas das habilidades valem o mesmo que antes. O vizinho diagonal fica a 1,12, ainda dentro do alcance corpo a corpo.
+- O campo é visto de frente, em leve perspectiva: as fileiras da tribo ficam mais largas e próximas, e as unidades do fundo ficam um pouco menores.
+- Cada região tem cenário próprio: pinheiros na Clareira, rio na Margem, copas na Copa Alta, acácias e sol baixo na Savana, árvores mortas e poças no Pântano, picos nevados nas Montanhas.
+
+## Crepúsculo (1.2)
+
+Lutas longas não empacam. A partir de 75 s de combate o campo escurece e o Crepúsculo começa:
+
+| Efeito | Valor |
+| --- | --- |
+| Dano recebido por todos | +3% por segundo depois dos 75 s (o dobro aos ~108 s) |
+| Cura, escudos e regeneração | −2% por segundo depois dos 75 s, até o mínimo de 15% |
+
+O limite de 150 s continua valendo: se ninguém vencer até lá, a tribo perde.
+
+## Tela inicial e configurações (1.2)
+
+- **Tela inicial:** a história da tribo e o resumo da jornada (era, expedições, heróis e renascimentos). Opções: continuar, começar uma nova jornada (pede confirmação), configurações e como jogar. O tempo da aldeia não corre enquanto a tela está aberta.
+- **Configurações:**
+  - Ficam salvas neste aparelho, separadas do save da jornada.
+  - **Som:** liga e desliga sons e música, com volume separado para efeitos e música.
+  - **Movimento:** segue o sistema, completo ou reduzido. O reduzido acalma tremores de câmera, ondas e animações da interface.
+  - **Números de dano e cura:** podem ser desligados.
+  - **Jornada:** exportar, importar, voltar à tela inicial e apagar a jornada. Apagar pede uma segunda confirmação e recomeça direto no guia.
