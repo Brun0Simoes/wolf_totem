@@ -1,10 +1,10 @@
 import type { Character } from '../data/characters';
-import { bestAnimation, frameRect } from './animationAssets';
+import { assetUrl, bestAnimation, frameRect } from './animationAssets';
 import { proceduralPortrait } from './proceduralArt';
 
 /** Crop by layout, preserving the generated file and its alpha channel. */
 export function portraitHTML(character: Character, stars = 1): string {
-  if (character.art) return `<img src="/chars/${character.art}-${stars}star.png" alt="${character.name}" loading="lazy"/>`;
+  if (character.art) return `<img src="${assetUrl(`chars/${character.art}-${stars}star.png`)}" alt="${character.name}" loading="lazy"/>`;
   const sheet = bestAnimation(character.id, stars);
   if (!sheet) return `<img class="procedural-portrait" src="${proceduralPortrait(character.id, stars)}" alt="${character.name}, ${stars} estrela${stars > 1 ? 's' : ''}"/>`;
   const rect = sheet.portrait ?? frameRect(sheet, 0);

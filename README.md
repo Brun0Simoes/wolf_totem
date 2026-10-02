@@ -13,6 +13,19 @@ npm run dev
 
 Abra **http://127.0.0.1:5173**. O servidor funciona enquanto esse terminal estiver aberto. Não abra `index.html` diretamente.
 
+## Jogar online (GitHub Pages)
+
+A cada envio para `main`, o workflow `.github/workflows/pages.yml` testa, gera o build e publica o jogo em **https://brun0simoes.github.io/wolf_totem/**. Para ativar, uma única vez: em **Settings → Pages → Build and deployment → Source**, escolha **GitHub Actions**. Depois, envie algo para `main` ou rode o workflow em **Actions → Publish on GitHub Pages → Run workflow**.
+
+### Salvar e carregar a jornada
+
+- O progresso é salvo sozinho no navegador a cada poucos segundos. Ao reabrir o site no mesmo navegador, é só **Continuar jornada**.
+- Para guardar uma cópia ou trocar de navegador ou aparelho:
+  - em **Configurações → Exportar progresso**, o jogo baixa `wolf-totem-jornada-AAAA-MM-DD.json`;
+  - em outro lugar, use **Carregar jornada salva** na tela inicial ou **Importar progresso** nas configurações.
+- Importar substitui a jornada daquele navegador. Exporte antes se quiser manter as duas.
+- Limpar os dados do site ou usar uma janela anônima apaga o progresso local. O arquivo exportado continua valendo.
+
 ## O jogo
 
 | Pilar | O que existe |
@@ -81,7 +94,7 @@ A simulação é pura e determinística (inclusive loja e saques, com sementes s
 
 ## Verificação e distribuição
 
-Os envios para `main` e os pull requests executam os testes e o build pelo GitHub Actions.
+Os envios para `main` e os pull requests executam os testes e o build pelo GitHub Actions; os envios para `main` também publicam no GitHub Pages.
 
 ```powershell
 npm test
@@ -89,7 +102,7 @@ npm run build
 npm run preview
 ```
 
-O build gera `dist/` com uma cópia das imagens. O progresso fica no armazenamento deste navegador e desta origem; exporte o save antes de trocar de navegador ou porta. Saves das versões 0.x são convertidos automaticamente: cada onda vencida vira uma expedição vencida.
+O build gera `dist/` com uma cópia das imagens e usa caminhos relativos, então funciona na raiz de um domínio ou num subcaminho como o do GitHub Pages. O progresso fica no armazenamento deste navegador e deste endereço; exporte o save antes de trocar de navegador, de porta ou de site. Saves das versões 0.x são convertidos automaticamente: cada onda vencida vira uma expedição vencida.
 
 - [Sistemas do jogo](docs/SISTEMAS.md)
 - [Plano de desenvolvimento](docs/PLANO-DO-JOGO.md)

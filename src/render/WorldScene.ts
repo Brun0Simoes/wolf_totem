@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { OVERTIME_START, type BuildingId, type Game } from '../game/simulation';
 import { characters } from '../data/characters';
-import { animationSheets, bestAnimation, getAnimation, frameRect, sheetKey } from './animationAssets';
+import { animationSheets, assetUrl, bestAnimation, getAnimation, frameRect, sheetKey } from './animationAssets';
 import { advanceMotion, createMotion, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState, type SheetDefinition } from './animationModel';
 import { CombatEffects, SKILL_COLORS } from './CombatEffects';
 import { artFor } from './artSource';
@@ -765,7 +765,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       const key = stars === 1 ? 'hero-' + characterId : 'hero-' + characterId + '-' + stars;
       if (!getAnimation(characterId, stars) && character?.art && !this.textures.exists(key) && !this.loadingArt.has(key)) {
         this.loadingArt.add(key);
-        this.load.image(key, '/chars/' + character.art + '-' + stars + 'star.png');
+        this.load.image(key, assetUrl(`chars/${character.art}-${stars}star.png`));
         if (!this.load.isLoading()) this.load.start();
       }
       return this.textures.exists(key) ? key : this.textures.exists('hero-' + characterId) ? 'hero-' + characterId : 'warrior';

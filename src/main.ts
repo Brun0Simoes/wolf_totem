@@ -32,6 +32,8 @@ const sound = new SoundSystem();
 const SAVE_KEY = 'wolf-totem-v1';
 /** Set right before a reload that starts a fresh journey, so the title screen is skipped once. */
 const FRESH_KEY = 'wolf-totem-fresh';
+/** Set right before the reload that follows an import, to confirm it afterwards. */
+const LOADED_KEY = 'wolf-totem-loaded';
 let saved: unknown;
 try { saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { saved = undefined; }
 const game = new Game(saved);
@@ -574,7 +576,7 @@ function renderTitle() {
     <div class="title-actions">
      <button class="primary" data-action="title-continue">${icon(hasJourney ? 'play' : 'flame')}${hasJourney ? 'Continuar jornada' : 'Começar jornada'}</button>
      ${hasJourney ? `<button class="outline-button ${confirmNew ? 'danger' : ''}" data-action="title-new">${icon(confirmNew ? 'triangle-alert' : 'sparkles')}${confirmNew ? 'Confirmar: apagar a jornada atual' : 'Nova jornada'}</button>` : ''}
-     <div class="title-links"><button class="text-button" data-action="settings">${icon('settings-2')}Configurações</button><button class="text-button" data-action="help">${icon('book-open')}Como jogar</button></div>
+     <div class="title-links"><button class="text-button" data-action="import">${icon('upload')}Carregar jornada salva</button><button class="text-button" data-action="settings">${icon('settings-2')}Configurações</button><button class="text-button" data-action="help">${icon('book-open')}Como jogar</button></div>
     </div>
     <p class="title-version">VERSÃO 1.2 · ${storage ? 'progresso salvo neste navegador' : 'salvamento indisponível neste navegador'}</p>
    </div>`;
@@ -686,7 +688,13 @@ document.addEventListener('click', event => {
     case 'wipe': confirmWipe = true; settings(); break;
     case 'wipe-cancel': confirmWipe = false; settings(); break;
     case 'wipe-confirm': wipeJourney(); break;
-    case 'export': { const url = URL.createObjectURL(new Blob([game.serialize()], { type: 'application/json' })); const a = document.createElement('a'); a.href = url; a.download = 'wolf-totem-jornada.json'; a.click(); URL.revokeObjectURL(url); break; }
+    case 'export': {
+      const url = URL.createObjectURL(new Blob([game.serialize()], { type: 'application/json' }));
+      const a = document.createElement('a'); a.href = url; a.download = `wolf-totem-jornada-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.append(a); a.click(); a.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast('Jornada exportada. Guarde o arquivo para continuar em outro navegador ou aparelho.');
+      break;
+    }
     case 'import': $<HTMLInputElement>('#save-file').click(); break;
   }
 });
@@ -716,16 +724,22 @@ document.addEventListener('input', event => {
   }, 180);
 });
 $<HTMLInputElement>('#save-file').addEventListener('change', async event => {
-  const file = (event.target as HTMLInputElement).files?.[0];
+  const input = event.target as HTMLInputElement, file = input.files?.[0];
+  input.value = '';
   if (!file) return;
+  let data: unknown;
   try {
     if (file.size > 500_000) throw new Error();
-    const data = JSON.parse(await file.text());
-    if (!data || (data.version !== 1 && data.version !== 2) || !data.state || !Array.isArray(data.state.heroes) || !data.state.resources) throw new Error();
-    const imported = new Game(data);
-    game.state = imported.state; game.battle = null;
-    localStorage.setItem(SAVE_KEY, game.serialize()); location.reload();
-  } catch { toast('Arquivo de progresso inválido. Sua jornada atual foi preservada.'); }
+    data = JSON.parse(await file.text());
+    const root = data as { version?: number; state?: { heroes?: unknown; resources?: unknown } };
+    if (!root || (root.version !== 1 && root.version !== 2) || !root.state || !Array.isArray(root.state.heroes) || !root.state.resources) throw new Error();
+  } catch { toast('Arquivo de progresso inválido. Sua jornada atual foi preservada.'); return; }
+  const imported = new Game(data);
+  try {
+    localStorage.setItem(SAVE_KEY, imported.serialize());
+    sessionStorage.setItem(LOADED_KEY, '1');
+  } catch { toast('Este navegador está bloqueando o salvamento local. Libere o armazenamento do site e tente de novo.'); return; }
+  wiping = true; location.reload();
 });
 document.addEventListener('keydown', event => {
   if ((event.target as HTMLElement).matches('input,textarea,select') || event.repeat) return;
@@ -792,5 +806,6 @@ renderAll();
 renderAudioButton();
 if (titleOpen) { renderTitle(); $<HTMLButtonElement>('#title-screen .primary').focus(); }
 else { help(); welcomeBack(); }
+try { if (sessionStorage.getItem(LOADED_KEY)) { sessionStorage.removeItem(LOADED_KEY); toast('Jornada carregada. Bem-vindo de volta à fogueira.'); } } catch { /* nothing to confirm */ }
 requestAnimationFrame(frame);
 window.addEventListener('beforeunload', () => { save(); world.destroy(); });
