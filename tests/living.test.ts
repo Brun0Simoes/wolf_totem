@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EVENT_DURATION, FIRST_EVENT_AT, OMEN_BONUS, RAID_PENALTY, TRIBUTE } from '../src/game/events';
+import { EVENT_DURATION, FIRST_EVENT_AT, OMEN_BONUS, OMEN_DURATION, RAID_PENALTY, TRIBUTE } from '../src/game/events';
 import { QUESTS } from '../src/game/quests';
 import { allySlotCenter, cellCenter, COLUMNS, enemyFormation, enemySlotCenter, FORMATION_SLOTS, hexCorners, MIDLINE, migrateSlot } from '../src/game/board';
 import { Game, getRates, MAX_ROSTER_SIZE, newHero, OVERTIME_START, overtimeDamage, overtimeHealing, type Hero } from '../src/game/simulation';
@@ -43,17 +43,18 @@ describe('journal', () => {
     expect(game.claimQuest('era-2').ok).toBe(true);
     expect(game.state.inventory).toHaveLength(1);
     game.state.villageLevel = 5; game.state.progress = 30; game.state.wonder = 5;
-    game.ascend();
+    game.rebirth();
     expect(game.state.quests).toEqual(['primeira-cacada', 'era-2']);
     expect(game.claimQuest('renascer').ok).toBe(true);
     expect(new Set(QUESTS.map(q => q.id)).size).toBe(QUESTS.length);
   });
 
-  it('counts recruits and spirit powers for the journal', () => {
+  it('counts calls and spirit powers for the journal', () => {
     const game = new Game();
-    game.state.resources.spirit = 500; game.state.resources.food = 500;
-    game.recruit(game.state.shop[0]);
-    expect(game.state.stats.recruits).toBe(1);
+    game.state.resources = { wood: 500, food: 500, stone: 500, spirit: 500 };
+    expect(game.call(3).ok).toBe(true);
+    advanceVillage(game, 200);
+    expect(game.state.stats.calls).toBe(1);
     game.state.villageLevel = 2; game.state.spirits = ['lobo'];
     game.startBattle(); game.tick(1);
     expect(game.usePower('lobo').ok).toBe(true);
@@ -107,7 +108,7 @@ describe('village events', () => {
     const stone = getRates(game.state).stone;
     game.answerEvent(true);
     expect(getRates(game.state).stone).toBeCloseTo(stone * (1 + OMEN_BONUS));
-    advanceVillage(game, 200);
+    advanceVillage(game, OMEN_DURATION + 10);
     expect(game.state.omen).toBeNull();
     game.state.event = { kind: 'traveler', expires: game.state.clock + 100, characterId: 22 };
     expect(game.answerEvent(true).ok).toBe(true);

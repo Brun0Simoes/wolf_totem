@@ -6,7 +6,7 @@ import { endlessStage, FINAL_STAGE, stageReward } from '../src/game/campaign';
 import { COMPONENT_IDS, ITEMS, recipeFor } from '../src/game/items';
 import { SPIRITS, spiritsOfEra, type SpiritId } from '../src/game/spirits';
 import {
-  Game, buildingCost, embersFor, forgeRate, getRates, newHero, pendingEra, recruitCost, shopSize, stageUnlocked, wonderCost, workerSlots,
+  Game, buildingCost, callLimit, callOffering, embersFor, forgeRate, getRates, newHero, pendingEra, stageUnlocked, wonderCost, workerSlots,
   WONDER_STAGES, type Hero,
 } from '../src/game/simulation';
 import { migrateSlot } from '../src/game/board';
@@ -16,16 +16,19 @@ const rich = (game: Game) => { game.state.resources = { wood: 1e7, food: 1e7, st
 /** Slots are written in the 1.2 layout and placed on the larger board as old saves are. */
 const hero = (uid: string, characterId: number, stars = 1, slot: number | null = null, items: string[] = []): Hero => ({ ...newHero(uid, characterId, stars, slot === null ? null : migrateSlot(slot)), items });
 const fight = (game: Game) => { for (let i = 0; i < 160 && game.battle?.status === 'fighting'; i++) game.tick(1); };
+/** Lets the builders finish every work in progress. */
+const build = (game: Game) => { while (game.state.construction.length) game.tick(60); };
 
 describe('saves', () => {
   it('migrates a 0.x save: waves become cleared stages and heroes gain item and work slots', () => {
     const loaded = new Game(fixture, 1790800000000);
     expect(loaded.state.progress).toBe(0);
     expect(loaded.state.selectedStage).toBe(1);
-    expect(loaded.state.heroes.map(h => [h.characterId, h.stars, h.items, h.work, h.level])).toEqual([[1, 3, [], null, 1], [3, 2, [], null, 1], [8, 1, [], null, 1]]);
+    // Stars from 0.x copies stay; each star opened ten levels, and 1.3 rituals became ritual strength.
+    expect(loaded.state.heroes.map(h => [h.characterId, h.stars, h.items, h.work, h.level, h.ritual])).toEqual([[1, 3, [], null, 21, 0], [3, 2, [], null, 11, 0], [8, 1, [], null, 1, 0]]);
     expect(loaded.state.buildings.forge).toBe(0);
     expect(loaded.state.buildings.cura).toBe(0);
-    expect(JSON.parse(loaded.serialize()).version).toBe(3);
+    expect(JSON.parse(loaded.serialize()).version).toBe(4);
     const later = JSON.parse(fixture); later.state.wave = 7;
     expect(new Game(later, 1790800000000).state.progress).toBe(6);
   });
@@ -38,7 +41,8 @@ describe('saves', () => {
     data.state.villageLevel = 3;
     data.state.heroes = [{ uid: 'a', characterId: 1, stars: 1, slot: null, items: ['garra', 'x', 'presa', 'arco', 'pena'], work: 'hunt' }, { uid: 'b', characterId: 3, stars: 1, slot: null, items: [], work: 'hunt' }];
     const loaded = new Game(data, 1000);
-    expect(loaded.state.inventory).toEqual(['presa', 'coroa']);
+    // A fourth item is not lost: it waits in the bag.
+    expect(loaded.state.inventory).toEqual(['presa', 'coroa', 'pena']);
     expect(loaded.state.spirits).toEqual(['lobo']);
     expect(loaded.state.heroes[0].items).toEqual(['garra', 'presa', 'arco']);
     expect(loaded.state.heroes.filter(h => h.work === 'hunt')).toHaveLength(workerSlots(loaded.state, 'hunt'));
@@ -53,7 +57,7 @@ describe('items and the bone forge', () => {
     for (const a of COMPONENT_IDS) for (const b of COMPONENT_IDS) expect(recipeFor(a, b), `${a}+${b}`).toBeTruthy();
   });
 
-  it('completes an item when a second component meets the first on a hero, and returns items when selling', () => {
+  it('completes an item when a second component meets the first on a hero, and returns items to the bag', () => {
     const game = new Game();
     game.state.inventory = ['presa', 'arco', 'couro', 'manto', 'raiz'];
     const uid = game.state.heroes[0].uid;
@@ -70,8 +74,8 @@ describe('items and the bone forge', () => {
     expect(game.state.heroes[0].items).toEqual(['garra', 'pele-urso', 'cajado-vida']);
     expect(game.unequipItem(uid, 0).ok).toBe(true);
     expect(game.state.inventory).toEqual(['garra']);
-    expect(game.sellHero(uid).ok).toBe(true);
-    expect(game.state.inventory).toEqual(['garra', 'pele-urso', 'cajado-vida']);
+    expect(game.unequipItem(uid, 0).ok).toBe(true);
+    expect(game.state.inventory).toEqual(['garra', 'pele-urso']);
   });
 
   it('combines components in the bag only with the forge, which also produces components over time', () => {
@@ -82,10 +86,11 @@ describe('items and the bone forge', () => {
     expect(game.upgradeBuilding('forge').ok).toBe(false);
     game.state.villageLevel = 2;
     expect(game.upgradeBuilding('forge').ok).toBe(true);
+    build(game);
     expect(game.combineItems(0, 1).ok).toBe(true);
     expect(game.state.inventory).toEqual(['coroa']);
     const seconds = 2 / forgeRate(game.state);
-    for (let t = 0; t < seconds; t += 30) game.tick(30);
+    for (let t = 0; t < seconds; t += 60) game.tick(60);
     expect(game.state.inventory.length).toBeGreaterThanOrEqual(2);
     expect(game.state.inventory.slice(1).every(id => (COMPONENT_IDS as string[]).includes(id))).toBe(true);
     expect(buildingCost('forge', 0).stone).toBeGreaterThan(0);
@@ -102,16 +107,15 @@ describe('items and the bone forge', () => {
     expect(b.shield).toBeCloseTo(b.maxHp * 0.2);
   });
 
-  it('keeps items through a three-copy merge, overflowing to the bag', () => {
+  it('moves the items of a 1.3 copy to the bag when the copies become one hero', () => {
     const game = new Game();
-    rich(game);
-    game.state.heroes = [hero('a', 1, 1, 1, ['presa', 'arco']), hero('b', 1, 1, null, ['couro', 'manto'])];
-    game.state.shop = [1, 2, 3, 4];
-    expect(game.recruit(1).ok).toBe(true);
-    const akru = game.state.heroes.find(h => h.characterId === 1)!;
-    expect(akru.stars).toBe(2);
-    expect(akru.items).toEqual(['presa', 'arco', 'couro']);
-    expect(game.state.inventory).toEqual(['manto']);
+    const data = JSON.parse(game.serialize(1000));
+    data.version = 3;
+    data.state.heroes = [hero('a', 1, 1, 1, ['presa', 'arco']), hero('b', 1, 2, null, ['couro', 'manto']), hero('c', 1, 1, null, ['pena'])];
+    const loaded = new Game(data, 1000);
+    expect(loaded.state.heroes).toHaveLength(1);
+    expect(loaded.state.heroes[0]).toMatchObject({ uid: 'b', stars: 2, items: ['couro', 'manto'] });
+    expect(loaded.state.inventory.sort()).toEqual(['arco', 'pena', 'presa']);
   });
 });
 
@@ -121,6 +125,8 @@ describe('eras, patron spirits and powers', () => {
     rich(game);
     expect(pendingEra(game.state)).toBeNull();
     game.upgradeVillage();
+    expect(pendingEra(game.state)).toBeNull();
+    build(game);
     expect(pendingEra(game.state)).toBe(2);
     expect(game.chooseSpirit('urso').ok).toBe(false);
     const before = getRates(game.state).food;
@@ -131,12 +137,14 @@ describe('eras, patron spirits and powers', () => {
     expect(SPIRITS).toHaveLength(12);
   });
 
-  it('opens a fifth campfire slot with the eagle', () => {
+  it('lets the Circle of Spirits hold one more call with the eagle', () => {
     const game = new Game();
     game.state.villageLevel = 4; game.state.spirits = ['lobo', 'coruja'];
+    expect(callLimit(game.state)).toBe(1);
     expect(game.chooseSpirit('aguia').ok).toBe(true);
-    expect(shopSize(game.state)).toBe(5);
-    expect(game.state.shop).toHaveLength(5);
+    expect(callLimit(game.state)).toBe(2);
+    game.state.buildings.shrine = 10;
+    expect(callLimit(game.state)).toBe(4);
   });
 
   it('calls each power once per expedition and keeps every stat finite', () => {
@@ -199,7 +207,7 @@ describe('campaign', () => {
     expect(new Set(endlessStage(12).units.map(unit => unit.id)).size).toBe(endlessStage(12).units.length);
     const game = new Game();
     game.state.villageLevel = 5; game.state.progress = FINAL_STAGE;
-    game.state.heroes = [[39, 3], [28, 3], [40, 3], [8, 3], [25, 3], [33, 3], [49, 3]].map(([id, stars], i) => hero(`e${i}`, id, stars, [1, 2, 0, 9, 10, 5, 6][i], ['garra', 'talisma', 'carvalho']));
+    game.state.heroes = [[39, 3], [28, 3], [40, 3], [8, 3], [25, 3], [33, 3], [49, 3]].map(([id, stars], i) => ({ ...hero(`e${i}`, id, stars, [1, 2, 0, 9, 10, 5, 6][i], ['garra', 'talisma', 'carvalho']), level: 30 }));
     expect(game.selectStage(0).ok).toBe(true);
     game.startBattle(); fight(game);
     expect(game.battle!.status).toBe('victory');
@@ -226,27 +234,27 @@ describe('the Great Totem and rebirth', () => {
     for (let stage = 0; stage < WONDER_STAGES; stage++) expect(game.buildWonder().ok).toBe(true);
     expect(game.buildWonder().ok).toBe(false);
     expect(wonderCost(4).wood).toBe(5 * wonderCost(0).wood);
-    expect(game.ascend().ok).toBe(false);
+    expect(game.rebirth().ok).toBe(false);
     game.state.progress = FINAL_STAGE; game.state.endlessBest = 3;
     const embers = embersFor(game.state);
     expect(embers).toBe(8 + 6);
-    expect(game.ascend().ok).toBe(true);
-    expect(game.state).toMatchObject({ villageLevel: 1, progress: 0, wonder: 0, embers, rebirths: 1, endlessRecord: 3, endlessBest: 0, spirits: [], inventory: [] });
+    expect(game.rebirth().ok).toBe(true);
+    expect(game.state).toMatchObject({ villageLevel: 1, progress: 0, wonder: 0, embers, rebirths: 1, endlessRecord: 3, endlessBest: 0, spirits: [], inventory: [], callings: [], construction: [], ritualTotal: 0 });
     expect(game.state.heroes.map(h => h.characterId)).toEqual([1]);
   });
 
   it('turns embers into permanent memories', () => {
     const game = new Game();
     game.state.embers = 40;
-    const rates = getRates(game.state).wood, price = recruitCost(3, game.state).spirit;
+    const rates = getRates(game.state).wood, price = callOffering(game.state, 3).spirit;
     expect(game.buyMemory('raizes').ok).toBe(true);
     expect(getRates(game.state).wood).toBeCloseTo(rates * 1.25);
     expect(game.buyMemory('fogueira').ok).toBe(true);
-    expect(recruitCost(3, game.state).spirit).toBe(Math.round(price * 0.92));
+    expect(callOffering(game.state, 3).spirit).toBe(Math.round(price * 0.9));
     expect(game.buyMemory('heranca').ok).toBe(true);
     expect(game.buyMemory('forja').ok).toBe(true);
     game.state.wonder = WONDER_STAGES; game.state.villageLevel = 5; game.state.progress = FINAL_STAGE;
-    game.ascend();
+    game.rebirth();
     expect(game.state.resources.wood).toBe(120 + 150);
     expect(game.state.inventory).toHaveLength(1);
     expect(game.state.memories).toMatchObject({ raizes: 1, fogueira: 1, heranca: 1, forja: 1 });

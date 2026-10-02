@@ -61,15 +61,34 @@ export const FINAL_STAGE = STAGES.length;
 export const regionOf = (stageId: number): Region => REGIONS[Math.max(0, Math.min(REGIONS.length - 1, Math.ceil(stageId / 5) - 1))];
 export const stageById = (stageId: number): Stage | undefined => STAGES.find(stage => stage.id === stageId);
 
-/** The hero level a tribe that hunts and fights along the way has reached at each stage. */
-export const expectedLevel = (level: number): number => Math.min(10, 1 + 9 * Math.pow(Math.max(0, level - 1) / 29, 0.7));
-/** Enemies hit harder than in 1.2, most of all early on, where the journey used to be easy. */
-export const difficulty = (level: number): number => Math.max(1.1, 1.25 - 0.005 * level);
-/** Enemy strength grows with the stage level and the levels heroes are expected to have; costlier units start from stronger canonical stats. */
-export function enemyScale(level: number, cost: number): number {
-  const base = (0.56 + level * 0.03 + level * level * 0.0009) / (1 + 0.12 * (cost - 1));
-  return base * difficulty(level) * (1 + 0.05 * (expectedLevel(level) - 1));
+/** The hero level a tribe that hunts, works and fights along the way has reached at each stage: one per stage. */
+export const expectedLevel = (level: number): number => Math.max(1, Math.min(30, level));
+/** Stars the tribe has awakened by then: the ascension rites open levels 11 and 21. */
+export const expectedStars = (level: number): number => level <= 10 ? 1 : level <= 20 ? 2 : 3;
+/**
+ * Enemy power at each campaign stage, calibrated by simulation. The tribe expected there (one level per stage,
+ * stars awakened at 11 and 21, a sound formation of its era, a few items and the patron spirits) wins with
+ * about 10% to spare in the first two regions and 30% from the third on; from there, a loose formation of the
+ * same stars also wins once it is four levels ahead. A tribe a star behind cannot win.
+ */
+export const STAGE_POWER = [
+  0.89, 1.15, 0.8, 0.93, 0.65, 1.47, 1.88, 1.48, 1.69, 0.95,
+  4.36, 3.7, 3.89, 3.25, 3.7, 4.86, 5.92, 5, 6.24, 3.27,
+  16.39, 14.29, 15.68, 15.85, 7.08, 12.98, 18.57, 17.08, 16.87, 7.25,
+] as const;
+const growth = (level: number) => 0.56 + level * 0.03 + level * level * 0.0009;
+/** Regular stages (bosses aside) guide raids between stages and the endless hunt beyond the campaign. */
+const ANCHORS = STAGE_POWER.map((power, index) => [index + 1, power] as const).filter(([stage]) => stage % 5 !== 0);
+export function enemyPower(level: number, stageId = 0): number {
+  if (Number.isInteger(stageId) && stageId >= 1 && stageId <= STAGE_POWER.length) return STAGE_POWER[stageId - 1];
+  if (level <= ANCHORS[0][0]) return ANCHORS[0][1];
+  const last = ANCHORS[ANCHORS.length - 1];
+  if (level >= last[0]) return last[1] * growth(level) / growth(last[0]);
+  const next = ANCHORS.findIndex(([stage]) => stage >= level), [b, pb] = ANCHORS[next], [a, pa] = ANCHORS[next - 1];
+  return pa + (pb - pa) * (level - a) / (b - a);
 }
+/** Costlier units start from stronger canonical stats, so they are scaled a little less. */
+export const enemyScale = (level: number, cost: number, stageId = 0): number => enemyPower(level, stageId) / (1 + 0.12 * (cost - 1));
 /** Bosses grow with the region: the Alpha is a lesson, the First Winter a wall. */
 export const bossScale = (region: number) => ({ hp: 1.66 + 0.06 * region, attack: 1.12 + 0.02 * region });
 

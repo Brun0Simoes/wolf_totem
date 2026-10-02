@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { characters } from '../src/data/characters';
 import { ANIMALITY } from '../src/data/animality';
-import { Game, getSynergies, newHero, recruitCost, SKILL_NOTES, type Hero } from '../src/game/simulation';
-import { SHOP_ODDS, rollVisitor, sellRefund, unlockedCost } from '../src/game/roster';
+import { callOffering, Game, getSynergies, newHero, SKILL_NOTES, type Hero } from '../src/game/simulation';
+import { charactersOfCost, unlockedCost } from '../src/game/roster';
+import { callCost, CALL_MINUTES } from '../src/game/tribe';
 import { REGIONS, STAGES } from '../src/game/campaign';
 import type { SpiritId } from '../src/game/spirits';
 import { BOARD, migrateSlot } from '../src/game/board';
 
 /** A hero placed with a 1.2 slot number, as old saves are, at the given level. */
-const placed = (uid: string, characterId: number, stars: number, slot: number, level = 1): Hero => ({ ...newHero(uid, characterId, stars, migrateSlot(slot)), level });
+const placed = (uid: string, characterId: number, stars: number, slot: number, level = 1): Hero => newHero(uid, characterId, stars, migrateSlot(slot), level);
 import { TRAIT_RULES } from '../src/game/synergies';
 
 const costOf = (id: number) => characters.find(character => character.id === id)!.cost;
@@ -17,74 +18,28 @@ function fight(game: Game, seconds = 160): void {
   for (let i = 0; i < seconds && game.battle?.status === 'fighting'; i++) game.tick(1);
 }
 
-describe('recruitment of the full roster', () => {
-  it('opens one cost tier per village level and only offers unlocked costs', () => {
+describe('the full roster', () => {
+  it('opens one cost tier per era, with every cost represented', () => {
     expect([1, 2, 3, 4, 5].map(unlockedCost)).toEqual([1, 2, 3, 4, 5]);
-    for (const [index, odds] of SHOP_ODDS.entries()) {
-      expect(odds.reduce((sum, value) => sum + value, 0)).toBe(100);
-      expect(odds.slice(index + 1).every(value => value === 0)).toBe(true);
-    }
-    for (const level of [1, 2, 3, 4, 5]) {
-      let seed = 1234 + level;
-      const seen = new Set<number>();
-      for (let i = 0; i < 400; i++) {
-        const roll = rollVisitor(seed, level, []);
-        seed = roll.seed; seen.add(costOf(roll.id));
-        expect(costOf(roll.id)).toBeLessThanOrEqual(level);
-      }
-      expect(seen.size).toBe(level);
-    }
+    for (const cost of [1, 2, 3, 4, 5]) expect(charactersOfCost(cost).length).toBeGreaterThanOrEqual(5);
+    expect(characters.reduce((sum, character) => sum + Number(costOf(character.id) > 0), 0)).toBe(55);
   });
 
-  it('refuses a locked hero, charges by cost and refunds half the spirit when selling', () => {
+  it('asks a larger offering and a longer call for costlier heroes', () => {
+    for (let cost = 2; cost <= 5; cost++) {
+      expect(callCost(cost).spirit).toBeGreaterThan(callCost(cost - 1).spirit);
+      expect(CALL_MINUTES[cost - 1]).toBeGreaterThan(CALL_MINUTES[cost - 2]);
+    }
     const game = new Game();
-    game.state.resources = { wood: 0, food: 1000, stone: 0, spirit: 1000 };
-    game.state.shop = [49, 1, 2, 4];
-    expect(game.recruit(49).ok).toBe(false);
-    game.state.villageLevel = 5;
-    expect(recruitCost(49)).toEqual({ wood: 0, food: 75, stone: 0, spirit: 150 });
-    expect(game.recruit(49).ok).toBe(true);
-    expect(game.state.resources).toMatchObject({ food: 925, spirit: 850 });
-    const uruq = game.state.heroes.find(hero => hero.characterId === 49)!;
-    expect(game.sellHero(uruq.uid).ok).toBe(true);
-    expect(game.state.resources.spirit).toBe(850 + sellRefund(5, 1));
-    expect(sellRefund(5, 1)).toBe(75);
+    expect(callOffering(game.state, 49)).toEqual(callCost(5));
   });
 
-  it('keeps visits deterministic, free of repeated faces and stable across saves', () => {
-    const a = new Game(), b = new Game();
-    for (const game of [a, b]) { game.state.villageLevel = 4; game.state.resources.spirit = 100; game.rerollShop(); }
-    expect(a.state.shop).toEqual(b.state.shop);
-    expect(new Set(a.state.shop).size).toBe(4);
-    const loaded = new Game(a.serialize(1000), 1000);
-    expect(loaded.state.shopSeed).toBe(a.state.shopSeed);
-    expect(loaded.state.shop).toEqual(a.state.shop);
-    const legacy = JSON.parse(a.serialize(1000));
-    delete legacy.state.shopSeed; legacy.state.shopRotation = 9;
-    expect(new Game(legacy, 1000).state.shopSeed).toBe(9);
-  });
-
-  it('brings the new cost tier to the campfire as soon as the village grows', () => {
-    const game = new Game();
-    game.state.resources = { wood: 1e6, food: 1e6, stone: 1e6, spirit: 1e6 };
-    for (let level = 2; level <= 5; level++) {
-      expect(game.upgradeVillage().ok).toBe(true);
-      expect(game.state.shop.every(id => costOf(id) <= level)).toBe(true);
-    }
-    const offered = new Set<number>();
-    for (let i = 0; i < 60; i++) { game.rerollShop(); game.state.shop.forEach(id => offered.add(costOf(id))); }
-    expect([...offered].sort()).toEqual([1, 2, 3, 4, 5]);
-  });
-
-  it('restores saved heroes of every cost and drops a shop entry that is still locked', () => {
+  it('restores saved heroes of every cost', () => {
     const game = new Game();
     const data = JSON.parse(game.serialize(1000));
-    data.state.heroes.push({ uid: 'legend', characterId: 55, stars: 2, slot: null, items: [], work: null });
-    data.state.shop = [55, 1, 2, 3];
+    data.state.heroes.push({ uid: 'legend', characterId: 55, stars: 2, slot: null, items: [], work: null, level: 14 });
     const loaded = new Game(data, 1000);
-    expect(loaded.state.heroes.find(hero => hero.uid === 'legend')?.characterId).toBe(55);
-    expect(loaded.state.shop).not.toContain(55);
-    expect(loaded.state.shop.every(id => costOf(id) === 1)).toBe(true);
+    expect(loaded.state.heroes.find(hero => hero.uid === 'legend')).toMatchObject({ characterId: 55, stars: 2, level: 14 });
   });
 });
 
@@ -104,7 +59,7 @@ describe('abilities, summons and traits', () => {
     for (const character of characters) for (const stars of [1, 2, 3]) {
       const game = new Game();
       game.state.villageLevel = 5; game.state.progress = 20; game.state.selectedStage = 21;
-      game.state.heroes = [character.id, character.id === 1 ? 2 : 1, 25].map((characterId, index) => placed(`hero-${index}`, characterId, stars, [1, 2, 9][index], 10));
+      game.state.heroes = [character.id, character.id === 1 ? 2 : 1, 25].map((characterId, index) => placed(`hero-${index}`, characterId, stars, [1, 2, 9][index], 10 * stars));
       game.startBattle();
       const hero = game.battle!.entities.find(entity => entity.uid === 'hero-0')!;
       hero.mana = hero.manaMax;
@@ -185,28 +140,28 @@ describe('expeditions', () => {
     expect(results).toEqual(['victory', 'defeat']);
   });
 
-  it('asks for evolved heroes before the Alpha', () => {
-    const alpha = (team: [number, number, number][]) => {
+  it('asks for a grown tribe before the Alpha', () => {
+    const alpha = (team: [number, number][], level: number) => {
       const game = new Game();
-      game.state.villageLevel = 2; game.state.progress = 4; game.state.selectedStage = 5;
-      game.state.heroes = team.map(([id, stars, slot], i) => placed(`a-${i}`, id, stars, slot, 3));
+      game.state.progress = 4; game.state.selectedStage = 5;
+      game.state.heroes = team.map(([id, slot], i) => placed(`a-${i}`, id, 1, slot, level));
       game.startBattle(); fight(game);
       return game.battle!.status;
     };
-    expect(alpha([[1, 1, 1], [3, 1, 2], [8, 1, 9]])).toBe('defeat');
-    expect(alpha([[1, 2, 1], [3, 1, 2], [8, 2, 9], [15, 1, 10]])).toBe('victory');
+    expect(alpha([[1, 1], [3, 2], [8, 9]], 2)).toBe('defeat');
+    expect(alpha([[1, 1], [3, 2], [8, 9]], 6)).toBe('victory');
   });
 
-  it('lets a tribe behind on levels make up for it with spirits or ceremonies against the King of Buffalo', () => {
-    const king = (spirits: SpiritId[], rituals: Hero['rituals']) => {
+  it('walls the third region behind the awakened bond, which the patron spirits cannot replace', () => {
+    const delta = (stars: number, level: number, spirits: SpiritId[]) => {
       const game = new Game();
-      game.state.villageLevel = 5; game.state.progress = 19; game.state.selectedStage = 20; game.state.spirits = spirits;
-      game.state.heroes = [39, 40, 28, 8, 25, 33, 1].map((characterId, index) => ({ ...placed(`final-${index}`, characterId, 2, [1, 2, 0, 9, 10, 5, 6][index], 5), rituals: { ...rituals } }));
+      game.state.villageLevel = 3; game.state.progress = 11; game.state.selectedStage = 12; game.state.spirits = spirits;
+      game.state.heroes = [15, 28, 1, 8, 25].map((characterId, index) => placed(`b-${index}`, characterId, stars, [1, 2, 0, 9, 10][index], level));
       game.startBattle(); fight(game);
       return game.battle!.status;
     };
-    expect(king([], {})).toBe('defeat');
-    expect(king(['lobo', 'coruja', 'elefante', 'urso'], {})).toBe('victory');
-    expect(king([], { rape: 2, sananga: 2, kambo: 2 })).toBe('victory');
+    expect(delta(1, 10, [])).toBe('defeat');
+    expect(delta(1, 10, ['lobo', 'coruja'])).toBe('defeat');
+    expect(delta(2, 12, ['lobo', 'coruja'])).toBe('victory');
   });
 });

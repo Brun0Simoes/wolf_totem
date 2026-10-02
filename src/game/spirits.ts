@@ -11,7 +11,7 @@ export interface SpiritPassive {
   traits?: string[];
   attackPct?: number; hpPct?: number; attackSpeedPct?: number; armor?: number; magicResist?: number;
   spellPower?: number; startMana?: number; damageTaken?: number;
-  summonPct?: number; forgeSpeed?: number; healPower?: number; shopSlot?: number;
+  summonPct?: number; forgeSpeed?: number; healPower?: number; callSlot?: number;
 }
 export interface SpiritDef { id: SpiritId; name: string; era: number; animal: string; color: string; passiveText: string; passive: SpiritPassive; power: { name: string; text: string } }
 
@@ -34,8 +34,8 @@ export const SPIRITS: SpiritDef[] = [
     passive: { production: { food: 0.15 }, traits: ['Rio', 'Brigão'], hpPct: 0.12, attackPct: 0.12 }, power: { name: 'Fome do Pântano', text: 'Devora o inimigo mais ferido abaixo de 40% da vida; os outros sofrem dano e ficam molhados.' } },
   { id: 'elefante', era: 4, name: 'Elefante', animal: 'elephant', color: '#e8dcc0', passiveText: 'Manada e Ancestrais com +25 de armadura e resistência. +15% de pedra.',
     passive: { production: { stone: 0.15 }, traits: ['Manada', 'Ancestral'], armor: 25, magicResist: 25 }, power: { name: 'Muralha de Marfim', text: 'Escudo de 30% da vida para todos os aliados.' } },
-  { id: 'aguia', era: 4, name: 'Águia', animal: 'eagle', color: '#f2d27a', passiveText: 'Caçadores e heróis à distância com +12% de velocidade. +1 viajante na fogueira.',
-    passive: { traits: ['Caçador'], attackSpeedPct: 0.12, shopSlot: 1 }, power: { name: 'Olho do Céu', text: 'Marca todos os inimigos (+20% de dano recebido) e revela os furtivos por 10 s.' } },
+  { id: 'aguia', era: 4, name: 'Águia', animal: 'eagle', color: '#f2d27a', passiveText: 'Caçadores com +12% de velocidade de ataque. O Círculo sustenta +1 chamado ao mesmo tempo.',
+    passive: { traits: ['Caçador'], attackSpeedPct: 0.12, callSlot: 1 }, power: { name: 'Olho do Céu', text: 'Marca todos os inimigos (+20% de dano recebido) e revela os furtivos por 10 s.' } },
 
   { id: 'urso', era: 5, name: 'Urso', animal: 'bear', color: '#cfe9f7', passiveText: 'Toda a formação com +10% de vida. +10% de todos os recursos.',
     passive: { production: { wood: 0.1, food: 0.1, stone: 0.1, spirit: 0.1 }, hpPct: 0.1 }, power: { name: 'Despertar do Inverno', text: 'Ergue todos os aliados caídos com 35% da vida.' } },
@@ -54,7 +54,7 @@ export interface MemoryDef { id: MemoryId; name: string; text: string; max: numb
 export const MEMORIES: MemoryDef[] = [
   { id: 'raizes', name: 'Raízes Profundas', text: '+25% de produção de todos os recursos por nível.', max: 10, base: 3 },
   { id: 'bencao', name: 'Bênção Ancestral', text: '+6% de vida e ataque para todos os heróis por nível.', max: 10, base: 4 },
-  { id: 'fogueira', name: 'Fogueira Acolhedora', text: 'Recrutar custa 8% menos por nível.', max: 5, base: 3 },
+  { id: 'fogueira', name: 'Fogueira Acolhedora', text: 'Chamados 10% mais rápidos e baratos por nível.', max: 5, base: 3 },
   { id: 'botim', name: 'Botim das Caçadas', text: '+20% de recompensas de expedição por nível.', max: 5, base: 3 },
   { id: 'heranca', name: 'Herança da Tribo', text: 'Cada renascimento começa com +150 de cada recurso por nível.', max: 5, base: 2 },
   { id: 'forja', name: 'Memória da Forja', text: 'Cada renascimento começa com um componente por nível.', max: 3, base: 4 },
