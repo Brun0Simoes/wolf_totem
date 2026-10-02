@@ -55,14 +55,14 @@ Atalhos: `1` aldeia, `2` expedição, `3` códice, `4` totem, `M` mapa, `P` paus
 
 ## Arte
 
-**41 das 165 formas** têm folhas pintadas (32 personagens; Akru, Nima, Boru e Jara completos). O jogo escolhe automaticamente, nesta ordem:
+**54 das 165 formas** têm folhas pintadas (45 personagens; Akru, Nima, Boru e Jara completos). O jogo escolhe automaticamente, nesta ordem:
 
 1. a folha pintada da estrela;
 2. a ilustração original (personagens de custo 1);
 3. a folha pintada mais próxima, com o animal espiritual em aura atrás (2★ e 3★);
 4. uma **figura desenhada pelo código**, com poses de repouso, caminhada e ataque e com a progressão 1★ humano, 2★ vínculo e 3★ avatar.
 
-Quando uma folha pintada nova entra em `public/assets/animations/v3`, ela substitui a figura sem mudar código. O [inventário de arte](docs/production/STATUS.md) lista as 124 formas pendentes. Detalhes em [Arte e animação](docs/ARTE-E-ANIMACAO.md).
+Quando uma folha pintada nova entra em `public/assets/animations/v3`, ela substitui a figura sem mudar código. O [inventário de arte](docs/production/STATUS.md) lista as 111 formas pendentes. Detalhes em [Arte e animação](docs/ARTE-E-ANIMACAO.md).
 
 Os espíritos, invocações, estandartes e o Grande Totem usam glifos de máscara de totem (27 animais) desenhados em SVG/Canvas. A arena de cada região e as figuras provisórias, com sombreado, rosto e roupas detalhadas, também são pintadas pelo código. Som e música são sintetizados com WebAudio: ative-os no ícone de volume ou nas configurações.
 

@@ -22,7 +22,7 @@
 Enquanto as folhas pintadas não chegam, o jogo completa o visual com código (`src/render/proceduralArt.ts` e `src/render/spiritGlyphs.ts`):
 
 - **Escolha da arte** (`src/render/artSource.ts`): folha pintada da estrela → ilustração original → folha pintada mais próxima com aura do animal espiritual (2★ pequena, 3★ grande) → figura procedural.
-- **Figuras procedurais** dos 23 personagens sem nenhuma arte. Cada um tem descrição tirada do plano (porte, pele, cabelo, roupa, arma, adereço) e uma folha 4 × 3 no mesmo formato das pintadas: repouso, caminhada e ataque, quatro poses cada. A evolução segue a regra do plano: 1★ humano; 2★ marcas brilhando, orelhas, chifres, cauda, asas ou braços espirituais conforme o animal; 3★ avatar do animal atrás da figura.
+- **Figuras procedurais** dos 10 personagens sem nenhuma folha pintada. Cada um tem descrição tirada do plano (porte, pele, cabelo, roupa, arma, adereço) e uma folha 4 × 3 no mesmo formato das pintadas: repouso, caminhada e ataque, quatro poses cada. A evolução segue a regra do plano: 1★ humano; 2★ marcas brilhando, orelhas, chifres, cauda, asas ou braços espirituais conforme o animal; 3★ avatar do animal atrás da figura.
 - **Glifos de 27 animais** em estilo máscara de totem: espíritos protetores, poderes, estandartes da aldeia, partes do Grande Totem, auras e prévias de inimigos.
 - **Aldeia:** forja (canteiro antes de construída), Grande Totem em 6 estágios, estandartes dos espíritos escolhidos e trabalhadores andando até a construção onde trabalham.
 - **Campo:** cor do tabuleiro por região e inimigos visíveis na preparação.
@@ -31,7 +31,7 @@ As figuras são provisórias e sempre perdem para uma folha pintada da mesma for
 
 ## Expansão 0.3
 
-A produção abrange os 55 personagens e suas três estrelas. Consulte o [estado atualizado](production/STATUS.md) para as entregas efetivas: a geração foi interrompida pelo limite de uso da ferramenta antes de completar as 165 formas.
+A produção abrange os 55 personagens e suas três estrelas. Consulte o [estado atualizado](production/STATUS.md) para as entregas efetivas; as folhas restantes continuam sendo produzidas em lotes de 1★, 2★ e 3★.
 
 O códice agora oferece uma prévia animada com seleção de estrelas, repouso, caminhada, ataque, habilidade, impacto, queda, vitória, pausa e espelhamento. As folhas novas ficam em `v3`; as 13 folhas anteriores permanecem em `v2`. Cada personagem/estrela tem seu próprio registro. O retrato dos novos personagens usa a primeira pose da folha, preservando o arquivo gerado.
 
@@ -41,7 +41,7 @@ Desde a versão 0.4 os 55 personagens são recrutáveis e suas habilidades funci
 
 ### Ordem sugerida para retomar a geração
 
-1. **1★ dos 23 personagens sem nenhuma arte** — são os únicos que ainda aparecem como silhueta: Suri, Kesh, Brak, Sena, Uru, Amaru, Vesh, Toru, Asha, Thari, Vahara, Zyri, Orun, Sakar, Aruun, Boro, Uruq, Akh'ra, Mahari, Veyra, Ssar'ka, N'Goro e Karkun (os sete últimos são lendários e aparecem na expedição final).
+1. **1★ dos 10 personagens sem nenhuma folha pintada** — são os únicos que ainda aparecem como silhueta: Suri, Kesh, Brak, Sena, Uru, Amaru, Vesh, Toru, Asha e Thari.
 2. **3★ dos Metamorfos** — a transformação é o momento mais visível do combate.
 3. **2★ e 3★ restantes**, por custo, do menor para o maior.
 

@@ -1,6 +1,6 @@
 # Estado da produção de arte
 
-Formas animadas: **41/165**. Personagens com as três formas: **4/55**.
+Formas animadas: **54/165**. Personagens com as três formas: **4/55**.
 
 Cada forma tem repouso, caminhada e ataque/conjuração, com quatro poses por sequência. Impacto, queda e vitória usam movimentos programados.
 
@@ -48,18 +48,18 @@ Cada forma tem repouso, caminhada e ataque/conjuração, com quatro poses por se
 | 40 | Koru | 4 | Pronto | Pendente | Pendente |
 | 41 | Makara | 4 | Pronto | Pendente | Pendente |
 | 42 | Nyala | 4 | Pronto | Pendente | Pendente |
-| 43 | Vahara | 4 | Pendente | Pendente | Pendente |
-| 44 | Zyri | 4 | Pendente | Pendente | Pendente |
-| 45 | Orun | 4 | Pendente | Pendente | Pendente |
-| 46 | Sakar | 4 | Pendente | Pendente | Pendente |
-| 47 | Aruun | 4 | Pendente | Pendente | Pendente |
-| 48 | Boro | 4 | Pendente | Pendente | Pendente |
-| 49 | Uruq | 5 | Pendente | Pendente | Pendente |
-| 50 | Akh'ra | 5 | Pendente | Pendente | Pendente |
-| 51 | Mahari | 5 | Pendente | Pendente | Pendente |
-| 52 | Veyra | 5 | Pendente | Pendente | Pendente |
-| 53 | Ssar'ka | 5 | Pendente | Pendente | Pendente |
-| 54 | N'Goro | 5 | Pendente | Pendente | Pendente |
-| 55 | Karkun | 5 | Pendente | Pendente | Pendente |
+| 43 | Vahara | 4 | Pronto | Pendente | Pendente |
+| 44 | Zyri | 4 | Pronto | Pendente | Pendente |
+| 45 | Orun | 4 | Pronto | Pendente | Pendente |
+| 46 | Sakar | 4 | Pronto | Pendente | Pendente |
+| 47 | Aruun | 4 | Pronto | Pendente | Pendente |
+| 48 | Boro | 4 | Pronto | Pendente | Pendente |
+| 49 | Uruq | 5 | Pronto | Pendente | Pendente |
+| 50 | Akh'ra | 5 | Pronto | Pendente | Pendente |
+| 51 | Mahari | 5 | Pronto | Pendente | Pendente |
+| 52 | Veyra | 5 | Pronto | Pendente | Pendente |
+| 53 | Ssar'ka | 5 | Pronto | Pendente | Pendente |
+| 54 | N'Goro | 5 | Pronto | Pendente | Pendente |
+| 55 | Karkun | 5 | Pronto | Pendente | Pendente |
 
 Gerado por `npm run roster:status -- --write`. Os arquivos prontos são entregas de protótipo e continuam sujeitos a refinamento artístico.

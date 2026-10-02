@@ -1,0 +1,18 @@
+[
+  {
+    "id": 47,
+    "name": "Aruun",
+    "stars": 1,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-95242c01-65e8-4f01-ac6c-d942a80f7d80.png",
+    "source": "Built-in imagegen, style reference public/assets/animations/v3/42-s1.png",
+    "prompt": "Aruun: strong adult river hunter with dark bronze skin, tied dark hair, blue cloth cape, bone necklaces, bare feet, compact wooden-and-stone harpoon. Human one-star form only. 4x3 idle/walk/attack-cast animation sheet with transparent gutters and a small blue water arc."
+  },
+  {
+    "id": 48,
+    "name": "Boro",
+    "stars": 1,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-4b9f4220-3433-4425-a0df-d4781b201bfc.png",
+    "source": "Built-in imagegen, style reference public/assets/animations/v3/42-s1.png",
+    "prompt": "Boro: huge broad adult human chief with brown skin, square human face, black hair, large artificial curved horn ornaments on a wooden brow band, ochre/dark-brown fiber mantle, bracers, bare feet, compact stone club. Human one-star form only. 4x3 idle/walk/attack-cast animation sheet with transparent gutters and a small dusty shock ring."
+  }
+]

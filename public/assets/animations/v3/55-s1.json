@@ -1,0 +1,166 @@
+{
+  "characterId": 55,
+  "stars": 1,
+  "name": "Karkun",
+  "image": "/assets/animations/v3/55-s1.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 308,
+  "anchorX": 162,
+  "anchorY": 396,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 329,
+      "height": 418
+    },
+    {
+      "x": 329,
+      "y": 0,
+      "width": 305,
+      "height": 418
+    },
+    {
+      "x": 634,
+      "y": 0,
+      "width": 315,
+      "height": 418
+    },
+    {
+      "x": 949,
+      "y": 0,
+      "width": 305,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 342,
+      "height": 418
+    },
+    {
+      "x": 342,
+      "y": 418,
+      "width": 303,
+      "height": 418
+    },
+    {
+      "x": 645,
+      "y": 418,
+      "width": 336,
+      "height": 418
+    },
+    {
+      "x": 981,
+      "y": 418,
+      "width": 273,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 318,
+      "height": 418
+    },
+    {
+      "x": 318,
+      "y": 836,
+      "width": 309,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 356,
+      "height": 418
+    },
+    {
+      "x": 983,
+      "y": 836,
+      "width": 271,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 162,
+      "y": 396
+    },
+    {
+      "x": 150,
+      "y": 395
+    },
+    {
+      "x": 160,
+      "y": 396
+    },
+    {
+      "x": 156,
+      "y": 396
+    },
+    {
+      "x": 174,
+      "y": 389
+    },
+    {
+      "x": 152,
+      "y": 390
+    },
+    {
+      "x": 155,
+      "y": 390
+    },
+    {
+      "x": 133,
+      "y": 388
+    },
+    {
+      "x": 182,
+      "y": 337
+    },
+    {
+      "x": 142,
+      "y": 339
+    },
+    {
+      "x": 176,
+      "y": 342
+    },
+    {
+      "x": 144,
+      "y": 343
+    }
+  ],
+  "portrait": {
+    "x": 67,
+    "y": 89,
+    "width": 260,
+    "height": 308
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

@@ -1,0 +1,166 @@
+{
+  "characterId": 54,
+  "stars": 1,
+  "name": "N'Goro",
+  "image": "/assets/animations/v3/54-s1.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 315,
+  "anchorX": 170,
+  "anchorY": 404,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 315,
+      "height": 418
+    },
+    {
+      "x": 628,
+      "y": 836,
+      "width": 354,
+      "height": 418
+    },
+    {
+      "x": 982,
+      "y": 836,
+      "width": 272,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 170,
+      "y": 404
+    },
+    {
+      "x": 170,
+      "y": 404
+    },
+    {
+      "x": 166,
+      "y": 404
+    },
+    {
+      "x": 160,
+      "y": 404
+    },
+    {
+      "x": 167,
+      "y": 386
+    },
+    {
+      "x": 156,
+      "y": 382
+    },
+    {
+      "x": 166,
+      "y": 386
+    },
+    {
+      "x": 168,
+      "y": 385
+    },
+    {
+      "x": 152,
+      "y": 335
+    },
+    {
+      "x": 155,
+      "y": 335
+    },
+    {
+      "x": 145,
+      "y": 332
+    },
+    {
+      "x": 129,
+      "y": 335
+    }
+  ],
+  "portrait": {
+    "x": 63,
+    "y": 90,
+    "width": 194,
+    "height": 315
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

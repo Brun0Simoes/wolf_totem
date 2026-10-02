@@ -1,0 +1,18 @@
+[
+  {
+    "id": 45,
+    "name": "Orun",
+    "stars": 1,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-db569b4f-2315-4324-9de6-ae4fd6ce1e71.png",
+    "source": "Built-in imagegen, style reference public/assets/animations/v3/42-s1.png",
+    "prompt": "Orun, Três Máscaras: tall lean adult human male mask dancer, dark brown skin, long black hair, three small carved wood masks hanging from fiber belt, ochre/red face paint, rust and charcoal primitive cloth, bare feet, short carved staff. Human one-star form; no animal anatomy or floating masks. 4x3 sheet with idle/walk/attack-cast 4 poses each, transparent gutters."
+  },
+  {
+    "id": 46,
+    "name": "Sakar",
+    "stars": 1,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-029549d5-6171-454e-83fb-7797d332c66a.png",
+    "source": "Built-in imagegen, style reference public/assets/animations/v3/42-s1.png",
+    "prompt": "Sakar, Muda Celeste: athletic adult human woman, medium brown skin, long dark hair tied high, pale blue/white face paint, pale blue woven mantle, leather belt with feather charms, bone knife and compact short spear. Human one-star form; no wings or bird anatomy. 4x3 sheet with idle/walk/attack-cast 4 poses each, transparent gutters."
+  }
+]

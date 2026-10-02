@@ -10,7 +10,7 @@ Qualquer balanceamento provisório do combate deve ficar separado desse catálog
 
 ## Produção atual
 
-Novas formas e animações são entregues em `public/assets/animations/v3`. O [inventário de produção](production/STATUS.md) registra as 165 formas planejadas e distingue as prontas das pendentes; hoje são **41 prontas e 124 pendentes**. Para personagens novos, o retrato do códice é um recorte da primeira pose; o PNG permanece intacto.
+Novas formas e animações são entregues em `public/assets/animations/v3`. O [inventário de produção](production/STATUS.md) registra as 165 formas planejadas e distingue as prontas das pendentes; hoje são **54 prontas e 111 pendentes**. Para personagens novos, o retrato do códice é um recorte da primeira pose; o PNG permanece intacto.
 
 ## Integração ao jogo (versões 0.4 e 1.0)
 

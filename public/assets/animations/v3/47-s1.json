@@ -1,0 +1,166 @@
+{
+  "characterId": 47,
+  "stars": 1,
+  "name": "Aruun",
+  "image": "/assets/animations/v3/47-s1.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 253,
+  "anchorX": 164,
+  "anchorY": 389,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 164,
+      "y": 389
+    },
+    {
+      "x": 168,
+      "y": 389
+    },
+    {
+      "x": 170,
+      "y": 389
+    },
+    {
+      "x": 174,
+      "y": 389
+    },
+    {
+      "x": 172,
+      "y": 378
+    },
+    {
+      "x": 174,
+      "y": 381
+    },
+    {
+      "x": 174,
+      "y": 380
+    },
+    {
+      "x": 178,
+      "y": 381
+    },
+    {
+      "x": 170,
+      "y": 307
+    },
+    {
+      "x": 156,
+      "y": 307
+    },
+    {
+      "x": 160,
+      "y": 307
+    },
+    {
+      "x": 168,
+      "y": 307
+    }
+  ],
+  "portrait": {
+    "x": 57,
+    "y": 137,
+    "width": 234,
+    "height": 253
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}
