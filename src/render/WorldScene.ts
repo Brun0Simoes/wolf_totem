@@ -8,7 +8,7 @@ import { artFor } from './artSource';
 import { proceduralSheet } from './proceduralArt';
 import { CHARACTER_ANIMAL, paintGlyph, type AnimalId } from './spiritGlyphs';
 import { REGIONS } from '../game/campaign';
-import { allySlotCenter, ENEMY_SLOTS, enemySlotCenter, hexCorners } from '../game/board';
+import { allySlotCenter, enemyFormation, enemySlotCenter, FORMATION_SLOTS, hexCorners } from '../game/board';
 import { ARENA_CENTER, ARENA_LABELS, depthAt, paintArena, perspectiveScale, project, widthAt } from './battleArena';
 import { SPIRITS, spiritById } from '../game/spirits';
 
@@ -31,6 +31,7 @@ const BUILDINGS: { id: BuildingId; name: string; x: number; y: number; icon: str
   { id: 'quarry', name: 'PEDREIRA ANCESTRAL', x: 838, y: 494, icon: '◇' },
   { id: 'shrine', name: 'CÍRCULO DOS ESPÍRITOS', x: 398, y: 493, icon: '✦' },
   { id: 'forge', name: 'FORJA DE OSSO', x: 672, y: 254, icon: '⚒', labelY: -118 },
+  { id: 'cura', name: 'CASA DE CURA', x: 566, y: 578, icon: '❦' },
 ];
 const procKey = (id: number, stars: number) => `proc-${id}-${stars}`;
 
@@ -86,6 +87,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private boardRegion = 0;
     private totemImage!: Phaser.GameObjects.Image;
     private forgeImage!: Phaser.GameObjects.Image;
+    private curaImage!: Phaser.GameObjects.Image;
     private banners: Phaser.GameObjects.Image[] = [];
     private bannerKey = '';
     private totemStage = -1;
@@ -222,6 +224,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       for (let stage = 0; stage <= 5; stage++) this.paint(`totem-${stage}`, 220, 330, c => this.paintGreatTotem(c, stage));
       this.paint('forge', 230, 200, c => this.paintForge(c, true));
       this.paint('forge-site', 230, 200, c => this.paintForge(c, false));
+      this.paint('cura', 240, 210, c => this.paintCura(c, true));
+      this.paint('cura-site', 240, 210, c => this.paintCura(c, false));
       this.paint('logs', 105, 65, c => this.paintLogs(c));
       this.paint('tent', 160, 148, c => this.paintTent(c));
 
@@ -229,7 +233,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         [247, 300], [290, 268], [352, 247], [418, 220], [490, 202], [551, 193], [618, 194], [692, 213], [738, 232],
         [846, 272], [899, 297], [957, 330], [995, 374], [952, 413], [987, 409],
         [210, 350], [225, 388], [274, 417], [301, 445], [267, 362], [877, 533], [777, 568],
-        [504, 583], [428, 556], [467, 570], [652, 575], [723, 582],
+        [480, 590], [428, 556], [700, 590], [740, 572],
       ];
       groves.forEach(([x, y], i) => {
         const tree = this.add.image(x, y, `tree-${i % 5}`).setOrigin(.5, 1).setScale(.65 + rng() * .26).setDepth(y);
@@ -252,6 +256,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       objects.forEach(o => this.village.add(this.add.image(o.x, o.y, o.key).setOrigin(.5, 1).setScale(o.scale).setDepth(o.y)));
       this.totemImage = this.add.image(610, 412, 'totem-0').setOrigin(.5, 1).setScale(.93).setDepth(410); this.village.add(this.totemImage);
       this.forgeImage = this.add.image(672, 256, 'forge-site').setOrigin(.5, 1).setScale(.62).setDepth(268); this.village.add(this.forgeImage);
+      this.curaImage = this.add.image(566, 580, 'cura-site').setOrigin(.5, 1).setScale(.6).setDepth(580); this.village.add(this.curaImage);
 
       for (const b of BUILDINGS) {
         const ring = this.add.ellipse(b.x, b.y - 8, 156, 67).setStrokeStyle(1.5, 0xe9c47c, 0).setDepth(b.y - 1);
@@ -319,6 +324,36 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       line(c, [[34, 178], [64, 96]], '#9d8358', 3); polygon(c, [[64, 96], [70, 84], [60, 92]], '#c2c7bb');
     }
 
+    /** A round maloca with a thatched roof, painted bands and a small fire for the ceremonies. */
+    private paintCura(c: Ctx, built: boolean): void {
+      ellipse(c, 120, 196, 104, 16, '#1c2c2363');
+      if (!built) {
+        for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; line(c, [[120 + Math.cos(a) * 64, 186 + Math.sin(a) * 16], [120 + Math.cos(a) * 64, 150 + Math.sin(a) * 16]], '#7b6545', 4); }
+        line(c, [[56, 150], [120, 96], [184, 150]], '#b9a172', 1.5);
+        for (let i = 0; i < 10; i++) { const a = i * Math.PI * 2 / 10; ellipse(c, 120 + Math.cos(a) * 28, 186 + Math.sin(a) * 8, 5, 3.5, '#8e9386'); }
+        return;
+      }
+      // Walls of split palm with a painted band of zigzags.
+      polygon(c, [[42, 128], [198, 128], [194, 190], [46, 190]], '#8a6a44', '#4a3826', 2);
+      for (let i = 0; i < 14; i++) line(c, [[50 + i * 11, 132], [50 + i * 11, 188]], i % 2 ? '#7a5c3a' : '#9c7a50', 3);
+      polygon(c, [[44, 146], [196, 146], [196, 160], [44, 160]], '#d8c8a2');
+      const zig: Point[] = [];
+      for (let i = 0; i <= 20; i++) zig.push([46 + i * 7.5, i % 2 ? 156 : 150]);
+      line(c, zig, '#8c3b2a', 2.2);
+      polygon(c, [[104, 190], [104, 152], [136, 152], [136, 190]], '#2a1d14', '#4a3826', 2);
+      // Thatched cone, lit from the front.
+      polygon(c, [[24, 132], [120, 26], [216, 132], [196, 140], [120, 132], [44, 140]], '#b5955f', '#5a4430', 2);
+      polygon(c, [[120, 26], [216, 132], [196, 140], [120, 132]], '#9a7b4b');
+      for (let i = 0; i < 9; i++) line(c, [[120, 30], [36 + i * 21, 134 + Math.abs(4 - i) * 0.6]], '#d6bd88', 1);
+      line(c, [[40, 134], [200, 134]], '#6e5434', 3);
+      line(c, [[120, 26], [120, 10]], '#6b5236', 3); ellipse(c, 120, 9, 4, 4, '#e3c27c');
+      // Herbs drying under the eaves, and the ceremony fire.
+      for (const x of [62, 80, 160, 178]) { line(c, [[x, 136], [x, 150]], '#6b8a4a', 3); ellipse(c, x, 152, 4, 3, '#86a85a'); }
+      glow(c, 170, 196, 30, '#f2a24f55');
+      polygon(c, [[162, 200], [170, 184], [178, 200]], '#f2a24f'); polygon(c, [[166, 200], [170, 190], [174, 200]], '#f9d378');
+      for (let i = 0; i < 3; i++) ellipse(c, 158 + i * 12, 201, 6, 2.5, '#6f7468');
+    }
+
     private paintBanner(c: Ctx, color: string, animal: AnimalId): void {
       line(c, [[24, 116], [24, 6]], '#6b5236', 4); ellipse(c, 24, 6, 3, 3, '#e3c27c');
       polygon(c, [[26, 12], [66, 14], [62, 40], [66, 66], [44, 58], [26, 64]], '#d8c7a2', '#5a4430', 2);
@@ -334,6 +369,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       }
       const forgeKey = s.buildings.forge > 0 ? 'forge' : 'forge-site';
       if (this.forgeImage.texture.key !== forgeKey) this.forgeImage.setTexture(forgeKey);
+      const curaKey = s.buildings.cura > 0 ? 'cura' : 'cura-site';
+      if (this.curaImage.texture.key !== curaKey) this.curaImage.setTexture(curaKey);
       const key = s.spirits.join(',');
       if (key !== this.bannerKey) {
         this.bannerKey = key;
@@ -524,7 +561,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       this.board = this.add.image(0, 0, '__DEFAULT').setOrigin(0).setDepth(-500); this.battlefield.add(this.board);
       this.paintBoard(1);
       this.dusk = this.add.rectangle(0, 0, W, H, 0x251638, 1).setOrigin(0).setDepth(-400).setAlpha(0); this.battlefield.add(this.dusk);
-      for (let slot = 0; slot < 12; slot++) {
+      for (let slot = 0; slot < FORMATION_SLOTS; slot++) {
         const center = allySlotCenter(slot);
         const corners = hexCorners(center, .93).map(p => project(p.x, p.y));
         const xs = corners.map(p => p[0]), ys = corners.map(p => p[1]);
@@ -540,13 +577,13 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
           callbacks.onSlot(slot); this.pulse(px, py, 0xdfc889, this.battlefield);
         });
         this.battlefield.add(tile);
-        const dot = this.add.text(px, py + 14, `${slot + 1}`, { fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#e6e7c4' }).setAlpha(.38).setOrigin(.5).setDepth(1);
+        const dot = this.add.text(px, py + 11, `${slot + 1}`, { fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#e6e7c4' }).setAlpha(.32).setOrigin(.5).setDepth(1);
         this.battlefield.add(dot);
       }
       this.floorHover = this.add.graphics().setDepth(2); this.battlefield.add(this.floorHover);
-      const label = (text: string, [x, y]: Point, color: string) => this.battlefield.add(this.add.text(x + 18, y, text, { fontFamily: 'Georgia, serif', fontSize: '10px', letterSpacing: 2, color, stroke: '#111a17', strokeThickness: 3 }).setOrigin(0, .5).setDepth(2));
-      label('TERRITÓRIO HOSTIL', ARENA_LABELS.hostile, '#e0c3a0');
-      label('SUA FORMAÇÃO', ARENA_LABELS.formation, '#e8d79d');
+      const label = (text: string, [x, y]: Point, color: string, side: 1 | -1) => this.battlefield.add(this.add.text(x + side * 18, y, text, { fontFamily: 'Georgia, serif', fontSize: '10px', letterSpacing: 2, color, stroke: '#111a17', strokeThickness: 3 }).setOrigin(side > 0 ? 0 : 1, .5).setDepth(2));
+      label('TERRITÓRIO HOSTIL', ARENA_LABELS.hostile, '#e0c3a0', 1);
+      label('SUA FORMAÇÃO', ARENA_LABELS.formation, '#e8d79d', -1);
       this.paint('warrior', 100, 150, c => {
         ellipse(c, 50, 142, 30, 7, '#1d29274d');
         line(c, [[40, 113], [32, 142]], '#9f9270', 11); line(c, [[58, 113], [66, 142]], '#9f9270', 11);
@@ -786,7 +823,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     }
 
     private unitView(id: string, characterId: number, enemy: boolean, stars: number, summon?: string, label?: string): UnitView {
-      const height = summon && summon !== 'echo' ? SUMMON_HEIGHT[summon] ?? 40 : 108 + (stars - 1) * 8;
+      const height = summon && summon !== 'echo' ? SUMMON_HEIGHT[summon] ?? 40 : 100 + (stars - 1) * 8;
       const found = this.units.get(id);
       if (found) {
         found.stars = stars; found.desiredHeight = height;
@@ -798,8 +835,9 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     }
 
     private syncVillageRoster(): void {
-      const workers = game.state.heroes.filter(h => h.work);
-      const heroes = [...workers, ...game.state.heroes.filter(h => !h.work)].slice(0, Math.max(8, workers.length));
+      const home = game.state.heroes.filter(h => !h.away);
+      const workers = home.filter(h => h.work);
+      const heroes = [...workers, ...home.filter(h => !h.work)].slice(0, Math.max(8, workers.length));
       const key = heroes.map(h => h.uid + ':' + h.stars + ':' + (h.work ?? '')).join(',');
       if (key === this.villageRoster) return;
       this.villageRoster = key;
@@ -860,17 +898,18 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       if (!battle) {
         const keep = new Set<string>();
         // The next expedition's enemies wait on their half of the board.
-        if (game.state.heroes.some(h => h.slot !== null)) game.nextStage().stage.units.forEach((unit, index) => {
+        const preview = game.nextStage().stage.units, previewSlots = enemyFormation(preview.map(unit => (characters.find(c => c.id === unit.id)?.range ?? 1) > 1));
+        if (game.state.heroes.some(h => h.slot !== null)) preview.forEach((unit, index) => {
           const id = `preview-${game.state.selectedStage}-${index}-${unit.id}`; keep.add(id);
           const view = this.unitView(id, unit.id, true, unit.stars);
-          const cell = enemySlotCenter(ENEMY_SLOTS[index]);
+          const cell = enemySlotCenter(previewSlots[index]);
           const [x, y] = project(cell.x, cell.y);
           view.motion.facing = -1;
           this.presentUnit(view, 'idle', dt, x, y); view.bars.clear();
           if (unit.boss) view.name.setColor('#f2c879');
         });
         for (const hero of game.state.heroes) {
-          if (hero.slot === null || hero.slot === undefined || hero.slot < 0) continue;
+          if (hero.slot === null || hero.slot === undefined || hero.slot < 0 || hero.away) continue;
           const id = 'formation-' + hero.uid; keep.add(id);
           const view = this.unitView(id, hero.characterId, false, hero.stars);
           const cell = allySlotCenter(hero.slot);

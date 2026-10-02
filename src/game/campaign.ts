@@ -19,23 +19,23 @@ export const REGIONS: Region[] = [
 ];
 
 const STAGE_LIST: [string, StageUnit[]][] = [
-  ['Batedores do barro', [u(3), u(7)]],
+  ['Batedor do barro', [u(7)]],
   ['Olhos na mata', [u(7), u(12)]],
-  ['Trilha da serpente', [u(3), u(4), u(12)]],
-  ['Risos na noite', [u(7), u(8), u(13)]],
-  ['O Alfa Cinzento', [boss(1, 1), u(12), u(3)]],
+  ['Trilha da serpente', [u(3), u(4), u(12), u(7)]],
+  ['Risos na noite', [u(7), u(8), u(13), u(3)]],
+  ['O Alfa Cinzento', [boss(1, 1), u(12), u(3), u(7), u(13)]],
 
-  ['Pescadores do lodo', [u(9), u(6), u(4)]],
-  ['Correnteza', [u(21), u(6), u(5)]],
-  ['Ninho de quitina', [u(24), u(10), u(2), u(9)]],
-  ['Escamas vermelhas', [u(22), u(17), u(9), u(4)]],
-  ['A Boca do Delta', [boss(17), u(21), u(6), u(22)]],
+  ['Pescadores do lodo', [u(9), u(6), u(4), u(2)]],
+  ['Correnteza', [u(21), u(6), u(5), u(9)]],
+  ['Ninho de quitina', [u(24), u(10), u(2), u(9), u(6)]],
+  ['Escamas vermelhas', [u(22), u(17), u(9), u(4), u(21)]],
+  ['A Boca do Delta', [boss(17), u(21), u(6), u(22), u(9)]],
 
-  ['Galhos traiçoeiros', [u(15), u(5), u(23), u(16)]],
-  ['Enxame solar', [u(30), u(20), u(10), u(24)]],
-  ['Olhos do crepúsculo', [u(14), u(8), u(13), u(27)]],
-  ['Mãos da copa', [u(15, 2), u(23), u(16), u(37), u(5)]],
-  ['O Oráculo da Copa', [boss(29), u(30), u(15), u(23), u(14)]],
+  ['Galhos traiçoeiros', [u(15), u(5), u(23), u(16), u(24)]],
+  ['Enxame solar', [u(30), u(20), u(10), u(24), u(16)]],
+  ['Olhos do crepúsculo', [u(14), u(8), u(13), u(27), u(15)]],
+  ['Mãos da copa', [u(15, 2), u(23), u(16), u(37), u(5), u(30)]],
+  ['O Oráculo da Copa', [boss(29), u(30), u(15), u(23), u(14), u(24)]],
 
   ['Manada errante', [u(19, 2), u(25), u(12), u(34), u(3)]],
   ['Presas douradas', [u(36), u(26, 2), u(7), u(1), u(12)]],
@@ -61,12 +61,17 @@ export const FINAL_STAGE = STAGES.length;
 export const regionOf = (stageId: number): Region => REGIONS[Math.max(0, Math.min(REGIONS.length - 1, Math.ceil(stageId / 5) - 1))];
 export const stageById = (stageId: number): Stage | undefined => STAGES.find(stage => stage.id === stageId);
 
-/** Enemy strength grows with the stage level; costlier units start from stronger canonical stats. */
+/** The hero level a tribe that hunts and fights along the way has reached at each stage. */
+export const expectedLevel = (level: number): number => Math.min(10, 1 + 9 * Math.pow(Math.max(0, level - 1) / 29, 0.7));
+/** Enemies hit harder than in 1.2, most of all early on, where the journey used to be easy. */
+export const difficulty = (level: number): number => Math.max(1.1, 1.25 - 0.005 * level);
+/** Enemy strength grows with the stage level and the levels heroes are expected to have; costlier units start from stronger canonical stats. */
 export function enemyScale(level: number, cost: number): number {
-  return (0.56 + level * 0.03 + level * level * 0.0009) / (1 + 0.12 * (cost - 1));
+  const base = (0.56 + level * 0.03 + level * level * 0.0009) / (1 + 0.12 * (cost - 1));
+  return base * difficulty(level) * (1 + 0.05 * (expectedLevel(level) - 1));
 }
 /** Bosses grow with the region: the Alpha is a lesson, the First Winter a wall. */
-export const bossScale = (region: number) => ({ hp: 1.7 + 0.12 * region, attack: 1.12 + 0.02 * region });
+export const bossScale = (region: number) => ({ hp: 1.66 + 0.06 * region, attack: 1.12 + 0.02 * region });
 
 export interface Reward { wood: number; food: number; stone: number; spirit: number }
 export function stageReward(level: number, repeat: boolean): Reward {

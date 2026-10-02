@@ -1,5 +1,14 @@
 # Wolf Totem — arte e animação
 
+## Versão 1.3: campo 7 × 8 e Casa de Cura
+
+- A arena usa um campo de 7 × 8 casas: a câmera recua um pouco, as unidades ficam menores no fundo, e os rótulos das metades vão para os lados do tabuleiro.
+- A aldeia ganhou a **Casa de Cura**, uma maloca redonda de cobertura de palha:
+  - paredes de palmeira rachada com uma faixa de zigue-zagues pintados;
+  - ervas secando sob o beiral e o fogo da cerimônia na porta;
+  - antes de construída, um canteiro com estacas e pedras.
+- Heróis caçando ou em cerimônia somem da aldeia e aparecem acinzentados nos cartões, com a contagem até a volta.
+
 ## Versão 1.2: arena hexagonal e figuras refinadas
 
 - **Arena** (`src/render/battleArena.ts`): uma vista frontal em leve perspectiva substitui o losango isométrico nas expedições.

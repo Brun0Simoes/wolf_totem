@@ -1,4 +1,4 @@
-import { BOARD, BOARD_CENTER, cellCenter, COLUMNS, hexCorners, MIDLINE, ROWS } from '../game/board';
+import { BOARD, BOARD_CENTER, cellCenter, COLUMNS, hexCorners, MIDLINE, ROWS, SIDE_ROWS } from '../game/board';
 import type { Region } from '../game/campaign';
 
 /**
@@ -9,7 +9,7 @@ import type { Region } from '../game/campaign';
 type Ctx = CanvasRenderingContext2D;
 type Point = [number, number];
 
-const CENTER_X = 620, TOP = 228, ROW_STEP = 58, ROW_GROW = 1.3, UNIT = 150;
+const CENTER_X = 640, TOP = 206, ROW_STEP = 46, ROW_GROW = 1.05, UNIT = 116;
 const rowPx = (y: number) => TOP + y * ROW_STEP + y * y * ROW_GROW;
 const rowDepth = (y: number) => ROW_STEP + 2 * ROW_GROW * y;
 /** Horizontal pixels per board unit at depth y. */
@@ -20,14 +20,15 @@ export function project(x: number, y: number): Point { return [CENTER_X + (x - B
 /** Units shrink a little toward the back rows. */
 export function perspectiveScale(screenY: number): number {
   const t = Math.max(0, Math.min(1, (screenY - rowPx(0)) / (rowPx(BOARD.maxY) - rowPx(0))));
-  return .86 + .14 * t;
+  return .8 + .2 * t;
 }
 /** Screen anchors for effects that cover the whole field. */
 export const ARENA_CENTER = { x: CENTER_X, y: rowPx(MIDLINE) };
 export const ARENA_SPAN = { left: project(-.5, MIDLINE)[0], right: project(BOARD.maxX + .5, MIDLINE)[0], top: rowPx(0), bottom: rowPx(BOARD.maxY) };
 /** The board's outer rim, in board units. */
 const RIM = { left: -.85, right: BOARD.maxX + .85, back: -1, front: BOARD.maxY + 1 };
-export const ARENA_LABELS = { hostile: project(RIM.right + .1, .2), formation: project(RIM.right + .1, 4.6) };
+/** Side labels: the enemy half on the right of the back rows, the tribe's half on the left of the front rows. */
+export const ARENA_LABELS = { hostile: project(RIM.right + .1, .4), formation: project(RIM.left - .1, BOARD.maxY - .4) };
 
 interface Scenery { sky: [string, string, string]; far: string; trees: string; treesLight: string; ground: [string, string]; tuft: string; mist: string; accent: string; kind: 'pines' | 'river' | 'canopy' | 'savanna' | 'swamp' | 'snow' }
 const SCENERY: Scenery[] = [
@@ -173,7 +174,7 @@ export function paintArena(c: Ctx, region: Region): void {
 
   // The hexes: warm for the enemy half, green for the tribe, bevelled like carved stone.
   for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLUMNS; col++) {
-    const enemy = row < 3, base = enemy ? ((col + row) % 2 ? palette.floor : palette.floorAlt) : ((col + row) % 2 ? palette.ally : palette.allyAlt);
+    const enemy = row < SIDE_ROWS, base = enemy ? ((col + row) % 2 ? palette.floor : palette.floorAlt) : ((col + row) % 2 ? palette.ally : palette.allyAlt);
     const corners = hexCorners(cellCenter(col, row), .93).map(p => project(p.x, p.y));
     const tone = mix(base, 0x000000, rng() * .08);
     g = c.createLinearGradient(0, corners[4][1], 0, corners[1][1]);
@@ -188,7 +189,7 @@ export function paintArena(c: Ctx, region: Region): void {
   // The meeting line follows the hex edges between the two fronts.
   const seam: Point[] = [];
   for (let col = 0; col < COLUMNS; col++) {
-    const corners = hexCorners(cellCenter(col, 2)).map(p => project(p.x, p.y));
+    const corners = hexCorners(cellCenter(col, SIDE_ROWS - 1)).map(p => project(p.x, p.y));
     seam.push(corners[2], corners[1], corners[0]);
   }
   stroke(c, seam, css(palette.line, .25), 6);
@@ -206,10 +207,10 @@ export function paintArena(c: Ctx, region: Region): void {
   }
 
   // Foreground frame: rocks and the region's trees at the edges.
-  for (const [x, y, size] of [[70, 700, 64], [1140, 690, 72], [210, 300, 30], [1010, 280, 26], [150, 470, 38], [1080, 470, 42]] as [number, number, number][]) {
+  for (const [x, y, size] of [[60, 712, 64], [1150, 700, 72], [175, 300, 28], [1105, 288, 26], [80, 500, 36], [1150, 520, 40]] as [number, number, number][]) {
     rock(c, x, y, size, s.kind === 'snow' ? '#7d8a94' : '#4f5446', s.kind === 'snow' ? '#e2ebf0' : '#787a62');
   }
-  for (const [x, y, h] of [[40, 430, 230], [1165, 420, 240], [110, 320, 150], [1100, 310, 160]] as [number, number, number][]) {
+  for (const [x, y, h] of [[30, 440, 230], [1178, 430, 240], [95, 300, 140], [1150, 296, 150]] as [number, number, number][]) {
     if (s.kind === 'savanna') acacia(c, x, y, h * .7, '#2c2416');
     else if (s.kind === 'swamp') deadTree(c, x, y, h * .8, '#121b17');
     else if (s.kind === 'canopy') canopyTree(c, rng, x, y, h, s);

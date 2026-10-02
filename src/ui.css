@@ -241,3 +241,63 @@ kbd{font:8px 'DM Sans',sans-serif;border:1px solid #ffffff25;border-radius:3px;p
 .danger-zone .settings-buttons{margin-top:0}
 .outline-button.danger{border-color:#d9825a66;color:#e8b293}
 @media(max-width:720px){.settings-grid{grid-template-columns:1fr}.pref-row{flex-wrap:wrap}.pref-row input[type=range]{flex-basis:60%}}
+
+/* 1.3 · Levels, hunts and the Casa de Cura */
+.hero-level{position:absolute;top:5px;left:16px;font-size:9px;font-weight:600;color:#e8d79d;display:flex;flex-direction:column;gap:2px;pointer-events:auto;text-shadow:0 1px 3px #0009}
+.xp-bar{display:block;width:30px;height:3px;border-radius:2px;background:#ffffff1a;overflow:hidden;position:relative}
+.xp-bar:after{content:'';position:absolute;inset:0;width:calc(var(--xp) * 100%);background:#c2d29c}
+.panema-mark{position:absolute;top:22px;left:16px;font-size:6px;letter-spacing:1px;color:#d9825a}
+.hunt-button{position:absolute;bottom:6px;right:27px;border:1px solid #ffffff1c;border-radius:3px;width:18px;height:18px;padding:1px;color:#b9c795;display:grid;place-items:center}
+.hunt-button svg{width:12px;height:12px}
+.party-card.away .party-select img,.party-card.away .party-select .atlas-portrait{filter:grayscale(.6) brightness(.7)}
+.party-select em svg{width:10px;height:10px;vertical-align:-1px;margin-right:3px}
+.countdown{font-variant-numeric:tabular-nums}
+.tribe-actions{display:flex;gap:6px;margin-top:12px}
+.tribe-actions .outline-button{flex:1;font-size:10px;padding:9px 6px}
+.tribe-actions b{font-weight:600;color:var(--accent);margin-left:2px}
+.away-note{font-size:10px;line-height:1.6;color:#d8c08a;display:flex;gap:6px;align-items:flex-start;margin:-4px 0 8px}
+.away-note svg{width:13px;height:13px;flex-shrink:0;margin-top:2px}
+.xp-line{font-size:11px;color:#c8d7a5;margin:12px 0 4px;display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}
+.xp-line svg{width:13px;height:13px;color:var(--accent)}
+.trail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.trail-card,.practice-card{border:1px solid var(--line);border-radius:5px;padding:13px 14px;background:#0f1a1455;display:flex;flex-direction:column;gap:7px}
+.trail-card header,.practice-card header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.trail-card h3,.practice-card h3{font-size:20px}
+.trail-card header span{font-size:10px;color:#aab79a;display:flex;gap:4px;align-items:center;white-space:nowrap}
+.trail-card header svg,.trail-gains svg,.practice-card svg{width:12px;height:12px}
+.trail-card>p{font-size:10px;color:#a5b299;line-height:1.6}
+.trail-gains{display:flex;gap:12px;font-size:10px;color:#d6dcc4}
+.trail-gains span{display:flex;gap:4px;align-items:center}
+.trail-req{font-size:9px!important;color:#8fa083!important;display:flex;gap:4px;align-items:center}
+.trail-card.locked{opacity:.5}
+.trail-card .assign-row,.cura-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:auto}
+.trail-card select,.cura-hero select{flex:1;min-width:0;background:#131c16;color:#dfe5cf;border:1px solid #b2b99540;border-radius:3px;padding:7px 8px;font:10px 'DM Sans',sans-serif}
+.away-list{display:flex;flex-direction:column;gap:6px;margin-top:18px}
+.away-row{display:flex;align-items:center;gap:10px;font-size:11px;color:#d6dcc4;border:1px solid #d6ba7930;border-radius:4px;padding:6px 10px;background:#d6ba7908}
+.away-row>img,.away-row>.atlas-portrait{position:static!important;transform:none!important;height:38px!important;width:auto!important}
+.away-row>span{flex:1}
+.away-row .text-button{font-size:10px}
+.report-list{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:5px}
+.report-list li{font-size:11px;color:#b9c4ab;line-height:1.6;padding-left:12px;border-left:2px solid #b6c69866}
+.report-list li.miss{border-color:#d9825a88;color:#cdb8a6}
+.cura-note{font-size:11px;line-height:1.8;color:#c9c2a8;border-left:2px solid var(--accent);padding:8px 12px;margin:14px 0;background:#d6ba7908;display:flex;gap:8px;max-width:760px}
+.cura-note svg{width:15px;height:15px;flex-shrink:0;margin-top:3px;color:var(--accent)}
+.cura-bar{margin-top:6px}
+.cura-bar .outline-button{width:auto}
+.cura-hero{display:flex;gap:8px;align-items:center;font-size:11px;color:#c9d0b8;flex:1;min-width:240px}
+.cura-record{font-size:10px;color:#9fb08f;margin-top:10px}
+.practice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+.practice-native{font:italic 13px var(--serif);color:#c8b98c}
+.practice-peoples{font-size:9px!important;color:#9fb08f!important;display:flex;gap:5px;align-items:flex-start}
+.practice-card>p{font-size:11px;color:#a5b299;line-height:1.7}
+.practice-effect{color:#d8e2c1!important;display:flex;gap:6px;align-items:flex-start}
+.practice-effect svg,.practice-peoples svg{flex-shrink:0;margin-top:2px;color:var(--accent)}
+.practice-card .practice-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:6px;border-top:1px solid #ffffff0a;flex-wrap:wrap}
+.practice-card .practice-foot .primary{width:auto;flex-wrap:wrap}
+.practice-state{font-size:10px;color:#aab79a}
+.practice-lock{font-size:10px;color:#cdb8a6;display:flex;gap:4px;align-items:center}
+.practice-done{font-size:10px;color:var(--accent)}
+.practice-card.cacau{grid-column:1/-1}
+@media(max-width:720px){.trail-grid,.practice-grid{grid-template-columns:1fr}.tribe-actions{grid-column:1/-1}}
+.stage-level{font-size:9px;color:#b9c4ab;display:flex;gap:5px;align-items:center;margin-top:8px}
+.stage-level svg{width:11px;height:11px;color:var(--accent)}
