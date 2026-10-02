@@ -1,6 +1,6 @@
 # Wolf Totem
 
-Protótipo jogável de estratégia incremental e combate automático, em português. A aldeia produz recursos, construções aumentam a produção e expedições dão recursos para recrutar e evoluir a tribo.
+Jogo incremental de estratégia e combate automático, em português. Uma tribo cresce ao redor de uma fogueira: a aldeia produz recursos e avança por cinco eras, como em *Age of Mythology*, honrando um espírito protetor em cada uma. Heróis ligados a espíritos animais são recrutados, fundidos e equipados como num *auto chess/TFT*. Depois partem em expedições automáticas até o Primeiro Inverno, a Caçada Eterna e o renascimento no Grande Totem.
 
 ## Jogar localmente
 
@@ -13,65 +13,88 @@ npm run dev
 
 Abra **http://127.0.0.1:5173**. O servidor funciona enquanto esse terminal estiver aberto. Não abra `index.html` diretamente.
 
-## Nesta versão
+## Jogar online (GitHub Pages)
 
-A produção dos 55 personagens e suas três formas está em andamento: **32 personagens têm alguma forma animada; 41 das 165 formas estão prontas**, totalizando 123 sequências e 492 poses. Akru, Nima, Boru e Jara têm as três estrelas animadas. A geração parou pelo limite de uso da ferramenta.
+A cada envio para `main`, o workflow `.github/workflows/pages.yml` testa, gera o build e publica o jogo em **https://brun0simoes.github.io/wolf_totem/**. Para ativar, uma única vez: em **Settings → Pages → Build and deployment → Source**, escolha **GitHub Actions**. Depois, envie algo para `main` ou rode o workflow em **Actions → Publish on GitHub Pages → Run workflow**.
 
-O [inventário de arte](docs/production/STATUS.md) lista cada entrega e as 124 formas pendentes. No códice, abra um personagem para escolher a estrela e experimentar seus movimentos. As folhas são carregadas sob demanda, com um limite para manter texturas antigas na memória. Os 13 heróis iniciais continuam recrutáveis; os novos personagens podem ser vistos no códice enquanto aguardam suas habilidades e desbloqueios de jogo.
+### Salvar e carregar a jornada
 
-- Aldeia isométrica com bosque, caça, pedreira e círculo dos espíritos.
-- Madeira, alimento, pedra e espírito: produção automática e coleta manual.
-- Cinco níveis de aldeia e dez níveis de cada construção.
-- Treze heróis de custo 1 recrutáveis, usando as 39 artes originais.
-- Três cópias com as mesmas estrelas se combinam até 3 estrelas.
-- Formação de até sete heróis, sinergias e 12 expedições com combate automático.
-- Os 13 heróis de 1 estrela possuem repouso, caminhada e ataque em quatro quadros cada: 39 sequências e 156 poses.
-- Habilidades com efeitos próprios, reação a dano, queda, vitória e heróis circulando e trabalhando na aldeia.
-- Códice com os 55 personagens e seus atributos, habilidades e estágios originais.
-- Salvamento automático local, exportação/importação e até duas horas de produção offline.
-- Pausa, sons opcionais e interface adaptada a telas menores.
+- O progresso é salvo sozinho no navegador a cada poucos segundos. Ao reabrir o site no mesmo navegador, é só **Continuar jornada**.
+- Para guardar uma cópia ou trocar de navegador ou aparelho:
+  - em **Configurações → Exportar progresso**, o jogo baixa `wolf-totem-jornada-AAAA-MM-DD.json`;
+  - em outro lugar, use **Carregar jornada salva** na tela inicial ou **Importar progresso** nas configurações.
+- Importar substitui a jornada daquele navegador. Exporte antes se quiser manter as duas.
+- Limpar os dados do site ou usar uma janela anônima apaga o progresso local. O arquivo exportado continua valendo.
+
+## O jogo
+
+| Pilar | O que existe |
+| --- | --- |
+| **Aldeia (incremental)** | Madeira, alimento, pedra e espírito com produção automática e offline (até 2 h). Cinco construções até o nível 15, incluindo a Forja de Osso. Heróis da reserva trabalham nas construções e aumentam a produção, com bônus de afinidade. |
+| **Eras (Age of Mythology)** | Cinco eras. A cada nova era a tribo escolhe 1 de 3 Espíritos Protetores (12 no total): um bônus permanente e um **Poder Espiritual** acionado uma vez por expedição. |
+| **Heróis (auto chess)** | Os 55 personagens do Set 1, cada era abrindo um custo na fogueira. Três cópias formam 2★ e três 2★ formam 3★. As 55 habilidades funcionam em combate, com invocações, zonas, metamorfoses e renascimento. |
+| **Itens e laços (TFT)** | 6 componentes e 21 itens, até 3 por herói; dois componentes no mesmo herói se combinam sozinhos. As 31 características (povos, funções e espíritos animais) ativam laços em dois níveis. |
+| **Campanha** | 6 regiões com 5 expedições cada, sempre fechadas por um chefe. Expedições vencidas podem ser repetidas para farmar, com velocidade 1–3× e repetição automática. |
+| **Fim de jogo** | Caçada Eterna sem fim e o Grande Totem (maravilha em 5 partes). Completo o Totem, a tribo renasce com brasas ancestrais, gastas em 6 Memórias permanentes. |
+| **Vida da aldeia (1.1)** | Diário com 24 objetivos (tutorial guiado até o renascimento); eventos a cada poucos minutos: mercador, presságio, viajante perdido e incursões de saqueadores para defender. |
+| **Combate (1.1)** | Chefes com uma mecânica própria abaixo de 50% da vida e resumo de cada batalha (dano causado, recebido, cura e escudo, com destaque para o melhor da luta). |
+| **Campo hexagonal (1.2)** | Tabuleiro de casas hexagonais em vista frontal, com cenário próprio em cada região. Depois de 75 s de luta vem o Crepúsculo: a cura enfraquece e os golpes ficam mais fortes, para nenhuma batalha empacar. |
+| **Tela inicial e configurações (1.2)** | A história da tribo e o resumo da jornada na abertura. Volume de efeitos e música, movimento reduzido, números de dano e apagar a jornada com confirmação. |
+
+Números e regras completas: [Sistemas do jogo](docs/SISTEMAS.md).
 
 ## Como jogar
 
-1. Melhore uma construção ou evolua a aldeia. A aldeia de nível 2 comporta quatro heróis.
-2. Recrute viajantes ao redor da fogueira. Recrutar custa 15 alimentos e 30 de espírito; renovar os viajantes custa 8 de espírito.
-3. Na aba **Expedição**, selecione um herói e uma casa na metade próxima do tabuleiro. Também é possível escolher a posição pelo seletor numérico e clicar em **Posicionar**. Posicionar numa casa ocupada troca os heróis.
-4. Inicie a expedição. As habilidades são automáticas; uma derrota preserva os heróis.
-5. Combine cópias, altere a formação e use as recompensas para continuar.
+1. **Aldeia:** melhore construções, colete à mão no começo e avance de era. Cada era abre uma vaga na formação, heróis de custo maior e a escolha de um Espírito Protetor.
+2. **Fogueira:** recrute viajantes, que custam 15 de alimento e 30 de espírito por ponto de custo. Junte três cópias para evoluir e renove os viajantes por 8 de espírito.
+3. **Expedição:** escolha a expedição no mapa (`M`), selecione um herói e uma casa da sua metade do campo e entregue itens da bolsa. Os inimigos da próxima expedição já aparecem no tabuleiro.
+4. **Combate:** é automático. Use os poderes espirituais na barra do campo, troque a velocidade e ligue a repetição para farmar.
+5. **Totem:** depois do Primeiro Inverno, erga o Grande Totem, renasça e compre memórias.
 
-Atalhos: `1` aldeia, `2` expedição, `3` códice, `P` pausar e `Esc` fechar diálogo. O ícone `−` devolve um herói à reserva. Os ícones de construção também podem ser selecionados no painel lateral.
+Atalhos: `1` aldeia, `2` expedição, `3` códice, `4` totem, `M` mapa, `P` pausar e `Esc` fechar.
 
-## Escopo e próximos passos
+## Arte
 
-Esta é a primeira versão para validar o ciclo de jogo. Os 42 heróis de custos 2–5 estão no códice e ainda não são recrutáveis. Há 126 artes de evolução restantes para completar três estágios de todos os 55 personagens. As artes atuais foram preservadas em `chars/`.
+**41 das 165 formas** têm folhas pintadas (32 personagens; Akru, Nima, Boru e Jara completos). O jogo escolhe automaticamente, nesta ordem:
 
-Os atributos e textos originais permanecem em `src/data/characters.ts`. Como o plano não define todos os números de habilidades e sinergias, `src/game/simulation.ts` contém adaptações explícitas para o protótipo em `SKILL_NOTES`. O códice mostra o efeito implementado separadamente da descrição original. Por exemplo, as manifestações de Nima são representadas por dano periódico; unidades invocadas independentes ainda precisam ser implementadas.
+1. a folha pintada da estrela;
+2. a ilustração original (personagens de custo 1);
+3. a folha pintada mais próxima, com o animal espiritual em aura atrás (2★ e 3★);
+4. uma **figura desenhada pelo código**, com poses de repouso, caminhada e ataque e com a progressão 1★ humano, 2★ vínculo e 3★ avatar.
 
-Não há multiplayer, servidor de contas, construção livre no mapa, exploração RTS nem animações completas de todos os personagens. Os estágios 2 e 3 mantêm suas artes próprias e usam movimentos programados; suas folhas de poses ainda serão produzidas. O tabuleiro inicial usa células quadradas em perspectiva isométrica; a migração para hexágonos deve acompanhar o desenho definitivo das habilidades.
+Quando uma folha pintada nova entra em `public/assets/animations/v3`, ela substitui a figura sem mudar código. O [inventário de arte](docs/production/STATUS.md) lista as 124 formas pendentes. Detalhes em [Arte e animação](docs/ARTE-E-ANIMACAO.md).
 
-- [Plano de desenvolvimento](docs/PLANO-DO-JOGO.md)
-- [Inventário dos personagens](docs/PERSONAGENS.md)
-- [Artes, animações e origem das folhas](docs/ARTE-E-ANIMACAO.md)
-- [Plano original preservado](docs/plano-original.txt)
+Os espíritos, invocações, estandartes e o Grande Totem usam glifos de máscara de totem (27 animais) desenhados em SVG/Canvas. A arena de cada região e as figuras provisórias, com sombreado, rosto e roupas detalhadas, também são pintadas pelo código. Som e música são sintetizados com WebAudio: ative-os no ícone de volume ou nas configurações.
 
 ## Estrutura
 
 ```text
 chars/                     Artes originais, intactas
-public/assets/animations/  Folhas dos 13 heróis, recortes e âncoras
-src/data/characters.ts     Os 55 personagens do plano original
-src/game/simulation.ts     Economia, combate, formação e saves
-src/render/WorldScene.ts   Cenário e animações em Phaser
-src/main.ts                Interface, ações e salvamento no navegador
-tests/simulation.test.ts   Testes das regras e progressão
-docs/                      Plano, inventário e processo de arte
+public/assets/animations/  Folhas pintadas (v2: 13 heróis 1★; v3: novas formas)
+src/data/                  Os 55 personagens do plano e a animalidade
+src/game/simulation.ts     Estado, economia, combate, saves (v2) e ações
+src/game/skills.ts         As 55 habilidades
+src/game/synergies.ts      Regras das 31 características
+src/game/roster.ts         Desbloqueios, chances da fogueira e preços
+src/game/campaign.ts       Regiões, expedições, chefes e Caçada Eterna
+src/game/items.ts          Componentes e itens
+src/game/spirits.ts        Eras, espíritos protetores e memórias
+src/game/quests.ts         Diário de objetivos
+src/game/events.ts         Eventos da aldeia e incursões
+src/game/board.ts          Campo hexagonal: casas, limites e vizinhança
+src/render/                Phaser: aldeia, arena, efeitos, figuras procedurais e glifos
+src/prefs.ts               Preferências do aparelho (som, movimento, números)
+src/audio.ts               Efeitos e música sintetizados
+src/main.ts                Interface e ciclo do jogo
+tests/                     Regras, elenco, sistemas, campanha e atlas
+docs/                      Plano, sistemas, personagens e arte
 ```
 
-A simulação é independente do desenho. Phaser desenha o mundo; o DOM apresenta os menus. A estrutura usa [Phaser, TypeScript e Vite](https://phaser.io/news/2024/01/phaser-vite-typescript-template).
+A simulação é pura e determinística (inclusive loja e saques, com sementes salvas) e não depende do desenho. O Phaser desenha o mundo e o DOM, os menus. A base usa [Phaser, TypeScript e Vite](https://phaser.io/news/2024/01/phaser-vite-typescript-template).
 
 ## Verificação e distribuição
 
-Os envios para `main` e os pull requests executam os testes e o build pelo GitHub Actions.
+Os envios para `main` e os pull requests executam os testes e o build pelo GitHub Actions; os envios para `main` também publicam no GitHub Pages.
 
 ```powershell
 npm test
@@ -79,4 +102,10 @@ npm run build
 npm run preview
 ```
 
-O build gera `dist/` incluindo uma cópia das imagens. O progresso fica no armazenamento deste navegador e desta origem; trocar a porta ou o navegador cria outra jornada. Exporte o save antes de mudar de origem ou limpar os dados do navegador. Uma batalha interrompida por recarregamento é abandonada sem recompensas. As fontes externas possuem alternativas locais.
+O build gera `dist/` com uma cópia das imagens e usa caminhos relativos, então funciona na raiz de um domínio ou num subcaminho como o do GitHub Pages. O progresso fica no armazenamento deste navegador e deste endereço; exporte o save antes de trocar de navegador, de porta ou de site. Saves das versões 0.x são convertidos automaticamente: cada onda vencida vira uma expedição vencida.
+
+- [Sistemas do jogo](docs/SISTEMAS.md)
+- [Plano de desenvolvimento](docs/PLANO-DO-JOGO.md)
+- [Inventário dos personagens](docs/PERSONAGENS.md)
+- [Arte, animações e origem das folhas](docs/ARTE-E-ANIMACAO.md)
+- [Plano original preservado](docs/plano-original.txt)

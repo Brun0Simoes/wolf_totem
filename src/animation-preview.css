@@ -23,3 +23,25 @@
  .motion-controls button { min-height:32px; padding:6px 8px; }
  .preview-actions { margin-top:8px; }
 }
+/* Roster 0.4: cost colors, stand-ins and campfire odds. */
+:root{--cost-1:#a9b78f;--cost-2:#8fb7a6;--cost-3:#8fa3cf;--cost-4:#b892cf;--cost-5:#e0bf6e}
+.unknown-art{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;height:75%;color:#9aab8a}
+.unknown-art b{font:56px var(--serif);font-weight:500;width:84px;height:84px;display:grid;place-items:center;border:1px solid currentColor;border-radius:50%;opacity:.55}
+.unknown-art small{font-size:8px;letter-spacing:1.4px;text-transform:uppercase;opacity:.75}
+.unknown-art.cost-2{color:var(--cost-2)}.unknown-art.cost-3{color:var(--cost-3)}.unknown-art.cost-4{color:var(--cost-4)}.unknown-art.cost-5{color:var(--cost-5)}
+.hero-art-button>.unknown-art,.party-select>.unknown-art{height:100%;padding-bottom:22px}
+.party-select>.unknown-art{position:absolute;inset:0 0 44px;padding:0;flex-direction:column;flex-wrap:nowrap;background:none}
+.party-select>.unknown-art small{display:none}
+.atlas-portrait.stand-in{filter:saturate(.7) brightness(.85)}
+.recruit-card.cost-2{border-color:#8fb7a640}.recruit-card.cost-3{border-color:#8fa3cf4d}.recruit-card.cost-4{border-color:#b892cf55}.recruit-card.cost-5{border-color:#e0bf6e70;box-shadow:inset 0 0 30px #e0bf6e14}
+.recruit-card.cost-2 .hero-star{color:var(--cost-2)}.recruit-card.cost-3 .hero-star{color:var(--cost-3)}.recruit-card.cost-4 .hero-star{color:var(--cost-4)}.recruit-card.cost-5 .hero-star{color:var(--cost-5)}
+.codex-card.cost-2 .codex-cost{border-color:var(--cost-2)}.codex-card.cost-3 .codex-cost{border-color:var(--cost-3)}.codex-card.cost-4 .codex-cost{border-color:var(--cost-4)}.codex-card.cost-5 .codex-cost{border-color:var(--cost-5);color:var(--cost-5)}
+.shop-odds{display:inline-flex;gap:5px;margin-left:10px}
+.odds{display:inline-flex;align-items:center;gap:3px;border:1px solid #ffffff14;border-radius:3px;padding:2px 5px;font-size:8px;color:var(--cost-1)}
+.odds b{font-weight:500;color:#c9d3b6}
+.odds.cost-2{color:var(--cost-2)}.odds.cost-3{color:var(--cost-3)}.odds.cost-4{color:var(--cost-4)}.odds.cost-5{color:var(--cost-5)}
+.synergy-tier{font-style:normal;font-size:8px;color:var(--accent);letter-spacing:1px}
+.animality{padding:14px 0 0;border-top:1px solid #ffffff12;margin-top:16px}
+.animality .eyebrow{font-size:8px;color:#d0b98a}
+.animality p{font-size:10px;color:#a7b799;line-height:1.8;margin-top:8px}
+@media(max-width:720px){.shop-odds{margin:4px 0 0;width:100%}}

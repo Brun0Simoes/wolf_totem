@@ -34,7 +34,8 @@ export const CLIP_DURATION: Record<MotionClip, number> = {
 export function createMotion(seed = 0): MotionState { return { clip: 'idle', elapsed: seed % 1, locked: 0, hit: 0, facing: 1, seed }; }
 export function triggerMotion(state: MotionState, clip: MotionClip, direction = state.facing): void {
   if (state.clip === 'death') return;
-  if (clip === 'hurt') { state.hit = CLIP_DURATION.hurt; return; }
+  // A new hit only restarts the recoil once the previous one is mostly over, so crowded fights still read.
+  if (clip === 'hurt') { if (state.hit < CLIP_DURATION.hurt * .35) state.hit = CLIP_DURATION.hurt; return; }
   state.clip = clip;
   state.elapsed = 0;
   state.locked = clip === 'attack' || clip === 'cast' || clip === 'death' ? CLIP_DURATION[clip] : 0;

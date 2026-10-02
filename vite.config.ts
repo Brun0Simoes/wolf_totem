@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 
 // Preserve originals in chars; copy assets verbatim for the deployable bundle.
 export default defineConfig({
+  // Relative paths let the same build run at the site root or under a subpath such as GitHub Pages.
+  base: './',
   plugins: [{ name: 'character-assets', configureServer(server) {
     server.middlewares.use((req, res, next) => {
       const match = req.url?.match(/^\/chars\/([A-Za-z]+-[123]star\.png)(?:\?.*)?$/);
