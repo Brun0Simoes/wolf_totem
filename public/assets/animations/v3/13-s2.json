@@ -1,0 +1,166 @@
+{
+  "characterId": 13,
+  "stars": 2,
+  "name": "Viri",
+  "image": "/assets/animations/v3/13-s2.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 373,
+  "anchorX": 166,
+  "anchorY": 436,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 439
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 439
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 439
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 439
+    },
+    {
+      "x": 0,
+      "y": 439,
+      "width": 313,
+      "height": 402
+    },
+    {
+      "x": 313,
+      "y": 439,
+      "width": 314,
+      "height": 402
+    },
+    {
+      "x": 627,
+      "y": 439,
+      "width": 313,
+      "height": 402
+    },
+    {
+      "x": 940,
+      "y": 439,
+      "width": 314,
+      "height": 402
+    },
+    {
+      "x": 0,
+      "y": 841,
+      "width": 313,
+      "height": 413
+    },
+    {
+      "x": 313,
+      "y": 841,
+      "width": 326,
+      "height": 413
+    },
+    {
+      "x": 639,
+      "y": 841,
+      "width": 331,
+      "height": 413
+    },
+    {
+      "x": 970,
+      "y": 841,
+      "width": 284,
+      "height": 413
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 166,
+      "y": 436
+    },
+    {
+      "x": 168,
+      "y": 436
+    },
+    {
+      "x": 169,
+      "y": 436
+    },
+    {
+      "x": 168,
+      "y": 436
+    },
+    {
+      "x": 162,
+      "y": 398
+    },
+    {
+      "x": 164,
+      "y": 398
+    },
+    {
+      "x": 168,
+      "y": 398
+    },
+    {
+      "x": 170,
+      "y": 398
+    },
+    {
+      "x": 158,
+      "y": 372
+    },
+    {
+      "x": 146,
+      "y": 372
+    },
+    {
+      "x": 152,
+      "y": 369
+    },
+    {
+      "x": 140,
+      "y": 373
+    }
+  ],
+  "portrait": {
+    "x": 34,
+    "y": 64,
+    "width": 274,
+    "height": 373
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

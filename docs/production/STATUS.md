@@ -1,6 +1,6 @@
 # Estado da produção de arte
 
-Formas animadas: **54/165**. Personagens com as três formas: **4/55**.
+Formas animadas: **79/165**. Personagens com as três formas: **4/55**.
 
 Cada forma tem repouso, caminhada e ataque/conjuração, com quatro poses por sequência. Impacto, queda e vitória usam movimentos programados.
 
@@ -9,16 +9,16 @@ Cada forma tem repouso, caminhada e ataque/conjuração, com quatro poses por se
 | 1 | Akru | 1 | Pronto | Pronto | Pronto |
 | 2 | Nima | 1 | Pronto | Pronto | Pronto |
 | 3 | Boru | 1 | Pronto | Pronto | Pronto |
-| 4 | Sesha | 1 | Pronto | Pendente | Pendente |
-| 5 | Kiko | 1 | Pronto | Pendente | Pendente |
-| 6 | Muru | 1 | Pronto | Pendente | Pendente |
-| 7 | Taka | 1 | Pronto | Pendente | Pendente |
-| 8 | Ena | 1 | Pronto | Pendente | Pendente |
-| 9 | Paku | 1 | Pronto | Pendente | Pendente |
-| 10 | Zirri | 1 | Pronto | Pendente | Pendente |
-| 11 | Ayo | 1 | Pronto | Pendente | Pendente |
-| 12 | Kalu | 1 | Pronto | Pendente | Pendente |
-| 13 | Viri | 1 | Pronto | Pendente | Pendente |
+| 4 | Sesha | 1 | Pronto | Pronto | Pendente |
+| 5 | Kiko | 1 | Pronto | Pronto | Pendente |
+| 6 | Muru | 1 | Pronto | Pronto | Pendente |
+| 7 | Taka | 1 | Pronto | Pronto | Pendente |
+| 8 | Ena | 1 | Pronto | Pronto | Pendente |
+| 9 | Paku | 1 | Pronto | Pronto | Pendente |
+| 10 | Zirri | 1 | Pronto | Pronto | Pendente |
+| 11 | Ayo | 1 | Pronto | Pronto | Pendente |
+| 12 | Kalu | 1 | Pronto | Pronto | Pendente |
+| 13 | Viri | 1 | Pronto | Pronto | Pendente |
 | 14 | Jara | 2 | Pronto | Pronto | Pronto |
 | 15 | Grom | 2 | Pronto | Pendente | Pendente |
 | 16 | Ilya | 2 | Pronto | Pendente | Pendente |
@@ -27,19 +27,19 @@ Cada forma tem repouso, caminhada e ataque/conjuração, com quatro poses por se
 | 19 | Tembu | 2 | Pronto | Pendente | Pendente |
 | 20 | Zakka | 2 | Pronto | Pendente | Pendente |
 | 21 | Omi | 2 | Pronto | Pendente | Pendente |
-| 22 | Suri | 2 | Pendente | Pendente | Pendente |
-| 23 | Kesh | 2 | Pendente | Pendente | Pendente |
-| 24 | Brak | 2 | Pendente | Pendente | Pendente |
-| 25 | Sena | 2 | Pendente | Pendente | Pendente |
-| 26 | Uru | 2 | Pendente | Pendente | Pendente |
-| 27 | Amaru | 3 | Pendente | Pendente | Pendente |
+| 22 | Suri | 2 | Pronto | Pronto | Pendente |
+| 23 | Kesh | 2 | Pronto | Pronto | Pendente |
+| 24 | Brak | 2 | Pronto | Pronto | Pendente |
+| 25 | Sena | 2 | Pronto | Pronto | Pendente |
+| 26 | Uru | 2 | Pronto | Pronto | Pendente |
+| 27 | Amaru | 3 | Pronto | Pendente | Pendente |
 | 28 | Duma | 3 | Pronto | Pendente | Pendente |
 | 29 | Roko | 3 | Pronto | Pendente | Pendente |
 | 30 | Khepri | 3 | Pronto | Pendente | Pendente |
-| 31 | Vesh | 3 | Pendente | Pendente | Pendente |
-| 32 | Toru | 3 | Pendente | Pendente | Pendente |
-| 33 | Asha | 3 | Pendente | Pendente | Pendente |
-| 34 | Thari | 3 | Pendente | Pendente | Pendente |
+| 31 | Vesh | 3 | Pronto | Pendente | Pendente |
+| 32 | Toru | 3 | Pronto | Pendente | Pendente |
+| 33 | Asha | 3 | Pronto | Pendente | Pendente |
+| 34 | Thari | 3 | Pronto | Pendente | Pendente |
 | 35 | Mako | 3 | Pronto | Pronto | Pendente |
 | 36 | Sava | 3 | Pronto | Pendente | Pendente |
 | 37 | Nilo | 3 | Pronto | Pendente | Pendente |

@@ -1,0 +1,166 @@
+{
+  "characterId": 31,
+  "stars": 1,
+  "name": "Vesh",
+  "image": "/assets/animations/v3/31-s1.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 331,
+  "anchorX": 151,
+  "anchorY": 410,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 306,
+      "height": 418
+    },
+    {
+      "x": 619,
+      "y": 836,
+      "width": 331,
+      "height": 418
+    },
+    {
+      "x": 950,
+      "y": 836,
+      "width": 304,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 151,
+      "y": 410
+    },
+    {
+      "x": 156,
+      "y": 410
+    },
+    {
+      "x": 148,
+      "y": 410
+    },
+    {
+      "x": 154,
+      "y": 410
+    },
+    {
+      "x": 178,
+      "y": 399
+    },
+    {
+      "x": 184,
+      "y": 396
+    },
+    {
+      "x": 182,
+      "y": 396
+    },
+    {
+      "x": 186,
+      "y": 396
+    },
+    {
+      "x": 156,
+      "y": 345
+    },
+    {
+      "x": 148,
+      "y": 344
+    },
+    {
+      "x": 137,
+      "y": 347
+    },
+    {
+      "x": 158,
+      "y": 343
+    }
+  ],
+  "portrait": {
+    "x": 55,
+    "y": 80,
+    "width": 217,
+    "height": 331
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

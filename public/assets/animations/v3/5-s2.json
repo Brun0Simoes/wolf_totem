@@ -1,0 +1,166 @@
+{
+  "characterId": 5,
+  "stars": 2,
+  "name": "Kiko",
+  "image": "/assets/animations/v3/5-s2.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 290,
+  "anchorX": 178,
+  "anchorY": 428,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 431
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 431
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 431
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 431
+    },
+    {
+      "x": 0,
+      "y": 431,
+      "width": 313,
+      "height": 405
+    },
+    {
+      "x": 313,
+      "y": 431,
+      "width": 314,
+      "height": 405
+    },
+    {
+      "x": 627,
+      "y": 431,
+      "width": 313,
+      "height": 405
+    },
+    {
+      "x": 940,
+      "y": 431,
+      "width": 314,
+      "height": 405
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 341,
+      "height": 418
+    },
+    {
+      "x": 968,
+      "y": 836,
+      "width": 286,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 178,
+      "y": 428
+    },
+    {
+      "x": 177,
+      "y": 428
+    },
+    {
+      "x": 177,
+      "y": 428
+    },
+    {
+      "x": 176,
+      "y": 428
+    },
+    {
+      "x": 172,
+      "y": 392
+    },
+    {
+      "x": 168,
+      "y": 389
+    },
+    {
+      "x": 178,
+      "y": 392
+    },
+    {
+      "x": 184,
+      "y": 389
+    },
+    {
+      "x": 166,
+      "y": 351
+    },
+    {
+      "x": 141,
+      "y": 351
+    },
+    {
+      "x": 125,
+      "y": 351
+    },
+    {
+      "x": 148,
+      "y": 351
+    }
+  ],
+  "portrait": {
+    "x": 43,
+    "y": 139,
+    "width": 229,
+    "height": 290
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

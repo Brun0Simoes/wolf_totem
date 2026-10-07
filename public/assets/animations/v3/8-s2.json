@@ -1,0 +1,166 @@
+{
+  "characterId": 8,
+  "stars": 2,
+  "name": "Ena",
+  "image": "/assets/animations/v3/8-s2.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 348,
+  "anchorX": 162,
+  "anchorY": 402,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 321,
+      "height": 418
+    },
+    {
+      "x": 321,
+      "y": 836,
+      "width": 310,
+      "height": 418
+    },
+    {
+      "x": 631,
+      "y": 836,
+      "width": 309,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 162,
+      "y": 402
+    },
+    {
+      "x": 155,
+      "y": 402
+    },
+    {
+      "x": 150,
+      "y": 402
+    },
+    {
+      "x": 154,
+      "y": 402
+    },
+    {
+      "x": 154,
+      "y": 398
+    },
+    {
+      "x": 164,
+      "y": 398
+    },
+    {
+      "x": 154,
+      "y": 398
+    },
+    {
+      "x": 162,
+      "y": 398
+    },
+    {
+      "x": 168,
+      "y": 371
+    },
+    {
+      "x": 152,
+      "y": 371
+    },
+    {
+      "x": 166,
+      "y": 371
+    },
+    {
+      "x": 157,
+      "y": 374
+    }
+  ],
+  "portrait": {
+    "x": 64,
+    "y": 55,
+    "width": 235,
+    "height": 348
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}
