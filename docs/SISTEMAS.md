@@ -1,32 +1,26 @@
-# Wolf Totem 1.3 — sistemas do jogo
+# Wolf Totem 2.0 — sistemas do jogo
 
 Todos os números abaixo são decisões de protótipo, calibradas por simulação, e ficam fora do catálogo canônico de `src/data/characters.ts`.
 
 ## Ciclo de jogo
 
 ```text
-Aldeia produz ─► recrutar / fundir / equipar ─► expedição automática ─► recursos e componentes
+Aldeia produz ─► acolher / despertar / equipar ─► expedição automática ─► recursos e componentes
      ▲                                                                           │
      └──── eras (espíritos), construções, trabalhadores ◄────────────────────────┘
 Primeiro Inverno ─► Caçada Eterna + Grande Totem ─► renascimento ─► memórias permanentes
 ```
 
-Ritmo da 1.3, medido com um jogador automático. Ele:
-- melhora construções e avança eras;
-- recruta, juntando cópias e preferindo custos altos, e equipa itens;
-- manda a reserva caçar e leva a formação às cerimônias;
-- tenta sempre a próxima expedição.
+## Ritmo e despertar
 
-A jornada ficou bem mais longa e exigente que na 1.2:
+A progressão combina duas trilhas independentes. Trabalho, caçadas e expedições concedem experiência; cerimônias concedem experiência ritual. Nenhuma trilha substitui a outra.
 
-| Marco | Tempo de jogo |
-| --- | --- |
-| Primeira expedição (Akru sozinho) | menos de 1 min |
-| O Alfa Cinzento | ~3 min |
-| A Boca do Delta | ~35 min: o primeiro muro, que pede quatro heróis 2★ perto do nível 5 |
-| O Rei dos Búfalos | ~50 min |
-| O Leviatã do Pântano | ~1h25 |
-| O Primeiro Inverno | exige heróis 3★ de custo alto, perto do nível 10, com itens e cerimônias |
+| Forma | Experiência | Ritualística | Cerimônia adicional |
+| --- | --- | --- | --- |
+| 2★ | nível 8 | nível 3 | — |
+| 3★ | nível 24 | nível 8 | ayahuasca concluída |
+
+O despertar é automático e preserva o herói, sua posição e seus itens. O teste em `tests/progression.test.ts` faz duas visitas por dia, mantém Akru trabalhando, ergue a Casa de Cura com recursos produzidos pela aldeia e alterna ritos adequados à era. A primeira forma 3★ aparece em **6 dias**. Esse resultado mede uma rotina específica, sem caçadas ou bônus de memórias; a duração real varia com as escolhas.
 
 ## Aldeia
 
@@ -42,9 +36,9 @@ A jornada ficou bem mais longa e exigente que na 1.2:
 - Construções vão até o nível 15; o custo cresce 1,65× por nível.
 - Produção total = base × nível × (1 + 12% por era) × espíritos × (1 + 25% por Raízes Profundas) × trabalhadores.
 - **Trabalhadores:** heróis da reserva (fora da formação). Vagas por construção: 1 + nível/4, no máximo 4. Cada um soma 10% × custo × (1; 2,2; 4 conforme as estrelas), com ×1,5 de afinidade.
-- **Eras:** a aldeia de nível *n* custa 160/110/80/30 × 2,8^(n−1) (madeira, alimento, pedra, espírito). Cada era libera um custo de herói, uma vaga na formação e uma escolha de espírito.
+- **Eras:** a aldeia de nível *n* custa 160/110/80/30 × 2,8^(n−1) (madeira, alimento, pedra, espírito). Cada era libera uma faixa do catálogo, uma vaga na formação e uma escolha de espírito. Avançar exige também, no mesmo herói, experiência/ritualística 4/2, 10/3, 16/5 e 22/7 para chegar às eras II–V.
 - Coleta manual: 5/4/3 por clique × nível da aldeia.
-- Produção offline: até 2 horas, inclusive da forja.
+- Produção offline: até 12 horas, inclusive da forja.
 
 ## Espíritos protetores
 
@@ -65,9 +59,9 @@ A jornada ficou bem mais longa e exigente que na 1.2:
 
 ## Heróis e laços
 
-- Fogueira: 4 viajantes (5 com a Águia); chances por era em [PERSONAGENS.md](PERSONAGENS.md).
-- Recrutar custa 15 de alimento e 30 de espírito × custo; liberar devolve 15 × custo × 3^(estrelas−1) de espírito e os itens.
-- Até 18 heróis no total; formação de 3 a 7, conforme a era.
+- Catálogo de 55 companheiros, sem sorteio ou compra de cópias. Eras I–V exigem também que a tribo tenha um herói com ritualística 1/2/3/5/7, respectivamente.
+- Recrutar custa 15 de alimento e 30 de espírito × custo; liberar devolve 15 × custo de espírito e os itens.
+- Até 55 heróis no total; formação de 3 a 7, conforme a era.
 - Os laços contam personagens distintos na formação; a tabela completa está no códice (aba **Laços**) e em `src/game/synergies.ts`.
 
 ## Itens
@@ -101,7 +95,7 @@ Para combinar:
 - coloque o segundo componente no herói que já tem o primeiro;
 - ou, com a forja construída, toque dois componentes na bolsa.
 
-Cada herói carrega até 3 itens; ao fundir cópias, os itens passam ao herói que fica e o excedente volta à bolsa. A lista completa está no códice (aba **Itens**).
+Cada herói carrega até 3 itens; despertar preserva os equipamentos. Na migração de saves antigos, itens das cópias voltam ao companheiro consolidado ou à bolsa. A lista completa está no códice (aba **Itens**).
 
 ## Campanha
 
@@ -116,7 +110,7 @@ Cada herói carrega até 3 itens; ao fundir cópias, os itens passam ao herói q
 
 - **Força dos inimigos:** (0,56 + 0,03·L + 0,0009·L²) ÷ (1 + 0,12 × (custo − 1)) × dificuldade × (1 + 5% × (nível esperado − 1)).
   - A dificuldade vai de 1,25 na primeira expedição a 1,1 na última: o começo ficou bem mais duro que na 1.2.
-  - O **nível esperado** dos heróis na expedição L é 1 + 9 × ((L − 1)/29)^0,7: nível 4 no Alfa, ~6 na Boca do Delta e 10 no Primeiro Inverno. O cartão da expedição mostra esse nível e o do herói mais forte da tribo.
+  - O **nível esperado** dos heróis na expedição L é 1 + 29 × ((L − 1)/29)^0,7, chegando ao nível 30 no Primeiro Inverno. O cartão da expedição mostra esse nível e o do herói mais forte da tribo.
   - Um chefe tem vida × (1,66 + 0,06 × região), ataque × (1,12 + 0,02 × região) e +15 de armadura e resistência.
 - **Posição dos inimigos:** combatentes corpo a corpo ocupam a fileira da frente, do centro para fora; atiradores e conjuradores, as de trás.
 - **Primeiras expedições:** a primeira tem um só inimigo, para Akru vencer sozinho; a partir da terceira, as regiões 1 a 3 trazem um inimigo a mais que na 1.2.
@@ -142,7 +136,8 @@ Cada herói carrega até 3 itens; ao fundir cópias, os itens passam ao herói q
 
 ## Saves
 
-- Formato versão 2.
+- Formato versão 4; aceita versões 1, 2 e 3.
+- Saves anteriores conservam as estrelas já conquistadas e recebem os níveis mínimos correspondentes. Cópias do mesmo personagem são consolidadas, preservando o progresso mais alto de cada trilha, bônus aprendidos e equipamentos. Essa consolidação não concede novas estrelas.
 - A versão 1 é migrada: cada onda vencida vira uma expedição vencida, e os heróis recebem espaços de item e de trabalho.
 - Combate em andamento nunca é salvo.
 - Valores inválidos são saneados: itens desconhecidos, espíritos fora da ordem das eras e trabalhadores acima das vagas.
@@ -219,8 +214,8 @@ O limite de 150 s continua valendo: se ninguém vencer até lá, a tribo perde.
 
 ## Níveis e experiência (1.3)
 
-- A jornada começa com **Akru sozinho**. Recrutar mais duas cópias dele logo no início já forma um Akru 2★.
-- Cada herói tem nível de 1 a 10. Para sair do nível n são precisos 50 × n^1,6 pontos de experiência: 50 para o nível 2 e cerca de 6,7 mil no total para o nível 10.
+- A jornada começa com **Akru sozinho**. O próximo despertar aparece no painel do herói.
+- Cada herói tem nível de 1 a 30. Para sair do nível n são precisos arredondar(50 × n^2,1) pontos de experiência. O nível 8 requer 8.282 XP acumulados; o nível 24, 286.883 XP. Trabalho concede 40 XP por minuto, sem gerar XP ritual.
 - **Cada nível:** +7% de vida e +5% de ataque.
 - **Batalhas:** todos os heróis que marcharam ganham (14 + 5 × nível da expedição), multiplicado conforme o resultado e o tipo de luta:
 
@@ -232,7 +227,7 @@ O limite de 150 s continua valendo: se ninguém vencer até lá, a tribo perde.
   | Chefe (sobre os anteriores) | × 1,5 |
 
 - **Aprendizes:** um herói mais de um nível abaixo do mais forte da tribo ganha +25% de experiência por nível de diferença além do primeiro, até o dobro. Assim, recrutas novos alcançam o grupo.
-- **Fusão:** ao juntar três cópias, o herói evoluído fica com a experiência da cópia mais experiente mais metade da das outras, a melhor contagem de cada cerimônia e a menor panema.
+- **Ritualística:** níveis 1–10. Para sair do nível n são precisos arredondar(90 × n^1,4) XP ritual. Nível 3 exige 328 XP acumulados; nível 8, 4.709. Concluir um rito inicia 3 horas de integração, durante as quais o herói pode trabalhar ou caçar.
 
 ## Caçadas (1.3)
 
@@ -242,11 +237,11 @@ O limite de 150 s continua valendo: se ninguém vencer até lá, a tribo perde.
 
 | Trilha | Tempo | Exige | Experiência | Alimento | Componente |
 | --- | --- | --- | --- | --- | --- |
-| Margem do igarapé | 2 min | nível 1 | 40 | 35 | 5% |
-| Mata de terra firme | 5 min | nível 2 | 115 | 100 | 15% |
-| Várzea alagada | 12 min | Era II, nível 4 | 320 | 250 | 25% |
-| Serra das antas | 25 min | Era III, nível 6 | 720 | 520 | 40% |
-| Cabeceiras do rio | 45 min | Era IV, nível 8 | 1450 | 900 | 60% |
+| Margem do igarapé | 10 min | nível 1 | 600 | 140 | 5% |
+| Mata de terra firme | 1 h | nível 4 | 4000 | 900 | 15% |
+| Várzea alagada | 3 h | Era II, nível 8 | 15000 | 3000 | 25% |
+| Serra das antas | 6 h | Era III, nível 14 | 42000 | 6200 | 40% |
+| Cabeceiras do rio | 8 h | Era IV, nível 18 | 65000 | 9000 | 60% |
 
 - **Sucesso:** 86% + 4% por estrela além da primeira + 4% por sananga − 14% por ponto de panema, entre 30% e 98%.
   - Com sucesso, o herói traz o alimento (+15% por estrela além da primeira) e, com a chance da tabela, um componente.
@@ -258,17 +253,17 @@ O limite de 150 s continua valendo: se ninguém vencer até lá, a tribo perde.
 
 ## Casa de Cura e cerimônias (1.3)
 
-A Casa de Cura é a maloca onde o pajé conduz as cerimônias. Ela se constrói desde a Era I e sobe até o nível 15. Cada cerimônia tem custo e tempo. O herói fica fora das expedições durante a cerimônia e a integração, e ajudantes na maloca (afinidade: Xamã, Rio e Noturno) encurtam esse tempo.
+A Casa de Cura é a maloca onde o pajé conduz as cerimônias. Ela se constrói desde a Era I e sobe até o nível 15. Cada cerimônia tem custo e tempo. O herói fica fora das expedições durante a cerimônia, e ajudantes na maloca (afinidade: Xamã, Rio e Noturno) encurtam esse tempo em até 1,5×.
 
 | Prática | Povos | No jogo | Exige | Tempo |
 | --- | --- | --- | --- | --- |
-| **Rapé** (rume) | Huni Kuin, Yawanawá, Noke Koî | +5% de velocidade de ataque por cerimônia (até 3) e foco na próxima caçada: +50% de experiência | Casa nível 1 | 30 s |
-| **Sananga** (colírio da floresta) | Matsés, Huni Kuin, Tikuna | Tira 1 de panema; +6% de dano e +4% de sucesso na caça por cerimônia (até 3) | Casa nível 1, herói nível 2 | 45 s |
-| **Kambô** (kampô) | Noke Koî, Matsés, Yawanawá, Huni Kuin | Tira toda a panema; +8% de vida máxima por cerimônia (até 3) | Casa nível 2, Era II, herói nível 3 | 3 min |
-| **Ayahuasca** (nixi pae) | Huni Kuin e outros povos da Amazônia | +20% de poder de habilidade e +25 de mana inicial, uma vez por herói | Casa nível 3, Era III, herói nível 5, um rapé antes | 10 min |
+| **Rapé** (rume) | Huni Kuin, Yawanawá, Noke Koî | +5% de velocidade de ataque por cerimônia (até 3) e foco na próxima caçada: +50% de experiência | Casa nível 1 | 20 min |
+| **Sananga** (colírio da floresta) | Matsés, Huni Kuin, Tikuna | Tira 1 de panema; +6% de dano e +4% de sucesso na caça por cerimônia (até 3) | Casa nível 1, herói nível 2 | 45 min |
+| **Kambô** (kampô) | Noke Koî, Matsés, Yawanawá, Huni Kuin | Tira toda a panema; +8% de vida máxima por cerimônia (até 3) | Casa nível 2, Era II, herói nível 8 | 2 h |
+| **Ayahuasca** (nixi pae) | Huni Kuin e outros povos da Amazônia | +20% de poder de habilidade e +25 de mana inicial, uma vez por herói | Casa nível 3, Era III, herói nível 14, um rapé antes | 6 h |
 | **Roda de cacau** | Mayo-Chinchipe da Alta Amazônia; depois maias | Toda a tribo por 10 min: +25% de experiência e +10% de cura e escudos | Casa nível 2, Era II | — |
 
-- O custo de cada cerimônia cresce 80% a cada vez que o mesmo herói a repete.
+- XP ritual por cerimônia: rapé 90, sananga 180, kambô 450, ayahuasca 900, cacau 60. Repetições continuam ensinando, mas os bônus de atributos permanecem limitados a 3/3/3/1. O custo cresce até o limite de aprendizado do bônus e depois permanece estável. Cacau concede XP apenas a heróis presentes que concluíram a integração.
 - **Pesquisa e respeito:** os textos seguem fontes etnográficas e de divulgação sobre essas práticas:
   - nixi pae, "o encanto do cipó", e os cantos huni meka da cerimônia Huni Kuin;
   - rapé (rume) soprado pelo tepi ou pelo kuripe;

@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import fx from '../../public/assets/environment/combat-fx.json';
+import props from '../../public/assets/environment/village-props.json';
 import { OVERTIME_START, type BuildingId, type Game } from '../game/simulation';
 import { characters } from '../data/characters';
 import { animationSheets, assetUrl, bestAnimation, getAnimation, getSummonAnimation, frameRect, sheetKey, summonSheetKey } from './animationAssets';
@@ -16,8 +18,8 @@ type View = 'village' | 'battle';
 type Ctx = CanvasRenderingContext2D;
 type Point = [number, number];
 type Entity = NonNullable<Game['battle']>['entities'][number];
-type Callbacks = { onBuilding: (id: BuildingId) => void; onSlot: (slot: number) => void };
-type UnitView = { summon?: string; transform: boolean; layer: Phaser.GameObjects.Layer; aura?: Phaser.GameObjects.Image; sprite: Phaser.GameObjects.Sprite; bars: Phaser.GameObjects.Graphics; name: Phaser.GameObjects.Text; ring: Phaser.GameObjects.Ellipse; baseTexture: string; desiredHeight: number; characterId: number; stars: number; motion: MotionState; x: number; y: number; lastHp: number; enemy: boolean; lastHit: number; flashUntil: number; flashReady: number };
+type Callbacks = { onHero: (uid:string)=>void; onMove:(uid:string,slot:number)=>void; onBuilding: (id: BuildingId) => void; onSlot: (slot: number) => void };
+type UnitView = { dragging?: boolean; summon?: string; transform: boolean; layer: Phaser.GameObjects.Layer; aura?: Phaser.GameObjects.Image; sprite: Phaser.GameObjects.Sprite; bars: Phaser.GameObjects.Graphics; name: Phaser.GameObjects.Text; ring: Phaser.GameObjects.Ellipse; baseTexture: string; desiredHeight: number; characterId: number; stars: number; motion: MotionState; x: number; y: number; lastHp: number; enemy: boolean; lastHit: number; flashUntil: number; flashReady: number };
 type Villager = { uid: string; view: UnitView; phase: number; work: BuildingId | null; lastWork: number };
 
 const COST_TINT = [0xdfd8c0, 0xc7dccf, 0xc3cde6, 0xdccbe6, 0xf1dca6];
@@ -76,6 +78,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private labels = new Map<BuildingId, Phaser.GameObjects.Text>();
     private units = new Map<string, UnitView>();
     private seenEvents = new Set<number>();
+    private impactAt = new Map<string,number>();
     private loadingArt = new Set<string>();
     private atlasUsed = new Map<string, number>();
     private lastAtlasSweep = 0;
@@ -101,6 +104,9 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     constructor() { super({ key: 'WolfTotemWorld' }); }
 
     preload(): void {
+      this.load.image('painted-terrain',assetUrl('/assets/environment/village-terrain.png'));
+      this.load.image('painted-props',assetUrl(props.image));
+      this.load.image('painted-fx',assetUrl(fx.image));
       const initial = new Set(game.state.heroes.slice(0, 6).map(h => `${h.characterId}:${h.stars}`));
       for (const sheet of animationSheets.values()) {
         if (initial.has(`${sheet.characterId}:${sheet.stars ?? 1}`)) this.load.image(sheetKey(sheet.characterId, sheet.stars), sheet.image);
@@ -114,7 +120,9 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       }
       this.cameras.main.setBackgroundColor('#111a17');
       this.paint('land', W, H, (c) => this.paintLandscape(c));
-      this.add.image(0, 0, 'land').setOrigin(0).setDepth(-1000);
+      this.add.image(0, 0, this.textures.exists('painted-terrain')?'painted-terrain':'land').setOrigin(0).setDisplaySize(W,H).setDepth(-1000);
+      if(this.textures.exists('painted-fx'))for(const [name,r]of Object.entries(fx.frames))this.textures.get('painted-fx').add(name,0,r.x,r.y,r.width,r.height);
+      if(this.textures.exists('painted-props'))for(const [name,r]of Object.entries(props.frames))this.textures.get('painted-props').add(name,0,r.x,r.y,r.width,r.height);
       this.village = this.add.layer().setDepth(0);
       this.battlefield = this.add.layer().setDepth(1).setVisible(false);
       this.createVillage();
@@ -213,6 +221,14 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       line(c, [[555, 621], [627, 693]], '#b8a27c', 2); line(c, [[594, 607], [662, 677]], '#b8a27c', 2);
     }
 
+    private addVillageProp(x:number,y:number,key:string,scale:number,depth=y):Phaser.GameObjects.Image {
+      const mapping:Record<string,[keyof typeof props.frames,number]>={'hut-lumber':['lumber',248],'hut-hunt':['hunt',248],shrine:['shrine',210],quarry:['quarry',230],forge:['forge',230],cura:['cura',240]};
+      if(key.startsWith('tree-'))mapping[key]=['tree',172];
+      const mapped=mapping[key];
+      if(mapped&&this.textures.exists('painted-props'))return this.add.image(x,y,'painted-props',mapped[0]).setOrigin(.5,1).setScale(scale*mapped[1]/props.frames[mapped[0]].width).setDepth(depth);
+      return this.add.image(x,y,key).setOrigin(.5,1).setScale(scale).setDepth(depth);
+    }
+
     private createVillage(): void {
       const rng = random(412);
       for (let i = 0; i < 5; i++) this.paint(`tree-${i}`, 172, 213, c => this.paintTree(c, i));
@@ -236,7 +252,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         [480, 590], [428, 556], [700, 590], [740, 572],
       ];
       groves.forEach(([x, y], i) => {
-        const tree = this.add.image(x, y, `tree-${i % 5}`).setOrigin(.5, 1).setScale(.65 + rng() * .26).setDepth(y);
+        if (i % 2) return;
+        const tree = this.addVillageProp(x,y,`tree-${i % 5}`,.55+rng()*.2);
         this.village.add(tree);
         this.scenery.push({ object: tree, angle: .5 + rng() * .5, phase: rng() * 6.28 });
       });
@@ -253,8 +270,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         { key: 'rock', x: 187, y: 368, scale: .79 },
         { key: 'rock', x: 698, y: 606, scale: .6 },
       ];
-      objects.forEach(o => this.village.add(this.add.image(o.x, o.y, o.key).setOrigin(.5, 1).setScale(o.scale).setDepth(o.y)));
-      this.totemImage = this.add.image(610, 412, 'totem-0').setOrigin(.5, 1).setScale(.93).setDepth(410); this.village.add(this.totemImage);
+      objects.forEach(o => this.village.add(this.addVillageProp(o.x,o.y,o.key,o.scale)));
+      this.totemImage = this.add.image(610,412,'painted-props','totem').setOrigin(.5,1).setDisplaySize(140,153).setDepth(410); this.village.add(this.totemImage);
       this.forgeImage = this.add.image(672, 256, 'forge-site').setOrigin(.5, 1).setScale(.62).setDepth(268); this.village.add(this.forgeImage);
       this.curaImage = this.add.image(566, 580, 'cura-site').setOrigin(.5, 1).setScale(.6).setDepth(580); this.village.add(this.curaImage);
 
@@ -270,9 +287,9 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         });
         this.village.add(zone);
         const labelY = b.y + (b.labelY ?? 17);
-        const bg = this.add.rectangle(b.x, labelY, 193, 24, 0x1d2920, .9).setStrokeStyle(1, 0xc5b481, .27).setDepth(1000);
-        const badge = this.add.text(b.x, labelY, `${b.icon}  ${b.name}`, { fontFamily: 'Georgia, serif', fontSize: '10px', color: '#e8ddba', letterSpacing: .8 }).setOrigin(.5).setDepth(1001);
-        const level = this.add.text(b.x, labelY + 19, '', { fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#bbc29d' }).setOrigin(.5).setDepth(1001);
+        const bg = this.add.rectangle(b.x,labelY,190,28,0x102629,.92).setStrokeStyle(1, 0xc5b481, .27).setDepth(1000);
+        const badge = this.add.text(b.x, labelY, `${b.icon}  ${b.name}`, { fontFamily: 'Georgia, serif', fontSize: '11px', color: '#e8e2d4', letterSpacing: .8 }).setOrigin(.5).setDepth(1001);
+        const level = this.add.text(b.x, labelY + 19, '', { fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#c1d2c5' }).setOrigin(.5).setDepth(1001);
         this.village.add([bg, badge, level]); this.labels.set(b.id, level);
       }
       this.fire = this.add.graphics().setDepth(465); this.village.add(this.fire);
@@ -365,12 +382,12 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       const s = game.state;
       if (s.wonder !== this.totemStage) {
         if (this.totemStage >= 0) { this.pulse(610, 360, 0xf2d486, this.village); this.pulse(610, 300, 0xf2d486, this.village); }
-        this.totemStage = s.wonder; this.totemImage.setTexture(`totem-${Math.min(5, s.wonder)}`);
+        this.totemStage = s.wonder; this.totemImage.setTexture('painted-props','totem').setDisplaySize(140+s.wonder*12,153+s.wonder*18);
       }
       const forgeKey = s.buildings.forge > 0 ? 'forge' : 'forge-site';
-      if (this.forgeImage.texture.key !== forgeKey) this.forgeImage.setTexture(forgeKey);
+      if(s.buildings.forge>0){this.forgeImage.setTexture('painted-props','forge').setDisplaySize(145,143);}else if(this.forgeImage.texture.key!==forgeKey)this.forgeImage.setTexture(forgeKey).setScale(.62);
       const curaKey = s.buildings.cura > 0 ? 'cura' : 'cura-site';
-      if (this.curaImage.texture.key !== curaKey) this.curaImage.setTexture(curaKey);
+      if(s.buildings.cura>0){this.curaImage.setTexture('painted-props','cura').setDisplaySize(170,172);}else if(this.curaImage.texture.key!==curaKey)this.curaImage.setTexture(curaKey).setScale(.6);
       const key = s.spirits.join(',');
       if (key !== this.bannerKey) {
         this.bannerKey = key;
@@ -838,6 +855,19 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         return found;
       }
       const view = this.makeUnit(characterId, enemy, stars, this.battlefield, height, summon, label);
+      if(id.startsWith('formation-')) {
+        const uid=id.slice('formation-'.length);
+        view.sprite.setInteractive({useHandCursor:true});this.input.setDraggable(view.sprite);
+        view.sprite.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!game.battle)callbacks.onHero(uid);});
+        view.sprite.on('dragstart',()=>{view.dragging=true;});
+        view.sprite.on('drag',(_pointer:Phaser.Input.Pointer,dx:number,dy:number)=>{if(!game.battle){view.sprite.setPosition(dx,dy);}});
+        view.sprite.on('dragend',(pointer:Phaser.Input.Pointer)=>{
+          view.dragging=false;
+          if(game.battle)return;
+          const slots=Array.from({length:FORMATION_SLOTS},(_,slot)=>{const cell=allySlotCenter(slot);const [x,y]=project(cell.x,cell.y);return{slot,d:Math.hypot(pointer.x-x,pointer.y-y)};}).sort((a,b)=>a.d-b.d);
+          if(slots[0].d<70)callbacks.onMove(uid,slots[0].slot);
+        });
+      }
       this.units.set(id, view);
       return view;
     }
@@ -854,6 +884,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     }
 
     private presentUnit(view: UnitView, desired: MotionClip, dt: number, x: number, y: number, direction = 0): void {
+      if(view.dragging)return;
       advanceMotion(view.motion, desired, dt, direction);
       const creature = !!view.summon && view.summon !== 'echo';
       const character = characters.find(h => h.id === view.characterId);
@@ -896,7 +927,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       else if (view.baseTexture === 'warrior' && !hasSheet) view.sprite.setTint(COST_TINT[(character?.cost ?? 1) - 1]);
       else view.sprite.clearTint();
       view.ring.setPosition(x, y + 5).setDepth(y - 1).setAlpha(desired === 'death' ? 0 : 1).setScale((creature ? .6 : 1) * depth);
-      view.name.setPosition(x, y + 34).setDepth(y + 125).setAlpha(desired === 'death' ? 0 : 1);
+      view.name.setPosition(x, y + 34).setDepth(y + 125).setAlpha(desired === 'death'||view.summon ? 0 : .72);
       view.x = x; view.y = y;
     }
 
@@ -963,7 +994,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
           }
         } else if (event.type === 'damage' || event.type === 'heal') {
           // Fully absorbed hits still flinch, without a "−0" label.
-          if (options.numbers && Math.round(event.amount ?? 0) > 0) this.floatText((event.type === 'heal' ? '+' : '−') + Math.round(event.amount ?? 0), b.x, b.y - 88, event.type === 'heal' ? '#c0d997' : '#f3dbc0');
+          if (options.numbers && this.clock-(this.impactAt.get(event.targetId??'')??-1)>.4 && Math.round(event.amount ?? 0) > 0) { this.floatText((event.type === 'heal' ? '+' : '−') + Math.round(event.amount ?? 0), b.x, b.y - 88, event.type === 'heal' ? '#c0d997' : '#f3dbc0'); this.impactAt.set(event.targetId??'',this.clock); }
           if (event.type === 'damage') { triggerMotion(target.motion, 'hurt'); this.effects.hit(b); }
           else this.effects.heal(b);
         } else if (event.type === 'shield') this.effects.shield(b);
@@ -972,7 +1003,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
           // A boss reaches half life: a banner, a shockwave and a short tremor.
           this.effects.nova(b, 0xe9a35f, 140); this.effects.aura(b, 0xe9a35f);
           this.banner(event.text ?? '', '#f2b36b');
-          if (!this.reducedMotion) this.cameras.main.shake(320, 0.004);
+          if (!this.reducedMotion) this.cameras.main.shake(320, 0.002);
         }
         else if (event.type === 'overtime') {
           // Twilight falls on long fights: healing fades and every blow lands harder.
@@ -1053,6 +1084,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     }
 
     private floatText(text: string, x: number, y: number, color: string, skill = false): void {
+      if(this.floating.length>=32)return;
       const label = this.add.text(x, y, text, { fontFamily: skill ? 'Georgia, serif' : 'Arial, sans-serif', fontSize: skill ? '12px' : '17px', color, stroke: '#19281f', strokeThickness: 3, fontStyle: skill ? 'normal' : 'bold' }).setOrigin(.5).setDepth(1300);
       this.battlefield.add(label); this.floating.push(label);
       this.tweens.add({ targets: label, y: y - (this.reducedMotion ? 3 : 28), alpha: 0, delay: 180, duration: 650, onComplete: () => { label.destroy(); this.floating = this.floating.filter(v => v !== label); } });

@@ -5,10 +5,33 @@ import type { Resources } from './simulation';
  * ceremonies of the Casa de Cura. Everything here is data and pure rules; the Game applies them.
  */
 
-export const MAX_HERO_LEVEL = 10;
+export const MAX_HERO_LEVEL = 30;
+export const MAX_RITUAL_LEVEL = 10;
+export const WORK_XP_PER_MINUTE = 40;
+export const RITUAL_COOLDOWN = 3 * 3600;
+export const RITUAL_XP: Record<PracticeId, number> = { rape: 90, sananga: 180, kambo: 450, ayahuasca: 900, cacau: 60 };
+export const ritualXpToNext = (level: number): number => level >= MAX_RITUAL_LEVEL ? Infinity : Math.round(90 * Math.pow(level, 1.4));
+export function ritualTotalXp(level: number, xp: number): number {
+  let total = xp;
+  for (let n = 1; n < level; n++) total += ritualXpToNext(n);
+  return total;
+}
+export function ritualFromTotal(total: number): { ritualLevel: number; ritualXp: number } {
+  let ritualLevel = 1, ritualXp = Math.max(0, total);
+  while (ritualLevel < MAX_RITUAL_LEVEL && ritualXp >= ritualXpToNext(ritualLevel)) { ritualXp -= ritualXpToNext(ritualLevel); ritualLevel++; }
+  return { ritualLevel, ritualXp: ritualLevel >= MAX_RITUAL_LEVEL ? 0 : ritualXp };
+}
+export const AWAKENING = [
+  { stars: 2, level: 8, ritualLevel: 3, ayahuasca: false },
+  { stars: 3, level: 24, ritualLevel: 8, ayahuasca: true },
+] as const;
+export const ERA_GROWTH = [
+  { level: 4, ritualLevel: 2 }, { level: 10, ritualLevel: 3 },
+  { level: 16, ritualLevel: 5 }, { level: 22, ritualLevel: 7 },
+] as const;
 /** Experience needed to leave a level. */
-export const xpToNext = (level: number): number => level >= MAX_HERO_LEVEL ? Infinity : Math.round(50 * Math.pow(level, 1.6));
-/** Total experience gathered by a hero at this level and progress, used when copies merge. */
+export const xpToNext = (level: number): number => level >= MAX_HERO_LEVEL ? Infinity : Math.round(50 * Math.pow(level, 2.1));
+/** Total experience gathered by a hero at this level and progress, used for progression and legacy save consolidation. */
 export function totalXp(level: number, xp: number): number {
   let total = xp;
   for (let l = 1; l < level; l++) total += xpToNext(l);
@@ -31,11 +54,11 @@ export function battleXp(level: number, victory: boolean, boss: boolean, firstCl
 export type TrailId = 'igarape' | 'terra-firme' | 'varzea' | 'serra' | 'cabeceira';
 export interface Trail { id: TrailId; name: string; text: string; minutes: number; era: number; minLevel: number; xp: number; food: number; component: number }
 export const TRAILS: Trail[] = [
-  { id: 'igarape', name: 'Margem do igarapé', text: 'Pacas e peixes perto da aldeia. Bom para quem está começando.', minutes: 2, era: 1, minLevel: 1, xp: 40, food: 35, component: 0.05 },
-  { id: 'terra-firme', name: 'Mata de terra firme', text: 'Queixadas em bando e rastros fundos entre as castanheiras.', minutes: 5, era: 1, minLevel: 2, xp: 115, food: 100, component: 0.15 },
-  { id: 'varzea', name: 'Várzea alagada', text: 'Na cheia, a caça se esconde entre as árvores submersas.', minutes: 12, era: 2, minLevel: 4, xp: 320, food: 250, component: 0.25 },
-  { id: 'serra', name: 'Serra das antas', text: 'Dias de trilha atrás da maior caça da floresta.', minutes: 25, era: 3, minLevel: 6, xp: 720, food: 520, component: 0.4 },
-  { id: 'cabeceira', name: 'Cabeceiras do rio', text: 'Onde o rio nasce e os espíritos da mata vigiam cada passo.', minutes: 45, era: 4, minLevel: 8, xp: 1450, food: 900, component: 0.6 },
+  { id: 'igarape', name: 'Margem do igarapé', text: 'Pacas e peixes perto da aldeia. Bom para quem está começando.', minutes: 10, era: 1, minLevel: 1, xp: 600, food: 140, component: 0.05 },
+  { id: 'terra-firme', name: 'Mata de terra firme', text: 'Queixadas em bando e rastros fundos entre as castanheiras.', minutes: 60, era: 1, minLevel: 4, xp: 4000, food: 900, component: 0.15 },
+  { id: 'varzea', name: 'Várzea alagada', text: 'Na cheia, a caça se esconde entre as árvores submersas.', minutes: 180, era: 2, minLevel: 8, xp: 15000, food: 3000, component: 0.25 },
+  { id: 'serra', name: 'Serra das antas', text: 'Uma longa trilha atrás da maior caça da floresta.', minutes: 360, era: 3, minLevel: 14, xp: 42000, food: 6200, component: 0.4 },
+  { id: 'cabeceira', name: 'Cabeceiras do rio', text: 'Onde o rio nasce e os espíritos da mata vigiam cada passo.', minutes: 480, era: 4, minLevel: 18, xp: 65000, food: 9000, component: 0.6 },
 ];
 export const trailById = (id: string) => TRAILS.find(trail => trail.id === id);
 
@@ -80,28 +103,28 @@ export const PRACTICES: Practice[] = [
     id: 'rape', name: 'Rapé', native: 'rume', peoples: 'Huni Kuin, Yawanawá, Noke Koî e outros povos do Acre',
     text: 'Tabaco moído com cinzas de árvores, soprado pelo tepi por quem conduz ou pelo kuripe, em si mesmo. Para os povos que o guardam, limpa o pensamento, protege e firma a presença; também prepara para outras cerimônias.',
     effect: '+5% de velocidade de ataque por cerimônia (até 3) e foco na próxima caçada: +50% de experiência.',
-    max: 3, curaLevel: 1, era: 1, minLevel: 1, rest: 30,
+    max: 3, curaLevel: 1, era: 1, minLevel: 1, rest: 1200,
     cost: stack => price(0, 15, 0, 30, stack),
   },
   {
     id: 'sananga', name: 'Sananga', native: 'colírio da floresta', peoples: 'Matsés, Huni Kuin e Tikuna',
     text: 'Gotas da raiz da sananga (gênero Tabernaemontana) nos olhos. Arde forte e, para os caçadores, devolve a nitidez da mata e afasta a panema.',
     effect: 'Tira 1 de panema; +6% de dano por cerimônia (até 3) e +4% de sucesso nas caçadas por cerimônia.',
-    max: 3, curaLevel: 1, era: 1, minLevel: 2, rest: 45,
+    max: 3, curaLevel: 1, era: 1, minLevel: 2, rest: 2700,
     cost: stack => price(20, 20, 0, 40, stack),
   },
   {
     id: 'kambo', name: 'Kambô', native: 'kampô', peoples: 'Noke Koî (Katukina), Matsés, Yawanawá e Huni Kuin',
     text: 'A secreção do sapo Phyllomedusa bicolor, aplicada por quem conhece o rito. É uma prova física dura, feita para afastar a panema e devolver o vigor ao caçador.',
-    effect: 'Tira toda a panema; +8% de vida máxima por cerimônia (até 3). O herói descansa 3 minutos.',
-    max: 3, curaLevel: 2, era: 2, minLevel: 3, rest: 180,
+    effect: 'Tira toda a panema; +8% de vida máxima por cerimônia (até 3). A cerimônia dura 2 horas.',
+    max: 3, curaLevel: 2, era: 2, minLevel: 8, rest: 7200,
     cost: stack => price(40, 60, 30, 90, stack),
   },
   {
     id: 'ayahuasca', name: 'Ayahuasca', native: 'nixi pae', peoples: 'Huni Kuin; também Yawanawá, Asháninka e outros povos da Amazônia',
     text: 'O cipó e a folha, bebidos à noite em roda, guiados pelos cantos huni meka: a abertura (pae txanima), as mirações (dautibuya) e o fechamento (kayatibu). Para os Huni Kuin, nixi pae é o encanto do cipó, caminho de cura e conhecimento.',
-    effect: '+20% de poder de habilidade e +25 de mana inicial, uma vez por herói. Exige um rapé antes. O herói fica 10 minutos em dieta.',
-    max: 1, curaLevel: 3, era: 3, minLevel: 5, rest: 600, requires: 'rape',
+    effect: '+20% de poder de habilidade e +25 de mana inicial, uma vez por herói. Exige um rapé antes. A cerimônia e a dieta duram 6 horas.',
+    max: 1, curaLevel: 3, era: 3, minLevel: 14, rest: 21600, requires: 'rape',
     cost: stack => price(150, 200, 60, 400, stack),
   },
   {

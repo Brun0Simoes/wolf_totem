@@ -52,7 +52,7 @@ describe('journal', () => {
   it('counts recruits and spirit powers for the journal', () => {
     const game = new Game();
     game.state.resources.spirit = 500; game.state.resources.food = 500;
-    game.recruit(game.state.shop[0]);
+    game.recruit(2);
     expect(game.state.stats.recruits).toBe(1);
     game.state.villageLevel = 2; game.state.spirits = ['lobo'];
     game.startBattle(); game.tick(1);
@@ -109,6 +109,7 @@ describe('village events', () => {
     expect(getRates(game.state).stone).toBeCloseTo(stone * (1 + OMEN_BONUS));
     advanceVillage(game, 200);
     expect(game.state.omen).toBeNull();
+    game.state.heroes[0].ritualLevel = 2;
     game.state.event = { kind: 'traveler', expires: game.state.clock + 100, characterId: 22 };
     expect(game.answerEvent(true).ok).toBe(true);
     expect(game.state.heroes.some(h => h.characterId === 22)).toBe(true);

@@ -1,0 +1,53 @@
+{
+  "image": "/assets/environment/combat-fx.png",
+  "frames": {
+    "hit": {
+      "x": 65,
+      "y": 37,
+      "width": 357,
+      "height": 392
+    },
+    "slash": {
+      "x": 493,
+      "y": 56,
+      "width": 384,
+      "height": 358
+    },
+    "orb": {
+      "x": 967,
+      "y": 52,
+      "width": 332,
+      "height": 335
+    },
+    "shield": {
+      "x": 1392,
+      "y": 48,
+      "width": 300,
+      "height": 374
+    },
+    "heal": {
+      "x": 70,
+      "y": 475,
+      "width": 330,
+      "height": 369
+    },
+    "summon": {
+      "x": 471,
+      "y": 466,
+      "width": 389,
+      "height": 367
+    },
+    "dust": {
+      "x": 910,
+      "y": 471,
+      "width": 413,
+      "height": 366
+    },
+    "cast": {
+      "x": 1371,
+      "y": 471,
+      "width": 353,
+      "height": 378
+    }
+  }
+}

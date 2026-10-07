@@ -1,0 +1,42 @@
+{
+  "generator": "OpenAI image_gen",
+  "date": "2026-10-07",
+  "assets": [
+    {
+      "path": "public/assets/environment/village-terrain.png",
+      "sourceGeneratedFile": "exec-d60dc94d-c0ae-4fef-b98c-53b459b0c18b.png",
+      "sha256": "551369b35defed25c3ae8343548386153e434525e50333c7e031521ecad58724",
+      "brief": "Painted island clearing, forest and river; no UI or buildings.",
+      "pixelEdits": false
+    },
+    {
+      "path": "public/assets/environment/village-props.png",
+      "sourceGeneratedFile": "exec-700256f9-4481-4202-9719-0cdf6990fa82.png",
+      "sha256": "143d6dd1fd757d5f8ad71e9746e598e38b71fd2cdee8bcfbdf93154fa8362e32",
+      "brief": "4x2 transparent props, consistent scale and gutters: collector hut, hunting hut, shrine, quarry, healing maloca, bone forge, tree, wolf totem.",
+      "pixelEdits": false
+    },
+    {
+      "path": "public/assets/environment/combat-fx.png",
+      "sourceGeneratedFile": "exec-9d06e135-f9fa-46fc-b593-081c403f42cd.png",
+      "sha256": "1fd6aafcdd344684f2d330917e84b3d8245183c39ccfbfebf13cf06df285487c",
+      "brief": "4x2 transparent effects with copper, turquoise, ivory and green: hit, slash, orb, shield, heal, summon, dust, cast.",
+      "pixelEdits": false
+    },
+    {
+      "path": "docs/design/village-concept.png",
+      "sourceGeneratedFile": "exec-24b5905c-4cfe-46f6-8a18-b7e1d2a1989b.png",
+      "sha256": "6af928e3a3a73c37275c30f20d35acd9ceba85c65a6ac5048dd5fe5f1295c3d8",
+      "brief": "Desktop village visual direction.",
+      "pixelEdits": false
+    },
+    {
+      "path": "docs/design/ritual-concept.png",
+      "sourceGeneratedFile": "exec-4103d264-0623-4fdc-8cdb-f87be94c8019.png",
+      "sha256": "692b90c917389cacb543452620ba10861eb9261599191547fa067566b415770c",
+      "brief": "Dual progression and ritual visual direction.",
+      "pixelEdits": false
+    }
+  ],
+  "frameMetadata": "Alpha bounds measured; generated PNGs copied unchanged."
+}

@@ -20,12 +20,21 @@ const RECIPES:Record<number,Recipe[]>={
 
 /** Scene-only effects. They never apply damage or change simulation positions. */
 export class CombatEffects {
+ private sprites=new Map<Phaser.GameObjects.Image,Phaser.Tweens.Tween>();
  private active=new Map<Phaser.GameObjects.Graphics, Phaser.Tweens.Tween>();
  constructor(private scene:Phaser.Scene,private layer:Phaser.GameObjects.Layer,public reduced=false){}
 
+ private stamp(frame:string,p:FxPoint,width:number,duration:number,angle=0,destination=p){
+  if(!this.scene.textures.exists('painted-fx')||this.sprites.size>=24)return;
+  const image=this.scene.add.image(p.x,p.y,'painted-fx',frame).setDepth(1101).setAngle(angle);
+  const scale=width/image.width;image.setScale(scale*.72).setAlpha(this.reduced?.45:.8);this.layer.add(image);
+  const tween=this.scene.tweens.add({targets:image,x:destination.x,y:destination.y,scale:scale*1.15,alpha:0,duration:this.reduced?Math.min(250,duration):duration,ease:'Cubic.easeOut',onComplete:()=>{this.sprites.delete(image);image.destroy();}});
+  this.sprites.set(image,tween);
+ }
  private draw(duration:number,paint:(g:Phaser.GameObjects.Graphics,t:number)=>void,delay=0){
+  if(this.active.size>=48){const oldest=this.active.entries().next().value;if(oldest){oldest[1].stop();oldest[0].destroy();this.active.delete(oldest[0]);}}
   const g=this.scene.add.graphics().setDepth(1100);this.layer.add(g);
-  const clock={t:0};
+  const clock={t:0};paint(g,0);
   const tween=this.scene.tweens.add({targets:clock,t:1,duration:this.reduced?Math.min(300,duration):duration,delay,
    onUpdate:()=>{g.clear();paint(g,clock.t);},onComplete:()=>{g.destroy();this.active.delete(g);}});
   this.active.set(g,tween);return g;
@@ -34,16 +43,20 @@ export class CombatEffects {
   this.draw(duration,(g,t)=>{g.lineStyle(2.5*(1-t)+.5,color,(1-t)*.8);g.strokeEllipse(p.x,p.y,radius*(.3+t*1.7),radius*(.15+t*.75));},delay);
  }
  dust(p:FxPoint,color=0xb8ab79,count=7){
+  this.stamp('dust',{x:p.x,y:p.y-12},55,520);
   this.draw(520,(g,t)=>{for(let i=0;i<(this.reduced?2:count);i++){const a=i*2.399;const r=10+t*(17+i*3);g.fillStyle(color,(1-t)*.4);g.fillCircle(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r*.38-t*10,(2+i%3)*(1-t*.6));}});
  }
  hit(p:FxPoint,color=0xf6e1ad){
+  this.stamp('hit',{x:p.x,y:p.y-42},42,210);
   this.draw(210,(g,t)=>{g.lineStyle(2,color,1-t);for(let i=0;i<5;i++){const a=i*1.256;const r=4+t*20;g.lineBetween(p.x+Math.cos(a)*r,p.y-42+Math.sin(a)*r,p.x+Math.cos(a)*(r+7),p.y-42+Math.sin(a)*(r+7));}});
  }
  heal(p:FxPoint){
+  this.stamp('heal',{x:p.x,y:p.y-37},74,850);
   this.ring(p,0xa8e1ad,48,760);
   this.draw(850,(g,t)=>{for(let i=0;i<5;i++){const x=p.x+Math.sin(i*2.4)*22,y=p.y-12-i*10-t*40;g.lineStyle(2,0xb3e7b4,Math.sin(t*Math.PI)*.8);g.lineBetween(x-3,y,x+3,y);g.lineBetween(x,y-3,x,y+3);}});
  }
  shield(p:FxPoint){
+  this.stamp('shield',{x:p.x,y:p.y-43},75,720);
   this.draw(720,(g,t)=>{const a=Math.sin(Math.PI*t);g.lineStyle(2,0xb7dcdf,a*.85);g.strokeEllipse(p.x,p.y-42,74,100);g.fillStyle(0x8fd5cc,a*.08);g.fillEllipse(p.x,p.y-42,74,100);for(let i=0;i<6;i++){const ang=i*Math.PI/3;g.fillStyle(0xd4eece,a*.9);g.fillCircle(p.x+Math.cos(ang)*37,p.y-42+Math.sin(ang)*50,2);}});
  }
  death(p:FxPoint,color:number){
@@ -51,6 +64,7 @@ export class CombatEffects {
   this.draw(950,(g,t)=>{for(let i=0;i<8;i++){g.fillStyle(color,Math.sin(t*Math.PI)*.6);g.fillCircle(p.x+Math.sin(i*2.4+t)*20,p.y-20-t*(25+i*6),1.2);}});
  }
  slash(source:FxPoint,target:FxPoint,color:number,count=1){
+  this.stamp('slash',{x:target.x,y:target.y-43},62,300,target.x>=source.x?0:180);
   const direction=target.x>=source.x?1:-1;
   for(let k=0;k<count;k++)this.draw(300,(g,t)=>{
    g.lineStyle(3*(1-t)+1,color,(1-t)*.85);
@@ -60,6 +74,7 @@ export class CombatEffects {
  }
  projectile(source:FxPoint,target:FxPoint,id:number){
   const color=colors[id]??0xe6d5ae;
+  if(id!==8&&id!==12)this.stamp('orb',{x:source.x,y:source.y-47},28,260,0,{x:target.x,y:target.y-44});
   this.draw(260,(g,t)=>{
    const x=Phaser.Math.Linear(source.x,target.x,t),y=Phaser.Math.Linear(source.y-47,target.y-44,t)-Math.sin(Math.PI*t)*12;
    const a=Math.atan2(target.y-source.y,target.x-source.x),len=id===12?27:id===8?19:10;
@@ -75,6 +90,7 @@ export class CombatEffects {
  }
  skill(id:number,source:FxPoint,target:FxPoint,allies:FxPoint[],enemies:FxPoint[]){
   const color=colors[id]??0xe7d091;
+  this.stamp('cast',{x:source.x,y:source.y-15},85,650);
   this.ring(source,color,80,650);
   switch(id){
    case 1:
@@ -114,6 +130,7 @@ export class CombatEffects {
   this.draw(900,(g,t)=>{const a=Math.sin(Math.PI*t);for(let i=0;i<9;i++){const ang=i/9*Math.PI*2+t*2,x=p.x+Math.cos(ang)*34,y=p.y-20+Math.sin(ang)*12-t*70*((i%3)+1)/3;g.lineStyle(2,color,a*.75);g.lineBetween(x,y,x,y-14);}g.lineStyle(2,color,a*.5);g.strokeEllipse(p.x,p.y-48,80+t*30,120+t*30);});
  }
  summon(p:FxPoint,color:number){
+  this.stamp('summon',{x:p.x,y:p.y-20},85,620);
   this.ring(p,color,46,520);
   this.draw(620,(g,t)=>{for(let i=0;i<7;i++){const a=i*.9+t*3,r=8+t*26;g.fillStyle(color,(1-t)*.8);g.fillCircle(p.x+Math.cos(a)*r,p.y-14+Math.sin(a)*r*.4-t*18,2);}});
  }
@@ -153,10 +170,11 @@ export class CombatEffects {
  }
  /** A patron spirit answers: its glyph rises over the field with a wave in its color. */
  power(texture:string,color:number,allies:FxPoint[],enemies:FxPoint[]){
+  if(this.sprites.size>=24)return;
   const image=this.scene.add.image(C.x,C.y-60,texture).setDepth(1150).setAlpha(0).setScale(.6);this.layer.add(image);
-  this.scene.tweens.add({targets:image,alpha:{from:0,to:.85},scale:1.25,y:C.y-90,duration:this.reduced?200:520,yoyo:true,hold:this.reduced?100:380,ease:'Sine.easeOut',onComplete:()=>image.destroy()});
+  const tween=this.scene.tweens.add({targets:image,alpha:{from:0,to:.85},scale:1.25,y:C.y-90,duration:this.reduced?200:520,yoyo:true,hold:this.reduced?100:380,ease:'Sine.easeOut',onComplete:()=>{this.sprites.delete(image);image.destroy();}});this.sprites.set(image,tween);
   this.draw(1100,(g,t)=>{const a=Math.sin(Math.PI*t);g.lineStyle(3,color,a*.7);g.strokeEllipse(C.x,C.y,200+t*700,90+t*320);g.fillStyle(color,a*.06);g.fillEllipse(C.x,C.y,200+t*700,90+t*320);});
   for(const p of [...allies,...enemies])this.ring(p,color,46,700,120);
  }
- clear(){for(const [g,tween] of this.active){tween.stop();g.destroy();}this.active.clear();}
+ clear(){for(const [image,tween]of this.sprites){tween.stop();image.destroy();}this.sprites.clear();for(const [g,tween] of this.active){tween.stop();g.destroy();}this.active.clear();}
 }

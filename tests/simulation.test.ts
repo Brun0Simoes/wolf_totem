@@ -26,21 +26,19 @@ describe('village and recruitment', () => {
     game.state.resources = { wood: 0, food: 0, stone: 0, spirit: 0 };
     expect(game.upgradeVillage().ok).toBe(false);
     expect(game.state.villageLevel).toBe(1);
+    game.state.heroes[0].level=4; game.state.heroes[0].ritualLevel=2;
     game.state.resources = villageCost(1);
     expect(game.upgradeVillage().ok).toBe(true);
     expect(capacity(game.state)).toBe(4);
   });
 
-  it('combines three copies while preserving the deployed hero and slot', () => {
-    const game = new Game();
-    game.state.resources.food = 1000; game.state.resources.spirit = 1000;
-    const original = { ...game.state.heroes[0] };
-    expect(game.recruit(1).ok).toBe(true);
-    game.state.shop = [1, 2, 3, 4];
-    expect(game.recruit(1).ok).toBe(true);
-    const akrus = game.state.heroes.filter(hero => hero.characterId === 1);
-    expect(akrus).toEqual([{ ...original, stars: 2 }]);
+  it('refuses another copy without spending resources or changing the hero', () => {
+    const game=new Game();game.state.resources={wood:1000,food:1000,stone:1000,spirit:1000};
+    const before=game.serialize(1000);
+    expect(game.recruit(1).ok).toBe(false);
+    expect(game.serialize(1000)).toBe(before);
     expect(game.state.heroes).toHaveLength(1);
+    expect(game.state.heroes[0].stars).toBe(1);
   });
 
   it('swaps a reserve hero into a full formation and counts unique characters for traits', () => {
@@ -52,7 +50,7 @@ describe('village and recruitment', () => {
     expect(game.deploy(boru.uid, 4).ok).toBe(true);
     expect(game.deploy(ena.uid, 10).ok).toBe(true);
     game.state.shop = [1, 2, 4, 6];
-    game.recruit(1);
+    game.recruit(6);
     const reserve = game.state.heroes.find(hero => hero.slot === null)!;
     expect(game.deploy(reserve.uid, 0).ok).toBe(false);
     expect(game.deploy(reserve.uid, 4).ok).toBe(true);
@@ -90,7 +88,7 @@ describe('versioned saves and offline time', () => {
     expect(loaded.state.resources.food).toBe(90);
     expect(loaded.state.villageLevel).toBe(5);
     expect(loaded.state.heroes).toHaveLength(2);
-    expect(loaded.state.heroes[1]).toMatchObject({ slot: null, level: 10, panema: 0, rituals: { kambo: 3 }, away: null });
+    expect(loaded.state.heroes[1]).toMatchObject({ slot: null, level: 30, panema: 0, rituals: { kambo: 3 }, away: null });
     expect(loaded.battle).toBeNull();
     expect(loaded.state.progress).toBe(0);
     fresh.startBattle(); fresh.tick(1);
@@ -159,7 +157,7 @@ describe('automatic combat', () => {
     game.state.spirits = ['lobo', 'coruja', 'elefante', 'urso'];
     const items = [['garra', 'presa', 'talisma'], ['muralha', 'pele-urso'], ['espinhos'], ['obsidiana', 'garra'], ['cajado-vida'], ['tempestade', 'lanca'], ['carvalho']];
     game.state.heroes = [[39, 3], [28, 3], [40, 2], [8, 3], [25, 2], [33, 2], [49, 2]].map(([characterId, stars], index) => ({
-      ...newHero(`final-${index}`, characterId, stars, migrateSlot([1, 2, 0, 9, 10, 5, 3][index])), items: items[index], level: 10, rituals: { rape: 3, sananga: 3, kambo: 3, ayahuasca: 1 },
+      ...newHero(`final-${index}`, characterId, stars, migrateSlot([1, 2, 0, 9, 10, 5, 3][index])), items: items[index], level: 30, ritualLevel: 10, rituals: { rape: 3, sananga: 3, kambo: 3, ayahuasca: 1 },
     }));
     expect(stageUnlocked(game.state, 0)).toBe(false);
     game.startBattle();

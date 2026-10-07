@@ -1,0 +1,2214 @@
+/* Journey 2.0: obsidian, copper and ritual jade. Controls remain native DOM. */
+:root {
+  --bg:#101b20;
+  --surface:#15272b;
+  --surface-raised:#1b3032;
+  --text:#e8e2d4;
+  --muted:#9aaba8;
+  --accent:#d9b479;
+  --ritual:#75cfbb;
+  --line:#9cb2ac26;
+  --serif:'Cormorant Garamond',Georgia,serif
+}
+* {
+  box-sizing:border-box
+}
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:14px
+}
+button,input,select,summary {
+  font:inherit
+}
+button {
+  touch-action:manipulation
+}
+button:disabled {
+  opacity:.4;
+  cursor:not-allowed
+}
+button:focus-visible,a:focus-visible,summary:focus-visible {
+  outline:2px solid var(--ritual);
+  outline-offset:4px
+}
+button,select,input {
+  min-height:42px
+}
+p {
+  line-height:1.6
+}
+h1,h2,h3 {
+  font-family:var(--serif);
+  font-weight:500
+}
+h3 {
+  font-size:25px
+}
+.eyebrow {
+  font-size:10px;
+  letter-spacing:1.4px
+}
+svg {
+  flex-shrink:0
+}
+.primary,.outline-button {
+  font-size:13px;
+  min-height:46px;
+  gap:10px;
+  padding:12px 16px;
+  border-radius:7px
+}
+.primary {
+  background:linear-gradient(120deg,#e5bc7f,#c7945c);
+  border:1px solid #efc78d;
+  color:#172224;
+  font-weight:600;
+  box-shadow:none
+}
+.primary:hover:not(:disabled) {
+  background:#edc991;
+  transform:translateY(-1px)
+}
+.outline-button {
+  border:1px solid #829f9652;
+  background:#13242688;
+  color:#dbe2d7
+}
+.outline-button:hover:not(:disabled) {
+  border-color:#b6cec4;
+  background:#233c3b
+}
+.text-button {
+  font-size:12px;
+  gap:8px;
+  min-height:40px
+}
+.icon-button {
+  width:40px;
+  height:40px;
+  min-height:40px;
+  color:#abbdb7
+}
+.cost {
+  font-size:12px;
+  gap:10px;
+  white-space:nowrap
+}
+.cost svg {
+  width:14px;
+  height:14px
+}
+.primary>.cost {
+  margin-left:auto
+}
+.topbar {
+  height:84px;
+  padding:0 28px;
+  gap:24px;
+  background:#0d1b20;
+  border-bottom:1px solid var(--line);
+  position:relative;
+  z-index:5
+}
+.brand {
+  font-size:24px;
+  letter-spacing:2px;
+  gap:12px;
+  min-width:192px
+}
+.brand small {
+  font-size:8px;
+  letter-spacing:1.8px
+}
+.brand-mark {
+  border:0;
+  width:42px;
+  color:var(--accent)
+}
+.brand-mark svg {
+  width:36px;
+  height:36px
+}
+.header-actions {
+  gap:4px;
+  margin-left:0
+}
+.resources {
+  margin-left:auto;
+  gap:22px;
+  flex:none
+}
+.resource {
+  gap:7px;
+  align-items:center
+}
+.resource small {
+  font-size:10px;
+  letter-spacing:0;
+  text-transform:none;
+  color:var(--muted)
+}
+.resource strong {
+  font-size:19px;
+  font-weight:500
+}
+.resource-icon svg {
+  width:22px;
+  height:25px
+}
+.rate {
+  font-size:10px;
+  display:none
+}
+.rail {
+  position:static;
+  width:auto;
+  height:100%;
+  border:0;
+  padding:0;
+  background:none;
+  display:block;
+  flex-shrink:0
+}
+.nav-group {
+  display:flex;
+  flex-direction:row;
+  gap:2px;
+  height:100%;
+  align-items:stretch
+}
+.nav-group .nav-button {
+  width:72px;
+  min-height:74px;
+  padding:11px 5px;
+  gap:6px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  border-radius:0;
+  font-size:11px;
+  color:#9eb1ad
+}
+.nav-button svg {
+  width:20px;
+  height:20px
+}
+.nav-button.active {
+  background:#d9b47910;
+  color:var(--accent)
+}
+.nav-button.active:before {
+  width:auto;
+  height:2px;
+  left:15px;
+  right:15px;
+  top:auto;
+  bottom:0;
+  background:var(--accent)
+}
+.rail-bottom {
+  display:none
+}
+.game-shell {
+  display:block;
+  min-height:calc(100vh - 84px);
+  padding:0
+}
+.main-area {
+  width:100%;
+  padding:24px 28px 0;
+  max-width:1900px;
+  margin:auto
+}
+.play-area {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 310px;
+  gap:24px;
+  height:clamp(540px,calc(100vh - 340px),740px);
+  max-height:none;
+  min-height:0
+}
+.play-area.panel-closed {
+  grid-template-columns:1fr
+}
+.world-wrap {
+  min-height:0;
+  width:100%;
+  border:1px solid #7faaa126;
+  border-radius:12px;
+  overflow:hidden;
+  background:#11282c
+}
+.world-heading {
+  left:32px;
+  top:26px;
+  pointer-events:none
+}
+.world-heading .eyebrow {
+  display:none
+}
+.world-heading h1 {
+  font-size:46px;
+  letter-spacing:-.6px;
+  margin:0;
+  text-shadow:0 3px 15px #041014b0
+}
+.world-heading>p:last-child {
+  font-size:14px;
+  max-width:470px;
+  color:#d4dace;
+  margin-top:5px;
+  text-shadow:0 2px 8px #001b
+}
+.world-badge {
+  top:auto;
+  right:20px;
+  bottom:24px;
+  font-size:11px;
+  border:0;
+  border-radius:6px;
+  background:#102326b3;
+  padding:8px 10px
+}
+.world-caption {
+  left:22px;
+  bottom:24px;
+  font-size:11px;
+  right:220px
+}
+.map-coordinate {
+  display:none
+}
+.side-panel {
+  width:auto;
+  padding:0 22px 22px;
+  background:linear-gradient(150deg,#1c3231,#102125);
+  border:1px solid #779b8c35;
+  border-radius:12px;
+  overflow:auto;
+  display:block;
+  position:relative
+}
+.side-panel p {
+  font-size:13px;
+  color:#aabdb5;
+  margin:12px 0;
+  line-height:1.6
+}
+.panel-close {
+  position:absolute;
+  right:10px;
+  top:10px;
+  z-index:2;
+  background:#102124c9;
+  border-radius:50%
+}
+.building-art {
+  height:142px;
+  background:radial-gradient(ellipse at 50% 70%,#d9b4791a,transparent 65%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 -22px 8px;
+  border-bottom:1px solid var(--line)
+}
+.environment-portrait {
+  display:block;
+  position:relative;
+  height:90%;
+  overflow:hidden
+}
+.environment-portrait>img {
+  position:absolute;
+  max-width:none;
+  object-fit:fill;
+  pointer-events:none
+}
+.context-title {
+  position:relative;
+  margin-top:12px
+}
+.context-title h2 {
+  font-size:30px;
+  line-height:1.05;
+  margin:12px 0 6px;
+  max-width:245px
+}
+.context-title>span:last-child {
+  font-size:12px;
+  color:var(--accent)
+}
+.context-title .context-icon {
+  display:none
+}
+.context-icon {
+  border:1px solid #d9b47966;
+  border-radius:50%;
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  color:var(--accent);
+  flex-shrink:0
+}
+.context-icon svg {
+  width:21px
+}
+.context-output {
+  padding:14px 0;
+  border-top:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:20px;
+  font-size:12px
+}
+.context-output b {
+  color:var(--ritual);
+  font-weight:500;
+  margin-left:auto
+}
+.context-output svg {
+  width:18px
+}
+.side-panel .primary {
+  margin:0;
+  width:100%
+}
+.context-workers {
+  margin:24px 0
+}
+.context-workers h3 {
+  font:16px 'DM Sans',sans-serif;
+  display:flex;
+  justify-content:space-between;
+  font-weight:500
+}
+.context-workers h3 small {
+  color:var(--accent);
+  font-size:13px
+}
+.context-workers p {
+  font-size:11px
+}
+.worker {
+  font-size:13px;
+  gap:10px
+}
+.worker span {
+  margin-left:auto;
+  color:var(--ritual)
+}
+.assign-row select {
+  font-size:13px;
+  background:#102426;
+  padding:8px;
+  max-width:100%;
+  min-width:0
+}
+.assign-row .outline-button {
+  font-size:12px;
+  min-height:42px;
+  padding:8px 10px
+}
+.context-more {
+  border-top:1px solid var(--line);
+  padding:12px 0
+}
+.context-more summary {
+  cursor:pointer;
+  min-height:32px;
+  color:#bdd0c4;
+  font-size:12px
+}
+.building-tabs {
+  margin:6px 0;
+  border-color:var(--line);
+  gap:2px
+}
+.building-tabs button {
+  min-height:42px;
+  flex:1
+}
+.gather-buttons {
+  gap:6px;
+  display:flex;
+  flex-wrap:wrap
+}
+.gather-buttons button {
+  font-size:11px;
+  gap:5px;
+  padding:8px;
+  min-height:42px;
+  flex:1
+}
+.context-links {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:10px
+}
+.context-links button {
+  font-size:10px
+}
+.journey-objective {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:15px 20px;
+  margin:16px 0 20px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#122528
+}
+.journey-objective>div:first-child {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-width:0
+}
+.journey-objective strong {
+  display:block;
+  font:21px var(--serif)
+}
+.journey-objective small {
+  display:block;
+  color:#9eb3ac;
+  font-size:11px;
+  line-height:1.4;
+  margin-top:3px;
+  max-width:650px
+}
+.objective-actions {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  flex-shrink:0
+}
+.objective-actions button {
+  width:auto;
+  font-size:11px;
+  padding:9px 12px;
+  min-height:40px
+}
+.camp-section {
+  margin:0
+}
+.section-heading {
+  margin:0 0 10px;
+  align-items:center
+}
+.section-heading .eyebrow {
+  display:none
+}
+.section-heading h2 {
+  font-size:26px
+}
+.section-heading>.outline-button {
+  width:auto;
+  font-size:11px;
+  min-height:34px;
+  padding:6px 10px
+}
+.hero-dock {
+  display:flex;
+  gap:12px;
+  overflow:auto;
+  padding-bottom:6px;
+  scrollbar-width:thin
+}
+.dock-hero {
+  flex:1;
+  min-width:205px;
+  max-width:300px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  text-align:left;
+  background:#182e30;
+  border:1px solid #799a8b38;
+  border-radius:8px;
+  padding:10px 12px 10px 7px;
+  min-height:114px;
+  position:relative;
+  overflow:hidden
+}
+.dock-hero:hover,.dock-hero.selected {
+  border-color:#d9b479;
+  background:#213835
+}
+.dock-hero.away {
+  opacity:.6
+}
+.dock-hero>img,.dock-hero>.atlas-portrait {
+  height:94px;
+  max-width:70px;
+  width:70px;
+  object-fit:contain;
+  position:relative;
+  left:auto;
+  top:auto;
+  bottom:auto;
+  transform:none;
+  flex-shrink:0
+}
+.atlas-portrait {
+  position:relative;
+  display:block;
+  aspect-ratio:var(--portrait-ratio);
+  overflow:hidden
+}
+.atlas-portrait>img {
+  position:absolute!important;
+  max-width:none!important;
+  object-fit:fill!important;
+  transform:none!important;
+  min-width:0!important
+}
+.dock-copy {
+  flex:1;
+  min-width:0;
+  display:block
+}
+.dock-name {
+  font:21px var(--serif);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px
+}
+.dock-name small {
+  font:10px 'DM Sans',sans-serif;
+  color:var(--accent)
+}
+.dock-copy em {
+  font:10px 'DM Sans',sans-serif;
+  color:#94aaa3;
+  display:block;
+  margin:1px 0 8px;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis
+}
+.dock-add {
+  min-width:150px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:8px;
+  border:1px solid #799a8b38;
+  border-radius:8px;
+  padding:12px 18px;
+  color:var(--accent);
+  background:#142529;
+  min-height:114px
+}
+.dock-add svg {
+  width:24px
+}
+.dock-add>svg:last-child {
+  display:none
+}
+.dock-add span {
+  font-size:12px
+}
+.growth-bars {
+  display:grid;
+  gap:20px;
+  margin:26px 0
+}
+.growth-track>div {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+  font-size:15px;
+  align-items:baseline
+}
+.growth-track b {
+  font-weight:400;
+  color:#a7beb5;
+  margin-left:7px;
+  font-size:12px
+}
+.growth-track small {
+  font-size:12px;
+  color:#acbdb6
+}
+.growth-track progress {
+  appearance:none;
+  display:block;
+  width:100%;
+  height:9px;
+  border:0;
+  background:#28413e;
+  border-radius:8px;
+  overflow:hidden
+}
+.growth-track progress::-webkit-progress-bar {
+  background:#28413e;
+  border-radius:8px
+}
+.growth-track progress::-webkit-progress-value {
+  background:linear-gradient(90deg,#c99853,#e7c17a);
+  border-radius:8px;
+  transition:width .3s
+}
+.growth-track.ritual progress::-webkit-progress-value {
+  background:linear-gradient(90deg,#439f8d,#75cfbb)
+}
+.growth-track progress::-moz-progress-bar {
+  background:#d9b479
+}
+.growth-track.ritual progress::-moz-progress-bar {
+  background:#75cfbb
+}
+.growth-bars.compact {
+  gap:7px;
+  margin:0
+}
+.growth-bars.compact .growth-track>div {
+  font-size:9px;
+  margin-bottom:3px;
+  gap:4px
+}
+.growth-bars.compact .growth-track b {
+  font-size:9px;
+  margin-left:2px
+}
+.growth-bars.compact .growth-track small {
+  font-size:9px
+}
+.growth-bars.compact progress {
+  height:5px
+}
+footer {
+  margin:8px 0 0;
+  padding:13px 0;
+  font-size:10px;
+  border-color:var(--line)
+}
+footer>span:nth-child(2) {
+  font-size:9px
+}
+footer button {
+  font-size:10px
+}
+.toast {
+  font-size:13px;
+  line-height:1.5;
+  background:#debd86;
+  color:#152426;
+  border-color:#efce98;
+  border-radius:8px;
+  bottom:24px
+}
+.event-card {
+  right:18px;
+  top:110px;
+  width:300px;
+  background:#13292af5;
+  border-color:#789a8577;
+  z-index:5
+}
+.event-card p {
+  font-size:12px
+}
+.event-card h3 {
+  font-size:25px
+}
+.event-detail .atlas-portrait {
+  width:58px;
+  height:65px
+}
+.event-card .primary,.event-card .outline-button {
+  font-size:12px
+}
+.stage-card {
+  background:none;
+  border:0;
+  padding:14px 0;
+  margin:0
+}
+.stage-card h2 {
+  font-size:31px;
+  line-height:1.15
+}
+.stage-card .eyebrow {
+  font-size:10px
+}
+.stage-card .stage-level,.stage-reward {
+  font-size:12px;
+  line-height:1.5
+}
+.stage-card .outline-button {
+  font-size:12px
+}
+.side-panel .panel-kicker {
+  padding-top:25px;
+  font-size:10px
+}
+.formation-count {
+  font-size:14px;
+  padding:16px 0
+}
+.synergies {
+  margin:16px 0
+}
+.synergy {
+  font-size:12px;
+  padding:9px 0
+}
+.synergy svg {
+  width:15px
+}
+.battle-controls {
+  padding-top:14px
+}
+.battle-controls .control-row {
+  gap:8px
+}
+.enemy-chip {
+  width:36px;
+  height:40px
+}
+.battle-result {
+  width:min(600px,90%);
+  max-height:80%;
+  overflow:auto;
+  border-radius:14px;
+  background:#14292df5;
+  padding:28px;
+  border-color:#beaa6f66
+}
+.battle-result h2 {
+  font-size:34px
+}
+.battle-result>p:not(.eyebrow) {
+  font-size:13px
+}
+.battle-result .primary {
+  font-size:13px
+}
+.battle-result .reward {
+  font-size:14px
+}
+.power-bar {
+  border-radius:8px;
+  background:#142b2ded;
+  padding:8px;
+  bottom:44px
+}
+.power-button {
+  font-size:11px;
+  border-radius:6px;
+  min-height:38px
+}
+.power-label {
+  display:none
+}
+.pause-overlay {
+  background:#0b1c219c;
+  backdrop-filter:blur(2px)
+}
+dialog {
+  width:min(1320px,96vw);
+  max-height:92vh;
+  max-height:92dvh;
+  background:#102326;
+  color:var(--text);
+  border:1px solid #5b82786b;
+  border-radius:14px
+}
+dialog::backdrop {
+  background:#071216bd;
+  backdrop-filter:blur(5px)
+}
+#modal-content {
+  padding:36px
+}
+#modal-content>h2 {
+  font-size:40px;
+  margin-top:0
+}
+#modal-content p:not(.eyebrow) {
+  font-size:13px;
+  line-height:1.65
+}
+.modal-intro {
+  max-width:760px;
+  color:#9ab5ab
+}
+.modal-close {
+  right:12px;
+  top:12px;
+  background:#10282acf;
+  border-radius:50%;
+  width:40px;
+  height:40px
+}
+.search {
+  border-radius:7px;
+  padding:8px 12px;
+  min-height:42px;
+  flex:1;
+  max-width:340px
+}
+.search input {
+  font:13px 'DM Sans',sans-serif;
+  width:100%;
+  min-height:24px
+}
+.tribe-toolbar {
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  align-items:center;
+  margin:24px 0
+}
+.segmented {
+  display:flex;
+  gap:6px
+}
+.segmented button {
+  border:1px solid var(--line);
+  border-radius:7px;
+  padding:10px 16px;
+  color:#aac1b8
+}
+.segmented button[aria-pressed=true] {
+  background:#d9b47920;
+  border-color:#d9b47985;
+  color:var(--accent)
+}
+.tribe-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px
+}
+.companion {
+  display:flex;
+  gap:16px;
+  background:#192e30;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:16px;
+  min-height:190px
+}
+.companion.locked {
+  opacity:.5
+}
+.companion-art {
+  flex-shrink:0;
+  width:92px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden
+}
+.companion-art>img,.companion-art>.atlas-portrait {
+  width:100%;
+  height:150px;
+  object-fit:contain
+}
+.companion>div {
+  flex:1;
+  min-width:0
+}
+.companion h3 {
+  font-size:26px;
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin:0
+}
+.companion h3 small {
+  font:10px 'DM Sans',sans-serif;
+  color:var(--accent);
+  padding-top:8px
+}
+.companion p {
+  color:#a4bbb1;
+  margin:4px 0 12px
+}
+.companion .primary,.companion .outline-button {
+  width:100%;
+  font-size:11px;
+  padding:9px;
+  margin-top:15px;
+  min-height:40px
+}
+.companion .cost {
+  font-size:11px
+}
+.companion .growth-bars {
+  max-width:none
+}
+.hero-inspector {
+  display:grid;
+  grid-template-columns:76px minmax(250px,35%) minmax(0,1fr);
+  gap:26px;
+  min-height:640px
+}
+.inspector-roster,.ritual-roster {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  overflow:auto;
+  max-height:700px
+}
+.inspector-roster button,.ritual-roster button {
+  position:relative;
+  border:1px solid var(--line);
+  border-radius:7px;
+  min-height:82px;
+  width:70px;
+  flex-shrink:0;
+  overflow:hidden;
+  padding:4px
+}
+.inspector-roster button.selected,.ritual-roster button.selected {
+  border-color:var(--accent);
+  background:#d9b47918
+}
+.inspector-roster img,.inspector-roster .atlas-portrait,.ritual-roster img,.ritual-roster .atlas-portrait {
+  height:74px;
+  width:62px;
+  object-fit:contain
+}
+.inspector-art {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  background:radial-gradient(ellipse at 40% 50%,#28594d77,transparent 70%);
+  position:relative
+}
+.inspector-art canvas {
+  max-width:100%;
+  width:100%;
+  height:auto;
+  display:block
+}
+.inspector-art h2 {
+  font-size:48px;
+  margin:-15px 0 0
+}
+.inspector-art p {
+  color:#b3c5b8;
+  margin:6px 0
+}
+.inspector-stars {
+  font-size:24px;
+  color:var(--accent)
+}
+.inspector-path {
+  padding:24px 0;
+  min-width:0
+}
+.inspector-path>h2,.ritual-path>h2 {
+  font-size:43px;
+  line-height:1.1;
+  margin:15px 0
+}
+.inspector-path>p,.ritual-path>p {
+  color:#acc0b4
+}
+.awakening {
+  border:1px solid #73968748;
+  border-radius:9px;
+  padding:18px;
+  background:#1e383528;
+  margin:22px 0
+}
+.awakening h3 {
+  font-size:23px;
+  margin:0 0 14px;
+  color:#decca9
+}
+.awakening ul {
+  list-style:none;
+  padding:0;
+  display:grid;
+  gap:12px
+}
+.awakening li {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+  color:#91a89e
+}
+.awakening li.ready {
+  color:var(--ritual)
+}
+.awakening p {
+  color:#829d91;
+  margin-bottom:0;
+  font-size:11px!important
+}
+.hero-action-row {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:22px
+}
+.hero-action-row button {
+  width:auto;
+  font-size:12px;
+  flex:1
+}
+.hero-equipment {
+  margin-top:28px;
+  border-top:1px solid var(--line);
+  padding-top:15px
+}
+.hero-equipment summary {
+  cursor:pointer;
+  font-size:14px
+}
+.equipment-items,.hero-equipment .bag-items {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  padding-top:12px
+}
+.hero-equipment .item-chip {
+  font-size:12px;
+  padding:10px
+}
+.integration-note {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border:1px solid #75cfbb35;
+  background:#75cfbb08;
+  border-radius:8px;
+  padding:16px;
+  margin:24px 0 0;
+  color:#9fc8b9;
+  font-size:13px
+}
+.ritual-layout {
+  display:grid;
+  grid-template-columns:96px 1fr;
+  gap:32px
+}
+.ritual-roster h3 {
+  font-size:21px
+}
+.ritual-roster button {
+  width:82px;
+  min-height:94px
+}
+.ritual-roster button>span:last-child {
+  display:block;
+  font-size:11px
+}
+.ritual-roster .atlas-portrait {
+  height:70px;
+  margin:auto
+}
+.ritual-path {
+  min-width:0
+}
+.ritual-path>h2 {
+  font-size:44px;
+  margin-top:6px
+}
+.ritual-growth {
+  display:grid;
+  grid-template-columns:1fr 280px;
+  gap:30px;
+  margin:22px 0;
+  border-block:1px solid var(--line);
+  padding:20px 0
+}
+.ritual-growth h3 {
+  font-size:25px;
+  margin:0
+}
+.ritual-growth .awakening {
+  margin:0;
+  align-self:center
+}
+.ritual-growth .growth-bars {
+  margin:18px 0 0
+}
+.ritual-heading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  margin:28px 0 18px
+}
+.ritual-heading h3 {
+  font-size:29px;
+  margin:0
+}
+.ritual-heading button {
+  width:auto;
+  font-size:11px;
+  padding:8px 12px;
+  min-height:40px
+}
+.ritual-selection {
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:26px
+}
+.ritual-selection nav {
+  display:flex;
+  flex-direction:column;
+  gap:8px
+}
+.ritual-selection nav button {
+  display:flex;
+  text-align:left;
+  align-items:center;
+  gap:14px;
+  min-height:70px;
+  padding:13px 15px;
+  background:#173332;
+  border:1px solid #77988b40;
+  border-radius:7px;
+  color:#d6ded2
+}
+.ritual-selection nav button[aria-pressed=true] {
+  border-color:var(--accent);
+  background:#d9b47914
+}
+.ritual-selection nav button>svg {
+  width:24px;
+  color:var(--ritual)
+}
+.ritual-selection nav button>svg:last-child {
+  width:15px;
+  margin-left:auto;
+  color:var(--accent)
+}
+.ritual-selection nav small {
+  display:block;
+  margin-top:5px;
+  font-size:10px;
+  color:#94b3a5
+}
+.ritual-selection nav span {
+  font-size:19px;
+  font-family:var(--serif)
+}
+.ritual-detail {
+  background:linear-gradient(150deg,#1c3833,#102326);
+  border:1px solid #658b7948;
+  border-radius:10px;
+  padding:24px;
+  position:relative
+}
+.ritual-detail h3 {
+  font-size:34px;
+  margin:0 0 12px
+}
+.ritual-symbol {
+  float:right;
+  color:var(--ritual);
+  padding:8px
+}
+.ritual-symbol svg {
+  width:32px;
+  height:32px
+}
+.ritual-detail>p {
+  color:#9ab5a5
+}
+.ritual-values {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  border-block:1px solid var(--line);
+  padding:14px 0;
+  margin:20px 0
+}
+.ritual-values span {
+  color:#90a89a;
+  font-size:12px
+}
+.ritual-values b {
+  display:block;
+  font:22px var(--serif);
+  color:var(--accent);
+  margin-top:6px
+}
+.ritual-values span:last-child b {
+  color:var(--ritual)
+}
+.ritual-detail .primary,.ritual-detail .outline-button {
+  width:100%;
+  margin:10px 0 0
+}
+.ritual-detail details {
+  padding-top:20px;
+  font-size:12px;
+  color:#91aaa0
+}
+.ritual-detail summary {
+  cursor:pointer
+}
+.ritual-lock {
+  display:flex;
+  gap:8px;
+  font-size:12px!important;
+  color:#d9b479!important
+}
+.ritual-lock svg {
+  width:16px
+}
+.ritual-mastery {
+  font-size:11px!important
+}
+.formation-layout {
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:28px;
+  margin-top:28px
+}
+.formation-roster {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:540px;
+  overflow:auto
+}
+.formation-roster button {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-align:left;
+  min-height:64px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:8px
+}
+.formation-roster button[aria-pressed=true] {
+  border-color:var(--accent);
+  background:#d9b47915
+}
+.formation-roster button>.atlas-portrait,.formation-roster button>img {
+  width:40px;
+  height:52px;
+  object-fit:contain
+}
+.formation-roster small {
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-top:4px
+}
+.formation-grid {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  background:#16312e;
+  padding:18px;
+  border-radius:12px
+}
+.formation-grid button {
+  position:relative;
+  min-height:80px;
+  border:1px solid #6e9d8360;
+  background:#223e32;
+  border-radius:8px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden
+}
+.formation-grid button:hover {
+  border-color:var(--accent);
+  background:#355041
+}
+.formation-grid button>small {
+  position:absolute;
+  left:6px;
+  top:4px;
+  color:#adc4b4;
+  font-size:10px
+}
+.formation-grid .atlas-portrait,.formation-grid img {
+  width:48px;
+  height:64px;
+  object-fit:contain
+}
+.formation-grid svg {
+  width:16px;
+  color:#71917c
+}
+.formation-actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:18px
+}
+.formation-actions button {
+  width:auto
+}
+.trail-grid {
+  gap:18px;
+  grid-template-columns:repeat(2,1fr)
+}
+.trail-card {
+  padding:20px;
+  background:#18332e;
+  border-color:var(--line);
+  border-radius:10px
+}
+.trail-card h3 {
+  font-size:25px
+}
+.trail-card header>span,.trail-gains,.trail-req {
+  font-size:12px
+}
+.trail-card .assign-row select {
+  font-size:12px
+}
+.practice-card {
+  font-size:13px
+}
+.cost-filters button {
+  font-size:12px;
+  min-height:38px;
+  padding:8px 12px
+}
+.codex-card {
+  height:245px;
+  border-radius:8px;
+  background:#19312e;
+  border-color:var(--line)
+}
+.codex-name {
+  font-size:25px;
+  padding:20px 14px 10px;
+  background:linear-gradient(transparent,#152a29 30%)
+}
+.codex-name small {
+  font-size:11px
+}
+.codex-status {
+  font-size:10px;
+  line-height:1.3;
+  padding:10px 12px;
+  background:#142625
+}
+.codex-cost {
+  font-size:11px;
+  min-height:26px;
+  width:26px
+}
+.codex-tools {
+  gap:20px;
+  margin:25px 0
+}
+.codex-card>.atlas-portrait {
+  position:absolute;
+  width:100%;
+  height:160px;
+  top:15px;
+  display:flex;
+  justify-content:center
+}
+.codex-grid {
+  gap:16px;
+  grid-template-columns:repeat(5,minmax(0,1fr))
+}
+.codex-card>.atlas-portrait {
+  width:105px;
+  left:50%;
+  transform:translateX(-50%)
+}
+.character-story h2 {
+  font-size:48px
+}
+.character-story .stat-grid small {
+  font-size:11px
+}
+.character-story .trait-chips span {
+  font-size:11px
+}
+.character-story h4 {
+  font-size:26px
+}
+.character-story .development-note {
+  display:none
+}
+.character-story .evolution p {
+  font-size:13px
+}
+.motion-controls button {
+  font-size:11px;
+  min-height:38px;
+  padding:8px
+}
+.preview-status {
+  font-size:11px
+}
+.preview-actions button {
+  font-size:11px
+}
+.journal-list p,.journal-list small,.memory-card p,.item-card p,.recipe p,.spirit-card p {
+  font-size:13px
+}
+.title-screen {
+  background:linear-gradient(90deg,#061b20ee,#0a252599),url('/assets/environment/village-terrain.png') center/cover
+}
+.title-screen h1 {
+  font-size:clamp(60px,9vw,120px)
+}
+.title-screen p {
+  font-size:15px;
+  line-height:1.7
+}
+.title-screen .primary {
+  min-height:52px;
+  font-size:15px
+}
+.title-screen .title-copy {
+  max-width:750px
+}
+.title-screen .title-story {
+  max-width:700px
+}
+@media(min-width:1600px) {
+  .play-area {
+    grid-template-columns:minmax(0,1fr) 350px
+  }
+  .resources {
+    gap:32px
+  }
+  .rate {
+    display:block
+  }
+  .context-title h2 {
+    font-size:33px
+  }
+  .world-heading h1 {
+    font-size:52px
+  }
+}
+@media(max-width:1200px) {
+  .topbar {
+    height:78px;
+    padding:0 18px;
+    gap:12px
+  }
+  .brand {
+    min-width:155px;
+    font-size:20px
+  }
+  .brand small {
+    font-size:7px
+  }
+  .brand-mark {
+    width:32px
+  }
+  .brand-mark svg {
+    width:29px
+  }
+  .nav-group .nav-button {
+    width:62px;
+    font-size:10px
+  }
+  .resources {
+    gap:12px
+  }
+  .resource strong {
+    font-size:17px
+  }
+  .resource-icon {
+    display:none
+  }
+  .header-actions .icon-button {
+    width:30px;
+    min-height:36px
+  }
+  .main-area {
+    padding:20px 18px 0
+  }
+  .play-area {
+    gap:18px;
+    grid-template-columns:minmax(0,1fr) 280px;
+    height:560px
+  }
+  .world-heading {
+    left:22px;
+    top:22px
+  }
+  .world-heading h1 {
+    font-size:36px
+  }
+  .world-heading>p:last-child {
+    font-size:12px;
+    max-width:340px
+  }
+  .tribe-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+  .ritual-layout {
+    grid-template-columns:78px 1fr;
+    gap:22px
+  }
+  .ritual-roster button {
+    width:70px
+  }
+  .ritual-selection {
+    grid-template-columns:220px 1fr;
+    gap:20px
+  }
+  .ritual-growth {
+    grid-template-columns:1fr 245px
+  }
+  .ritual-path>h2 {
+    font-size:39px
+  }
+  .objective-actions button {
+    font-size:10px
+  }
+  .hero-inspector {
+    grid-template-columns:70px 30% 1fr;
+    gap:20px
+  }
+  .inspector-path>h2 {
+    font-size:35px
+  }
+  .codex-grid {
+    grid-template-columns:repeat(4,minmax(0,1fr))
+  }
+}
+@media(max-width:850px) {
+  .topbar {
+    height:116px;
+    flex-wrap:wrap;
+    gap:8px 16px;
+    padding:12px 18px
+  }
+  .brand {
+    order:0;
+    flex:1
+  }
+  .header-actions {
+    order:1
+  }
+  .resources {
+    order:2;
+    width:100%;
+    justify-content:space-between;
+    margin:0;
+    gap:12px
+  }
+  .resource strong {
+    font-size:17px
+  }
+  .resource small {
+    font-size:10px
+  }
+  .resource-icon {
+    display:block
+  }
+  .resource-icon svg {
+    width:18px
+  }
+  .rail {
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:66px;
+    z-index:25;
+    width:100%;
+    background:#0d1e23f5;
+    border-top:1px solid var(--line);
+    backdrop-filter:blur(8px)
+  }
+  .nav-group {
+    width:100%;
+    height:66px;
+    justify-content:space-around;
+    gap:0
+  }
+  .nav-group .nav-button {
+    width:20%;
+    min-height:66px;
+    font-size:10px;
+    padding:8px 3px;
+    gap:5px
+  }
+  .nav-button svg {
+    width:20px;
+    height:20px
+  }
+  .nav-button.active:before {
+    top:0;
+    bottom:auto;
+    left:25%;
+    right:25%
+  }
+  .main-area {
+    padding:16px 16px 80px
+  }
+  .play-area {
+    grid-template-columns:minmax(0,1fr);
+    height:auto;
+    gap:16px
+  }
+  .world-wrap {
+    height:460px;
+    min-height:0;
+    flex:none
+  }
+  .world-heading h1 {
+    font-size:36px
+  }
+  .world-heading>p:last-child {
+    font-size:12px
+  }
+  .side-panel {
+    width:100%;
+    max-height:none;
+    display:block;
+    padding:18px 22px
+  }
+  .building-art {
+    display:none
+  }
+  .context-title {
+    margin-top:0
+  }
+  .context-title h2 {
+    max-width:none;
+    font-size:28px;
+    padding-right:35px
+  }
+  .context-workers {
+    margin:18px 0
+  }
+  .side-panel .primary {
+    max-width:none
+  }
+  .context-output {
+    margin:14px 0 0
+  }
+  .journey-objective {
+    align-items:stretch;
+    flex-direction:column;
+    padding:14px 16px;
+    margin:14px 0 22px;
+    gap:12px
+  }
+  .journey-objective small {
+    font-size:11px
+  }
+  .journey-objective strong {
+    font-size:21px
+  }
+  .objective-actions {
+    flex-wrap:wrap;
+    flex-shrink:1
+  }
+  .objective-actions button {
+    font-size:11px;
+    min-height:40px;
+    flex:1
+  }
+  .dock-hero {
+    min-width:215px;
+    max-width:245px;
+    flex-shrink:0
+  }
+  .dock-add {
+    min-width:120px
+  }
+  footer {
+    font-size:9px;
+    gap:10px
+  }
+  footer>span:nth-child(2) {
+    display:none
+  }
+  .toast {
+    bottom:80px;
+    font-size:12px
+  }
+  .world-caption {
+    bottom:18px;
+    left:16px;
+    right:160px;
+    font-size:10px
+  }
+  .world-badge {
+    bottom:16px;
+    right:12px;
+    font-size:10px
+  }
+  .formation-layout {
+    grid-template-columns:1fr;
+    gap:16px
+  }
+  .formation-roster {
+    flex-direction:row;
+    max-height:none;
+    padding-bottom:7px
+  }
+  .formation-roster button {
+    min-width:150px
+  }
+  .formation-grid {
+    gap:6px;
+    padding:12px
+  }
+  .formation-grid button {
+    min-height:62px
+  }
+  .formation-grid .atlas-portrait,.formation-grid img {
+    height:48px;
+    width:34px
+  }
+  .hero-inspector {
+    grid-template-columns:62px minmax(0,1fr);
+    gap:14px;
+    min-height:0
+  }
+  .inspector-roster {
+    grid-column:1;
+    grid-row:1;
+    max-height:380px
+  }
+  .inspector-roster button {
+    width:58px;
+    min-height:72px
+  }
+  .inspector-roster img,.inspector-roster .atlas-portrait {
+    width:50px;
+    height:62px
+  }
+  .inspector-art {
+    grid-column:2;
+    grid-row:1;
+    min-height:320px
+  }
+  .inspector-art canvas {
+    max-height:270px;
+    object-fit:contain
+  }
+  .inspector-art h2 {
+    font-size:38px
+  }
+  .inspector-path {
+    grid-column:1/-1;
+    padding:10px 0
+  }
+  .inspector-path>h2 {
+    font-size:35px
+  }
+  .ritual-layout {
+    grid-template-columns:1fr;
+    gap:18px
+  }
+  .ritual-roster {
+    flex-direction:row;
+    max-height:none;
+    padding-right:25px
+  }
+  .ritual-roster h3 {
+    display:none
+  }
+  .ritual-roster button {
+    min-width:68px;
+    width:68px;
+    min-height:85px
+  }
+  .ritual-roster img,.ritual-roster .atlas-portrait {
+    width:50px;
+    height:65px
+  }
+  .ritual-roster button>span:last-child {
+    font-size:10px
+  }
+  .ritual-path>h2 {
+    font-size:35px
+  }
+  .ritual-growth {
+    grid-template-columns:1fr;
+    gap:16px;
+    margin:16px 0;
+    padding:18px 0
+  }
+  .ritual-growth .awakening {
+    padding:14px
+  }
+  .ritual-selection {
+    grid-template-columns:1fr;
+    gap:16px
+  }
+  .ritual-selection nav {
+    flex-direction:row;
+    overflow:auto;
+    padding-bottom:5px
+  }
+  .ritual-selection nav button {
+    min-width:134px;
+    min-height:60px;
+    padding:10px;
+    gap:8px
+  }
+  .ritual-selection nav button>svg {
+    width:18px
+  }
+  .ritual-selection nav button>svg:last-child {
+    display:none
+  }
+  .ritual-selection nav span {
+    font-size:17px
+  }
+  .ritual-heading {
+    align-items:flex-start;
+    margin:20px 0 12px;
+    gap:10px
+  }
+  .ritual-heading h3 {
+    font-size:25px
+  }
+  .ritual-heading button {
+    max-width:175px;
+    min-height:40px;
+    padding:8px;
+    font-size:10px
+  }
+  .ritual-detail {
+    padding:20px
+  }
+  .ritual-detail h3 {
+    font-size:30px
+  }
+  .ritual-detail .primary,.ritual-detail .outline-button {
+    font-size:12px
+  }
+  .trail-grid {
+    grid-template-columns:1fr
+  }
+  .tribe-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px
+  }
+  .companion {
+    flex-direction:column;
+    gap:8px;
+    padding:12px
+  }
+  .companion-art {
+    width:100%;
+    height:125px
+  }
+  .companion-art>img,.companion-art>.atlas-portrait {
+    height:120px;
+    width:80px
+  }
+  .companion h3 {
+    font-size:24px
+  }
+  .companion p {
+    font-size:11px!important
+  }
+  .tribe-toolbar {
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+    margin:20px 0
+  }
+  .search {
+    max-width:none
+  }
+  .segmented button {
+    flex:1;
+    font-size:12px;
+    padding:9px
+  }
+  .companion .cost {
+    font-size:10px;
+    gap:4px
+  }
+  .companion .growth-bars.compact .growth-track b {
+    display:none
+  }
+  .codex-grid {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px
+  }
+  .codex-card {
+    height:235px
+  }
+  .codex-name {
+    font-size:23px
+  }
+  .codex-name small {
+    font-size:10px
+  }
+  .codex-status {
+    font-size:9px
+  }
+  .codex-tools {
+    gap:12px
+  }
+  .cost-filters button {
+    font-size:11px;
+    padding:8px
+  }
+  .event-card {
+    width:min(300px,90%);
+    top:85px;
+    right:12px
+  }
+  dialog {
+    max-height:94dvh;
+    width:96vw;
+    border-radius:12px
+  }
+  #modal-content {
+    padding:28px 22px
+  }
+  #modal-content>h2 {
+    font-size:34px
+  }
+  .modal-close {
+    right:8px;
+    top:8px
+  }
+  .primary.compact {
+    font-size:12px
+  }
+  .title-screen p {
+    font-size:13px
+  }
+  .title-screen .title-contents {
+    padding:30px 24px
+  }
+}
+@media(max-width:480px) {
+  .world-wrap {
+    height:360px
+  }
+  .world-heading {
+    top:18px;
+    left:18px
+  }
+  .world-heading h1 {
+    font-size:32px
+  }
+  .world-heading>p:last-child {
+    max-width:280px;
+    font-size:11px;
+    line-height:1.5
+  }
+  .main-area {
+    padding:12px 12px 78px
+  }
+  .side-panel {
+    padding:18px
+  }
+  .context-title h2 {
+    font-size:27px
+  }
+  .side-panel p {
+    font-size:12px
+  }
+  .world-caption {
+    max-width:180px;
+    line-height:1.4;
+    bottom:16px
+  }
+  .resource-icon {
+    display:none
+  }
+  .resource strong {
+    font-size:18px
+  }
+  .resource small {
+    font-size:10px
+  }
+  .topbar {
+    padding:12px 16px
+  }
+  .brand {
+    font-size:22px
+  }
+  .context-links button {
+    font-size:10px
+  }
+  .journey-objective .context-icon {
+    width:34px;
+    height:34px
+  }
+  .journey-objective small {
+    font-size:10px
+  }
+  .journey-objective strong {
+    font-size:20px
+  }
+  .section-heading h2 {
+    font-size:25px
+  }
+  .hero-action-row {
+    flex-direction:column
+  }
+  .hero-action-row button {
+    font-size:13px
+  }
+  .inspector-path>h2 {
+    font-size:34px
+  }
+  .growth-track>div {
+    font-size:13px;
+    gap:6px
+  }
+  .growth-track small {
+    font-size:11px
+  }
+  .growth-track b {
+    font-size:11px
+  }
+  .ritual-growth .growth-track>div {
+    flex-wrap:wrap
+  }
+  .awakening h3 {
+    font-size:23px
+  }
+  .ritual-heading {
+    flex-direction:column
+  }
+  .ritual-heading button {
+    max-width:none;
+    width:100%;
+    justify-content:center
+  }
+  .formation-grid {
+    gap:4px;
+    padding:8px
+  }
+  .formation-grid button {
+    min-height:56px
+  }
+  .formation-grid .atlas-portrait,.formation-grid img {
+    width:30px;
+    height:44px
+  }
+  .formation-grid button>small {
+    font-size:8px;
+    left:3px;
+    top:2px
+  }
+  .formation-actions {
+    flex-direction:column
+  }
+  .formation-actions button {
+    width:100%;
+    font-size:12px
+  }
+  .formation-roster button {
+    min-width:130px;
+    font-size:12px
+  }
+  .codex-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+  .codex-card {
+    height:235px
+  }
+  .companion .primary,.companion .outline-button {
+    font-size:10px
+  }
+  .companion h3 {
+    font-size:23px
+  }
+  .companion h3 small {
+    font-size:9px
+  }
+  .companion .growth-bars.compact .growth-track small {
+    font-size:8px
+  }
+  .companion .growth-bars.compact .growth-track>div {
+    font-size:8px
+  }
+  .tribe-grid {
+    gap:9px
+  }
+  .companion {
+    padding:10px
+  }
+  .hero-equipment .bag-items {
+    gap:8px
+  }
+  .toast {
+    max-width:calc(100vw - 24px)
+  }
+  .ritual-path>h2 {
+    font-size:34px
+  }
+  .title-screen .title-story {
+    font-size:12px
+  }
+}
+.section-heading {
+  padding:0;
+  min-height:32px
+}
+.building-art {
+  height:105px
+}
+.context-links {
+  display:none
+}
+.play-area {
+  height:clamp(480px,calc(100dvh - 435px),740px)
+}
+footer {
+  padding:7px 0;
+  min-height:25px
+}
+.side-panel {
+  scrollbar-color:#4b695e transparent;
+  scrollbar-width:thin
+}
+@media(max-width:850px) {
+  .play-area {
+    height:auto
+  }
+  .world-wrap {
+    height:410px
+  }
+  .main-area {
+    padding-bottom:80px
+  }
+  .side-panel[hidden] {
+    display:none
+  }
+}
+@media(max-width:480px) {
+  .world-wrap {
+    height:345px
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  * {
+    scroll-behavior:auto
+  }
+  button:hover {
+    transform:none!important
+  }
+  .growth-track progress::-webkit-progress-value {
+    transition:none
+  }
+}
+.growth-bars.compact .growth-track>div,.growth-bars.compact .growth-track small,.growth-bars.compact .growth-track b {
+  font-size:11px
+}

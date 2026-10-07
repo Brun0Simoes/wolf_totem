@@ -3,7 +3,7 @@ import { enemyFormation } from '../src/game/board';
 import { expectedLevel } from '../src/game/campaign';
 import { nextRandom } from '../src/game/roster';
 import { Game, newHero, type Hero } from '../src/game/simulation';
-import { CACAO_DURATION, huntChance, huntSlots, levelFromTotal, MAX_HERO_LEVEL, PRACTICES, totalXp, TRAILS, xpToNext } from '../src/game/tribe';
+import { CACAO_DURATION, huntChance, huntSlots, levelFromTotal, MAX_HERO_LEVEL, RITUAL_COOLDOWN, PRACTICES, totalXp, TRAILS, xpToNext } from '../src/game/tribe';
 
 const rich = (game: Game) => { game.state.resources = { wood: 1e7, food: 1e7, stone: 1e7, spirit: 1e7 }; };
 const akru = (game: Game) => game.state.heroes[0];
@@ -21,7 +21,7 @@ describe('levels', () => {
     for (const total of [0, 49, 50, 777, 4000]) expect(totalXp(levelFromTotal(total).level, levelFromTotal(total).xp)).toBe(total);
     expect(levelFromTotal(1e9)).toEqual({ level: MAX_HERO_LEVEL, xp: 0 });
     expect(expectedLevel(1)).toBe(1);
-    expect(expectedLevel(30)).toBe(10);
+    expect(expectedLevel(30)).toBe(30);
   });
 
   it('teaches every hero who marched, newcomers faster, and makes them stronger', () => {
@@ -40,17 +40,12 @@ describe('levels', () => {
     expect(game.battle!.entities.find(entity => entity.uid === 'hero-1')!.maxHp).toBeLessThan(before);
   });
 
-  it('keeps the most experienced copy and half of the rest when three copies merge', () => {
-    const game = new Game();
-    rich(game);
-    akru(game).level = 4; akru(game).rituals = { rape: 2 };
-    game.state.shop = [1, 1, 2, 3];
-    game.recruit(1); game.recruit(1);
-    const merged = akru(game);
-    expect(merged.stars).toBe(2);
-    expect(merged.level).toBe(4);
-    expect(merged.rituals.rape).toBe(2);
+  it('keeps ritual learning independent from normal levels', () => {
+    const game=new Game();rich(game);akru(game).level=4;akru(game).rituals={rape:2};
+    expect(game.recruit(1).ok).toBe(false);
+    expect(akru(game)).toMatchObject({stars:1,level:4,ritualLevel:1,ritualXp:0,rituals:{rape:2}});
   });
+
 });
 
 describe('hunting', () => {
@@ -63,11 +58,10 @@ describe('hunting', () => {
     expect(game.startHunt('hero-1', 'igarape').ok).toBe(false);
     expect(game.startBattle().ok).toBe(false);
     const food = game.state.resources.food;
-    const loaded = new Game(game.serialize(1_000_000), 1_000_000 + 3 * 60 * 1000);
+    const loaded = new Game(game.serialize(1_000_000), 1_000_000 + (TRAILS[0].minutes+1) * 60 * 1000);
     const hero = loaded.state.heroes[0];
     expect(hero.away).toBeNull();
-    expect(hero.level).toBe(1);
-    expect(hero.xp).toBe(TRAILS[0].xp);
+    expect(totalXp(hero.level,hero.xp)).toBe(TRAILS[0].xp);
     expect(loaded.state.resources.food).toBeGreaterThan(food + TRAILS[0].food);
     expect(loaded.state.reports.at(-1)?.ok).toBe(true);
     expect(loaded.state.stats.hunts).toBe(1);
@@ -78,7 +72,7 @@ describe('hunting', () => {
     akru(game).panema = 2;
     game.state.lootSeed = seedRolling(huntChance(1, 2, 0), true);
     game.startHunt('hero-1', 'igarape');
-    wait(game, 130);
+    wait(game, TRAILS[0].minutes*60+10);
     expect(akru(game).panema).toBe(3);
     expect(game.state.reports.at(-1)?.ok).toBe(false);
     expect(huntChance(1, 3, 0)).toBeLessThan(huntChance(1, 0, 0));
@@ -117,25 +111,26 @@ describe('the Casa de Cura', () => {
     expect(game.performRitual('hero-1', 'rape').ok).toBe(true);
     expect(game.state.resources.spirit).toBe(spirit - PRACTICES[0].cost(0).spirit);
     expect(game.performRitual('hero-1', 'sananga').ok).toBe(false);
-    wait(game, 40);
+    wait(game, PRACTICES[0].rest+10);
     expect(hero.rituals.rape).toBe(1);
     expect(hero.focus).toBe(true);
     expect(game.performRitual('hero-1', 'kambo').ok).toBe(false);
     expect(game.performRitual('hero-1', 'ayahuasca').ok).toBe(false);
-    game.state.villageLevel = 3; game.state.buildings.cura = 3; hero.level = 5; hero.panema = 2;
+    game.state.villageLevel = 3; game.state.buildings.cura = 3; hero.level = 14; hero.panema = 2;
+    wait(game,RITUAL_COOLDOWN);
     expect(game.performRitual('hero-1', 'sananga').ok).toBe(true);
-    wait(game, 60);
+    wait(game, PRACTICES[1].rest+10+RITUAL_COOLDOWN);
     expect(hero.panema).toBe(1);
     expect(game.performRitual('hero-1', 'kambo').ok).toBe(true);
-    wait(game, 200);
+    wait(game, PRACTICES[2].rest+10+RITUAL_COOLDOWN);
     expect(hero.panema).toBe(0);
     expect(game.performRitual('hero-1', 'ayahuasca').ok).toBe(true);
-    wait(game, 610);
+    wait(game, PRACTICES[3].rest+10);
     expect(hero.rituals).toEqual({ rape: 1, sananga: 1, kambo: 1, ayahuasca: 1 });
     expect(game.performRitual('hero-1', 'ayahuasca').ok).toBe(false);
     game.startBattle();
     const entity = game.battle!.entities.find(e => e.uid === 'hero-1')!;
-    const plain = new Game(); akru(plain).level = 5; plain.startBattle();
+    const plain = new Game(); akru(plain).level = 14; akru(plain).stars=hero.stars; plain.startBattle();
     const base = plain.battle!.entities.find(e => e.uid === 'hero-1')!;
     expect(entity.maxHp).toBeCloseTo(base.maxHp * 1.08);
     expect(entity.attack).toBeCloseTo(base.attack * 1.06);
@@ -147,7 +142,7 @@ describe('the Casa de Cura', () => {
     const plain = new Game(), focused = new Game();
     for (const game of [plain, focused]) game.state.lootSeed = seedRolling(0.5, false);
     akru(focused).focus = true;
-    for (const game of [plain, focused]) { game.startHunt('hero-1', 'igarape'); wait(game, 130); }
+    for (const game of [plain, focused]) { game.startHunt('hero-1', 'igarape'); wait(game, TRAILS[0].minutes*60+10); }
     expect(totalXp(akru(focused).level, akru(focused).xp)).toBe(totalXp(akru(plain).level, akru(plain).xp) * 1.5);
     expect(akru(focused).focus).toBe(false);
   });

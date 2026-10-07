@@ -7,7 +7,7 @@ import { MEMORIES, memoryCost, spiritById, spiritsOfEra, type MemoryId, type Spi
 import { countTraits, TRAIT_RULES, traitStatus } from './synergies';
 import { questById } from './quests';
 import { allySlotCenter, BOARD_CENTER, clampX, clampY, enemyFormation, enemySlotCenter, FORMATION_SLOTS, migrateSlot } from './board';
-import { battleXp, CACAO_DURATION, CACAO_HEAL, CACAO_XP, FOCUS_BONUS, huntChance, huntSlots, levelFromTotal, levelMultiplier, MAX_HERO_LEVEL, MAX_PANEMA, PANEMA_XP_LOSS, practiceById, PRACTICES, RITUAL_EFFECT, totalXp, trailById, xpToNext, type PracticeId, type TrailId } from './tribe';
+import { AWAKENING, ERA_GROWTH, MAX_RITUAL_LEVEL, ritualFromTotal, ritualTotalXp, ritualXpToNext, RITUAL_COOLDOWN, RITUAL_XP, WORK_XP_PER_MINUTE, battleXp, CACAO_DURATION, CACAO_HEAL, CACAO_XP, FOCUS_BONUS, huntChance, huntSlots, levelFromTotal, levelMultiplier, MAX_HERO_LEVEL, MAX_PANEMA, PANEMA_XP_LOSS, practiceById, PRACTICES, RITUAL_EFFECT, totalXp, trailById, xpToNext, type PracticeId, type TrailId } from './tribe';
 import { EVENT_TEXT, FIRST_EVENT_AT, nextEventDelay, OMEN_BONUS, OMEN_DURATION, RAID_PENALTY, raidStage, rollEvent, TRIBUTE, type VillageEvent } from './events';
 
 export { SKILL_NOTES, FINAL_STAGE };
@@ -18,10 +18,10 @@ export type Resources = Record<Resource, number>;
 export type BuildingId = 'lumber' | 'hunt' | 'quarry' | 'shrine' | 'forge' | 'cura';
 export type Team = 'ally' | 'enemy';
 /** Away on a hunt or in a ceremony until the village clock reaches `until`; the hero keeps its place in the formation. */
-export interface HeroAway { kind: 'hunt' | 'ritual'; id: TrailId | PracticeId; until: number; focus?: boolean }
+export interface HeroAway { kind: 'hunt' | 'ritual'; id: TrailId | PracticeId; until: number; focus?: boolean; returnWork?: BuildingId }
 export interface Hero {
   uid: string; characterId: number; stars: number; slot: number | null; items: string[]; work: BuildingId | null;
-  level: number; xp: number;
+  level: number; xp: number; ritualLevel: number; ritualXp: number; ritualReadyAt: number;
   /** A hunter's bad luck, 0–3. */
   panema: number;
   /** Completed ceremonies per practice. */
@@ -230,10 +230,10 @@ const OPTIONAL_BUILDINGS: BuildingId[] = ['forge', 'cura'];
 export const PLAYABLE_IDS = ALL_CHARACTER_IDS;
 export const MAX_BUILDING_LEVEL = 15;
 export const MAX_VILLAGE_LEVEL = 5;
-export const SAVE_VERSION = 3;
-export const OFFLINE_CAP_SECONDS = 7200;
-export const MAX_ROSTER_SIZE = 18;
-export const MAX_INVENTORY = 30;
+export const SAVE_VERSION = 4;
+export const OFFLINE_CAP_SECONDS = 12 * 3600;
+export const MAX_ROSTER_SIZE = 55;
+export const MAX_INVENTORY = 180;
 export const WONDER_STAGES = 5;
 const MAX_SUMMONS_PER_OWNER = 6;
 /** Twilight: past this second, healing fades and every blow lands harder, so no battle stalls. */
@@ -362,13 +362,13 @@ export const clampToBoard = (entity: CombatEntity): void => {
 };
 
 export const newHero = (uid: string, characterId: number, stars = 1, slot: number | null = null): Hero =>
-  ({ uid, characterId, stars, slot, items: [], work: null, level: 1, xp: 0, panema: 0, rituals: {}, away: null, focus: false });
+  ({ uid, characterId, stars, slot, items: [], work: null, level: 1, xp: 0, ritualLevel: 1, ritualXp: 0, ritualReadyAt: 0, panema: 0, rituals: {}, away: null, focus: false });
 /** The journey begins with Akru alone at the front centre; the tribe grows from there. */
 const starterHeroes = (): Hero[] => [newHero('hero-1', 1, 1, 3)];
 /** A hero is in the village when not hunting or in ceremony. */
 export const available = (hero: Hero) => !hero.away;
 /** Ceremonies run faster with helpers in the Casa de Cura. */
-export const ritualSpeed = (state: GameState): number => buildingMultiplier(state, 'cura');
+export const ritualSpeed = (state: GameState): number => Math.min(1.5, buildingMultiplier(state, 'cura'));
 
 function initialState(): GameState {
   return {
@@ -480,11 +480,15 @@ function sanitizeState(value: unknown, version: number): GameState {
       const awayInput = record(hero.away);
       const awayKind = awayInput.kind === 'hunt' || awayInput.kind === 'ritual' ? awayInput.kind : null;
       const awayValid = awayKind && typeof awayInput.id === 'string' && (awayKind === 'hunt' ? !!trailById(awayInput.id) : !!practiceById(awayInput.id) && !practiceById(awayInput.id)!.tribe)
-        && typeof awayInput.until === 'number' && Number.isFinite(awayInput.until) && awayInput.until <= state.clock + 4 * 3600;
+        && typeof awayInput.until === 'number' && Number.isFinite(awayInput.until) && awayInput.until <= state.clock + 24 * 3600;
       const away: HeroAway | null = awayValid ? { kind: awayKind!, id: awayInput.id as TrailId | PracticeId, until: Math.max(0, awayInput.until as number), focus: awayInput.focus === true } : null;
+      if (away && typeof awayInput.returnWork === 'string' && BUILDING_KEYS.includes(awayInput.returnWork as BuildingId)) away.returnWork = awayInput.returnWork as BuildingId;
       if (away) work = null;
       return [{
         ...newHero(uid, hero.characterId as number, integer(hero.stars, 1, 1, 3), slot), items, work, level,
+        ritualLevel: integer(hero.ritualLevel, 1, 1, MAX_RITUAL_LEVEL),
+        ritualXp: integer(hero.ritualLevel, 1, 1, MAX_RITUAL_LEVEL) >= MAX_RITUAL_LEVEL ? 0 : finite(hero.ritualXp, 0, 0, ritualXpToNext(integer(hero.ritualLevel, 1, 1, MAX_RITUAL_LEVEL)) - 1),
+        ritualReadyAt: finite(hero.ritualReadyAt, 0, 0, state.clock + 24 * 3600),
         xp: level >= MAX_HERO_LEVEL ? 0 : finite(hero.xp, 0, 0, xpToNext(level) - 1),
         panema: integer(hero.panema, 0, 0, MAX_PANEMA),
         rituals: Object.fromEntries(PRACTICES.filter(entry => !entry.tribe).map(entry => [entry.id, integer(rituals[entry.id], 0, 0, entry.max)]).filter(([, count]) => (count as number) > 0)),
@@ -493,6 +497,30 @@ function sanitizeState(value: unknown, version: number): GameState {
     });
     if (!state.heroes.length) state.heroes = starterHeroes();
   }
+  // Versions 1–3 could own copies. Keep the strongest identity, equipment and learned progress.
+  const unique = new Map<number, Hero>();
+  for (const hero of state.heroes) {
+    if (version < 4) {
+      const learned = Object.entries(hero.rituals).reduce((sum, [id, count]) => sum + (RITUAL_XP[id as PracticeId] ?? 0) * count, 0);
+      Object.assign(hero, ritualFromTotal(learned));
+      // Earned legacy stars remain earned after migration.
+      const threshold = AWAKENING.find(entry => entry.stars === hero.stars);
+      if (threshold) { hero.level = Math.max(hero.level, threshold.level); hero.ritualLevel = Math.max(hero.ritualLevel, threshold.ritualLevel); }
+    }
+    const keeper = unique.get(hero.characterId);
+    if (!keeper) { unique.set(hero.characterId, hero); continue; }
+    keeper.stars = Math.max(keeper.stars, hero.stars);
+    if (totalXp(hero.level, hero.xp) > totalXp(keeper.level, keeper.xp)) { keeper.level = hero.level; keeper.xp = hero.xp; }
+    if (ritualTotalXp(hero.ritualLevel, hero.ritualXp) > ritualTotalXp(keeper.ritualLevel, keeper.ritualXp)) { keeper.ritualLevel = hero.ritualLevel; keeper.ritualXp = hero.ritualXp; }
+    if (keeper.slot === null && hero.slot !== null) { keeper.slot = hero.slot; keeper.work = null; }
+    if (!keeper.work && keeper.slot === null) keeper.work = hero.work;
+    keeper.panema = Math.min(keeper.panema, hero.panema);
+    keeper.ritualReadyAt = Math.max(keeper.ritualReadyAt, hero.ritualReadyAt);
+    keeper.away ??= hero.away;
+    for (const practice of PRACTICES) if (!practice.tribe) keeper.rituals[practice.id] = Math.max(keeper.rituals[practice.id] ?? 0, hero.rituals[practice.id] ?? 0);
+    for (const item of hero.items) { if (keeper.items.length < MAX_ITEMS_PER_HERO) keeper.items.push(item); else state.inventory.push(item); }
+  }
+  state.heroes = [...unique.values()];
   const allowed = (id: unknown) => PLAYABLE_IDS.includes(id as number) && characterById(id as number).cost <= unlockedCost(state.villageLevel);
   const shop = Array.isArray(input.shop) ? [...new Set(input.shop.filter(allowed))] as number[] : [];
   state.shop = [...shop, ...PLAYABLE_IDS.filter(id => !shop.includes(id) && allowed(id))].slice(0, shopSize(state));
@@ -521,7 +549,7 @@ export class Game {
     this.state = initialState();
     if (typeof save === 'string') { try { save = JSON.parse(save); } catch { return; } }
     const root = record(save);
-    if (root.version !== 1 && root.version !== 2 && root.version !== SAVE_VERSION) return;
+    if (root.version !== 1 && root.version !== 2 && root.version !== 3 && root.version !== SAVE_VERSION) return;
     this.state = sanitizeState(root.state, root.version as number);
     const savedAt = finite(root.savedAt, now, 0, Number.MAX_SAFE_INTEGER);
     this.offlineSeconds = this.state.paused ? 0 : Math.min(OFFLINE_CAP_SECONDS, Math.max(0, (now - savedAt) / 1000));
@@ -561,16 +589,23 @@ export class Game {
 
   /** Village production and the forge; shared by the live clock and offline time. */
   private produce(seconds: number): void {
+    this.resolveAway();
+    const nextReturn = Math.min(...this.state.heroes.filter(h => h.away).map(h => h.away!.until));
+    const segment = nextReturn - this.state.clock;
+    if (segment > 0 && segment < seconds) { this.produce(segment); this.produce(seconds - segment); return; }
+    const learningSeconds = seconds + Math.min(seconds, Math.max(0, this.state.cacao - this.state.clock)) * CACAO_XP;
+    for (const hero of this.state.heroes) if (hero.work && !hero.away) this.gainXp(hero, WORK_XP_PER_MINUTE / 60 * learningSeconds, false);
     this.state.clock += seconds;
     this.updateEvents();
-    this.resolveAway();
     const rates = getRates(this.state);
     this.addResources(Object.fromEntries(RESOURCE_KEYS.map(key => [key, rates[key] * seconds])) as Resources);
     const rate = forgeRate(this.state);
-    if (rate <= 0) return;
-    this.state.forgeProgress += rate * seconds;
-    while (this.state.forgeProgress >= 1 && this.addItem(this.randomComponent())) this.state.forgeProgress -= 1;
-    this.state.forgeProgress = Math.min(1, this.state.forgeProgress);
+    if (rate > 0) {
+      this.state.forgeProgress += rate * seconds;
+      while (this.state.forgeProgress >= 1 && this.addItem(this.randomComponent())) this.state.forgeProgress -= 1;
+      this.state.forgeProgress = Math.min(1, this.state.forgeProgress);
+    }
+    this.resolveAway();
   }
 
   /** Unanswered raiders steal provisions; a quiet village sees a new event every few minutes from the second era. */
@@ -621,6 +656,11 @@ export class Game {
         return success('O presságio se cumpre: a produção cresce por 3 minutos.');
       case 'traveler':
         if (s.heroes.length >= MAX_ROSTER_SIZE) { s.event = event; return fail('A reserva está cheia.'); }
+        if (s.heroes.some(hero => hero.characterId === event.characterId)) { this.addResources({ ...emptyResources(), spirit: 120 }); return success('O companheiro reencontrou a tribo e trouxe 120 de espírito.'); }
+        if (!s.heroes.some(hero => hero.ritualLevel >= [1, 2, 3, 5, 7][characterById(event.characterId!).cost - 1])) {
+          this.addResources({ ...emptyResources(), spirit: 120 });
+          return success('O viajante trouxe histórias e 120 de espírito. Aprofunde o vínculo ritual para acolher esse companheiro.');
+        }
         s.heroes.push(newHero(this.newUid(), event.characterId!));
         return success(`${characterById(event.characterId!).name} juntou-se à tribo.`);
     }
@@ -647,16 +687,18 @@ export class Game {
     if (id === 'forge' && this.state.villageLevel < 2) return fail('A Forja de Osso exige a aldeia de nível 2.');
     if (!this.spend(buildingCost(id, level))) return fail('Recursos insuficientes para melhorar a construção.');
     this.state.buildings[id]++;
-    return success(level === 0 ? 'A Forja de Osso foi erguida. Componentes começam a surgir.' : `Construção melhorada para o nível ${level + 1}.`);
+    return success(level === 0 ? (id === 'cura' ? 'A Casa de Cura foi erguida. Prepare a primeira cerimônia.' : 'A Forja de Osso foi erguida. Componentes começam a surgir.') : `Construção melhorada para o nível ${level + 1}.`);
   }
 
   upgradeVillage(): ActionResult {
     if (this.state.villageLevel >= MAX_VILLAGE_LEVEL) return fail('A aldeia chegou ao nível máximo.');
+    const need = ERA_GROWTH[this.state.villageLevel - 1];
+    if (!this.state.heroes.some(hero => hero.level >= need.level && hero.ritualLevel >= need.ritualLevel)) return fail(`A próxima era pede um herói com experiência nível ${need.level} e ritual nível ${need.ritualLevel}.`);
     if (!this.spend(villageCost(this.state.villageLevel))) return fail('Reúna os recursos necessários para expandir a aldeia.');
     this.state.villageLevel++;
-    // The new cost tier arrives immediately with a free visit.
+    // Retain legacy visitor state for older save compatibility.
     if (!this.fighting()) this.refreshShop();
-    return success(`Era ${this.state.villageLevel}! Escolha um Espírito Protetor. Heróis de custo ${unlockedCost(this.state.villageLevel)} chegam à fogueira.`);
+    return success(`Era ${this.state.villageLevel}! Escolha um Espírito Protetor. Novos companheiros ficam disponíveis na Tribo conforme seu vínculo ritual.`);
   }
 
   chooseSpirit(id: SpiritId): ActionResult {
@@ -686,45 +728,18 @@ export class Game {
   }
   recruit(characterId: number): ActionResult {
     if (this.fighting()) return fail('O recrutamento volta ao fim do combate.');
-    const shopIndex = this.state.shop.indexOf(characterId);
-    if (shopIndex < 0) return fail('Este herói não está disponível nesta visita.');
+    if (!PLAYABLE_IDS.includes(characterId)) return fail('Companheiro desconhecido.');
+    if (this.state.heroes.some(hero => hero.characterId === characterId)) return fail('Este companheiro já faz parte da tribo. Estrelas são conquistadas com experiência e rituais.');
     const character = characterById(characterId);
-    if (character.cost > unlockedCost(this.state.villageLevel)) return fail(`${character.name} só atende ao chamado de uma aldeia de nível ${character.cost}.`);
-    const duplicates = this.state.heroes.filter(hero => hero.characterId === characterId && hero.stars === 1);
-    if (this.state.heroes.length >= MAX_ROSTER_SIZE && duplicates.length < 2) return fail('A reserva está cheia. Combine ou libere um herói.');
+    if (character.cost > unlockedCost(this.state.villageLevel)) return fail(`${character.name} se une à tribo na Era ${character.cost}.`);
+    const required = [1, 2, 3, 5, 7][character.cost - 1];
+    if (!this.state.heroes.some(hero => hero.ritualLevel >= required)) return fail(`O vínculo de ${character.name} exige um herói no nível ritual ${required}.`);
+    if (this.state.heroes.length >= MAX_ROSTER_SIZE) return fail('Todos os companheiros já foram acolhidos.');
     const cost = recruitCost(characterId, this.state);
-    if (!this.spend(cost)) return fail(`O recrutamento custa ${cost.spirit} de espírito e ${cost.food} de alimento.`);
+    if (!this.spend(cost)) return fail(`O acolhimento custa ${cost.spirit} de espírito e ${cost.food} de alimento.`);
     this.state.heroes.push(newHero(this.newUid(), characterId));
     this.state.stats.recruits++;
-    let combined = false;
-    for (const stars of [1, 2]) {
-      let matching = this.state.heroes.filter(hero => hero.characterId === characterId && hero.stars === stars);
-      while (matching.length >= 3) {
-        // Preserve a deployed (or working) instance and its place when the three copies merge.
-        matching.sort((a, b) => Number(b.slot !== null) - Number(a.slot !== null) || Number(b.work !== null) - Number(a.work !== null) || b.items.length - a.items.length);
-        const [keeper, ...consumed] = matching.slice(0, 3);
-        const consumedIds = new Set(consumed.map(hero => hero.uid));
-        keeper.stars++;
-        // The evolved hero keeps the most experienced copy and half of what the others learned.
-        const trio = [keeper, ...consumed], totals = trio.map(hero => totalXp(hero.level, hero.xp));
-        const best = Math.max(...totals), merged = levelFromTotal(best + (totals.reduce((sum, value) => sum + value, 0) - best) * 0.5);
-        keeper.level = merged.level; keeper.xp = merged.xp;
-        for (const practice of PRACTICES) if (!practice.tribe) {
-          const count = Math.max(...trio.map(hero => hero.rituals[practice.id] ?? 0));
-          if (count) keeper.rituals[practice.id] = count;
-        }
-        keeper.panema = Math.min(...trio.map(hero => hero.panema));
-        keeper.focus = trio.some(hero => hero.focus);
-        for (const hero of consumed) for (const item of hero.items) {
-          if (keeper.items.length < MAX_ITEMS_PER_HERO) keeper.items.push(item); else this.addItem(item);
-        }
-        this.state.heroes = this.state.heroes.filter(hero => !consumedIds.has(hero.uid));
-        combined = true;
-        matching = this.state.heroes.filter(hero => hero.characterId === characterId && hero.stars === stars);
-      }
-    }
-    this.state.shop[shopIndex] = this.nextShopHero(this.state.shop.filter((_, index) => index !== shopIndex));
-    return success(combined ? `${character.name} evoluiu! Três cópias formam uma estrela superior.` : `${character.name} chegou à reserva.`);
+    return success(`${character.name} chegou à tribo. Seu caminho de experiência e rituais começa agora.`);
   }
 
   rerollShop(): ActionResult {
@@ -732,6 +747,17 @@ export class Game {
     if (!this.spend(REROLL_COST)) return fail('São necessários 8 de espírito para uma nova visita.');
     this.refreshShop();
     return success('Novos heróis chegaram à fogueira.');
+  }
+
+  autoFormation(): ActionResult {
+    if (this.fighting()) return fail('Aguarde o fim do combate para organizar a formação.');
+    const party = this.state.heroes.filter(hero => !hero.away)
+      .sort((a,b) => b.stars-a.stars || b.level-a.level).slice(0,capacity(this.state));
+    if (!party.length) return fail('A tribo está em atividades fora da aldeia.');
+    const slots = enemyFormation(party.map(hero => characterById(hero.characterId).range > 1));
+    for (const hero of this.state.heroes) hero.slot = null;
+    party.forEach((hero,index) => { hero.slot=slots[index]; hero.work=null; });
+    return success('Formação organizada: combatentes à frente, conjuradores e atiradores atrás.');
   }
 
   deploy(uid: string, slot: number | null): ActionResult {
@@ -853,15 +879,25 @@ export class Game {
   /** Experience gained now, with the cacao circle's blessing. */
   xpBonus(): number { return this.state.clock < this.state.cacao ? 1 + CACAO_XP : 1; }
   /** Adds experience already multiplied by any bonus; returns the levels gained. */
-  private gainXp(hero: Hero, amount: number): number {
+  private gainXp(hero: Hero, amount: number, mentored = true): number {
     if (hero.level >= MAX_HERO_LEVEL || !(amount > 0)) return 0;
     // Newcomers learn faster from the tribe's veterans: +25% per level beyond the first behind the strongest, up to double.
     const top = Math.max(...this.state.heroes.map(other => other.level));
-    const mentoring = Math.min(2, 1 + 0.25 * Math.max(0, top - hero.level - 1));
-    const before = hero.level, next = levelFromTotal(totalXp(hero.level, hero.xp) + Math.round(amount * mentoring));
+    const mentoring = mentored ? Math.min(2, 1 + 0.25 * Math.max(0, top - hero.level - 1)) : 1;
+    const before = hero.level, next = levelFromTotal(totalXp(hero.level, hero.xp) + amount * mentoring);
     hero.level = next.level; hero.xp = next.xp;
+    this.awaken(hero);
     return hero.level - before;
   }
+  /** Evolution needs both independent tracks and the deep ceremony for the final form. */
+  private awaken(hero: Hero): void {
+    for (const need of AWAKENING) {
+      if (hero.stars >= need.stars || hero.level < need.level || hero.ritualLevel < need.ritualLevel || (need.ayahuasca && !hero.rituals.ayahuasca)) continue;
+      hero.stars = need.stars;
+      this.report(hero, `despertou ${need.stars}★: experiência e vínculo ritual alcançados.`, true);
+    }
+  }
+
   private report(hero: Hero, text: string, ok: boolean): void {
     this.state.reports.push({ clock: this.state.clock, uid: hero.uid, name: characterById(hero.characterId).name, text, ok });
     if (this.state.reports.length > 8) this.state.reports.splice(0, this.state.reports.length - 8);
@@ -874,8 +910,13 @@ export class Game {
       const away = hero.away;
       if (!away || this.state.clock < away.until) continue;
       hero.away = null;
+      const reached = this.state.clock;
+      this.state.clock = away.until;
       if (away.kind === 'hunt') this.finishHunt(hero, away.id as TrailId, !!away.focus);
-      else this.finishRitual(hero, away.id as PracticeId);
+      else this.finishRitual(hero, away.id as PracticeId, away.until);
+      if (away.returnWork && hero.slot === null && this.state.buildings[away.returnWork] > 0
+        && this.state.heroes.filter(h => h.work === away.returnWork).length < workerSlots(this.state, away.returnWork)) hero.work = away.returnWork;
+      this.state.clock = reached;
     }
   }
   private finishHunt(hero: Hero, trailId: TrailId, focus: boolean): void {
@@ -894,14 +935,17 @@ export class Game {
     const text = ok ? `voltou da ${trail.name} com caça: ${gains.join(', ')}.` : `voltou da ${trail.name} sem caça (${gains[0]}). A panema pesa: ${hero.panema}/${MAX_PANEMA}.`;
     this.report(hero, levels ? `${text} Agora está no nível ${hero.level}!` : text, ok);
   }
-  private finishRitual(hero: Hero, id: PracticeId): void {
+  private finishRitual(hero: Hero, id: PracticeId, completedAt: number): void {
     const practice = practiceById(id)!;
     this.state.stats.rituals++;
-    hero.rituals[id] = (hero.rituals[id] ?? 0) + 1;
+    hero.rituals[id] = Math.min(practice.max, (hero.rituals[id] ?? 0) + 1);
+    Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + RITUAL_XP[id]));
+    hero.ritualReadyAt = completedAt + RITUAL_COOLDOWN;
+    this.awaken(hero);
     if (id === 'rape') hero.focus = true;
     if (id === 'sananga') hero.panema = Math.max(0, hero.panema - 1);
     if (id === 'kambo') hero.panema = 0;
-    this.report(hero, `concluiu a cerimônia de ${practice.name}.`, true);
+    this.report(hero, `concluiu ${practice.name}: +${RITUAL_XP[id]} XP ritual. Integração de 3 horas antes da próxima cerimônia.`, true);
   }
 
   /** Sends a hero along a hunting trail; the hero keeps a place in the formation but cannot fight until back. */
@@ -942,11 +986,12 @@ export class Game {
     if (this.inBattle(hero)) return fail(`${name} está em combate.`);
     if (hero.level < practice.minLevel) return fail(`${practice.name} pede um herói de nível ${practice.minLevel}.`);
     const done = hero.rituals[practice.id] ?? 0;
-    if (done >= practice.max) return fail(`${name} já completou as cerimônias de ${practice.name}.`);
+    if (this.state.clock < hero.ritualReadyAt) return fail(`${name} está integrando a última cerimônia. Aguarde antes do próximo ritual.`);
     if (practice.requires && !hero.rituals[practice.requires]) return fail(`Antes, ${name} precisa de uma cerimônia de ${practiceById(practice.requires)!.name}.`);
     if (!this.spend(practice.cost(done))) return fail('Faltam recursos para preparar a cerimônia.');
+    const returnWork = hero.work ?? undefined;
     hero.work = null;
-    hero.away = { kind: 'ritual', id: practice.id, until: this.state.clock + practice.rest / ritualSpeed(this.state) };
+    hero.away = { kind: 'ritual', id: practice.id, until: this.state.clock + practice.rest / ritualSpeed(this.state), returnWork };
     return success(`${name} entrou na cerimônia de ${practice.name}.`);
   }
   /** The cacao circle blesses the whole tribe for a while. */
@@ -958,6 +1003,11 @@ export class Game {
     if (!this.spend(practice.cost(0))) return fail('Faltam recursos para a roda de cacau.');
     this.state.cacao = this.state.clock + CACAO_DURATION;
     this.state.stats.rituals++;
+    for (const hero of this.state.heroes.filter(hero => !hero.away && this.state.clock >= hero.ritualReadyAt)) {
+      Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + RITUAL_XP.cacau));
+      hero.ritualReadyAt = this.state.clock + RITUAL_COOLDOWN;
+      this.awaken(hero);
+    }
     return success('A tribo se reúne na roda de cacau.');
   }
 

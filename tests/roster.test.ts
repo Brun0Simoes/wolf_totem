@@ -41,7 +41,7 @@ describe('recruitment of the full roster', () => {
     game.state.resources = { wood: 0, food: 1000, stone: 0, spirit: 1000 };
     game.state.shop = [49, 1, 2, 4];
     expect(game.recruit(49).ok).toBe(false);
-    game.state.villageLevel = 5;
+    game.state.villageLevel = 5;game.state.heroes[0].ritualLevel=7;
     expect(recruitCost(49)).toEqual({ wood: 0, food: 75, stone: 0, spirit: 150 });
     expect(game.recruit(49).ok).toBe(true);
     expect(game.state.resources).toMatchObject({ food: 925, spirit: 850 });
@@ -67,6 +67,7 @@ describe('recruitment of the full roster', () => {
   it('brings the new cost tier to the campfire as soon as the village grows', () => {
     const game = new Game();
     game.state.resources = { wood: 1e6, food: 1e6, stone: 1e6, spirit: 1e6 };
+    game.state.heroes[0].level=30;game.state.heroes[0].ritualLevel=10;
     for (let level = 2; level <= 5; level++) {
       expect(game.upgradeVillage().ok).toBe(true);
       expect(game.state.shop.every(id => costOf(id) <= level)).toBe(true);
@@ -189,7 +190,7 @@ describe('expeditions', () => {
     const alpha = (team: [number, number, number][]) => {
       const game = new Game();
       game.state.villageLevel = 2; game.state.progress = 4; game.state.selectedStage = 5;
-      game.state.heroes = team.map(([id, stars, slot], i) => placed(`a-${i}`, id, stars, slot, 3));
+      game.state.heroes = team.map(([id, stars, slot], i) => placed(`a-${i}`, id, stars, slot, 8));
       game.startBattle(); fight(game);
       return game.battle!.status;
     };
@@ -201,7 +202,7 @@ describe('expeditions', () => {
     const king = (spirits: SpiritId[], rituals: Hero['rituals']) => {
       const game = new Game();
       game.state.villageLevel = 5; game.state.progress = 19; game.state.selectedStage = 20; game.state.spirits = spirits;
-      game.state.heroes = [39, 40, 28, 8, 25, 33, 1].map((characterId, index) => ({ ...placed(`final-${index}`, characterId, 2, [1, 2, 0, 9, 10, 5, 6][index], 5), rituals: { ...rituals } }));
+      game.state.heroes = [39, 40, 28, 8, 25, 33, 1].map((characterId, index) => ({ ...placed(`final-${index}`, characterId, 2, [1, 2, 0, 9, 10, 5, 6][index], 16), rituals: { ...rituals } }));
       game.startBattle(); fight(game);
       return game.battle!.status;
     };

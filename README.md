@@ -1,6 +1,6 @@
 # Wolf Totem
 
-Jogo incremental de estratégia e combate automático, em português. Uma tribo cresce ao redor de uma fogueira: a aldeia produz recursos e avança por cinco eras, como em *Age of Mythology*, honrando um espírito protetor em cada uma. Heróis ligados a espíritos animais são recrutados, fundidos e equipados como num *auto chess/TFT*. Depois partem em expedições automáticas até o Primeiro Inverno, a Caçada Eterna e o renascimento no Grande Totem.
+Jogo incremental de estratégia e combate automático, em português. Uma tribo cresce ao redor de uma fogueira: a aldeia produz recursos e avança por cinco eras, como em *Age of Mythology*, honrando um espírito protetor em cada uma. Heróis ligados a espíritos animais são acolhidos uma única vez e despertam novas formas com experiência de atividades e nível ritual. O combate usa formação estratégica e acontece automaticamente. Depois partem em expedições automáticas até o Primeiro Inverno, a Caçada Eterna e o renascimento no Grande Totem.
 
 ## Jogar localmente
 
@@ -26,20 +26,32 @@ A cada envio para `main`, o workflow `.github/workflows/pages.yml` testa, gera o
 - Importar substitui a jornada daquele navegador. Exporte antes se quiser manter as duas.
 - Limpar os dados do site ou usar uma janela anônima apaga o progresso local. O arquivo exportado continua valendo.
 
+## Jornada 2.0
+
+- Navegação por Aldeia, Tribo, Expedições, Rituais e Códice, com painel contextual recolhível.
+- Experiência e ritualística têm barras independentes. Trabalho concede 40 XP/min; rituais concedem XP ritual e pedem 3 horas de integração antes do próximo rito.
+- Caçadas duram de 10 minutos a 8 horas; rituais individuais, de 20 minutos a 6 horas. Ajudantes encurtam cerimônias em até 1,5×.
+- Um trabalhador retorna ao posto após sua cerimônia, se a vaga continua livre. O tempo offline é dividido no momento de retorno para contabilizar apenas o trabalho efetivamente realizado.
+- Um teste determinístico de duas visitas por dia alcança o primeiro avatar em **6 dias**, com trabalho contínuo, recursos produzidos pela aldeia e uma sequência de ritos. É uma referência de balanceamento; outras rotinas mudam o tempo.
+- Saves anteriores preservam formas já despertas e equipamentos. Cópias antigas são consolidadas sem gerar novas estrelas.
+- Cenário e construções pintados, efeitos de combate com atlas próprio, limites de efeitos simultâneos e atualização de barras sem substituir os controles a cada tick.
+
+Direção visual e verificação: [revisão de design](docs/design/REVIEW.md).
+
 ## O jogo
 
 | Pilar | O que existe |
 | --- | --- |
-| **Aldeia (incremental)** | Madeira, alimento, pedra e espírito com produção automática e offline (até 2 h). Seis construções até o nível 15, incluindo a Forja de Osso e a Casa de Cura. Heróis da reserva trabalham nas construções e aumentam a produção, com bônus de afinidade. |
+| **Aldeia (incremental)** | Madeira, alimento, pedra e espírito com produção automática e offline (até 12 h). Seis construções até o nível 15, incluindo a Forja de Osso e a Casa de Cura. Heróis da reserva trabalham nas construções e aumentam a produção, com bônus de afinidade. |
 | **Eras (Age of Mythology)** | Cinco eras. A cada nova era a tribo escolhe 1 de 3 Espíritos Protetores (12 no total): um bônus permanente e um **Poder Espiritual** acionado uma vez por expedição. |
-| **Heróis (auto chess)** | Os 55 personagens do Set 1, cada era abrindo um custo na fogueira. Três cópias formam 2★ e três 2★ formam 3★. As 55 habilidades funcionam em combate, com invocações, zonas, metamorfoses e renascimento. |
+| **Heróis (auto chess)** | Os 55 personagens do Set 1, com catálogo liberado por era e vínculo ritual. 2★ exige experiência 8 e ritual 3; 3★ exige experiência 24, ritual 8 e ayahuasca concluída. As 55 habilidades funcionam em combate, com invocações, zonas, metamorfoses e renascimento. |
 | **Itens e laços (TFT)** | 6 componentes e 21 itens, até 3 por herói; dois componentes no mesmo herói se combinam sozinhos. As 31 características (povos, funções e espíritos animais) ativam laços em dois níveis. |
 | **Campanha** | 6 regiões com 5 expedições cada, sempre fechadas por um chefe. Expedições vencidas podem ser repetidas para farmar, com velocidade 1–3× e repetição automática. |
 | **Fim de jogo** | Caçada Eterna sem fim e o Grande Totem (maravilha em 5 partes). Completo o Totem, a tribo renasce com brasas ancestrais, gastas em 6 Memórias permanentes. |
 | **Vida da aldeia (1.1)** | Diário com 31 objetivos (tutorial guiado até o renascimento); eventos a cada poucos minutos: mercador, presságio, viajante perdido e incursões de saqueadores para defender. |
 | **Combate (1.1)** | Chefes com uma mecânica própria abaixo de 50% da vida e resumo de cada batalha (dano causado, recebido, cura e escudo, com destaque para o melhor da luta). |
 | **Campo hexagonal (1.2)** | Tabuleiro de casas hexagonais em vista frontal, com cenário próprio em cada região. Depois de 75 s de luta vem o Crepúsculo: a cura enfraquece e os golpes ficam mais fortes, para nenhuma batalha empacar. |
-| **Heróis que crescem (1.3)** | A jornada começa com Akru sozinho. Heróis sobem até o nível 10 com batalhas e **caçadas** em cinco trilhas, que correm mesmo com o jogo fechado. Caçadas sem sucesso trazem **panema**, o azar do caçador. |
+| **Heróis que crescem (1.3)** | A jornada começa com Akru sozinho. Heróis sobem até o nível 30 com batalhas e **caçadas** em cinco trilhas, que correm mesmo com o jogo fechado. Caçadas sem sucesso trazem **panema**, o azar do caçador. |
 | **Casa de Cura (1.3)** | A maloca do pajé, com cerimônias de rapé, sananga, kambô e ayahuasca para cada herói e a roda de cacau para a tribo. Os textos foram pesquisados e tratam as práticas com respeito. |
 | **Campo maior e combates difíceis (1.3)** | Campo de 7 × 8 casas como no TFT, inimigos posicionados por função e mais fortes, crescendo com o nível esperado da tribo. |
 | **Tela inicial e configurações (1.2)** | A história da tribo e o resumo da jornada na abertura. Volume de efeitos e música, movimento reduzido, números de dano e apagar a jornada com confirmação. |
@@ -50,7 +62,7 @@ Números e regras completas: [Sistemas do jogo](docs/SISTEMAS.md).
 
 1. **Aldeia:** a jornada começa com Akru sozinho. Melhore construções, colete à mão no começo e avance de era. Cada era abre uma vaga na formação, heróis de custo maior e a escolha de um Espírito Protetor.
 2. **Caçadas e Casa de Cura:** mande heróis caçar (`C`) para ganharem experiência e alimento, e leve-os às cerimônias da Casa de Cura para fortalecê-los e limpar a panema.
-3. **Fogueira:** recrute viajantes, que custam 15 de alimento e 30 de espírito por ponto de custo. Junte três cópias para evoluir e renove os viajantes por 8 de espírito.
+3. **Tribo:** escolha um companheiro no catálogo, conforme a era e o vínculo ritual. Cada personagem pertence à tribo uma única vez. Acompanhe suas duas barras e os requisitos de despertar no painel do herói.
 4. **Expedição:** escolha a expedição no mapa (`M`), selecione um herói e uma casa da sua metade do campo e entregue itens da bolsa. Os inimigos da próxima expedição já aparecem no tabuleiro.
 5. **Combate:** é automático. Use os poderes espirituais na barra do campo, troque a velocidade e ligue a repetição para farmar.
 6. **Totem:** depois do Primeiro Inverno, erga o Grande Totem, renasça e compre memórias.
@@ -78,10 +90,10 @@ As cinco criaturas invocadas (aranha, corvo, escaravelho, lobo e elefante) tamb�
 chars/                     Artes originais, intactas
 public/assets/animations/  Folhas pintadas (v2/v3: 165 formas; summons: 5 criaturas)
 src/data/                  Os 55 personagens do plano e a animalidade
-src/game/simulation.ts     Estado, economia, combate, saves (v2) e ações
+src/game/simulation.ts     Estado, economia, combate, saves (v4) e ações
 src/game/skills.ts         As 55 habilidades
 src/game/synergies.ts      Regras das 31 características
-src/game/roster.ts         Desbloqueios, chances da fogueira e preços
+src/game/roster.ts         Desbloqueios, preços e compatibilidade de visitas antigas
 src/game/campaign.ts       Regiões, expedições, chefes e Caçada Eterna
 src/game/items.ts          Componentes e itens
 src/game/spirits.ts        Eras, espíritos protetores e memórias

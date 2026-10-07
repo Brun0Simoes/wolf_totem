@@ -22,10 +22,10 @@ describe('saves', () => {
     const loaded = new Game(fixture, 1790800000000);
     expect(loaded.state.progress).toBe(0);
     expect(loaded.state.selectedStage).toBe(1);
-    expect(loaded.state.heroes.map(h => [h.characterId, h.stars, h.items, h.work, h.level])).toEqual([[1, 3, [], null, 1], [3, 2, [], null, 1], [8, 1, [], null, 1]]);
+    expect(loaded.state.heroes.map(h => [h.characterId, h.stars, h.items, h.work, h.level])).toEqual([[1, 3, [], null, 24], [3, 2, [], null, 8], [8, 1, [], null, 1]]);
     expect(loaded.state.buildings.forge).toBe(0);
     expect(loaded.state.buildings.cura).toBe(0);
-    expect(JSON.parse(loaded.serialize()).version).toBe(3);
+    expect(JSON.parse(loaded.serialize()).version).toBe(4);
     const later = JSON.parse(fixture); later.state.wave = 7;
     expect(new Game(later, 1790800000000).state.progress).toBe(6);
   });
@@ -102,17 +102,15 @@ describe('items and the bone forge', () => {
     expect(b.shield).toBeCloseTo(b.maxHp * 0.2);
   });
 
-  it('keeps items through a three-copy merge, overflowing to the bag', () => {
-    const game = new Game();
-    rich(game);
-    game.state.heroes = [hero('a', 1, 1, 1, ['presa', 'arco']), hero('b', 1, 1, null, ['couro', 'manto'])];
-    game.state.shop = [1, 2, 3, 4];
-    expect(game.recruit(1).ok).toBe(true);
-    const akru = game.state.heroes.find(h => h.characterId === 1)!;
-    expect(akru.stars).toBe(2);
-    expect(akru.items).toEqual(['presa', 'arco', 'couro']);
-    expect(game.state.inventory).toEqual(['manto']);
+  it('consolidates legacy copies and preserves their equipment without creating a star', () => {
+    const game=new Game();
+    game.state.heroes=[hero('a',1,1,1,['presa','arco']),hero('b',1,1,null,['couro','manto'])];
+    const data=JSON.parse(game.serialize(1000));data.version=3;
+    const loaded=new Game(data,1000),akru=loaded.state.heroes[0];
+    expect(loaded.state.heroes).toHaveLength(1);expect(akru.stars).toBe(1);
+    expect(akru.items).toEqual(['presa','arco','couro']);expect(loaded.state.inventory).toEqual(['manto']);
   });
+
 });
 
 describe('eras, patron spirits and powers', () => {
@@ -120,7 +118,7 @@ describe('eras, patron spirits and powers', () => {
     const game = new Game();
     rich(game);
     expect(pendingEra(game.state)).toBeNull();
-    game.upgradeVillage();
+    game.state.heroes[0].level=4;game.state.heroes[0].ritualLevel=2;game.upgradeVillage();
     expect(pendingEra(game.state)).toBe(2);
     expect(game.chooseSpirit('urso').ok).toBe(false);
     const before = getRates(game.state).food;
@@ -148,6 +146,7 @@ describe('eras, patron spirits and powers', () => {
       game.state.spirits = path;
       expect(game.usePower(spirit.id).ok).toBe(false);
       game.state.progress = 9; game.state.selectedStage = 10;
+      game.state.heroes[0].level=16;game.state.heroes[0].stars=2;
       game.startBattle(); game.tick(2);
       if (spirit.id === 'urso') game.battle!.entities.filter(e => e.team === 'ally')[0].hp = 0;
       expect(game.usePower(spirit.id).ok, spirit.id).toBe(true);

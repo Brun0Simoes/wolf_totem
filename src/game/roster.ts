@@ -44,8 +44,8 @@ export function rollVisitor(seed: number, villageLevel: number, exclude: number[
   return { id: pool[Math.floor(roll.value * pool.length)] ?? 1, seed: roll.seed };
 }
 
-/** Food and spirit scale with cost. Selling returns half of the spirit spent on every copy. */
+/** Food and spirit scale with cost. Departure returns half the recruitment spirit price. */
 export function recruitPrice(cost: number): { food: number; spirit: number } {
   return { food: 15 * cost, spirit: 30 * cost };
 }
-export const sellRefund = (cost: number, stars: number): number => 15 * cost * Math.pow(3, stars - 1);
+export const sellRefund = (cost: number, _stars: number): number => 15 * cost;

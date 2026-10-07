@@ -62,7 +62,7 @@ export const regionOf = (stageId: number): Region => REGIONS[Math.max(0, Math.mi
 export const stageById = (stageId: number): Stage | undefined => STAGES.find(stage => stage.id === stageId);
 
 /** The hero level a tribe that hunts and fights along the way has reached at each stage. */
-export const expectedLevel = (level: number): number => Math.min(10, 1 + 9 * Math.pow(Math.max(0, level - 1) / 29, 0.7));
+export const expectedLevel = (level: number): number => Math.min(30, 1 + 29 * Math.pow(Math.max(0, level - 1) / 29, 0.7));
 /** Enemies hit harder than in 1.2, most of all early on, where the journey used to be easy. */
 export const difficulty = (level: number): number => Math.max(1.1, 1.25 - 0.005 * level);
 /** Enemy strength grows with the stage level and the levels heroes are expected to have; costlier units start from stronger canonical stats. */

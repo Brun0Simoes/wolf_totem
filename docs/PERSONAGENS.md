@@ -16,19 +16,11 @@ Os **55 personagens têm 1★, 2★ e 3★ prontas: 165 formas animadas**, com r
 
 Os 55 personagens são recrutáveis e lutam com suas habilidades. As regras abaixo são **decisões de protótipo**, separadas do catálogo canônico: `src/game/roster.ts`, `src/game/skills.ts` e `src/game/synergies.ts`.
 
-### Recrutamento
+### Recrutamento e despertar (2.0)
 
-| Nível da aldeia | Custo liberado | Chances na fogueira (custo 1 / 2 / 3 / 4 / 5) |
-| --- | --- | --- |
-| 1 | 1 | 100 / 0 / 0 / 0 / 0 |
-| 2 | 2 | 70 / 30 / 0 / 0 / 0 |
-| 3 | 3 | 45 / 35 / 20 / 0 / 0 |
-| 4 | 4 | 30 / 32 / 25 / 13 / 0 |
-| 5 | 5 | 22 / 27 / 26 / 17 / 8 |
+O catálogo contém 55 identidades únicas. Cada companheiro custa **15 × custo de alimento e 30 × custo de espírito**. As eras I–V exigem um herói com ritualística 1/2/3/5/7, respectivamente. A aquisição é escolhida no catálogo da Tribo.
 
-- Preço: **15 × custo de alimento e 30 × custo de espírito**. Liberar um herói devolve metade do espírito gasto em todas as cópias (15 × custo × 3^(estrelas − 1)).
-- A visita é sorteada por um gerador determinístico guardado no save (`shopSeed`): recarregar a página não troca os viajantes. Uma visita não repete o mesmo personagem.
-- Evoluir a aldeia traz uma visita nova e gratuita, já com o custo recém-liberado.
+2★ exige experiência 8 e ritualística 3; 3★ exige experiência 24, ritualística 8 e ayahuasca concluída. Os dados canônicos de cada forma permanecem os mesmos. Saves anteriores conservam estrelas conquistadas; cópias são consolidadas sem conceder novas formas, preservando equipamentos.
 
 ### Combate
 

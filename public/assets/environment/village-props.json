@@ -1,0 +1,56 @@
+{
+  "image": "/assets/environment/village-props.png",
+  "imageWidth": 1536,
+  "imageHeight": 1024,
+  "frames": {
+    "lumber": {
+      "x": 47,
+      "y": 131,
+      "width": 304,
+      "height": 309
+    },
+    "hunt": {
+      "x": 439,
+      "y": 129,
+      "width": 296,
+      "height": 317
+    },
+    "shrine": {
+      "x": 807,
+      "y": 131,
+      "width": 315,
+      "height": 317
+    },
+    "quarry": {
+      "x": 1189,
+      "y": 150,
+      "width": 320,
+      "height": 298
+    },
+    "cura": {
+      "x": 44,
+      "y": 592,
+      "width": 320,
+      "height": 324
+    },
+    "forge": {
+      "x": 456,
+      "y": 628,
+      "width": 291,
+      "height": 287
+    },
+    "tree": {
+      "x": 811,
+      "y": 590,
+      "width": 341,
+      "height": 338
+    },
+    "totem": {
+      "x": 1152,
+      "y": 598,
+      "width": 310,
+      "height": 339
+    }
+  },
+  "notes": "Imagegen production props. PNG copied unchanged; alpha bounds measured for runtime texture frames."
+}

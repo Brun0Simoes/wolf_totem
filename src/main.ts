@@ -2,6 +2,9 @@ import './animation-preview.css';
 import './style.css';
 import './refinements.css';
 import './ui.css';
+import './journey-ui.css';
+import { growthBars, awakeningMarkup, updateGrowthBars } from './ui/heroProgress';
+import { environmentPortrait } from './ui/environment';
 import { createIcons, icons } from 'lucide';
 import { SoundSystem, type Sfx } from './audio';
 import { characters } from './data/characters';
@@ -13,8 +16,9 @@ import { ERA_NAMES, MEMORIES, memoryCost, spiritById, spiritsOfEra, type MemoryI
 import { TRAIT_RULES } from './game/synergies';
 import { QUESTS, openQuests, rewardText } from './game/quests';
 import { EVENT_TEXT } from './game/events';
-import { CURA_NOTE, huntChance, huntSlots, MAX_HERO_LEVEL, MAX_PANEMA, PRACTICES, practiceById, TRAILS, trailById, xpToNext, type Practice } from './game/tribe';
-import { FORMATION_SLOTS } from './game/board';
+import { AWAKENING, ERA_GROWTH, MAX_RITUAL_LEVEL, RITUAL_XP, ritualXpToNext, CURA_NOTE, huntChance, huntSlots, MAX_HERO_LEVEL, MAX_PANEMA, PRACTICES, practiceById, TRAILS, trailById, xpToNext, type Practice } from './game/tribe';
+import { project } from './render/battleArena';
+import { allySlotCenter, FORMATION_SLOTS } from './game/board';
 import {
   BUILDING_KEYS, Game, GATHER_AMOUNT, MAX_BUILDING_LEVEL, MAX_INVENTORY, REROLL_COST, SKILL_NOTES, WONDER_STAGES, WORK_AFFINITY,
   buildingCost, capacity, embersFor, forgeRate, getRates, getSynergies, pendingEra, recruitCost, ritualSpeed, shopSize, stageUnlocked, villageCost,
@@ -63,6 +67,12 @@ let repeatTimer = 0;
 let confirmAscend = false;
 let confirmWipe = false;
 let curaHero: string | null = null;
+let chosenPractice = 'rape';
+let tribeTab = 'owned';
+let tribeQuery = '';
+let panelOpen = !window.matchMedia('(max-width: 850px)').matches;
+let eventOpen = false;
+let inspectedHero: string | null = null;
 let awayKey = '';
 let reportKey: string | null = null;
 let confirmNew = false;
@@ -79,7 +89,7 @@ const roman = (n: number) => ['I', 'II', 'III', 'IV', 'V'][n - 1] ?? String(n);
 const refreshIcons = () => createIcons({ icons, attrs: { 'stroke-width': 1.6, 'aria-hidden': 'true' } });
 const characterOf = (id: number) => characters.find(c => c.id === id)!;
 /** m:ss until a village time; refreshed in place by renderMetrics through data-until. */
-const timeLeft = (until: number) => { const left = Math.max(0, Math.ceil(until - game.state.clock)); return `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; };
+const timeLeft = (until: number) => { const left = Math.max(0, Math.ceil(until - game.state.clock)); return left >= 3600 ? `${Math.floor(left / 3600)}h ${Math.floor(left % 3600 / 60)}min` : `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; };
 const countdown = (until: number) => `<span class="countdown" data-until="${until}">${timeLeft(until)}</span>`;
 const inFight = (h: Hero) => game.battle?.status === 'fighting' && game.battle.party.includes(h.uid);
 const heroLabel = (h: Hero) => `${characterOf(h.characterId).name} ${'★'.repeat(h.stars)} · Nv ${h.level}${h.panema ? ` · panema ${h.panema}` : ''}`;
@@ -112,9 +122,8 @@ $('#app').innerHTML = `
  <div class="game-shell">
   <nav class="rail" aria-label="Navegação principal"><div class="nav-group">
    <button class="nav-button active" data-view="village">${icon('tent-tree')}<span>Aldeia</span></button>
-   <button class="nav-button" data-view="battle">${icon('swords')}<span>Expedição</span></button>
-   <button class="nav-button" data-action="codex">${icon('book-open')}<span>Códice</span></button>
-   <button class="nav-button" data-action="ancestors">${icon('landmark')}<span>Totem</span></button>
+   <button class="nav-button" data-view="battle">${icon('swords')}<span>Expedições</span></button>
+   <button class="nav-button" data-action="tribe">${icon('users')}<span>Tribo</span></button><button class="nav-button" data-action="cura">${icon('flame')}<span>Rituais</span></button><button class="nav-button" data-action="codex">${icon('book-open')}<span>Códice</span></button>
   </div><div class="rail-bottom"><span class="vertical-caption">SIGA O CHAMADO</span><span class="rail-seal" id="rail-era">I</span></div></nav>
   <main class="main-area">
    <div class="play-area"><section class="world-wrap" aria-label="Mundo da tribo">
@@ -127,8 +136,8 @@ $('#app').innerHTML = `
     <div id="pause-overlay" class="pause-overlay" hidden><span>${icon('pause')}O tempo descansa.</span><button class="primary" data-action="pause">Retomar jornada</button></div>
     <div id="battle-result" class="battle-result" hidden></div>
    </section><aside class="side-panel" id="side-panel" aria-label="Ações"></aside></div>
-   <section class="camp-section"><div class="section-heading"><div><p class="eyebrow">HERÓIS & ESPÍRITOS</p><h2 id="camp-title">Ao redor da fogueira</h2></div><button class="text-button" data-action="reroll" id="reroll">${icon('refresh-cw')}Novos viajantes <span class="small-cost">${REROLL_COST.spirit} ${icon('flame')}</span></button></div><div id="camp-content"></div></section>
-   <footer><span><span class="live-dot"></span><span id="save-status">Progresso salvo neste navegador</span></span><span>WOLF TOTEM <b>·</b> VERSÃO 1.3</span><button class="text-button" data-action="help">Guia da tribo ${icon('arrow-up-right')}</button></footer>
+   <section class="camp-section"><div class="section-heading"><div><p class="eyebrow">HERÓIS & ESPÍRITOS</p><h2 id="camp-title">Ao redor da fogueira</h2></div><button class="outline-button" data-action="tribe" id="reroll">Abrir tribo ${icon('arrow-right')}</button></div><div id="camp-content"></div></section>
+   <div id="journey-objective" class="journey-objective"></div><footer><span><span class="live-dot"></span><span id="save-status">Progresso salvo neste navegador</span></span><span>WOLF TOTEM <b>·</b> VERSÃO 2.0</span><button class="text-button" data-action="ancestors">Totem ancestral</button><button class="text-button" data-action="help">Guia da tribo ${icon('arrow-up-right')}</button></footer>
   </main>
  </div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -136,8 +145,14 @@ $('#app').innerHTML = `
  <dialog id="modal"><div id="modal-content"></div></dialog>
  <input id="save-file" type="file" accept="application/json,.json" hidden />`;
 
+document.querySelector('.main-area')!.insertBefore($('#journey-objective'),document.querySelector('.camp-section'));
+document.querySelector('.topbar')!.insertBefore(document.querySelector('.rail')!, document.querySelector('.resources'));
+
+document.querySelector('.nav-group')!.insertBefore(document.querySelector('[data-action=tribe]')!,document.querySelector('[data-view=battle]'));
 const world = createWorld($('#world'), game, {
-  onBuilding(id) { selectedBuilding = id; if (view !== 'village') setView('village'); else renderSide(); },
+  onHero(uid) { selectedHero = uid; panelOpen = true; renderCamp(); renderSide(); },
+  onMove(uid, slot) { selectedHero = uid; act(game.deploy(uid, slot), 'click'); },
+  onBuilding(id) { panelOpen = true; selectedBuilding = id; if (view !== 'village') setView('village'); else renderSide(); },
   onSlot(slot) {
     if (!selectedHero) return toast('Escolha um herói abaixo e depois uma posição.');
     act(game.deploy(selectedHero, slot), 'click');
@@ -178,6 +193,7 @@ function renderMetrics() {
     const omen = game.state.omen?.resource === r.id && game.state.clock < game.state.omen.until;
     document.querySelector(`.resource.${r.id}`)?.classList.toggle('omen', omen);
   }
+  updateGrowthBars(game.state.heroes);
   renderEvent();
   $('#res-embers').textContent = fmt(game.state.embers);
   $('#pause-overlay').hidden = !game.state.paused;
@@ -192,10 +208,10 @@ function renderMetrics() {
   });
   document.querySelectorAll<HTMLElement>('[data-until]').forEach(el => { el.textContent = timeLeft(Number(el.dataset.until)); });
   // Hunters coming home and ceremonies ending refresh the cards and any open panel.
-  const away = game.state.heroes.map(h => `${h.uid}:${h.away?.until ?? ''}:${h.level}:${h.panema}`).join('|') + `|${game.state.cacao}|${game.state.buildings.cura}`;
+  const away = game.state.heroes.map(h => `${h.uid}:${h.away?.until ?? ''}:${h.level}:${h.ritualLevel}:${h.stars}:${h.panema}:${game.state.clock>=h.ritualReadyAt}`).join('|') + `|${game.state.cacao}|${game.state.buildings.cura}`;
   if (away !== awayKey) {
     const first = awayKey === ''; awayKey = away;
-    if (!first) { renderCamp(); renderSide(); if (activeModal === 'hunts') showHunts(); if (activeModal === 'cura') showCura(); }
+    if (!first) { renderCamp(); renderSide(); if (activeModal === 'hunts') showHunts(); if (activeModal === 'cura') showCura(); if(activeModal==='hero'&&inspectedHero)showHero(inspectedHero); }
   }
   const last = game.state.reports.at(-1), key = last ? `${last.clock}:${last.uid}` : '';
   if (reportKey !== null && key !== reportKey && last) { toast(`${last.name} ${last.text}`); sound.play(last.ok ? 'recruit' : 'defeat'); }
@@ -242,38 +258,27 @@ function showJournal() {
 }
 
 function renderSide() {
+  $('#side-panel').hidden = !panelOpen;
+  $('#journey-objective').innerHTML=journeyObjective();
+  document.querySelector('.play-area')!.classList.toggle('panel-closed', !panelOpen);
   if (view === 'village') renderVillageSide(); else renderBattleSide();
   refreshIcons(); renderMetrics();
 }
 
 function renderVillageSide() {
-  const s = game.state, id = selectedBuilding, b = BUILDINGS[id], level = s.buildings[id];
-  const cost = buildingCost(id, level), vc = villageCost(s.villageLevel), goal = objective(), era = pendingEra(s);
-  const rate = b.resource ? getRates(s)[b.resource] : 0;
-  const workers = s.heroes.filter(h => h.work === id), slots = workerSlots(s, id);
-  const idle = s.heroes.filter(h => h.slot === null && h.work === null);
-  const forgeLine = id === 'cura'
-    ? level ? `<div class="production-line">${icon('leaf')} Cerimônias ${Math.round((ritualSpeed(s) - 1) * 100)}% mais rápidas com ajudantes · <button class="text-button" data-action="cura">Abrir ${icon('arrow-right')}</button></div>` : '<div class="production-line muted">A maloca onde o pajé conduz as cerimônias da tribo.</div>'
-    : id === 'hunt' ? `<div class="production-line">${icon(b.icon)} +${rate.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} alimento/s · ${huntSlots(level)} caçador${huntSlots(level) > 1 ? 'es' : ''} na mata</div>`
-    : id === 'forge'
-    ? level ? `<div class="production-line">${icon('anvil')} 1 componente a cada ${Math.max(1, Math.round(1 / forgeRate(s) / 60))} min<span class="forge-bar" id="forge-progress" style="--progress:${s.forgeProgress}"></span></div>` : '<div class="production-line muted">Ainda não construída. Exige aldeia nível 2.</div>'
-    : `<div class="production-line">${icon(b.icon)} +${rate.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} ${RESOURCES.find(r => r.id === b.resource)!.name.toLowerCase()}/s</div>`;
-  $('#side-panel').innerHTML = `
-   <div class="panel-kicker">SUA ALDEIA <span>ERA ${roman(s.villageLevel)}</span></div>
-   <div class="village-summary"><span class="large-seal">${icon('tent-tree')}</span><h2>Clã da Primeira Chama</h2><p>${s.heroes.length} heróis · ${capacity(s)} vagas na formação</p>
-    ${s.spirits.length ? `<div class="spirit-row">${s.spirits.map(sp => `<span class="spirit-badge" title="${esc(`${spiritById(sp)!.name}: ${spiritById(sp)!.passiveText}`)}">${spiritGlyph(sp)}</span>`).join('')}</div>` : ''}</div>
-   ${era ? `<div class="objective urgent"><span class="objective-symbol">${icon('sparkles')}</span><div><small>O PRÓXIMO PASSO</small><strong>${esc(goal.title)}</strong><p>${esc(goal.text)}</p><button class="primary compact" data-action="spirit-choice">${icon('feather')}Escolher espírito da Era ${roman(era)}</button></div></div>` : journalHTML(goal)}
-   <div class="tribe-actions"><button class="outline-button" data-action="hunts">${icon('footprints')}Caçadas <b>${s.heroes.filter(h => h.away?.kind === 'hunt').length}/${huntSlots(s.buildings.hunt)}</b></button><button class="outline-button" data-action="cura">${icon('leaf')}Casa de Cura${s.clock < s.cacao ? ` <b title="Roda de cacau">${countdown(s.cacao)}</b>` : ''}</button></div>
-   <div class="building-tabs">${BUILDING_KEYS.map(key => `<button data-building="${key}" class="${key === id ? 'active' : ''}" title="${BUILDINGS[key].name}" aria-label="${BUILDINGS[key].name}">${icon(BUILDINGS[key].icon)}</button>`).join('')}</div>
-   <div class="building-details"><div class="detail-heading"><h3>${b.name}</h3><span>${level ? `NV. ${level}` : 'A CONSTRUIR'}</span></div><p>${b.desc}</p>${forgeLine}
-    <button class="outline-button" data-action="building-upgrade" data-max="${level >= MAX_BUILDING_LEVEL}" ${costAttr(cost)}>${icon('hammer')} ${level >= MAX_BUILDING_LEVEL ? 'Nível máximo' : level ? 'Melhorar' : 'Construir'} <span class="cost">${costHTML(cost)}</span></button>
-    ${level ? `<div class="workers"><div class="workers-title">TRABALHADORES <b>${workers.length}/${slots}</b><span title="Afinidade: ${WORK_AFFINITY[id].join(', ')}">${icon('info')}</span></div>
-     ${workers.map(h => `<div class="worker"><span class="worker-glyph">${glyphSVG(CHARACTER_ANIMAL[h.characterId], '#c9d3a8')}</span><span>${characterOf(h.characterId).name} ${'★'.repeat(h.stars)}</span><em>+${Math.round(workerBonus(h, id) * 100)}%</em><button class="icon-button tiny" data-unassign="${h.uid}" aria-label="Dispensar ${characterOf(h.characterId).name}">${icon('x')}</button></div>`).join('')}
-     ${workers.length < slots ? idle.length ? `<div class="assign-row"><select id="worker-select" aria-label="Herói para trabalhar">${idle.map(h => `<option value="${h.uid}">${characterOf(h.characterId).name} ${'★'.repeat(h.stars)} · +${Math.round(workerBonus(h, id) * 100)}%</option>`).join('')}</select><button class="outline-button" data-action="assign">${icon('user-plus')}Designar</button></div>` : '<p class="muted small">Heróis na reserva podem trabalhar aqui.</p>' : ''}</div>` : ''}
-   </div>
-   <div class="gather-title">DA TERRA, NOSSO SUSTENTO</div>
-   <div class="gather-buttons">${RESOURCES.filter(r => r.id !== 'spirit').map(r => `<button data-gather="${r.id}" title="Coletar ${r.name.toLowerCase()}">${icon(r.icon)}<span>${r.name}</span><b>+${GATHER_AMOUNT[r.id] * s.villageLevel}</b></button>`).join('')}</div>
-   <div class="village-upgrade">${s.villageLevel < 5 ? `<button class="primary" data-action="village-upgrade" ${costAttr(vc)}>${icon('chevrons-up')}Avançar para a Era ${roman(s.villageLevel + 1)} <span>Nv. ${s.villageLevel + 1}</span></button><div class="upgrade-cost cost">${costHTML(vc)}</div>` : `<button class="outline-button" data-action="ancestors">${icon('landmark')} Grande Totem · ${s.wonder}/${WONDER_STAGES}</button>`}</div>`;
+  const s=game.state,id=selectedBuilding,b=BUILDINGS[id],level=s.buildings[id],cost=buildingCost(id,level);
+  const workers=s.heroes.filter(h=>h.work===id), idle=s.heroes.filter(h=>!h.away&&!inFight(h)&&h.work!==id);
+  const rate=b.resource?getRates(s)[b.resource]:0;
+  $('#side-panel').innerHTML=`<button class="panel-close icon-button" data-action="panel-close" aria-label="Recolher painel">${icon('x')}</button>
+    <div class="building-art">${environmentPortrait(id)}</div><div class="context-title"><span class="context-icon">${icon(b.icon)}</span><h2>${b.name}</h2><span>${level?`Nível ${level}`:'A construir'}</span></div><p>${b.desc}</p>
+    <div class="context-output">${b.resource?`${icon(b.icon)} ${RESOURCES.find(r=>r.id===b.resource)!.name} <b>+${rate.toLocaleString('pt-BR',{maximumFractionDigits:1})}/s</b>`:id==='cura'?'Cerimônias e integração do vínculo ritual.':`Forja de componentes · ${level?Math.round(1/forgeRate(s)/60):'—'} min`}</div>
+    <button class="primary" data-action="building-upgrade" data-max="${level>=MAX_BUILDING_LEVEL}" ${costAttr(cost)}>${icon('hammer')}${level?'Melhorar construção':'Construir'}<span class="cost">${costHTML(cost)}</span></button>
+    ${id==='cura'?'<button class="outline-button" data-action="cura">Abrir rituais</button>':id==='hunt'?'<button class="outline-button" data-action="hunts">Explorar caçadas</button>':''}
+    <div class="context-workers"><h3>Trabalhadores <small>${workers.length}/${workerSlots(s,id)}</small></h3><p>Trabalho concede 40 XP por minuto. Designar retira o herói da formação.</p>
+    ${workers.map(h=>`<div class="worker"><b>${characterOf(h.characterId).name}</b><span>+${Math.round(workerBonus(h,id)*100)}%</span><button class="icon-button" data-unassign="${h.uid}" aria-label="Retirar ${characterOf(h.characterId).name} do trabalho">${icon('x')}</button></div>`).join('')}
+    ${level&&workers.length<workerSlots(s,id)?idle.length?`<div class="assign-row"><select id="worker-select" aria-label="Herói para trabalhar">${idle.map(h=>`<option value="${h.uid}">${characterOf(h.characterId).name}${h.slot!==null?' · no campo':h.work?' · trabalhando':''}</option>`).join('')}</select><button class="outline-button" data-action="assign">Designar</button></div>`:'<button class="outline-button" data-action="tribe">Escolher um companheiro</button>':''}</div>
+    <details class="context-more"><summary>Coleta e construções</summary><div class="building-tabs">${BUILDING_KEYS.map(key=>`<button data-building="${key}" class="${key===id?'active':''}" aria-label="${BUILDINGS[key].name}">${icon(BUILDINGS[key].icon)}</button>`).join('')}</div><div class="gather-buttons">${RESOURCES.filter(r=>r.id!=='spirit').map(r=>`<button data-gather="${r.id}" aria-label="Coletar ${r.name}">${icon(r.icon)}${r.name} +${GATHER_AMOUNT[r.id]*s.villageLevel}</button>`).join('')}</div></details>
+    <div class="context-links"><button class="text-button" data-action="panel-close">${icon('maximize')}Mais espaço no mapa</button><button class="text-button" data-action="ancestors">${icon('landmark')}Totem</button></div>`;
 }
 
 /** The battle on screen (an expedition, the endless hunt or a raid), else the next selected expedition. */
@@ -336,11 +341,12 @@ function renderPowers() {
 /** The village event card, with its countdown; raids can also be answered from the expedition view. */
 function renderEvent() {
   const card = $('#event-card'), event = game.state.event;
-  const show = !!event && (view === 'village' || (event.kind === 'raid' && !game.battle));
+  const show = eventOpen && !!event && (view === 'village' || (event.kind === 'raid' && !game.battle));
   card.hidden = !show;
   if (!show || !event) { card.dataset.key = ''; return; }
   const left = Math.max(0, Math.ceil(event.expires - game.state.clock));
-  const key = `${event.kind}|${event.expires}|${left}|${game.state.paused}`;
+  const key = `${event.kind}|${event.expires}|${game.state.paused}`;
+  const timer=card.querySelector('.event-timer'); if(timer)timer.textContent=timeLeft(event.expires);
   if (card.dataset.key === key) return;
   card.dataset.key = key;
   const text = EVENT_TEXT[event.kind];
@@ -363,35 +369,32 @@ function heroStatus(h: Hero): string {
 }
 
 function renderCamp() {
-  $('#camp-title').textContent = view === 'village' ? 'Ao redor da fogueira' : 'A força da sua tribo';
-  $('#reroll').hidden = view !== 'village';
-  if (view === 'village') {
-    const odds = shopOdds(game.state.villageLevel).map((p, i) => p ? `<span class="odds cost-${i + 1}" title="Custo ${i + 1}">${i + 1}<b>${p}%</b></span>` : '').join('');
-    $('#camp-content').innerHTML = `<div class="recruit-grid" style="--shop:${shopSize(game.state)}">${game.state.shop.map(id => {
-      const c = characterOf(id), cost = recruitCost(id, game.state);
-      const owned = game.state.heroes.filter(h => h.characterId === id && h.stars === 1).length;
-      return `<article class="recruit-card cost-${c.cost}"><div class="card-glow"></div><button class="hero-art-button" data-character="${id}" aria-label="Conhecer ${c.name}">${portraitHTML(c)}</button><div class="recruit-copy"><div class="hero-star">${'◆'.repeat(c.cost)} <span>CUSTO ${c.cost}${owned ? ` · ${owned}/3` : ''}</span></div><button class="hero-name" data-character="${id}">${c.name}</button><p>${c.title}</p><div class="trait-line">${icon(c.range > 1 ? 'crosshair' : 'swords')}${esc(c.traits.slice(0, 2).join(' · '))}</div><button class="recruit-button ${owned === 2 ? 'merge' : ''}" data-recruit="${id}" ${costAttr(cost)} data-lock-battle="true">${owned === 2 ? 'Evoluir' : 'Recrutar'} <span class="cost">${costHTML(cost)}</span></button></div></article>`;
-    }).join('')}</div><div class="camp-note">${icon('combine')}3 cópias iguais se unem em um herói mais forte.<span class="shop-odds" aria-label="Chances de cada custo nesta aldeia">${odds}</span><button class="text-button" data-view="battle">Organizar minha tribo ${icon('arrow-right')}</button></div>`;
-  } else {
-    const inv = game.state.inventory, selected = selectedItem !== null ? inv[selectedItem] : undefined;
-    $('#camp-content').innerHTML = `<div class="party-list">${game.state.heroes.map(h => {
-      const c = characterOf(h.characterId);
-      const xp = h.level >= MAX_HERO_LEVEL ? 1 : h.xp / xpToNext(h.level);
-      return `<div class="party-card ${h.uid === selectedHero ? 'selected' : ''} ${h.slot !== null ? 'deployed' : ''} ${h.work ? 'working' : ''} ${h.away ? 'away' : ''} ${selected ? 'can-equip' : ''}">
-       <button class="party-select" data-hero="${h.uid}" aria-pressed="${h.uid === selectedHero}">${portraitHTML(c, h.stars)}<span><b>${c.name}</b><small>${'★'.repeat(h.stars)}</small><em>${heroStatus(h)}</em></span></button>
-       <span class="hero-level" title="Nível ${h.level}${h.level < MAX_HERO_LEVEL ? ` · ${Math.floor(h.xp)}/${xpToNext(h.level)} XP` : ' · máximo'}">Nv ${h.level}<i class="xp-bar" style="--xp:${xp}"></i></span>
-       ${h.panema ? `<span class="panema-mark" title="Panema ${h.panema}/${MAX_PANEMA}: azar na caça. Sananga e kambô limpam.">${'●'.repeat(h.panema)}</span>` : ''}
-       ${h.away ? '' : `<button class="hunt-button" data-hunt-hero="${h.uid}" title="Mandar ${c.name} caçar" aria-label="Mandar ${c.name} caçar">${icon('footprints')}</button>`}
-       <div class="item-slots">${Array.from({ length: MAX_ITEMS_PER_HERO }, (_, i) => h.items[i] ? `<button class="slot filled" style="--item:${itemById(h.items[i])!.color}" data-unequip="${h.uid}:${i}" title="${esc(`${itemById(h.items[i])!.name}: ${itemById(h.items[i])!.text} · clique para guardar`)}"></button>` : '<span class="slot"></span>').join('')}</div>
-       <button class="party-info" data-character="${c.id}" data-stars="${h.stars}" title="Ver ${c.name}" aria-label="Ver detalhes de ${c.name}">${icon('info')}</button>
-       ${h.slot !== null ? `<button class="bench-button" data-bench="${h.uid}" title="Mover para reserva" aria-label="Mover ${c.name} para reserva">${icon('minus')}</button>` : ''}
-      </div>`;
-    }).join('')}</div>
-    <div class="bag"><div class="bag-title">${icon('backpack')}BOLSA DA TRIBO <b id="bag-count">${inv.length}/${MAX_INVENTORY}</b><span>${selected ? isComponent(selected) && game.state.buildings.forge > 0 ? 'Toque num herói para equipar ou noutro componente para forjar.' : 'Toque num herói para equipar.' : 'Itens vêm das expedições e da Forja de Osso. Dois componentes no mesmo herói formam um item.'}</span></div>
-     <div class="bag-items">${inv.length ? inv.map((id, i) => itemChip(id, `data-inv="${i}" aria-pressed="${i === selectedItem}"`, i === selectedItem ? ' selected' : selected && isComponent(selected) && isComponent(id) && i !== selectedItem ? ' combinable' : '')).join('') : '<p class="muted small">Vazia por enquanto.</p>'}</div></div>
-    <div class="camp-note">${icon('mouse-pointer-2')}${selectedHero ? 'Agora escolha uma casa no campo.' : 'Escolha um herói para posicioná-lo no campo.'}${selectedHero ? `<div class="position-controls"><select id="formation-slot" aria-label="Posição no campo">${Array.from({ length: FORMATION_SLOTS }, (_, slot) => `<option value="${slot}">Posição ${slot + 1}${game.state.heroes.some(h => h.slot === slot) ? ' · ocupada' : ''}</option>`).join('')}</select><button class="outline-button" data-action="place-selected">Posicionar</button><button class="outline-button" data-action="sell-selected" title="Libera o herói e devolve espírito">${icon('user-minus')}Liberar</button></div>` : ''}<button class="text-button" data-view="village">Recrutar viajantes ${icon('arrow-right')}</button></div>`;
-  }
-  refreshIcons();
+  $('#camp-title').textContent='Sua tribo'; $('#reroll').hidden=false;
+  const party=view==='battle'?game.state.heroes.filter(h=>h.slot!==null):game.state.heroes.slice(0,5);
+  $('#camp-content').innerHTML=`<div class="hero-dock">${party.map(h=>`<button class="dock-hero ${h.uid===selectedHero?'selected':''} ${h.away?'away':''}" data-${view==='battle'?'hero':'inspect'}="${h.uid}" draggable="${view==='battle'&&!h.away}" data-drag-hero="${h.uid}" aria-label="${view==='battle'?'Selecionar':'Ver'} ${characterOf(h.characterId).name}">${portraitHTML(characterOf(h.characterId),h.stars)}<span class="dock-copy"><span class="dock-name">${characterOf(h.characterId).name}<small>${'★'.repeat(h.stars)}</small></span><em>${heroStatus(h)}</em>${growthBars(h,true)}</span></button>`).join('')}
+  <button class="dock-add" data-action="${view==='battle'?'formation':'tribe'}">${icon(view==='battle'?'move':'users')}<span>${view==='battle'?'Organizar formação':'Abrir tribo'}</span>${icon('arrow-right')}</button></div>`;
+}
+
+function showTribe(tab=tribeTab,query=tribeQuery) {
+  tribeTab=tab;tribeQuery=query;const s=game.state;
+  const list=tab==='owned'?characters.filter(c=>s.heroes.some(h=>h.characterId===c.id)):characters;
+  showModal('tribe',`<h2>Os guardiões da tribo</h2><p class="modal-intro">Cada companheiro tem uma identidade e dois caminhos de crescimento. Novas eras e vínculos rituais abrem o catálogo.</p><div class="tribe-toolbar"><div class="segmented"><button data-tribe-tab="owned" aria-pressed="${tab==='owned'}">Sua tribo · ${s.heroes.length}</button><button data-tribe-tab="catalog" aria-pressed="${tab==='catalog'}">Companheiros · 55</button></div><label class="search">${icon('search')}<input id="tribe-search" aria-label="Buscar companheiro" placeholder="Buscar nome ou característica" value="${esc(query)}"></label></div>
+    <div class="tribe-grid">${list.filter(c=>`${c.name} ${c.traits.join(' ')}`.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR'))).map(c=>{
+      const h=s.heroes.find(h=>h.characterId===c.id),rite=[1,2,3,5,7][c.cost-1],open=c.cost<=s.villageLevel&&s.heroes.some(h=>h.ritualLevel>=rite);
+      return `<article class="companion ${open||h?'':'locked'}"><button class="companion-art" ${h?`data-inspect="${h.uid}"`:`data-character="${c.id}"`} aria-label="Ver ${c.name}">${portraitHTML(c,h?.stars??1)}</button><div><h3>${c.name}<small>${h?'★'.repeat(h.stars):`Era ${roman(c.cost)}`}</small></h3><p>${c.title}</p>${h?growthBars(h,true):`<p class="recruit-requirement">Era ${roman(c.cost)} · vínculo ritual ${rite}</p>`}<button class="${h?'outline-button':'primary'}" ${h?`data-inspect="${h.uid}"`:`data-recruit="${c.id}" ${open?costAttr(recruitCost(c.id,s)):'disabled'}`} data-lock-battle="true">${h?'Acompanhar herói':open?'Acolher companheiro':'Vínculo a descobrir'}${h?'':open?`<span class="cost">${costHTML(recruitCost(c.id,s))}</span>`:''}</button></div></article>`;
+    }).join('')||'<p>Nenhum companheiro com essa busca.</p>'}</div>`);
+}
+
+function showHero(uid:string) {
+  const h=game.state.heroes.find(h=>h.uid===uid);if(!h)return;
+  inspectedHero=uid;const c=characterOf(h.characterId),sheet=artFor(c,h.stars).sheet;
+  showModal('hero',`<div class="hero-inspector"><aside class="inspector-roster">${game.state.heroes.map(member=>`<button data-inspect="${member.uid}" class="${uid===member.uid?'selected':''}" aria-label="Ver ${characterOf(member.characterId).name}">${portraitHTML(characterOf(member.characterId),member.stars)}</button>`).join('')}</aside><section class="inspector-art"><canvas id="character-preview" width="640" height="560" role="img" aria-label="${c.name}, ${h.stars} estrelas"></canvas><h2>${c.name}</h2><p>${c.title}</p><span class="inspector-stars">${'★'.repeat(h.stars)}</span><p>${heroStatus(h)}</p><button class="text-button" data-character="${c.id}" data-stars="${h.stars}">Conhecer o espírito ${icon('arrow-right')}</button></section><section class="inspector-path"><button class="text-button" data-action="tribe">${icon('arrow-left')}Sua tribo</button><h2>O caminho do despertar</h2><p>Atividades fortalecem o corpo. Cerimônias aprofundam o vínculo.</p>${growthBars(h)}${awakeningMarkup(h)}<div class="hero-action-row"><button class="primary" data-ritual-hero="${uid}" ${h.away||inFight(h)?'disabled':''}>${icon('flame')}Preparar ritual</button><button class="outline-button" data-hunt-hero="${uid}" ${h.away||inFight(h)?'disabled':''}>${icon('footprints')}Enviar para uma caçada</button><button class="outline-button" data-formation-hero="${uid}" ${h.away||inFight(h)?'disabled':''}>${icon('move')}Organizar posição</button></div><details class="hero-equipment"><summary>Equipamento · ${h.items.length}/3</summary><div class="equipment-items">${h.items.map((id,i)=>itemChip(id,`data-unequip="${h.uid}:${i}"`)).join('')||'<p>Escolha um item da bolsa para equipar.</p>'}</div><div class="bag-items">${game.state.inventory.map((id,i)=>itemChip(id,`data-equip-direct="${h.uid}:${i}"`)).join('')||'<p>A bolsa está vazia.</p>'}</div></details><p class="integration-note">${h.away?`Atividade em andamento · ${countdown(h.away.until)}`:game.state.clock<h.ritualReadyAt?`Integração ritual · próximo rito em ${countdown(h.ritualReadyAt)}`:'Disponível para uma nova atividade.'}</p></section></div>`);
+  if(sheet)preview.mount($<HTMLCanvasElement>('#character-preview'),c.id,h.stars,sheet);
+}
+
+function showFormation(uid=selectedHero??game.state.heroes[0]?.uid) {
+  const s=game.state; if(s.heroes.find(h=>h.uid===uid)?.away)uid=s.heroes.find(h=>!h.away)?.uid??''; selectedHero=uid||null;
+  showModal('formation',`<h2>Prepare a expedição</h2><p class="modal-intro">Escolha um herói e toque em uma casa. Uma casa ocupada troca os dois companheiros de posição. No computador, você também pode arrastar os retratos para o campo.</p><div class="formation-layout"><div class="formation-roster">${s.heroes.map(h=>`<button data-formation-hero="${h.uid}" aria-pressed="${h.uid===uid}" ${h.away?'disabled':''}>${portraitHTML(characterOf(h.characterId),h.stars)}<span>${characterOf(h.characterId).name}<small>${h.slot!==null?`Casa ${h.slot+1}`:'Reserva'}</small></span></button>`).join('')}</div><div><div class="formation-grid" role="group" aria-label="Casas da formação">${Array.from({length:FORMATION_SLOTS},(_,slot)=>{const h=s.heroes.find(h=>h.slot===slot);return`<button data-place-slot="${slot}" aria-label="Casa ${slot+1}${h?`, ${characterOf(h.characterId).name}`:', vazia'}"><small>${slot+1}</small>${h?portraitHTML(characterOf(h.characterId),h.stars):icon('plus')}</button>`;}).join('')}</div><div class="formation-actions"><button class="primary" data-action="auto-formation">${icon('wand-sparkles')}Organizar por função</button>${uid?`<button class="outline-button" data-bench="${uid}">Mover para reserva</button>`:''}<button class="outline-button" data-action="formation-done">Voltar ao campo</button></div><p class="muted">Frente nas primeiras casas; atiradores e místicos nas fileiras de trás.</p></div></div>`);
 }
 
 function renderAll() {
@@ -399,10 +402,12 @@ function renderAll() {
   if (selectedItem !== null && selectedItem >= game.state.inventory.length) selectedItem = null;
   document.querySelectorAll<HTMLButtonElement>('.nav-button[data-view]').forEach(n => n.classList.toggle('active', n.dataset.view === view));
   const s = game.state, stage = encounter();
+  document.body.dataset.view=view;
+  $('#journey-objective').innerHTML=journeyObjective();
   $('#rail-era').textContent = roman(s.villageLevel);
   $('#era-label').textContent = view === 'village' ? `ERA ${ERA_NAMES[s.villageLevel - 1].toUpperCase()}` : stage.raid ? 'DEFESA DA ALDEIA' : `EXPEDIÇÕES · ${stage.region ? stage.region.name.toUpperCase() : 'CAÇADA ETERNA'}`;
-  $('#world-title').textContent = view === 'village' ? ['O primeiro fogo.', 'O chamado dos espíritos.', 'A floresta desperta.', 'As grandes manadas.', 'A era dos ancestrais.'][s.villageLevel - 1] : stage.name + '.';
-  $('#world-subtitle').textContent = view === 'village' ? 'Uma pequena chama. O início de uma grande tribo.' : stage.raid ? 'Saqueadores rondam as cabanas. A tribo defende o que construiu.' : stage.region ? stage.region.subtitle : 'Feras cada vez mais fortes. Até onde a tribo chega?';
+  $('#world-title').textContent = view === 'village' ? 'Clareira do Lobo' : stage.name + '.';
+  $('#world-subtitle').textContent = view === 'village' ? 'Sua tribo cresce entre a mata e os espíritos.' : stage.raid ? 'Saqueadores rondam as cabanas. A tribo defende o que construiu.' : stage.region ? stage.region.subtitle : 'Feras cada vez mais fortes. Até onde a tribo chega?';
   $('#world-badge-text').textContent = view === 'village' ? 'Clareira do Lobo' : game.battle?.status === 'fighting' ? `Em combate · ${s.settings.speed}×` : 'Preparação';
   $('#world-hint').textContent = view === 'village' ? 'Selecione uma construção para evoluir sua aldeia.' : 'Selecione um herói abaixo e uma posição no campo.';
   renderSide(); renderCamp(); renderMetrics(); renderResult();
@@ -439,6 +444,7 @@ function summaryHTML(b: NonNullable<typeof game.battle>): string {
 }
 
 function showModal(name: string, html: string) {
+  $('#modal').dataset.surface=name;
   preview.clear(); activeModal = name;
   $('#modal-content').innerHTML = `<button class="modal-close icon-button" data-action="close" aria-label="Fechar">${icon('x')}</button>${html}`;
   if (!$<HTMLDialogElement>('#modal').open) $<HTMLDialogElement>('#modal').showModal();
@@ -453,8 +459,8 @@ function codexTabs(active: string) {
 function showCodex(cost = 0, query = '') {
   const list = characters.filter(c => (!cost || c.cost === cost) && `${c.name} ${c.title} ${c.traits.join(' ')}`.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')));
   showModal('codex', `<p class="eyebrow">O MUNDO DE WOLF TOTEM</p><h2>Memórias dos espíritos</h2>${codexTabs('heroes')}
-   <div class="codex-tools"><label class="search">${icon('search')}<input id="codex-search" placeholder="Buscar herói ou característica" value="${esc(query)}" aria-label="Buscar no códice"/></label><div class="cost-filters">${[0, 1, 2, 3, 4, 5].map(n => `<button data-filter="${n}" class="${cost === n ? 'active' : ''}">${n === 0 ? 'Todos' : `Custo ${n}`}</button>`).join('')}</div></div>
-   <div class="codex-grid">${list.map(c => `<button class="codex-card cost-${c.cost}" data-character="${c.id}">${portraitHTML(c)}<span class="codex-cost">${c.cost}</span><span class="codex-name">${c.name}<small>${c.title}</small></span><span class="codex-status">${c.cost <= unlockedCost(game.state.villageLevel) ? 'Recrutável na fogueira' : `Era ${roman(c.cost)}`} · ${ANIMALITY[c.id].category}</span></button>`).join('') || '<p>Nenhum espírito encontrado com essa busca.</p>'}</div>`);
+   <div class="codex-tools"><label class="search">${icon('search')}<input id="codex-search" placeholder="Buscar herói ou característica" value="${esc(query)}" aria-label="Buscar no códice"/></label><div class="cost-filters">${[0, 1, 2, 3, 4, 5].map(n => `<button data-filter="${n}" class="${cost === n ? 'active' : ''}">${n === 0 ? 'Todos' : `Era ${roman(n)}`}</button>`).join('')}</div></div>
+   <div class="codex-grid">${list.map(c => `<button class="codex-card cost-${c.cost}" data-character="${c.id}">${portraitHTML(c)}<span class="codex-cost">${c.cost}</span><span class="codex-name">${c.name}<small>${c.title}</small></span><span class="codex-status">${c.cost <= unlockedCost(game.state.villageLevel) ? 'Vínculo acessível' : `Era ${roman(c.cost)}`} · ${ANIMALITY[c.id].category}</span></button>`).join('') || '<p>Nenhum espírito encontrado com essa busca.</p>'}</div>`);
   $('#modal').dataset.filter = String(cost);
 }
 
@@ -487,13 +493,13 @@ function showCharacter(id: number, stars = 1) {
    ${sheet ? `<canvas id="character-preview" class="character-preview" width="640" height="560" role="img" aria-label="${c.name}, animação de ${stars} estrelas"></canvas>` : portraitHTML(c, stars)}
    <div class="star-selector">${[1, 2, 3].map(n => `<button data-detail="${id}" data-stars="${n}" aria-label="${n} estrela${n > 1 ? 's' : ''}" aria-pressed="${n === stars}" class="${n === stars ? 'active' : ''}">${'★'.repeat(n)}</button>`).join('')}</div></div>
    ${sheet ? `<p class="preview-status" id="preview-status" role="status">Carregando animação…</p><div class="motion-controls" aria-label="Movimentos de ${c.name}">${motions.map(([clip, label]) => `<button data-motion="${clip}" aria-pressed="${preview.currentClip === clip}">${label}</button>`).join('')}</div><div class="preview-actions"><button data-action="preview-flip">Virar personagem</button><button data-action="preview-pause">${preview.isPaused ? 'Retomar prévia' : 'Pausar prévia'}</button></div>` : ''}
-   </div><div class="character-story"><button class="text-button" data-action="codex">${icon('arrow-left')}Voltar ao códice</button><p class="eyebrow">CUSTO ${c.cost} · ${c.range > 1 ? 'ATAQUE À DISTÂNCIA' : 'CORPO A CORPO'}</p><h2>${c.name}</h2><h3>${c.title}</h3><div class="trait-chips">${c.traits.map(t => `<span>${t}</span>`).join('')}</div>
+   </div><div class="character-story"><button class="text-button" data-action="codex">${icon('arrow-left')}Voltar ao códice</button><p class="eyebrow">ERA ${roman(c.cost)} · ${c.range > 1 ? 'ATAQUE À DISTÂNCIA' : 'CORPO A CORPO'}</p><h2>${c.name}</h2><h3>${c.title}</h3><div class="trait-chips">${c.traits.map(t => `<span>${t}</span>`).join('')}</div>
    <div class="stat-grid"><div>${icon('heart')}<strong>${c.hp[stars - 1]}</strong><small>Vida</small></div><div>${icon('swords')}<strong>${c.attack[stars - 1]}</strong><small>Ataque</small></div><div>${icon('shield')}<strong>${c.armor}/${c.magicResist}</strong><small>Armadura/RM</small></div><div>${icon('zap')}<strong>${c.attackSpeed}</strong><small>Ataques/s</small></div></div>
    <h4>${c.ability.name}</h4><p>${c.ability.description}</p>
    <div class="evolution"><span class="eyebrow">O DESPERTAR · ${stars} ESTRELA${stars > 1 ? 'S' : ''}</span><p>${c.evolution[stars - 1]}</p></div>
    <div class="prototype-skill"><span class="eyebrow">EFEITO EM COMBATE</span><p>${SKILL_NOTES[c.id]}</p></div>
    <div class="animality"><span class="eyebrow">VÍNCULO PRIMAL · ${animality.category.toUpperCase()}${animality.source === 'proposta' ? ' · PROPOSTA' : ''}</span><p>${ANIMALITY_RULES[animality.category]}</p></div>
-   <p class="development-note">${c.cost <= unlockedCost(game.state.villageLevel) ? 'Recrutável na fogueira desta aldeia.' : `Chega à fogueira na Era ${roman(c.cost)}.`} ${{ painted: 'Esta forma tem animação pintada.', illustration: 'Esta forma usa a ilustração original com movimentos programados.', standin: `A forma ${stars}★ ainda não tem folha pintada: o jogo mostra a forma ${art.sheet?.stars ?? 1}★ com a aura do espírito.`, procedural: 'Figura desenhada pelo próprio jogo enquanto a arte pintada não chega; ela é substituída automaticamente.' }[art.kind]}</p></div></div>`);
+   <p class="development-note">${c.cost <= unlockedCost(game.state.villageLevel) ? 'Vínculo acessível desta aldeia.' : `Chega à fogueira na Era ${roman(c.cost)}.`} ${{ painted: 'Esta forma tem animação pintada.', illustration: 'Esta forma usa a ilustração original com movimentos programados.', standin: `A forma ${stars}★ ainda não tem folha pintada: o jogo mostra a forma ${art.sheet?.stars ?? 1}★ com a aura do espírito.`, procedural: 'Figura desenhada pelo próprio jogo enquanto a arte pintada não chega; ela é substituída automaticamente.' }[art.kind]}</p></div></div>`);
   if (sheet) preview.mount($<HTMLCanvasElement>('#character-preview'), id, stars, sheet);
 }
 
@@ -567,25 +573,28 @@ function practiceCard(p: Practice, hero: Hero | undefined): string {
 }
 
 function showCura() {
-  const s = game.state, level = s.buildings.cura;
-  const home = s.heroes.filter(h => !h.away && !inFight(h));
-  if (!curaHero || !home.some(h => h.uid === curaHero)) curaHero = home[0]?.uid ?? null;
-  const hero = s.heroes.find(h => h.uid === curaHero), ceremony = s.heroes.filter(h => h.away?.kind === 'ritual');
-  const build = buildingCost('cura', level);
-  showModal('cura', `<p class="eyebrow">CASA DE CURA · ${level ? `NÍVEL ${level}` : 'A CONSTRUIR'}</p><h2>A maloca do pajé</h2>
-   <p class="modal-intro">O pajé conduz as cerimônias da tribo. Cada uma tem seu tempo: o herói fica fora das expedições durante a cerimônia e a integração. Ajudantes na maloca encurtam esse tempo.</p>
-   <p class="cura-note">${icon('heart-handshake')}${esc(CURA_NOTE)}</p>
-   <div class="cura-bar">${level < 15 ? `<button class="outline-button" data-cura-build="1" ${costAttr(build)}>${icon('hammer')}${level ? `Ampliar para o nível ${level + 1}` : 'Construir a Casa de Cura'}<span class="cost">${costHTML(build)}</span></button>` : ''}
-    ${home.length ? `<label class="cura-hero">Herói da cerimônia <select id="cura-hero">${home.map(h => `<option value="${h.uid}" ${h.uid === curaHero ? 'selected' : ''}>${esc(heroLabel(h))}</option>`).join('')}</select></label>` : '<p class="muted small">Todos os heróis estão fora da aldeia.</p>'}</div>
-   ${ceremony.length ? `<div class="away-list">${ceremony.map(h => `<div class="away-row">${portraitHTML(characterOf(h.characterId), h.stars)}<span><b>${characterOf(h.characterId).name}</b> · ${esc(practiceById(h.away!.id)!.name)} · termina em ${countdown(h.away!.until)}</span></div>`).join('')}</div>` : ''}
-   ${hero ? `<p class="cura-record">${esc(characterOf(hero.characterId).name)}: ${PRACTICES.filter(p => !p.tribe && hero.rituals[p.id]).map(p => `${p.name} ${hero.rituals[p.id]}/${p.max}`).join(' · ') || 'nenhuma cerimônia ainda'}${hero.panema ? ` · panema ${hero.panema}/${MAX_PANEMA}` : ''}</p>` : ''}
-   <div class="practice-grid">${PRACTICES.map(p => practiceCard(p, hero)).join('')}</div>`);
+  const s=game.state,level=s.buildings.cura;
+  if(!curaHero||!s.heroes.some(h=>h.uid===curaHero))curaHero=s.heroes[0]?.uid??null;
+  const hero=s.heroes.find(h=>h.uid===curaHero),p=practiceById(chosenPractice)!,build=buildingCost('cura',level);
+  const locks:string[]=[];
+  if(level<p.curaLevel)locks.push(`Casa de Cura nível ${p.curaLevel}`);
+  if(s.villageLevel<p.era)locks.push(`Era ${roman(p.era)}`);
+  if(!p.tribe&&hero){if(hero.level<p.minLevel)locks.push(`Experiência nível ${p.minLevel}`);if(p.requires&&!hero.rituals[p.requires])locks.push(`${practiceById(p.requires)!.name} antes`);if(hero.away)locks.push('Herói em atividade');if(inFight(hero))locks.push('Herói em combate');if(s.clock<hero.ritualReadyAt)locks.push(`Integração: ${timeLeft(hero.ritualReadyAt)}`);}
+  const done=hero?.rituals[p.id]??0;
+  showModal('cura',`<div class="ritual-layout"><aside class="ritual-roster"><h3>Sua tribo</h3>${s.heroes.map(h=>`<button data-cura-hero="${h.uid}" class="${h.uid===curaHero?'selected':''}" aria-label="Rituais de ${characterOf(h.characterId).name}">${portraitHTML(characterOf(h.characterId),h.stars)}<span>${characterOf(h.characterId).name}</span></button>`).join('')}</aside><section class="ritual-path"><h2>O caminho do despertar</h2><p>Atividades fortalecem o corpo. Cerimônias aprofundam o vínculo.</p>${hero?`<div class="ritual-growth"><div><h3>${characterOf(hero.characterId).name} ${'★'.repeat(hero.stars)}</h3>${growthBars(hero)}</div>${awakeningMarkup(hero)}</div>`:''}
+    <div class="ritual-heading"><h3>Cerimônias do espírito</h3>${level<15?`<button class="outline-button" data-cura-build="1" ${costAttr(build)}>${level?'Ampliar maloca':'Construir Casa de Cura'}<span class="cost">${costHTML(build)}</span></button>`:''}</div>
+    <div class="ritual-selection"><nav aria-label="Cerimônias">${PRACTICES.map(practice=>`<button data-practice-select="${practice.id}" aria-pressed="${p.id===practice.id}">${icon(({rape:'feather',sananga:'eye',kambo:'heart',ayahuasca:'leaf',cacau:'cup-soda'} as Record<string,string>)[practice.id])}<span>${practice.name}<small>+${RITUAL_XP[practice.id]} XP ritual</small></span>${icon('chevron-right')}</button>`).join('')}</nav><article class="ritual-detail"><div class="ritual-symbol">${icon('flame')}</div><h3>${p.name}</h3><p>${p.effect}</p><div class="ritual-values"><span>Duração <b>${p.tribe?'10 min de bênção':`${Math.round(p.rest/ritualSpeed(s)/60)} min`}</b></span><span>Vínculo <b>+${RITUAL_XP[p.id]} XP ritual</b></span></div><p class="ritual-mastery">${p.tribe?'XP ritual para quem concluiu a integração.':`Bônus aprendido: ${done}/${p.max}. Repetir continua concedendo XP ritual.`}</p>${locks.length?`<p class="ritual-lock">${icon('lock')}${esc(locks.join(' · '))}</p>`:''}<button class="primary" ${p.tribe?'data-action="cacao"':`data-ritual="${p.id}"`} ${costAttr(p.cost(done))} data-max="${!!locks.length||!hero||(p.tribe&&s.clock<s.cacao)}">${p.tribe?'Reunir a tribo':'Iniciar cerimônia'}<span class="cost">${costHTML(p.cost(done))}</span></button>${hero?`<button class="outline-button" data-hunt-hero="${hero.uid}" ${hero.away?'disabled':''}>Enviar para uma caçada ${icon('arrow-right')}</button>`:''}<details><summary>Tradição e contexto</summary><p>${esc(p.text)}</p><p>${esc(p.peoples)}</p><p>${esc(CURA_NOTE)}</p></details></article></div>${hero?.away?`<div class="integration-note">${hero.away.kind==='ritual'?'Cerimônia':'Caçada'} em andamento · ${countdown(hero.away.until)}${hero.away.returnWork?' · Retorna ao trabalho após o rito.':''}</div>`:hero&&s.clock<hero.ritualReadyAt?`<div class="integration-note">Integrando a experiência · próximo rito em ${countdown(hero.ritualReadyAt)}</div>`:''}</section></div>`);
+}
+
+function journeyObjective():string {
+  const s=game.state,era=pendingEra(s),quest=openQuests(s)[0],need=ERA_GROWTH[s.villageLevel-1];
+  return `<div><span class="context-icon">${icon(era?'sparkles':'compass')}</span><span><strong>${era?'Uma nova era desperta.':quest?esc(quest.title):objective().title}</strong><small>${era?'Escolha o espírito que acompanhará a tribo.':quest?esc(quest.hint):objective().text}</small></span></div><div class="objective-actions">${s.event?`<button class="outline-button" data-action="event-open">${icon('bell')}Acontecimento</button>`:''}${era?`<button class="primary" data-action="spirit-choice">Escolher espírito da Era ${roman(era)}</button>`:quest?.done(s)?`<button class="primary" data-quest="${quest.id}">Receber recompensa</button>`:'<button class="outline-button" data-action="journal">Ver diário</button>'}${s.villageLevel<5?`<button class="outline-button" data-action="village-upgrade" title="Experiência ${need.level} e ritual ${need.ritualLevel}" ${costAttr(villageCost(s.villageLevel))}>Avançar era · XP ${need.level} / rito ${need.ritualLevel}</button>`:''}${view==='battle'&&!panelOpen?`<button class="primary" data-action="battle-start" ${game.battle?.status==='fighting'||s.paused?'disabled':''}>${game.battle?.status==='fighting'?'Em expedição':'Iniciar expedição'}</button>`:''}${!panelOpen?`<button class="outline-button" data-action="panel-open">${view==='battle'?'Ações da expedição':'Ações da aldeia'}</button>`:''}</div>`;
 }
 
 function help() {
   showModal('help', `<p class="eyebrow">BEM-VINDO À PRIMEIRA CHAMA</p><h2>Uma tribo começa com você.</h2><div class="guide-steps">
    <div><span>01</span><h3>Crie raízes</h3><p>A jornada começa com Akru sozinho. A aldeia produz madeira, alimento, pedra e espírito por conta própria. Melhore construções, recrute companheiros e avance de era para abrir vagas e heróis de custo maior. Mande heróis caçar para ganharem experiência e leve-os à Casa de Cura para as cerimônias da tribo.</p></div>
-   <div><span>02</span><h3>Ouça os espíritos</h3><p>Recrute viajantes na fogueira: três cópias iguais se fundem numa estrela superior. A cada era, escolha um Espírito Protetor: um bônus permanente e um poder para acionar em combate.</p></div>
+   <div><span>02</span><h3>Ouça os espíritos</h3><p>Acolha companheiros no catálogo: cada companheiro desperta estrelas ao alcançar os requisitos de experiência e ritualística. A cada era, escolha um Espírito Protetor: um bônus permanente e um poder para acionar em combate.</p></div>
    <div><span>03</span><h3>Explore o desconhecido</h3><p>No mapa, escolha a expedição. Posicione até sete heróis, combine sinergias e itens da bolsa. O combate é automático; vitórias trazem recursos e componentes. Depois do Primeiro Inverno, a Caçada Eterna e o Grande Totem aguardam.</p></div></div>
    <p class="development-note">Atalhos: 1 aldeia · 2 expedição · 3 códice · 4 totem · C caçadas · M mapa · P pausar · Esc fechar.</p><button class="primary" data-action="close">Seguir o chamado ${icon('arrow-right')}</button>`);
 }
@@ -606,7 +615,7 @@ function settings() {
      ${toggle('numbers', 'Números de dano e cura', 'Desligue para um campo mais limpo em lutas cheias')}
     </section>
     <section class="wide"><h3>${icon('book-marked')}Jornada</h3>
-     <p class="modal-intro">O progresso é salvo automaticamente neste navegador. Ao voltar, a aldeia recebe até 2 horas de produção acumulada, inclusive da forja. Uma jornada pausada não acumula recursos.</p>
+     <p class="modal-intro">O progresso é salvo automaticamente neste navegador. Ao voltar, a aldeia recebe até 12 horas de produção e atividades acumuladas, inclusive da forja. Uma jornada pausada não acumula recursos.</p>
      <div class="settings-buttons"><button class="outline-button" data-action="export">${icon('download')}Exportar progresso</button><button class="outline-button" data-action="import">${icon('upload')}Importar progresso</button><button class="outline-button" data-action="help">${icon('book-open')}Como jogar</button><button class="outline-button" data-action="title-show">${icon('flame')}Tela inicial</button></div>
      <p class="development-note">Importar substitui o progresso deste navegador. Saves da versão 0.x são convertidos automaticamente.</p>
      <div class="danger-zone">${confirmWipe
@@ -662,7 +671,7 @@ function renderTitle() {
      ${hasJourney ? `<button class="outline-button ${confirmNew ? 'danger' : ''}" data-action="title-new">${icon(confirmNew ? 'triangle-alert' : 'sparkles')}${confirmNew ? 'Confirmar: apagar a jornada atual' : 'Nova jornada'}</button>` : ''}
      <div class="title-links"><button class="text-button" data-action="import">${icon('upload')}Carregar jornada salva</button><button class="text-button" data-action="settings">${icon('settings-2')}Configurações</button><button class="text-button" data-action="help">${icon('book-open')}Como jogar</button></div>
     </div>
-    <p class="title-version">VERSÃO 1.3 · ${storage ? 'progresso salvo neste navegador' : 'salvamento indisponível neste navegador'}</p>
+    <p class="title-version">VERSÃO 2.0 · ${storage ? 'progresso salvo neste navegador' : 'salvamento indisponível neste navegador'}</p>
    </div>`;
   refreshIcons();
 }
@@ -688,7 +697,7 @@ function welcomeBack() {
   if (welcomed) return;
   welcomed = true;
   if (game.offlineGains && game.offlineSeconds > 60) toast(`A aldeia trabalhou por ${Math.round(game.offlineSeconds / 60)} min enquanto você esteve fora.`);
-  if (pendingEra(game.state)) window.setTimeout(showSpiritChoice, 600);
+  // The objective strip keeps pending spirit choices available without interrupting another action.
 }
 
 function startNext() {
@@ -703,12 +712,20 @@ document.addEventListener('click', event => {
   if (!target || target.disabled) return;
   const d = target.dataset;
   if (d.view) { setView(d.view as typeof view); return; }
-  if (d.building) { selectedBuilding = d.building as BuildingId; renderSide(); return; }
+  if (d.building) { panelOpen=true; selectedBuilding = d.building as BuildingId; renderSide(); return; }
   if (d.gather) { act(game.gather(d.gather as Resource), 'click'); return; }
-  if (d.recruit) { act(game.recruit(Number(d.recruit)), 'recruit'); return; }
+  if (d.recruit) { act(game.recruit(Number(d.recruit)), 'recruit'); if(activeModal==='tribe')showTribe(); return; }
+  if (d.curaHero) { curaHero=d.curaHero; showCura(); return; }
+  if (d.inspect) { showHero(d.inspect); return; }
+  if (d.tribeTab) { showTribe(d.tribeTab); return; }
+  if (d.ritualHero) { curaHero=d.ritualHero; showCura(); return; }
+  if (d.practiceSelect) { chosenPractice=d.practiceSelect; showCura(); return; }
+  if (d.formationHero) { showFormation(d.formationHero); return; }
+  if (d.placeSlot!==undefined&&selectedHero) { const result=game.deploy(selectedHero,Number(d.placeSlot)); act(result,'click'); showFormation(); return; }
+  if (d.equipDirect) { const [uid,i]=d.equipDirect.split(':'); act(game.equipItem(uid,Number(i)),'item'); showHero(uid); return; }
   if (d.hero) {
     if (selectedItem !== null) { const r = game.equipItem(d.hero, selectedItem); selectedItem = null; act(r, 'item'); return; }
-    selectedHero = selectedHero === d.hero ? null : d.hero; sound.play('click'); renderCamp(); return;
+    selectedHero = selectedHero === d.hero ? null : d.hero; sound.play('click'); renderCamp(); renderSide(); return;
   }
   if (d.inv !== undefined) {
     const index = Number(d.inv), current = selectedItem;
@@ -717,8 +734,8 @@ document.addEventListener('click', event => {
     }
     selectedItem = current === index ? null : index; sound.play('click'); renderCamp(); return;
   }
-  if (d.unequip) { const [uid, i] = d.unequip.split(':'); act(game.unequipItem(uid, Number(i)), 'item'); return; }
-  if (d.bench) { act(game.deploy(d.bench, null), 'click'); return; }
+  if (d.unequip) { const [uid, i] = d.unequip.split(':'); act(game.unequipItem(uid, Number(i)), 'item'); if(activeModal==='hero')showHero(uid); return; }
+  if (d.bench) { act(game.deploy(d.bench, null), 'click'); if(activeModal==='formation')showFormation(d.bench); return; }
   if (d.unassign) { act(game.assignWorker(d.unassign, null), 'click'); return; }
   if (d.character) { showCharacter(Number(d.character), Number(d.stars ?? 1)); return; }
   if (d.detail) { showCharacter(Number(d.detail), Number(d.stars)); return; }
@@ -742,6 +759,13 @@ document.addEventListener('click', event => {
   if (d.quest) { const r = game.claimQuest(d.quest); act(r, 'item'); if (activeModal === 'journal') showJournal(); return; }
   if (d.memory) { act(game.buyMemory(d.memory as MemoryId), 'upgrade'); showAncestors(); return; }
   switch (d.action) {
+    case 'tribe': showTribe(); break;
+    case 'formation': showFormation(); break;
+    case 'auto-formation': act(game.autoFormation(),'click'); showFormation(); break;
+    case 'formation-done': closeModal(); setView('battle'); break;
+    case 'panel-close': panelOpen=false; renderSide(); break;
+    case 'panel-open': panelOpen=true; renderSide(); break;
+    case 'event-open': eventOpen=!eventOpen; renderEvent(); break;
     case 'preview-flip': preview.flip(); break;
     case 'preview-pause': target.textContent = preview.toggle() ? 'Retomar prévia' : 'Pausar prévia'; break;
     case 'place-selected': if (selectedHero) act(game.deploy(selectedHero, Number($<HTMLSelectElement>('#formation-slot').value)), 'click'); break;
@@ -825,7 +849,7 @@ $<HTMLInputElement>('#save-file').addEventListener('change', async event => {
     if (file.size > 500_000) throw new Error();
     data = JSON.parse(await file.text());
     const root = data as { version?: number; state?: { heroes?: unknown; resources?: unknown } };
-    if (!root || ![1, 2, 3].includes(root.version as number) || !root.state || !Array.isArray(root.state.heroes) || !root.state.resources) throw new Error();
+    if (!root || ![1, 2, 3, 4].includes(root.version as number) || !root.state || !Array.isArray(root.state.heroes) || !root.state.resources) throw new Error();
   } catch { toast('Arquivo de progresso inválido. Sua jornada atual foi preservada.'); return; }
   const imported = new Game(data);
   try {
@@ -903,3 +927,8 @@ else { help(); welcomeBack(); }
 try { if (sessionStorage.getItem(LOADED_KEY)) { sessionStorage.removeItem(LOADED_KEY); toast('Jornada carregada. Bem-vindo de volta à fogueira.'); } } catch { /* nothing to confirm */ }
 requestAnimationFrame(frame);
 window.addEventListener('beforeunload', () => { save(); world.destroy(); });
+
+document.addEventListener('input',event=>{const input=event.target as HTMLInputElement;if(input.id==='tribe-search'){const position=input.selectionStart;showTribe(tribeTab,input.value);const next=$<HTMLInputElement>('#tribe-search');next.focus();next.setSelectionRange(position,position);}});
+document.addEventListener('dragstart',event=>{const hero=(event.target as HTMLElement).closest<HTMLElement>('[data-drag-hero]');if(hero){event.dataTransfer?.setData('text/wolf-hero',hero.dataset.dragHero!);if(event.dataTransfer)event.dataTransfer.effectAllowed='move';}});
+$('#world').addEventListener('dragover',event=>{if(view==='battle'&&!game.battle)event.preventDefault();});
+$('#world').addEventListener('drop',async event=>{event.preventDefault();if(view!=='battle'||game.battle)return;const uid=event.dataTransfer?.getData('text/wolf-hero');if(!uid)return;const canvas=$<HTMLCanvasElement>('#world canvas'),r=canvas.getBoundingClientRect();const x=(event.clientX-r.left)/r.width*1200,y=(event.clientY-r.top)/r.height*740;const nearest=Array.from({length:FORMATION_SLOTS},(_,slot)=>{const cell=allySlotCenter(slot),[px,py]=project(cell.x,cell.y);return{slot,d:Math.hypot(x-px,y-py)};}).sort((a,b)=>a.d-b.d)[0];if(nearest.d<70){selectedHero=uid;act(game.deploy(uid,nearest.slot),'click');}else toast('Solte o herói em uma casa da sua metade do campo.');});
