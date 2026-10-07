@@ -4,8 +4,7 @@ from pathlib import Path
 import json,shutil,numpy as np
 import sys
 jobs=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
-dest=Path(__file__).resolve().parents[2]/"public"/"assets"/"animations"/"v3"
-dest.mkdir(parents=True,exist_ok=True)
+asset_root=Path(__file__).resolve().parents[2]/"public"/"assets"/"animations"
 def split_at(mask,axis,ideal,radius):
     counts=mask.sum(axis=axis)
     lo=max(2,int(ideal-radius));hi=min(len(counts)-3,int(ideal+radius))
@@ -28,6 +27,9 @@ def feet_anchor(mask,box):
     return {"x":round(x),"y":bottom}
 results=[]
 for j in jobs:
+    folder="summons" if j.get("summon") else "v3"
+    dest=asset_root/folder
+    dest.mkdir(parents=True,exist_ok=True)
     src=Path(j["path"]); im=Image.open(src).convert("RGBA"); w,h=im.size
     a=np.array(im.getchannel("A"));mask=a>8
     try:
@@ -45,10 +47,14 @@ for j in jobs:
                 if box[0]<1 or box[1]<1 or box[2]>=x1-x0 or box[3]>=y1-y0:raise ValueError("pose touches outer edge "+str((row,col,box)))
                 rects.append({"x":x0,"y":y0,"width":x1-x0,"height":y1-y0})
                 anchors.append(feet_anchor(visible,box));bboxes.append(box)
-        slug=str(j["id"])+"-s"+str(j["stars"])
+        slug=j.get("summon") or str(j["id"])+"-s"+str(j["stars"])
         shutil.copyfile(src,dest/(slug+".png"))
         p=bboxes[0];r=rects[0]
         meta={"characterId":j["id"],"stars":j["stars"],"name":j["name"],"image":"/assets/animations/v3/"+slug+".png","columns":4,"rows":3,"frameWidth":round(w/4),"frameHeight":round(h/3),"imageWidth":w,"imageHeight":h,"bodyHeight":p[3]-p[1],"anchorX":anchors[0]["x"],"anchorY":anchors[0]["y"],"frameRects":rects,"frameAnchors":anchors,"portrait":{"x":r["x"]+p[0],"y":r["y"]+p[1],"width":p[2]-p[0],"height":p[3]-p[1]},"clips":{"idle":[0,1,2,3],"walk":[4,5,6,7],"attack":[8,9,10,11]},"notes":"Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."}
+        if j.get("summon"):
+            meta["summonId"]=j["summon"]
+            meta["image"]="/assets/animations/summons/"+slug+".png"
+            meta["notes"]="Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles with transparent gutters and individual ground anchors. Summoned creature."
         (dest/(slug+".json")).write_text(json.dumps(meta,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
         results.append({"id":j["id"],"stars":j["stars"],"status":"ready","portrait":meta["portrait"],"height":meta["bodyHeight"],"file":str(dest/(slug+".png"))})
     except Exception as e:results.append({"id":j["id"],"stars":j["stars"],"status":"repair","error":str(e)})

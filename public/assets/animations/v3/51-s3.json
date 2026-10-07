@@ -1,0 +1,166 @@
+{
+  "characterId": 51,
+  "stars": 3,
+  "name": "Mahari",
+  "image": "/assets/animations/v3/51-s3.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 362,
+  "frameHeight": 362,
+  "imageWidth": 1448,
+  "imageHeight": 1086,
+  "bodyHeight": 218,
+  "anchorX": 230,
+  "anchorY": 399,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 362,
+      "height": 403
+    },
+    {
+      "x": 362,
+      "y": 0,
+      "width": 362,
+      "height": 403
+    },
+    {
+      "x": 724,
+      "y": 0,
+      "width": 362,
+      "height": 403
+    },
+    {
+      "x": 1086,
+      "y": 0,
+      "width": 362,
+      "height": 403
+    },
+    {
+      "x": 0,
+      "y": 403,
+      "width": 362,
+      "height": 323
+    },
+    {
+      "x": 362,
+      "y": 403,
+      "width": 362,
+      "height": 323
+    },
+    {
+      "x": 724,
+      "y": 403,
+      "width": 362,
+      "height": 323
+    },
+    {
+      "x": 1086,
+      "y": 403,
+      "width": 362,
+      "height": 323
+    },
+    {
+      "x": 0,
+      "y": 726,
+      "width": 362,
+      "height": 360
+    },
+    {
+      "x": 362,
+      "y": 726,
+      "width": 362,
+      "height": 360
+    },
+    {
+      "x": 724,
+      "y": 726,
+      "width": 362,
+      "height": 360
+    },
+    {
+      "x": 1086,
+      "y": 726,
+      "width": 362,
+      "height": 360
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 230,
+      "y": 399
+    },
+    {
+      "x": 196,
+      "y": 398
+    },
+    {
+      "x": 194,
+      "y": 400
+    },
+    {
+      "x": 180,
+      "y": 400
+    },
+    {
+      "x": 230,
+      "y": 320
+    },
+    {
+      "x": 206,
+      "y": 320
+    },
+    {
+      "x": 198,
+      "y": 319
+    },
+    {
+      "x": 188,
+      "y": 320
+    },
+    {
+      "x": 224,
+      "y": 307
+    },
+    {
+      "x": 196,
+      "y": 306
+    },
+    {
+      "x": 184,
+      "y": 305
+    },
+    {
+      "x": 206,
+      "y": 306
+    }
+  ],
+  "portrait": {
+    "x": 105,
+    "y": 182,
+    "width": 202,
+    "height": 218
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

@@ -1,0 +1,166 @@
+{
+  "characterId": 19,
+  "stars": 3,
+  "name": "Tembu",
+  "image": "/assets/animations/v3/19-s3.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 211,
+  "anchorX": 183,
+  "anchorY": 440,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 444
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 444
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 444
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 444
+    },
+    {
+      "x": 0,
+      "y": 444,
+      "width": 313,
+      "height": 392
+    },
+    {
+      "x": 313,
+      "y": 444,
+      "width": 314,
+      "height": 392
+    },
+    {
+      "x": 627,
+      "y": 444,
+      "width": 313,
+      "height": 392
+    },
+    {
+      "x": 940,
+      "y": 444,
+      "width": 314,
+      "height": 392
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 941,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 183,
+      "y": 440
+    },
+    {
+      "x": 176,
+      "y": 440
+    },
+    {
+      "x": 152,
+      "y": 440
+    },
+    {
+      "x": 138,
+      "y": 440
+    },
+    {
+      "x": 174,
+      "y": 329
+    },
+    {
+      "x": 164,
+      "y": 330
+    },
+    {
+      "x": 154,
+      "y": 330
+    },
+    {
+      "x": 144,
+      "y": 330
+    },
+    {
+      "x": 173,
+      "y": 257
+    },
+    {
+      "x": 156,
+      "y": 253
+    },
+    {
+      "x": 141,
+      "y": 253
+    },
+    {
+      "x": 136,
+      "y": 257
+    }
+  ],
+  "portrait": {
+    "x": 77,
+    "y": 230,
+    "width": 186,
+    "height": 211
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

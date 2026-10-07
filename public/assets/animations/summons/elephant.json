@@ -1,0 +1,167 @@
+{
+  "characterId": 0,
+  "stars": 1,
+  "name": "Espírito do marfim",
+  "image": "/assets/animations/summons/elephant.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 362,
+  "frameHeight": 362,
+  "imageWidth": 1448,
+  "imageHeight": 1086,
+  "bodyHeight": 241,
+  "anchorX": 223,
+  "anchorY": 391,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 373,
+      "height": 395
+    },
+    {
+      "x": 373,
+      "y": 0,
+      "width": 354,
+      "height": 395
+    },
+    {
+      "x": 727,
+      "y": 0,
+      "width": 375,
+      "height": 395
+    },
+    {
+      "x": 1102,
+      "y": 0,
+      "width": 346,
+      "height": 395
+    },
+    {
+      "x": 0,
+      "y": 395,
+      "width": 374,
+      "height": 329
+    },
+    {
+      "x": 374,
+      "y": 395,
+      "width": 358,
+      "height": 329
+    },
+    {
+      "x": 732,
+      "y": 395,
+      "width": 363,
+      "height": 329
+    },
+    {
+      "x": 1095,
+      "y": 395,
+      "width": 353,
+      "height": 329
+    },
+    {
+      "x": 0,
+      "y": 724,
+      "width": 368,
+      "height": 362
+    },
+    {
+      "x": 368,
+      "y": 724,
+      "width": 356,
+      "height": 362
+    },
+    {
+      "x": 724,
+      "y": 724,
+      "width": 383,
+      "height": 362
+    },
+    {
+      "x": 1107,
+      "y": 724,
+      "width": 341,
+      "height": 362
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 223,
+      "y": 391
+    },
+    {
+      "x": 206,
+      "y": 392
+    },
+    {
+      "x": 198,
+      "y": 392
+    },
+    {
+      "x": 140,
+      "y": 390
+    },
+    {
+      "x": 171,
+      "y": 305
+    },
+    {
+      "x": 190,
+      "y": 304
+    },
+    {
+      "x": 176,
+      "y": 305
+    },
+    {
+      "x": 194,
+      "y": 305
+    },
+    {
+      "x": 247,
+      "y": 287
+    },
+    {
+      "x": 230,
+      "y": 286
+    },
+    {
+      "x": 192,
+      "y": 288
+    },
+    {
+      "x": 154,
+      "y": 289
+    }
+  ],
+  "portrait": {
+    "x": 31,
+    "y": 151,
+    "width": 339,
+    "height": 241
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles with transparent gutters and individual ground anchors. Summoned creature.",
+  "summonId": "elephant"
+}

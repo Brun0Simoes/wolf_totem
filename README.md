@@ -59,22 +59,24 @@ Atalhos: `1` aldeia, `2` expedição, `3` códice, `4` totem, `C` caçadas, `M` 
 
 ## Arte
 
-**54 das 165 formas** têm folhas pintadas (45 personagens; Akru, Nima, Boru e Jara completos). O jogo escolhe automaticamente, nesta ordem:
+Os **55 personagens têm as formas 1★, 2★ e 3★ animadas: 165 atlas, 495 sequências e 1.980 poses desenhadas**. Cada forma tem repouso, caminhada e ataque/conjuração. Impacto, queda e vitória usam movimento programado; ataque e habilidade compartilham as poses do atlas.
+
+O jogo escolhe automaticamente, nesta ordem:
 
 1. a folha pintada da estrela;
 2. a ilustração original (personagens de custo 1);
 3. a folha pintada mais próxima, com o animal espiritual em aura atrás (2★ e 3★);
 4. uma **figura desenhada pelo código**, com poses de repouso, caminhada e ataque e com a progressão 1★ humano, 2★ vínculo e 3★ avatar.
 
-Quando uma folha pintada nova entra em `public/assets/animations/v3`, ela substitui a figura sem mudar código. O [inventário de arte](docs/production/STATUS.md) lista as 111 formas pendentes. Detalhes em [Arte e animação](docs/ARTE-E-ANIMACAO.md).
+Quando uma folha pintada entra em `public/assets/animations/v3`, ela é registrada por personagem e estrela. O [inventário de arte](docs/production/STATUS.md) mostra a cobertura completa e o estado das criaturas invocadas. Detalhes em [Arte e animação](docs/ARTE-E-ANIMACAO.md).
 
-Os espíritos, invocações, estandartes e o Grande Totem usam glifos de máscara de totem (27 animais) desenhados em SVG/Canvas. A arena de cada região e as figuras provisórias, com sombreado, rosto e roupas detalhadas, também são pintadas pelo código. Som e música são sintetizados com WebAudio: ative-os no ícone de volume ou nas configurações.
+As cinco criaturas invocadas (aranha, corvo, escaravelho, lobo e elefante) também têm folhas pintadas de repouso, caminhada e ataque, carregadas sob demanda no campo. O eco de Amaru usa a arte do próprio herói. Os espíritos, estandartes e o Grande Totem usam glifos de máscara de totem (27 animais) desenhados em SVG/Canvas. A arena de cada região e as figuras provisórias, com sombreado, rosto e roupas detalhadas, também são pintadas pelo código. Som e música são sintetizados com WebAudio: ative-os no ícone de volume ou nas configurações.
 
 ## Estrutura
 
 ```text
 chars/                     Artes originais, intactas
-public/assets/animations/  Folhas pintadas (v2: 13 heróis 1★; v3: novas formas)
+public/assets/animations/  Folhas pintadas (v2/v3: 165 formas; summons: 5 criaturas)
 src/data/                  Os 55 personagens do plano e a animalidade
 src/game/simulation.ts     Estado, economia, combate, saves (v2) e ações
 src/game/skills.ts         As 55 habilidades

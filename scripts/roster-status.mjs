@@ -15,11 +15,21 @@ const keys = new Set(manifests.filter(s => existsSync(resolve(root, 'public', s.
 const rows = characters.map(c => ({ id:c.id, name:c.name, cost:c.cost, stages:[1,2,3].map(stars => keys.has(`${c.id}:${stars}`)) }));
 const finished = rows.filter(r => r.stages.every(Boolean)).length;
 const absent = rows.flatMap(r => r.stages.flatMap((ready,index) => ready ? [] : [`${r.name} ${index+1}★`]));
-const summary = {characters:55, charactersWithAnimation:rows.filter(r=>r.stages.some(Boolean)).length, animatedStages:keys.size, targetStages:165, completeCharacters:finished, sequences:keys.size*3, poses:keys.size*12, missing:absent};
+const summonKinds = ['spider', 'crow', 'beetle', 'wolf', 'elephant'];
+const summonNames = {spider:'Aranha',crow:'Corvo',beetle:'Escaravelho',wolf:'Lobo',elephant:'Elefante'};
+const summonDirectory = resolve(root, 'public/assets/animations/summons');
+const summons = summonKinds.map(kind => {
+  const manifest = resolve(summonDirectory, kind + '.json');
+  const sheet = existsSync(manifest) ? JSON.parse(readFileSync(manifest, 'utf8')) : undefined;
+  return {kind, ready:!!sheet && sheet.summonId === kind && existsSync(resolve(root, 'public', sheet.image.slice(1)))};
+});
+const missingSummons = summons.filter(s => !s.ready).map(s => s.kind);
+const summary = {characters:55, charactersWithAnimation:rows.filter(r=>r.stages.some(Boolean)).length, animatedStages:keys.size, targetStages:165, completeCharacters:finished, sequences:keys.size*3, poses:keys.size*12, missing:absent, animatedSummons:summons.length-missingSummons.length, targetSummons:summons.length, missingSummons};
 console.log(JSON.stringify(process.argv.includes('--complete') ? summary : {...summary,missing:absent.length},null,2));
 if(process.argv.includes('--write')) {
   mkdirSync(resolve(root,'docs/production'),{recursive:true});
   const lines=['# Estado da produção de arte','',`Formas animadas: **${keys.size}/165**. Personagens com as três formas: **${finished}/55**.`, '', 'Cada forma tem repouso, caminhada e ataque/conjuração, com quatro poses por sequência. Impacto, queda e vitória usam movimentos programados.','','| ID | Personagem | Custo | 1★ | 2★ | 3★ |','| --- | --- | --- | --- | --- | --- |',...rows.map(r=>`| ${r.id} | ${r.name} | ${r.cost} | ${r.stages.map(s=>s?'Pronto':'Pendente').join(' | ')} |`),'','Gerado por `npm run roster:status -- --write`. Os arquivos prontos são entregas de protótipo e continuam sujeitos a refinamento artístico.',''];
+  lines.splice(lines.length-2,0,'## Criaturas invocadas','', '| Criatura | Atlas animado |','| --- | --- |',...summons.map(s => `| ${summonNames[s.kind]} | ${s.ready ? 'Pronto' : 'Pendente'} |`),'');
   writeFileSync(resolve(root,'docs/production/STATUS.md'),lines.join('\n'));
 }
-if(process.argv.includes('--complete') && absent.length) process.exitCode=1;
+if(process.argv.includes('--complete') && (absent.length || missingSummons.length)) process.exitCode=1;

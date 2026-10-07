@@ -1,0 +1,166 @@
+{
+  "characterId": 11,
+  "stars": 3,
+  "name": "Ayo",
+  "image": "/assets/animations/v3/11-s3.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 299,
+  "anchorX": 191,
+  "anchorY": 448,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 452
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 452
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 452
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 452
+    },
+    {
+      "x": 0,
+      "y": 452,
+      "width": 313,
+      "height": 390
+    },
+    {
+      "x": 313,
+      "y": 452,
+      "width": 314,
+      "height": 390
+    },
+    {
+      "x": 627,
+      "y": 452,
+      "width": 313,
+      "height": 390
+    },
+    {
+      "x": 940,
+      "y": 452,
+      "width": 314,
+      "height": 390
+    },
+    {
+      "x": 0,
+      "y": 842,
+      "width": 313,
+      "height": 412
+    },
+    {
+      "x": 313,
+      "y": 842,
+      "width": 314,
+      "height": 412
+    },
+    {
+      "x": 627,
+      "y": 842,
+      "width": 321,
+      "height": 412
+    },
+    {
+      "x": 948,
+      "y": 842,
+      "width": 306,
+      "height": 412
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 191,
+      "y": 448
+    },
+    {
+      "x": 194,
+      "y": 448
+    },
+    {
+      "x": 194,
+      "y": 449
+    },
+    {
+      "x": 191,
+      "y": 449
+    },
+    {
+      "x": 194,
+      "y": 386
+    },
+    {
+      "x": 192,
+      "y": 387
+    },
+    {
+      "x": 196,
+      "y": 386
+    },
+    {
+      "x": 182,
+      "y": 386
+    },
+    {
+      "x": 172,
+      "y": 366
+    },
+    {
+      "x": 179,
+      "y": 366
+    },
+    {
+      "x": 172,
+      "y": 366
+    },
+    {
+      "x": 174,
+      "y": 366
+    }
+  ],
+  "portrait": {
+    "x": 52,
+    "y": 150,
+    "width": 216,
+    "height": 299
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

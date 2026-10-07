@@ -1,0 +1,166 @@
+{
+  "characterId": 37,
+  "stars": 3,
+  "name": "Nilo",
+  "image": "/assets/animations/v3/37-s3.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 237,
+  "anchorX": 179,
+  "anchorY": 423,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 427
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 427
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 427
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 427
+    },
+    {
+      "x": 0,
+      "y": 427,
+      "width": 313,
+      "height": 409
+    },
+    {
+      "x": 313,
+      "y": 427,
+      "width": 314,
+      "height": 409
+    },
+    {
+      "x": 627,
+      "y": 427,
+      "width": 313,
+      "height": 409
+    },
+    {
+      "x": 940,
+      "y": 427,
+      "width": 314,
+      "height": 409
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 354,
+      "height": 418
+    },
+    {
+      "x": 981,
+      "y": 836,
+      "width": 273,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 179,
+      "y": 423
+    },
+    {
+      "x": 174,
+      "y": 423
+    },
+    {
+      "x": 164,
+      "y": 423
+    },
+    {
+      "x": 153,
+      "y": 423
+    },
+    {
+      "x": 177,
+      "y": 379
+    },
+    {
+      "x": 173,
+      "y": 380
+    },
+    {
+      "x": 156,
+      "y": 381
+    },
+    {
+      "x": 159,
+      "y": 381
+    },
+    {
+      "x": 170,
+      "y": 342
+    },
+    {
+      "x": 153,
+      "y": 341
+    },
+    {
+      "x": 126,
+      "y": 339
+    },
+    {
+      "x": 134,
+      "y": 343
+    }
+  ],
+  "portrait": {
+    "x": 67,
+    "y": 187,
+    "width": 188,
+    "height": 237
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

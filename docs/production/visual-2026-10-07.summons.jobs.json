@@ -1,0 +1,47 @@
+[
+  {
+    "id": 0,
+    "name": "Cria de seda",
+    "stars": 1,
+    "summon": "spider",
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-fb743d6c-e0e6-465f-865a-08b465e73974.png",
+    "source": "Built-in imagegen from style reference E:/Wolf_totem/public/assets/animations/v3/44-s3.png",
+    "prompt": "Use case: style-reference. Create a NEW game sprite animation sheet for Cria de seda in Wolf Totem. The input is ONLY A PAINTED PIXEL-ART STYLE REFERENCE and atlas-format reference. Replace its human character entirely with the creature described below. NO HUMAN, NO RIDER, NO HUMANOID, NO CHARACTER FROM THE INPUT. Creature: A small jade and turquoise spiritual spider, exactly eight articulated legs, rounded two-part abdomen, glossy jade shell with primitive pale-gold totem spirals, tiny luminous eyes. One real spider per cell, entirely arachnid anatomy. Row1 four idle breathing/leg flexes; row2 four scuttling steps with alternating articulated leg positions; row3 brace, draw front legs back, compact bite/pounce with tiny silk arc, recover. Exactly TWELVE separate full-body creature poses, 4 columns and 3 rows. Same three-quarter view facing RIGHT for all twelve. SAME head and body size between frames. Compact miniature creatures, each COMPLETE creature plus wings, limbs, tails and compact attached effects fits width <=16% of TOTAL canvas width and height <=22% of total canvas height. Centers x12.5%,37.5%,62.5%,87.5%; ground/flight baseline for row1 at27%, row2 at60%, row3 at93% of total canvas height. Every cell is completely separated by wide ALPHA-ZERO transparent gutters. Preserve crisp rich painted pixel-art outlines and luminous primitive fantasy style. Subtle readable shading and restrained attached spirit effects. GENUINELY TRANSPARENT BACKGROUND. No ground, no shadows, no scenery, no visible cell/grid, no text, no labels, no border. Whole sheet at once."
+  },
+  {
+    "id": 0,
+    "name": "Corvo ancestral",
+    "stars": 1,
+    "summon": "crow",
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-1e9cdc49-b952-424b-aabf-e060b1e72384.png",
+    "source": "Built-in imagegen from style reference E:/Wolf_totem/public/assets/animations/v3/18-s3.png",
+    "prompt": "Use case: precise-object-edit. Fix SPACING ONLY in this Corvo ancestral twelve-pose 4-column 3-row creature animation atlas. Preserve EXACTLY all twelve existing creature poses, anatomy, colors, attack action, wings/legs/tail, spirit energy and crisp painted pixel-art style. SHRINK EVERY COMPLETE CREATURE INCLUDING ALL OF ITS SPIRIT EFFECTS AND WINGS TO HALF ITS CURRENT SIZE. Do NOT fill cells. Put every whole pose as a small centered icon in its equal cell, with enormous unused transparent space around it. Whole pose width max14% of TOTAL canvas width and height max20% of TOTAL canvas height. Centers x12.5%,37.5%,62.5%,87.5%, foot/flight baselines row1 at27%, row2 at60%, row3 at93%. All twelve sprites same body size. No particle crosses into another cell. Remove detached particles. Transparency must be completely alpha-zero across wide horizontal and vertical gutters and all outer margins. No labels, no scenery, no floor shadows, no grid. Keep creature completely intact in each cell."
+  },
+  {
+    "id": 0,
+    "name": "Escaravelho solar",
+    "stars": 1,
+    "summon": "beetle",
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-d5db9f09-c984-4117-ba3c-8ee11dcb4c65.png",
+    "source": "Built-in imagegen from style reference E:/Wolf_totem/public/assets/animations/v3/30-s3.png",
+    "prompt": "Use case: precise-object-edit. Fix SPACING ONLY in this Escaravelho solar twelve-pose 4-column 3-row creature animation atlas. Preserve EXACTLY all twelve existing creature poses, anatomy, colors, attack action, wings/legs/tail, spirit energy and crisp painted pixel-art style. SHRINK EVERY COMPLETE CREATURE INCLUDING ALL OF ITS SPIRIT EFFECTS AND WINGS TO HALF ITS CURRENT SIZE. Do NOT fill cells. Put every whole pose as a small centered icon in its equal cell, with enormous unused transparent space around it. Whole pose width max14% of TOTAL canvas width and height max20% of TOTAL canvas height. Centers x12.5%,37.5%,62.5%,87.5%, foot/flight baselines row1 at27%, row2 at60%, row3 at93%. All twelve sprites same body size. No particle crosses into another cell. Remove detached particles. Transparency must be completely alpha-zero across wide horizontal and vertical gutters and all outer margins. No labels, no scenery, no floor shadows, no grid. Keep creature completely intact in each cell."
+  },
+  {
+    "id": 0,
+    "name": "Lobo espiritual",
+    "stars": 1,
+    "summon": "wolf",
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-be33ffac-321b-4c33-ac2a-8eab1f4925dd.png",
+    "source": "Built-in imagegen from style reference E:/Wolf_totem/public/assets/animations/v3/39-s3.png",
+    "prompt": "Use case: precise-object-edit. Fix SPACING ONLY in this Lobo espiritual twelve-pose 4-column 3-row creature animation atlas. Preserve EXACTLY all twelve existing creature poses, anatomy, colors, attack action, wings/legs/tail, spirit energy and crisp painted pixel-art style. SHRINK EVERY COMPLETE CREATURE INCLUDING ALL OF ITS SPIRIT EFFECTS AND WINGS TO HALF ITS CURRENT SIZE. Do NOT fill cells. Put every whole pose as a small centered icon in its equal cell, with enormous unused transparent space around it. Whole pose width max14% of TOTAL canvas width and height max20% of TOTAL canvas height. Centers x12.5%,37.5%,62.5%,87.5%, foot/flight baselines row1 at27%, row2 at60%, row3 at93%. All twelve sprites same body size. No particle crosses into another cell. Remove detached particles. Transparency must be completely alpha-zero across wide horizontal and vertical gutters and all outer margins. No labels, no scenery, no floor shadows, no grid. Keep creature completely intact in each cell."
+  },
+  {
+    "id": 0,
+    "name": "Espírito do marfim",
+    "stars": 1,
+    "summon": "elephant",
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-a05bca7a-9079-47bd-aec5-e8d44d655740.png",
+    "source": "Built-in imagegen from style reference E:/Wolf_totem/public/assets/animations/v3/51-s3.png",
+    "prompt": "Use case: style-reference. Create a NEW game sprite animation sheet for Espírito do marfim in Wolf Totem. The input is ONLY A PAINTED PIXEL-ART STYLE REFERENCE and atlas-format reference. Replace its human character entirely with the creature described below. NO HUMAN, NO RIDER, NO HUMANOID, NO CHARACTER FROM THE INPUT. Creature: A small fully QUADRUPED ancestral elephant of warm ivory and pale gold energy, exactly four pillar legs, one flexible trunk, two long ivory tusks, broad ears and pale-gold primitive totem spirals. One complete elephant per cell. Row1 four idle breathing/trunk positions; row2 four alternating-leg heavy walk positions; row3 brace, lift trunk, compact forward stomp/tusk charge, recovery. Exactly TWELVE separate full-body creature poses, 4 columns and 3 rows. Same three-quarter view facing RIGHT for all twelve. SAME head and body size between frames. Compact miniature creatures, each COMPLETE creature plus wings, limbs, tails and compact attached effects fits width <=16% of TOTAL canvas width and height <=22% of total canvas height. Centers x12.5%,37.5%,62.5%,87.5%; ground/flight baseline for row1 at27%, row2 at60%, row3 at93% of total canvas height. Every cell is completely separated by wide ALPHA-ZERO transparent gutters. Preserve crisp rich painted pixel-art outlines and luminous primitive fantasy style. Subtle readable shading and restrained attached spirit effects. GENUINELY TRANSPARENT BACKGROUND. No ground, no shadows, no scenery, no visible cell/grid, no text, no labels, no border. Whole sheet at once."
+  }
+]

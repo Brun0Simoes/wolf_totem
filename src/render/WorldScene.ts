@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { OVERTIME_START, type BuildingId, type Game } from '../game/simulation';
 import { characters } from '../data/characters';
-import { animationSheets, assetUrl, bestAnimation, getAnimation, frameRect, sheetKey } from './animationAssets';
+import { animationSheets, assetUrl, bestAnimation, getAnimation, getSummonAnimation, frameRect, sheetKey, summonSheetKey } from './animationAssets';
 import { advanceMotion, createMotion, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState, type SheetDefinition } from './animationModel';
 import { CombatEffects, SKILL_COLORS } from './CombatEffects';
 import { artFor } from './artSource';
@@ -732,8 +732,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       }
     }
 
-    private registerAtlas(sheet: SheetDefinition): void {
-      const key = sheetKey(sheet.characterId, sheet.stars);
+    private registerAtlas(sheet: SheetDefinition, key = sheetKey(sheet.characterId, sheet.stars)): void {
       const texture = this.textures.get(key);
       for (let i = 0; i < sheet.columns * sheet.rows; i++) {
         if (texture.has(String(i))) continue;
@@ -746,11 +745,19 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private ensureAtlas(characterId: number, stars: number): SheetDefinition | undefined {
       const sheet = getAnimation(characterId, stars);
       if (!sheet) return undefined;
-      const key = sheetKey(characterId, stars);
+      return this.ensureSheet(sheet, sheetKey(characterId, stars));
+    }
+
+    private ensureSummonAtlas(kind: string): SheetDefinition | undefined {
+      const sheet = getSummonAnimation(kind);
+      return sheet ? this.ensureSheet(sheet, summonSheetKey(kind)) : undefined;
+    }
+
+    private ensureSheet(sheet: SheetDefinition, key: string): SheetDefinition {
       this.atlasUsed.set(key, this.clock);
       if (!this.textures.exists(key) && !this.loadingArt.has(key)) {
         this.loadingArt.add(key);
-        this.load.once(`filecomplete-image-${key}`, () => { this.registerAtlas(sheet); this.loadingArt.delete(key); });
+        this.load.once(`filecomplete-image-${key}`, () => { this.registerAtlas(sheet, key); this.loadingArt.delete(key); });
         this.load.image(key, sheet.image);
         if (!this.load.isLoading()) this.load.start();
       }
@@ -786,6 +793,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private evictAtlases(): void {
       if (this.atlasUsed.size <= 24) return;
       const active = new Set([...this.units.values(), ...this.villageActors.map(a => a.view)].flatMap(v => {
+        if (v.summon && v.summon !== 'echo') return [summonSheetKey(v.summon)];
         const best = bestAnimation(v.characterId, v.stars);
         return [sheetKey(v.characterId, v.stars), procKey(v.characterId, v.stars), ...(best ? [sheetKey(best.characterId, best.stars)] : [])];
       }));
@@ -852,7 +860,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       // Painted sheet of this star, original illustration, closest painted star with an aura, or the drawn figure.
       const art = creature || !character ? undefined : artFor(character, view.stars);
       let sheet: SheetDefinition | undefined, key = '';
-      if (art?.kind === 'painted' || art?.kind === 'standin') { sheet = this.ensureAtlas(art.sheet!.characterId, art.sheet!.stars ?? 1); key = sheetKey(art.sheet!.characterId, art.sheet!.stars); }
+      if (creature) { sheet = this.ensureSummonAtlas(view.summon!); key = summonSheetKey(view.summon!); }
+      else if (art?.kind === 'painted' || art?.kind === 'standin') { sheet = this.ensureAtlas(art.sheet!.characterId, art.sheet!.stars ?? 1); key = sheetKey(art.sheet!.characterId, art.sheet!.stars); }
       else if (art?.kind === 'procedural') { sheet = this.ensureProcedural(view.characterId, view.stars); key = procKey(view.characterId, view.stars); }
       const hasSheet = !!sheet && this.textures.exists(key);
       this.updateAura(view, art?.kind === 'standin' && view.stars >= 2 && desired !== 'death', x, y);

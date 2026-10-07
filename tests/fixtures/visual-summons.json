@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "savedAt": 1790800000000,
+  "state": {
+    "resources": {
+      "wood": 1000,
+      "food": 1000,
+      "stone": 1000,
+      "spirit": 1000
+    },
+    "villageLevel": 5,
+    "buildings": {
+      "lumber": 1,
+      "hunt": 1,
+      "quarry": 1,
+      "shrine": 1
+    },
+    "heroes": [
+      {
+        "uid": "visual-51",
+        "characterId": 51,
+        "stars": 2,
+        "slot": 1
+      },
+      {
+        "uid": "visual-30",
+        "characterId": 30,
+        "stars": 2,
+        "slot": 4
+      },
+      {
+        "uid": "visual-44",
+        "characterId": 44,
+        "stars": 2,
+        "slot": 5
+      },
+      {
+        "uid": "visual-18",
+        "characterId": 18,
+        "stars": 2,
+        "slot": 9
+      },
+      {
+        "uid": "visual-1",
+        "characterId": 1,
+        "stars": 2,
+        "slot": 2
+      }
+    ],
+    "shop": [
+      1,
+      2,
+      4,
+      6
+    ],
+    "shopRotation": 7,
+    "wave": 23,
+    "victories": 22,
+    "paused": true
+  }
+}

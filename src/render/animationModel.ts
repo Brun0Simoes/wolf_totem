@@ -10,6 +10,7 @@ export interface MotionState {
 }
 export interface SheetDefinition {
   characterId: number;
+  summonId?: string;
   stars?: number;
   name: string;
   image: string;

@@ -1,0 +1,166 @@
+{
+  "characterId": 10,
+  "stars": 3,
+  "name": "Zirri",
+  "image": "/assets/animations/v3/10-s3.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 261,
+  "anchorX": 184,
+  "anchorY": 451,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 455
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 455
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 455
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 455
+    },
+    {
+      "x": 0,
+      "y": 455,
+      "width": 313,
+      "height": 381
+    },
+    {
+      "x": 313,
+      "y": 455,
+      "width": 314,
+      "height": 381
+    },
+    {
+      "x": 627,
+      "y": 455,
+      "width": 313,
+      "height": 381
+    },
+    {
+      "x": 940,
+      "y": 455,
+      "width": 314,
+      "height": 381
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 327,
+      "height": 418
+    },
+    {
+      "x": 640,
+      "y": 836,
+      "width": 336,
+      "height": 418
+    },
+    {
+      "x": 976,
+      "y": 836,
+      "width": 278,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 184,
+      "y": 451
+    },
+    {
+      "x": 182,
+      "y": 451
+    },
+    {
+      "x": 167,
+      "y": 451
+    },
+    {
+      "x": 168,
+      "y": 451
+    },
+    {
+      "x": 201,
+      "y": 351
+    },
+    {
+      "x": 208,
+      "y": 351
+    },
+    {
+      "x": 192,
+      "y": 349
+    },
+    {
+      "x": 182,
+      "y": 351
+    },
+    {
+      "x": 196,
+      "y": 317
+    },
+    {
+      "x": 211,
+      "y": 316
+    },
+    {
+      "x": 177,
+      "y": 316
+    },
+    {
+      "x": 139,
+      "y": 314
+    }
+  ],
+  "portrait": {
+    "x": 87,
+    "y": 191,
+    "width": 194,
+    "height": 261
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

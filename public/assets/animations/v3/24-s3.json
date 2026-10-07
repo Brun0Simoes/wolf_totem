@@ -1,0 +1,166 @@
+{
+  "characterId": 24,
+  "stars": 3,
+  "name": "Brak",
+  "image": "/assets/animations/v3/24-s3.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 362,
+  "frameHeight": 362,
+  "imageWidth": 1448,
+  "imageHeight": 1086,
+  "bodyHeight": 228,
+  "anchorX": 200,
+  "anchorY": 381,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 362,
+      "height": 386
+    },
+    {
+      "x": 362,
+      "y": 0,
+      "width": 362,
+      "height": 386
+    },
+    {
+      "x": 724,
+      "y": 0,
+      "width": 362,
+      "height": 386
+    },
+    {
+      "x": 1086,
+      "y": 0,
+      "width": 362,
+      "height": 386
+    },
+    {
+      "x": 0,
+      "y": 386,
+      "width": 362,
+      "height": 338
+    },
+    {
+      "x": 362,
+      "y": 386,
+      "width": 362,
+      "height": 338
+    },
+    {
+      "x": 724,
+      "y": 386,
+      "width": 362,
+      "height": 338
+    },
+    {
+      "x": 1086,
+      "y": 386,
+      "width": 362,
+      "height": 338
+    },
+    {
+      "x": 0,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 362,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 724,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 1086,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 200,
+      "y": 381
+    },
+    {
+      "x": 185,
+      "y": 381
+    },
+    {
+      "x": 178,
+      "y": 381
+    },
+    {
+      "x": 170,
+      "y": 381
+    },
+    {
+      "x": 202,
+      "y": 322
+    },
+    {
+      "x": 208,
+      "y": 323
+    },
+    {
+      "x": 199,
+      "y": 326
+    },
+    {
+      "x": 186,
+      "y": 322
+    },
+    {
+      "x": 220,
+      "y": 282
+    },
+    {
+      "x": 184,
+      "y": 282
+    },
+    {
+      "x": 176,
+      "y": 282
+    },
+    {
+      "x": 176,
+      "y": 284
+    }
+  ],
+  "portrait": {
+    "x": 102,
+    "y": 154,
+    "width": 205,
+    "height": 228
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

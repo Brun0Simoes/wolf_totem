@@ -10,7 +10,7 @@ Qualquer balanceamento provisório do combate deve ficar separado desse catálog
 
 ## Produção atual
 
-Novas formas e animações são entregues em `public/assets/animations/v3`. O [inventário de produção](production/STATUS.md) registra as 165 formas planejadas e distingue as prontas das pendentes; hoje são **54 prontas e 111 pendentes**. Para personagens novos, o retrato do códice é um recorte da primeira pose; o PNG permanece intacto.
+Os **55 personagens têm 1★, 2★ e 3★ prontas: 165 formas animadas**, com repouso, caminhada e ataque/conjuração. As 13 folhas iniciais ficam em `public/assets/animations/v2` e as demais em `v3`. O [inventário de produção](production/STATUS.md) é gerado a partir dos arquivos presentes. Para personagens novos, o retrato do códice é um recorte da primeira pose; o PNG permanece intacto. Impacto, queda e vitória usam movimento programado.
 
 ## Integração ao jogo (versões 0.4 e 1.0)
 
@@ -116,13 +116,13 @@ O plano define os exemplos de cada categoria e pede cerca de 8–12 Metamorfos. 
 
 Existem **39 arquivos PNG**: três imagens para cada um dos 13 personagens de custo 1. Os nomes seguem `chars/Nome-1star.png`, `chars/Nome-2star.png` e `chars/Nome-3star.png`. Não há sequência de animação identificada pelos nomes dos arquivos. Essas imagens são referências de aparência por estrela.
 
-Mantendo três artes por personagem, faltam **126 artes** para completar os outros 42 personagens. Refinamentos das 39 artes existentes e animações constituem trabalho adicional; essa contagem não pressupõe que uma imagem está pronta para produção.
+Na inspeção inicial, faltavam **126 aparências** para os outros 42 personagens. Esse registro descreve apenas a pasta original `chars`; a produção posterior completou as 165 formas em atlas animados. Os originais foram preservados.
 
 ### Artes existentes
 
 Akru, Nima, Boru, Sesha, Kiko, Muru, Taka, Ena, Paku, Zirri, Ayo, Kalu e Viri. Todos possuem 1★, 2★ e 3★.
 
-### Artes pendentes por custo
+### Lacunas da inspeção inicial por custo
 
 - **Custo 2:** Jara, Grom, Ilya, Nask, Rava, Tembu, Zakka, Omi, Suri, Kesh, Brak, Sena e Uru.
 - **Custo 3:** Amaru, Duma, Roko, Khepri, Vesh, Toru, Asha, Thari, Mako, Sava, Nilo e Yara.

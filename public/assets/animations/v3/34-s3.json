@@ -1,0 +1,166 @@
+{
+  "characterId": 34,
+  "stars": 3,
+  "name": "Thari",
+  "image": "/assets/animations/v3/34-s3.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 362,
+  "frameHeight": 362,
+  "imageWidth": 1448,
+  "imageHeight": 1086,
+  "bodyHeight": 233,
+  "anchorX": 192,
+  "anchorY": 374,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 362,
+      "height": 377
+    },
+    {
+      "x": 362,
+      "y": 0,
+      "width": 362,
+      "height": 377
+    },
+    {
+      "x": 724,
+      "y": 0,
+      "width": 362,
+      "height": 377
+    },
+    {
+      "x": 1086,
+      "y": 0,
+      "width": 362,
+      "height": 377
+    },
+    {
+      "x": 0,
+      "y": 377,
+      "width": 362,
+      "height": 347
+    },
+    {
+      "x": 362,
+      "y": 377,
+      "width": 362,
+      "height": 347
+    },
+    {
+      "x": 724,
+      "y": 377,
+      "width": 362,
+      "height": 347
+    },
+    {
+      "x": 1086,
+      "y": 377,
+      "width": 362,
+      "height": 347
+    },
+    {
+      "x": 0,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 362,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 724,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 1086,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 192,
+      "y": 374
+    },
+    {
+      "x": 189,
+      "y": 374
+    },
+    {
+      "x": 168,
+      "y": 374
+    },
+    {
+      "x": 178,
+      "y": 374
+    },
+    {
+      "x": 198,
+      "y": 318
+    },
+    {
+      "x": 188,
+      "y": 317
+    },
+    {
+      "x": 186,
+      "y": 317
+    },
+    {
+      "x": 184,
+      "y": 316
+    },
+    {
+      "x": 186,
+      "y": 286
+    },
+    {
+      "x": 194,
+      "y": 288
+    },
+    {
+      "x": 184,
+      "y": 293
+    },
+    {
+      "x": 183,
+      "y": 288
+    }
+  ],
+  "portrait": {
+    "x": 113,
+    "y": 142,
+    "width": 155,
+    "height": 233
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

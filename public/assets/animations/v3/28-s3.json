@@ -1,0 +1,166 @@
+{
+  "characterId": 28,
+  "stars": 3,
+  "name": "Duma",
+  "image": "/assets/animations/v3/28-s3.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 287,
+  "anchorX": 180,
+  "anchorY": 437,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 441
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 441
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 441
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 441
+    },
+    {
+      "x": 0,
+      "y": 441,
+      "width": 313,
+      "height": 395
+    },
+    {
+      "x": 313,
+      "y": 441,
+      "width": 314,
+      "height": 395
+    },
+    {
+      "x": 627,
+      "y": 441,
+      "width": 313,
+      "height": 395
+    },
+    {
+      "x": 940,
+      "y": 441,
+      "width": 314,
+      "height": 395
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 324,
+      "height": 418
+    },
+    {
+      "x": 951,
+      "y": 836,
+      "width": 303,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 180,
+      "y": 437
+    },
+    {
+      "x": 168,
+      "y": 437
+    },
+    {
+      "x": 156,
+      "y": 437
+    },
+    {
+      "x": 169,
+      "y": 437
+    },
+    {
+      "x": 178,
+      "y": 387
+    },
+    {
+      "x": 180,
+      "y": 387
+    },
+    {
+      "x": 177,
+      "y": 386
+    },
+    {
+      "x": 178,
+      "y": 386
+    },
+    {
+      "x": 189,
+      "y": 341
+    },
+    {
+      "x": 168,
+      "y": 342
+    },
+    {
+      "x": 164,
+      "y": 343
+    },
+    {
+      "x": 166,
+      "y": 344
+    }
+  ],
+  "portrait": {
+    "x": 51,
+    "y": 151,
+    "width": 235,
+    "height": 287
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

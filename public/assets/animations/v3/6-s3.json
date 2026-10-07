@@ -1,0 +1,166 @@
+{
+  "characterId": 6,
+  "stars": 3,
+  "name": "Muru",
+  "image": "/assets/animations/v3/6-s3.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 362,
+  "frameHeight": 362,
+  "imageWidth": 1448,
+  "imageHeight": 1086,
+  "bodyHeight": 338,
+  "anchorX": 192,
+  "anchorY": 357,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 362,
+      "y": 0,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 724,
+      "y": 0,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 1086,
+      "y": 0,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 0,
+      "y": 362,
+      "width": 362,
+      "height": 361
+    },
+    {
+      "x": 362,
+      "y": 362,
+      "width": 362,
+      "height": 361
+    },
+    {
+      "x": 724,
+      "y": 362,
+      "width": 362,
+      "height": 361
+    },
+    {
+      "x": 1086,
+      "y": 362,
+      "width": 362,
+      "height": 361
+    },
+    {
+      "x": 0,
+      "y": 723,
+      "width": 362,
+      "height": 363
+    },
+    {
+      "x": 362,
+      "y": 723,
+      "width": 362,
+      "height": 363
+    },
+    {
+      "x": 724,
+      "y": 723,
+      "width": 366,
+      "height": 363
+    },
+    {
+      "x": 1090,
+      "y": 723,
+      "width": 358,
+      "height": 363
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 192,
+      "y": 357
+    },
+    {
+      "x": 200,
+      "y": 355
+    },
+    {
+      "x": 195,
+      "y": 357
+    },
+    {
+      "x": 196,
+      "y": 357
+    },
+    {
+      "x": 183,
+      "y": 355
+    },
+    {
+      "x": 188,
+      "y": 353
+    },
+    {
+      "x": 192,
+      "y": 353
+    },
+    {
+      "x": 196,
+      "y": 355
+    },
+    {
+      "x": 184,
+      "y": 341
+    },
+    {
+      "x": 188,
+      "y": 344
+    },
+    {
+      "x": 171,
+      "y": 340
+    },
+    {
+      "x": 186,
+      "y": 346
+    }
+  ],
+  "portrait": {
+    "x": 31,
+    "y": 20,
+    "width": 301,
+    "height": 338
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

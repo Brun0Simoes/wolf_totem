@@ -1,5 +1,15 @@
 # Wolf Totem — arte e animação
 
+## Produção atual — 7 de outubro de 2026
+
+Os 55 personagens têm **165 formas animadas (1★, 2★ e 3★)**. São 495 sequências e 1.980 poses desenhadas: repouso, caminhada e ataque/conjuração, quatro poses por sequência. Impacto, queda e vitória usam movimento programado; ataque e habilidade compartilham poses.
+
+As formas usam as descrições de evolução do catálogo e mantêm a identidade das artes anteriores. PNGs gerados com Imagegen foram copiados sem editar pixels. Os JSONs registram os 12 recortes e as âncoras individuais; margens transparentes e conteúdo de cada quadro foram medidos antes da integração. As invocações têm um registro separado, em `public/assets/animations/summons`.
+
+As cinco criaturas invocadas têm folhas próprias: cria de seda, corvo ancestral, escaravelho solar, lobo espiritual e espírito do marfim. São mais 15 sequências e 60 poses. O eco de Amaru usa a folha do próprio personagem. O campo carrega cada criatura sob demanda e conserva os desenhos procedurais como alternativa durante o carregamento.
+
+Consulte o [inventário atual](production/STATUS.md). Para revisar as folhas em movimento, execute o servidor Vite e abra `/docs/production/preview.html`. As seções de versões abaixo registram o histórico da produção.
+
 ## Versão 1.3: campo 7 × 8 e Casa de Cura
 
 - A arena usa um campo de 7 × 8 casas: a câmera recua um pouco, as unidades ficam menores no fundo, e os rótulos das metades vão para os lados do tabuleiro.
@@ -40,7 +50,7 @@ As figuras são provisórias e sempre perdem para uma folha pintada da mesma for
 
 ## Expansão 0.3
 
-A produção abrange os 55 personagens e suas três estrelas. Consulte o [estado atualizado](production/STATUS.md) para as entregas efetivas; as folhas restantes continuam sendo produzidas em lotes de 1★, 2★ e 3★.
+A produção abrange os 55 personagens e suas três estrelas. Consulte o [estado atualizado](production/STATUS.md) para a cobertura atual; os lotes desta seção descrevem a expansão inicial.
 
 O códice agora oferece uma prévia animada com seleção de estrelas, repouso, caminhada, ataque, habilidade, impacto, queda, vitória, pausa e espelhamento. As folhas novas ficam em `v3`; as 13 folhas anteriores permanecem em `v2`. Cada personagem/estrela tem seu próprio registro. O retrato dos novos personagens usa a primeira pose da folha, preservando o arquivo gerado.
 
@@ -48,7 +58,7 @@ O campo carrega folhas sob demanda e descarta texturas antigas que não estão e
 
 Desde a versão 0.4 os 55 personagens são recrutáveis e suas habilidades funcionam em combate, independentemente da arte. Quando falta a folha de uma estrela, o campo usa a ilustração original (custo 1) ou a folha pronta mais próxima do mesmo personagem. Personagens sem nenhuma arte usam uma silhueta tingida pela cor do custo; invocações usam silhuetas luminosas programadas e metamorfoses aumentam e iluminam a figura enquanto duram.
 
-### Ordem sugerida para retomar a geração
+### Prioridades registradas na expansão inicial — concluídas
 
 1. **1★ dos 10 personagens sem nenhuma folha pintada** — são os únicos que ainda aparecem como silhueta: Suri, Kesh, Brak, Sena, Uru, Amaru, Vesh, Toru, Asha e Thari.
 2. **3★ dos Metamorfos** — a transformação é o momento mais visível do combate.
@@ -77,7 +87,7 @@ Ataques e habilidades compartilham a terceira fileira de poses, com ritmos e efe
 - [Kiko, Muru, Taka e Ena](animation-batch-b.md): referências, prompts e revisão dos recortes.
 - [Paku, Zirri, Ayo, Kalu e Viri](animation-batch-c.md): referências, prompts e revisão dos recortes.
 
-Próximas etapas de arte: aumentar a fluidez com poses intermediárias, desenhar reações e derrotas específicas, animar os estágios 2/3 e produzir os 42 personagens restantes. Os ciclos atuais têm quatro poses e ainda precisam de refinamento artístico fino.
+Refinamentos possíveis: aumentar a fluidez com poses intermediárias e desenhar reações e derrotas específicas. A produção posterior completou os estágios 2★/3★ e os 42 personagens restantes. Os ciclos atuais têm quatro poses.
 
 ## Registro da primeira experiência de ataque
 
@@ -86,7 +96,7 @@ A documentação abaixo registra a faixa inicial de Akru. O jogo agora carrega a
 ## Estado dos arquivos
 
 - As **39 artes originais** de `chars` foram preservadas. Elas representam 13 personagens, com três estrelas cada.
-- O catálogo completo tem 55 personagens. Faltam as três artes de cada um dos outros 42 personagens: **126 aparências**.
+- Na inspeção inicial, o catálogo tinha 55 personagens e faltavam as três artes dos outros 42: **126 aparências**. A produção posterior completou essas lacunas em atlas animados.
 - Foi criada uma **primeira animação de ataque de Akru 1★**, com quatro poses desenhadas e transparência real.
 - Arquivo: `public/assets/animations/akru-attack.png`.
 - Metadados: `public/assets/animations/akru-attack.json`.

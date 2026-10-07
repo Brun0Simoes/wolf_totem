@@ -1,6 +1,20 @@
 # Verificação
 
-## Versão 0.3 — expansão do elenco e prévia
+## Produção visual completa — 7 de outubro de 2026
+
+- `npm test`: **242 testes passaram em oito arquivos**. A cobertura exige os 55 IDs nas três estrelas e as cinco criaturas invocadas; verifica registro, PNGs, dimensões, retratos, 12 quadros, âncoras e clipes de cada folha.
+- `npm run build`: TypeScript e Vite concluíram sem erros.
+- `npm run roster:status -- --write --complete`: **165/165 formas, 55/55 personagens completos, 5/5 criaturas**, sem pendências.
+- No códice: Sesha 3★ em caminhada e ataque, espelhamento, pausa e retomada; Akh'ra 3★ em habilidade; Karkun 3★ em caminhada. A prévia de Karkun foi conferida em viewport de 390 × 844; as demais, em 1280 × 900.
+- Na galeria de produção: Nilo 3★ com o tamanduá espiritual e as cinco criaturas em movimento, com transparência e âncoras no chão. Caminhada, ataque e espelhamento conferidos.
+- Na arena: formação de invocadores importada pela interface em `localhost`, separada da jornada em `127.0.0.1`. Os atlas PNG de aranha, escaravelho, elefante e corvo foram carregados durante a luta em Mãe das mil teias. O lobo foi conferido na galeria.
+- Console das abas de QA sem erros. A captura de tela registra o campo com invocações; a galeria permite revisar cada folha individualmente.
+
+Evidências: [Karkun no celular](production/qa-2026-10-07-karkun-mobile.jpg), [galeria](production/qa-2026-10-07-gallery.jpg), [campo](production/qa-2026-10-07-summons-battle.jpg). Procedimento e proveniência no [relatório do lote](production/visual-2026-10-07.md).
+
+As animações continuam com quatro poses por ciclo. Ataque e habilidade compartilham desenhos; impacto, queda e vitória usam movimento programado. A geometria de todas as folhas foi validada, mas a revisão no navegador foi por amostragem. Fluidez, transições e fidelidade fina às descrições de evolução ainda podem ser refinadas artisticamente.
+
+## Histórico: versão 0.3 — expansão do elenco e prévia
 
 - `npm test`: 112 testes passaram, incluindo 54 atlas e o registro por personagem/estrela.
 - `npm run build`: TypeScript e Vite concluíram sem erros.

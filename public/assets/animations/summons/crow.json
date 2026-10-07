@@ -1,0 +1,167 @@
+{
+  "characterId": 0,
+  "stars": 1,
+  "name": "Corvo ancestral",
+  "image": "/assets/animations/summons/crow.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 116,
+  "anchorX": 160,
+  "anchorY": 388,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 160,
+      "y": 388
+    },
+    {
+      "x": 158,
+      "y": 388
+    },
+    {
+      "x": 134,
+      "y": 387
+    },
+    {
+      "x": 134,
+      "y": 388
+    },
+    {
+      "x": 156,
+      "y": 339
+    },
+    {
+      "x": 146,
+      "y": 339
+    },
+    {
+      "x": 153,
+      "y": 366
+    },
+    {
+      "x": 136,
+      "y": 337
+    },
+    {
+      "x": 164,
+      "y": 297
+    },
+    {
+      "x": 158,
+      "y": 289
+    },
+    {
+      "x": 200,
+      "y": 282
+    },
+    {
+      "x": 152,
+      "y": 290
+    }
+  ],
+  "portrait": {
+    "x": 103,
+    "y": 273,
+    "width": 139,
+    "height": 116
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles with transparent gutters and individual ground anchors. Summoned creature.",
+  "summonId": "crow"
+}
