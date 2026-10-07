@@ -1,6 +1,7 @@
 /** Synthesized sound: effects and a tribal ambience, with no audio files to load. */
 export type Sfx = 'click' | 'hit' | 'cast' | 'heal' | 'death' | 'recruit' | 'upgrade' | 'victory' | 'defeat' | 'power' | 'item' | 'era' | 'summon';
 
+import type { PracticeId } from './game/tribe';
 const PENTATONIC = [0, 3, 5, 7, 10, 12, 15];
 
 export class SoundSystem {
@@ -8,6 +9,7 @@ export class SoundSystem {
   private master?: GainNode;
   private musicGain?: GainNode;
   private effectsGain?: GainNode;
+  private ritualGain?: GainNode;
   private volumes = { effects: 0.8, music: 0.5 };
   private last = new Map<Sfx, number>();
   private timer = 0;
@@ -39,7 +41,7 @@ export class SoundSystem {
   /** Unmuting must come from a user gesture, as browsers require for audio. */
   setMuted(muted: boolean): void {
     this.muted = muted;
-    if (muted) { window.clearInterval(this.timer); this.timer = 0; }
+    if (muted) { window.clearInterval(this.timer); this.timer = 0; this.stopRitual(); }
     else { this.ensure(); this.startMusic(); }
   }
 
@@ -51,7 +53,7 @@ export class SoundSystem {
 
   private applyVolumes(): void {
     if (this.effectsGain) this.effectsGain.gain.value = this.volumes.effects * 1.25;
-    if (this.musicGain) this.musicGain.gain.value = this.volumes.music * 0.64;
+    if (this.musicGain) this.musicGain.gain.value = this.volumes.music * 0.64 * (this.ritualGain ? .18 : 1);
   }
 
   private tone(frequency: number, start: number, duration: number, type: OscillatorType, volume: number, slideTo?: number, destination?: AudioNode): void {
@@ -63,6 +65,7 @@ export class SoundSystem {
     gain.gain.exponentialRampToValueAtTime(volume, start + Math.min(0.02, duration / 4));
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain).connect(destination ?? this.effectsGain!);
+    oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
     oscillator.start(start); oscillator.stop(start + duration + 0.02);
   }
 
@@ -75,7 +78,32 @@ export class SoundSystem {
     source.buffer = buffer; filter.type = 'bandpass'; filter.frequency.value = frequency; filter.Q.value = 0.9;
     gain.gain.value = volume;
     source.connect(filter).connect(gain).connect(destination ?? this.effectsGain!);
+    source.onended = () => { source.disconnect(); filter.disconnect(); gain.disconnect(); };
     source.start(start);
+  }
+
+  /** Original game motifs, synthesized rather than recordings of traditional chants. */
+  startRitual(): void {
+    this.stopRitual();
+    if (this.muted) return;
+    const context = this.ensure(); if (!context) return;
+    this.ritualGain = context.createGain(); this.ritualGain.connect(this.effectsGain!);
+    this.applyVolumes();
+  }
+  stopRitual(): void {
+    this.ritualGain?.disconnect(); this.ritualGain = undefined; this.applyVolumes();
+  }
+  ritualCue(id: PracticeId, step = 0, strength = 1): void {
+    if (this.muted) return;
+    if (!this.ritualGain) this.startRitual();
+    const context = this.context, bus = this.ritualGain;
+    if (!context || !bus) return;
+    const t = context.currentTime, f = [220, 294, 330, 392][Math.abs(step) % 4];
+    if (id === 'rape') { this.noise(t, .19, .07 * strength, 700 + strength * 1100, bus); if (step % 6 === 0) this.noise(t, .045, .02, 2800, bus); }
+    if (id === 'sananga') { this.tone(880, t, .24, 'sine', .06, 440, bus); this.tone(1320, t + .06, .4, 'sine', .025, undefined, bus); }
+    if (id === 'kambo') { this.tone(80 + step * 22, t, .25, 'sine', .16, 45 + step * 10, bus); this.noise(t, .065, .045, 400 + step * 250, bus); }
+    if (id === 'ayahuasca') { this.tone(f, t, .7, 'triangle', .045, f * 1.5, bus); this.tone(f * 2, t + .12, .7, 'sine', .025, undefined, bus); this.noise(t, .5, .012, 1900, bus); }
+    if (id === 'cacau') { this.tone(90, t, .19, 'sine', .13, 55, bus); this.tone(110, t + .17, .18, 'sine', .075, 65, bus); this.noise(t + .08, .12, .025, 2100, bus); }
   }
 
   /** Effects are throttled so a crowded battle does not become noise. */

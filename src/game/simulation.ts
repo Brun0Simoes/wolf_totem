@@ -1,4 +1,5 @@
 import { characters, type Character } from '../data/characters';
+import { participationBonus } from './ritualPlay';
 import { ALL_CHARACTER_IDS, nextRandom, recruitPrice, rollVisitor, sellRefund, unlockedCost } from './roster';
 import { bossScale, endlessLevel, endlessStage, enemyScale, expectedLevel, FINAL_STAGE, regionOf, stageById, stageReward, type Stage } from './campaign';
 import { COMPONENT_IDS, isComponent, itemById, MAX_ITEMS_PER_HERO, recipeFor, type ItemPerks } from './items';
@@ -18,7 +19,7 @@ export type Resources = Record<Resource, number>;
 export type BuildingId = 'lumber' | 'hunt' | 'quarry' | 'shrine' | 'forge' | 'cura';
 export type Team = 'ally' | 'enemy';
 /** Away on a hunt or in a ceremony until the village clock reaches `until`; the hero keeps its place in the formation. */
-export interface HeroAway { kind: 'hunt' | 'ritual'; id: TrailId | PracticeId; until: number; focus?: boolean; returnWork?: BuildingId }
+export interface HeroAway { kind: 'hunt' | 'ritual'; id: TrailId | PracticeId; until: number; focus?: boolean; returnWork?: BuildingId; participationXp?: number }
 export interface Hero {
   uid: string; characterId: number; stars: number; slot: number | null; items: string[]; work: BuildingId | null;
   level: number; xp: number; ritualLevel: number; ritualXp: number; ritualReadyAt: number;
@@ -483,6 +484,7 @@ function sanitizeState(value: unknown, version: number): GameState {
         && typeof awayInput.until === 'number' && Number.isFinite(awayInput.until) && awayInput.until <= state.clock + 24 * 3600;
       const away: HeroAway | null = awayValid ? { kind: awayKind!, id: awayInput.id as TrailId | PracticeId, until: Math.max(0, awayInput.until as number), focus: awayInput.focus === true } : null;
       if (away && typeof awayInput.returnWork === 'string' && BUILDING_KEYS.includes(awayInput.returnWork as BuildingId)) away.returnWork = awayInput.returnWork as BuildingId;
+      if (away?.kind === 'ritual') away.participationXp = integer(awayInput.participationXp, 0, 0, participationBonus(RITUAL_XP[away.id as PracticeId], 1));
       if (away) work = null;
       return [{
         ...newHero(uid, hero.characterId as number, integer(hero.stars, 1, 1, 3), slot), items, work, level,
@@ -913,7 +915,7 @@ export class Game {
       const reached = this.state.clock;
       this.state.clock = away.until;
       if (away.kind === 'hunt') this.finishHunt(hero, away.id as TrailId, !!away.focus);
-      else this.finishRitual(hero, away.id as PracticeId, away.until);
+      else this.finishRitual(hero, away.id as PracticeId, away.until, away.participationXp ?? 0);
       if (away.returnWork && hero.slot === null && this.state.buildings[away.returnWork] > 0
         && this.state.heroes.filter(h => h.work === away.returnWork).length < workerSlots(this.state, away.returnWork)) hero.work = away.returnWork;
       this.state.clock = reached;
@@ -935,17 +937,17 @@ export class Game {
     const text = ok ? `voltou da ${trail.name} com caça: ${gains.join(', ')}.` : `voltou da ${trail.name} sem caça (${gains[0]}). A panema pesa: ${hero.panema}/${MAX_PANEMA}.`;
     this.report(hero, levels ? `${text} Agora está no nível ${hero.level}!` : text, ok);
   }
-  private finishRitual(hero: Hero, id: PracticeId, completedAt: number): void {
+  private finishRitual(hero: Hero, id: PracticeId, completedAt: number, bonus = 0): void {
     const practice = practiceById(id)!;
     this.state.stats.rituals++;
     hero.rituals[id] = Math.min(practice.max, (hero.rituals[id] ?? 0) + 1);
-    Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + RITUAL_XP[id]));
+    Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + RITUAL_XP[id] + bonus));
     hero.ritualReadyAt = completedAt + RITUAL_COOLDOWN;
     this.awaken(hero);
     if (id === 'rape') hero.focus = true;
     if (id === 'sananga') hero.panema = Math.max(0, hero.panema - 1);
     if (id === 'kambo') hero.panema = 0;
-    this.report(hero, `concluiu ${practice.name}: +${RITUAL_XP[id]} XP ritual. Integração de 3 horas antes da próxima cerimônia.`, true);
+    this.report(hero, `concluiu ${practice.name}: +${RITUAL_XP[id] + bonus} XP ritual${bonus ? ` (${bonus} pela participação)` : ''}. Integração de 3 horas antes da próxima cerimônia.`, true);
   }
 
   /** Sends a hero along a hunting trail; the hero keeps a place in the formation but cannot fight until back. */
@@ -973,7 +975,7 @@ export class Game {
     return success(`${characterById(hero.characterId).name} voltou da mata sem caça.`);
   }
   /** A ceremony of the Casa de Cura for one hero. */
-  performRitual(uid: string, id: string): ActionResult {
+  performRitual(uid: string, id: string, quality = 0): ActionResult {
     const practice = practiceById(id);
     if (!practice || practice.tribe) return fail('Escolha uma cerimônia para um herói.');
     const level = this.state.buildings.cura;
@@ -991,11 +993,11 @@ export class Game {
     if (!this.spend(practice.cost(done))) return fail('Faltam recursos para preparar a cerimônia.');
     const returnWork = hero.work ?? undefined;
     hero.work = null;
-    hero.away = { kind: 'ritual', id: practice.id, until: this.state.clock + practice.rest / ritualSpeed(this.state), returnWork };
+    hero.away = { kind: 'ritual', id: practice.id, until: this.state.clock + practice.rest / ritualSpeed(this.state), returnWork, participationXp: participationBonus(RITUAL_XP[practice.id], quality) };
     return success(`${name} entrou na cerimônia de ${practice.name}.`);
   }
   /** The cacao circle blesses the whole tribe for a while. */
-  holdCacaoCircle(): ActionResult {
+  holdCacaoCircle(quality = 0): ActionResult {
     const practice = practiceById('cacau')!;
     if (this.state.buildings.cura < practice.curaLevel) return fail(`A roda de cacau exige a Casa de Cura nível ${practice.curaLevel}.`);
     if (this.state.villageLevel < practice.era) return fail('A roda de cacau chega à tribo na Era II.');
@@ -1004,7 +1006,7 @@ export class Game {
     this.state.cacao = this.state.clock + CACAO_DURATION;
     this.state.stats.rituals++;
     for (const hero of this.state.heroes.filter(hero => !hero.away && this.state.clock >= hero.ritualReadyAt)) {
-      Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + RITUAL_XP.cacau));
+      Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + RITUAL_XP.cacau + participationBonus(RITUAL_XP.cacau, quality)));
       hero.ritualReadyAt = this.state.clock + RITUAL_COOLDOWN;
       this.awaken(hero);
     }

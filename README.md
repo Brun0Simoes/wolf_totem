@@ -38,6 +38,14 @@ A cada envio para `main`, o workflow `.github/workflows/pages.yml` testa, gera o
 
 Direção visual e verificação: [revisão de design](docs/design/REVIEW.md).
 
+## Rituais interativos
+
+Antes de iniciar uma cerimônia, participe de um minigame curto: três sopros no rapé, quatro alinhamentos de foco na sananga, três sequências de memória no kambô, 18 segundos conduzindo uma luz na ayahuasca ou oito pulsações na roda de cacau. Cada experiência tem cores, controles e efeitos sonoros próprios.
+
+A sintonia concede até **20% de XP ritual extra**. Confirmar inicia a cerimônia e cobra os recursos uma única vez; fechar a preparação preserva os recursos. **Seguir automaticamente** inicia com o XP base. Tempos de cerimônia, integração e requisitos de despertar continuam valendo. Os sons são composições sintetizadas para o jogo e usam os controles de volume existentes.
+
+Há controles por toque e teclado, pausa, margem ampliada no modo tranquilo e uma alternativa de dois toques para o sopro. A participação pausa ao sair da janela; a aldeia continua sua jornada. Regras e evidências: [rituais interativos](docs/RITUAIS-INTERATIVOS.md).
+
 ## O jogo
 
 | Pilar | O que existe |

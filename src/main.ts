@@ -3,6 +3,10 @@ import './style.css';
 import './refinements.css';
 import './ui.css';
 import './journey-ui.css';
+import './ritual-experience.css';
+import { RitualExperience, ritualExperienceMarkup } from './ui/RitualExperience';
+import { RITUAL_PLAY } from './game/ritualPlay';
+import type { PracticeId } from './game/tribe';
 import { growthBars, awakeningMarkup, updateGrowthBars } from './ui/heroProgress';
 import { environmentPortrait } from './ui/environment';
 import { createIcons, icons } from 'lucide';
@@ -59,6 +63,7 @@ let selectedHero: string | null = null;
 let selectedBuilding: BuildingId = 'lumber';
 let selectedItem: number | null = null;
 let activeModal = '';
+let ritualExperience: RitualExperience | null = null;
 let lastBattleStatus = '';
 let lastProgress = game.state.progress;
 let lastVillage = game.state.villageLevel;
@@ -444,13 +449,25 @@ function summaryHTML(b: NonNullable<typeof game.battle>): string {
 }
 
 function showModal(name: string, html: string) {
+  ritualExperience?.destroy(); ritualExperience = null;
   $('#modal').dataset.surface=name;
   preview.clear(); activeModal = name;
   $('#modal-content').innerHTML = `<button class="modal-close icon-button" data-action="close" aria-label="Fechar">${icon('x')}</button>${html}`;
   if (!$<HTMLDialogElement>('#modal').open) $<HTMLDialogElement>('#modal').showModal();
   $('#modal').scrollTop = 0; refreshIcons();
 }
-const closeModal = () => { $<HTMLDialogElement>('#modal').close(); activeModal = ''; };
+const closeModal = () => { ritualExperience?.destroy(); ritualExperience = null; $<HTMLDialogElement>('#modal').close(); activeModal = ''; };
+
+function showRitualExperience(id: PracticeId) {
+  const uid = curaHero;
+  const hero = game.state.heroes.find(h => h.uid === uid);
+  if (!hero && id !== 'cacau') return;
+  showModal('ritual-play', ritualExperienceMarkup(id, id === 'cacau' ? 'Toda a tribo' : hero ? `${portraitHTML(characterOf(hero.characterId), hero.stars)}<span>${esc(characterOf(hero.characterId).name)}</span>` : 'Toda a tribo'));
+  ritualExperience = new RitualExperience($('#modal-content'), id, sound, quality => {
+    const result = id === 'cacau' ? game.holdCacaoCircle(quality) : game.performRitual(uid!, id, quality);
+    act(result, 'heal'); showCura();
+  }, () => updatePref('sound', !prefs.sound), reducedMotion());
+}
 
 function codexTabs(active: string) {
   return `<div class="codex-tabs">${[['heroes', 'Heróis', 'users'], ['items', 'Itens', 'backpack'], ['spirits', 'Espíritos', 'feather'], ['traits', 'Laços', 'diamond']].map(([id, label, ic]) => `<button data-codex="${id}" class="${id === active ? 'active' : ''}">${icon(ic)}${label}</button>`).join('')}</div>`;
@@ -583,7 +600,7 @@ function showCura() {
   const done=hero?.rituals[p.id]??0;
   showModal('cura',`<div class="ritual-layout"><aside class="ritual-roster"><h3>Sua tribo</h3>${s.heroes.map(h=>`<button data-cura-hero="${h.uid}" class="${h.uid===curaHero?'selected':''}" aria-label="Rituais de ${characterOf(h.characterId).name}">${portraitHTML(characterOf(h.characterId),h.stars)}<span>${characterOf(h.characterId).name}</span></button>`).join('')}</aside><section class="ritual-path"><h2>O caminho do despertar</h2><p>Atividades fortalecem o corpo. Cerimônias aprofundam o vínculo.</p>${hero?`<div class="ritual-growth"><div><h3>${characterOf(hero.characterId).name} ${'★'.repeat(hero.stars)}</h3>${growthBars(hero)}</div>${awakeningMarkup(hero)}</div>`:''}
     <div class="ritual-heading"><h3>Cerimônias do espírito</h3>${level<15?`<button class="outline-button" data-cura-build="1" ${costAttr(build)}>${level?'Ampliar maloca':'Construir Casa de Cura'}<span class="cost">${costHTML(build)}</span></button>`:''}</div>
-    <div class="ritual-selection"><nav aria-label="Cerimônias">${PRACTICES.map(practice=>`<button data-practice-select="${practice.id}" aria-pressed="${p.id===practice.id}">${icon(({rape:'feather',sananga:'eye',kambo:'heart',ayahuasca:'leaf',cacau:'cup-soda'} as Record<string,string>)[practice.id])}<span>${practice.name}<small>+${RITUAL_XP[practice.id]} XP ritual</small></span>${icon('chevron-right')}</button>`).join('')}</nav><article class="ritual-detail"><div class="ritual-symbol">${icon('flame')}</div><h3>${p.name}</h3><p>${p.effect}</p><div class="ritual-values"><span>Duração <b>${p.tribe?'10 min de bênção':`${Math.round(p.rest/ritualSpeed(s)/60)} min`}</b></span><span>Vínculo <b>+${RITUAL_XP[p.id]} XP ritual</b></span></div><p class="ritual-mastery">${p.tribe?'XP ritual para quem concluiu a integração.':`Bônus aprendido: ${done}/${p.max}. Repetir continua concedendo XP ritual.`}</p>${locks.length?`<p class="ritual-lock">${icon('lock')}${esc(locks.join(' · '))}</p>`:''}<button class="primary" ${p.tribe?'data-action="cacao"':`data-ritual="${p.id}"`} ${costAttr(p.cost(done))} data-max="${!!locks.length||!hero||(p.tribe&&s.clock<s.cacao)}">${p.tribe?'Reunir a tribo':'Iniciar cerimônia'}<span class="cost">${costHTML(p.cost(done))}</span></button>${hero?`<button class="outline-button" data-hunt-hero="${hero.uid}" ${hero.away?'disabled':''}>Enviar para uma caçada ${icon('arrow-right')}</button>`:''}<details><summary>Tradição e contexto</summary><p>${esc(p.text)}</p><p>${esc(p.peoples)}</p><p>${esc(CURA_NOTE)}</p></details></article></div>${hero?.away?`<div class="integration-note">${hero.away.kind==='ritual'?'Cerimônia':'Caçada'} em andamento · ${countdown(hero.away.until)}${hero.away.returnWork?' · Retorna ao trabalho após o rito.':''}</div>`:hero&&s.clock<hero.ritualReadyAt?`<div class="integration-note">Integrando a experiência · próximo rito em ${countdown(hero.ritualReadyAt)}</div>`:''}</section></div>`);
+    <div class="ritual-selection"><nav aria-label="Cerimônias">${PRACTICES.map(practice=>`<button data-practice-select="${practice.id}" aria-pressed="${p.id===practice.id}">${icon(({rape:'feather',sananga:'eye',kambo:'heart',ayahuasca:'leaf',cacau:'cup-soda'} as Record<string,string>)[practice.id])}<span>${practice.name}<small>+${RITUAL_XP[practice.id]} XP ritual</small></span>${icon('chevron-right')}</button>`).join('')}</nav><article class="ritual-detail"><div class="ritual-symbol">${icon('flame')}</div><h3>${p.name}</h3><p>${p.effect}</p><div class="ritual-values"><span>Duração <b>${p.tribe?'10 min de bênção':`${Math.round(p.rest/ritualSpeed(s)/60)} min`}</b></span><span>Vínculo <b>+${RITUAL_XP[p.id]} XP ritual</b></span></div><p class="ritual-mastery">${p.tribe?'XP ritual para quem concluiu a integração.':`Bônus aprendido: ${done}/${p.max}. Repetir continua concedendo XP ritual.`}</p><p class="ritual-participation">${RITUAL_PLAY[p.id].instruction} Até 20% de XP ritual extra pela sintonia. Também é possível seguir automaticamente.</p>${locks.length?`<p class="ritual-lock">${icon('lock')}${esc(locks.join(' · '))}</p>`:''}<button class="primary" ${p.tribe?'data-action="cacao"':`data-ritual="${p.id}"`} ${costAttr(p.cost(done))} data-max="${!!locks.length||!hero||(p.tribe&&s.clock<s.cacao)}">${p.tribe?'Participar da roda':'Participar da cerimônia'}<span class="cost">${costHTML(p.cost(done))}</span></button>${hero?`<button class="outline-button" data-hunt-hero="${hero.uid}" ${hero.away?'disabled':''}>Enviar para uma caçada ${icon('arrow-right')}</button>`:''}<details><summary>Tradição e contexto</summary><p>${esc(p.text)}</p><p>${esc(p.peoples)}</p><p>${esc(CURA_NOTE)}</p></details></article></div>${hero?.away?`<div class="integration-note">${hero.away.kind==='ritual'?'Cerimônia':'Caçada'} em andamento · ${countdown(hero.away.until)}${hero.away.returnWork?' · Retorna ao trabalho após o rito.':''}${hero.away.participationXp?` · +${hero.away.participationXp} XP extra pela participação.`:''}</div>`:hero&&s.clock<hero.ritualReadyAt?`<div class="integration-note">Integrando a experiência · próximo rito em ${countdown(hero.ritualReadyAt)}</div>`:''}</section></div>`);
 }
 
 function journeyObjective():string {
@@ -754,7 +771,7 @@ document.addEventListener('click', event => {
   if (d.startHunt) { const select = document.querySelector<HTMLSelectElement>(`#trail-${d.startHunt}`); if (select) { act(game.startHunt(select.value, d.startHunt), 'click'); showHunts(); } return; }
   if (d.recall) { act(game.recallHunt(d.recall), 'click'); showHunts(); return; }
   if (d.huntHero) { showHunts(d.huntHero); return; }
-  if (d.ritual) { if (curaHero) { act(game.performRitual(curaHero, d.ritual), 'heal'); showCura(); } return; }
+  if (d.ritual) { if (curaHero) showRitualExperience(d.ritual as PracticeId); return; }
   if (d.curaBuild) { act(game.upgradeBuilding('cura')); showCura(); return; }
   if (d.quest) { const r = game.claimQuest(d.quest); act(r, 'item'); if (activeModal === 'journal') showJournal(); return; }
   if (d.memory) { act(game.buyMemory(d.memory as MemoryId), 'upgrade'); showAncestors(); return; }
@@ -783,7 +800,7 @@ document.addEventListener('click', event => {
     case 'map': showMap(); break;
     case 'hunts': showHunts(); break;
     case 'cura': showCura(); break;
-    case 'cacao': act(game.holdCacaoCircle(), 'heal'); if (activeModal === 'cura') showCura(); break;
+    case 'cacao': showRitualExperience('cacau'); break;
     case 'journal': showJournal(); break;
     case 'ancestors': confirmAscend = false; showAncestors(); break;
     case 'wonder': act(game.buildWonder(), 'era'); showAncestors(); break;
@@ -872,7 +889,7 @@ document.addEventListener('keydown', event => {
   if (key === 'p') { game.togglePause(); save(); renderAll(); }
 });
 $<HTMLDialogElement>('#modal').addEventListener('click', event => { if (event.target === $('#modal')) closeModal(); });
-$('#modal').addEventListener('close', () => { preview.clear(); activeModal = ''; });
+$('#modal').addEventListener('close', () => { ritualExperience?.destroy(); ritualExperience = null; preview.clear(); activeModal = ''; });
 window.addEventListener('pagehide', save);
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {

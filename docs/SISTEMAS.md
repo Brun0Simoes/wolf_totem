@@ -13,6 +13,8 @@ Primeiro Inverno ─► Caçada Eterna + Grande Totem ─► renascimento ─►
 
 ## Ritmo e despertar
 
+As cerimônias têm uma preparação interativa opcional que concede até 20% de XP ritual extra, sem alterar os tempos ou os requisitos. O bônus individual é persistido e concedido na conclusão; o da roda de cacau vale para os membros elegíveis. Veja [controles, regras e validação](RITUAIS-INTERATIVOS.md).
+
 A progressão combina duas trilhas independentes. Trabalho, caçadas e expedições concedem experiência; cerimônias concedem experiência ritual. Nenhuma trilha substitui a outra.
 
 | Forma | Experiência | Ritualística | Cerimônia adicional |
