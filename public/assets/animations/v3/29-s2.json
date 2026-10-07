@@ -1,0 +1,166 @@
+{
+  "characterId": 29,
+  "stars": 2,
+  "name": "Roko",
+  "image": "/assets/animations/v3/29-s2.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 362,
+  "frameHeight": 362,
+  "imageWidth": 1448,
+  "imageHeight": 1086,
+  "bodyHeight": 234,
+  "anchorX": 226,
+  "anchorY": 354,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 362,
+      "y": 0,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 724,
+      "y": 0,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 1086,
+      "y": 0,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 0,
+      "y": 362,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 362,
+      "y": 362,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 724,
+      "y": 362,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 1086,
+      "y": 362,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 0,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 362,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 724,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    },
+    {
+      "x": 1086,
+      "y": 724,
+      "width": 362,
+      "height": 362
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 226,
+      "y": 354
+    },
+    {
+      "x": 192,
+      "y": 354
+    },
+    {
+      "x": 182,
+      "y": 356
+    },
+    {
+      "x": 156,
+      "y": 356
+    },
+    {
+      "x": 230,
+      "y": 333
+    },
+    {
+      "x": 209,
+      "y": 333
+    },
+    {
+      "x": 184,
+      "y": 332
+    },
+    {
+      "x": 164,
+      "y": 332
+    },
+    {
+      "x": 220,
+      "y": 287
+    },
+    {
+      "x": 205,
+      "y": 287
+    },
+    {
+      "x": 170,
+      "y": 288
+    },
+    {
+      "x": 163,
+      "y": 294
+    }
+  ],
+  "portrait": {
+    "x": 120,
+    "y": 121,
+    "width": 183,
+    "height": 234
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

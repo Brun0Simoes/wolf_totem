@@ -1,0 +1,166 @@
+{
+  "characterId": 52,
+  "stars": 2,
+  "name": "Veyra",
+  "image": "/assets/animations/v3/52-s2.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 273,
+  "anchorX": 183,
+  "anchorY": 441,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 446
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 446
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 446
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 446
+    },
+    {
+      "x": 0,
+      "y": 446,
+      "width": 313,
+      "height": 390
+    },
+    {
+      "x": 313,
+      "y": 446,
+      "width": 314,
+      "height": 390
+    },
+    {
+      "x": 627,
+      "y": 446,
+      "width": 313,
+      "height": 390
+    },
+    {
+      "x": 940,
+      "y": 446,
+      "width": 314,
+      "height": 390
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 183,
+      "y": 441
+    },
+    {
+      "x": 166,
+      "y": 441
+    },
+    {
+      "x": 145,
+      "y": 442
+    },
+    {
+      "x": 146,
+      "y": 441
+    },
+    {
+      "x": 196,
+      "y": 362
+    },
+    {
+      "x": 180,
+      "y": 362
+    },
+    {
+      "x": 172,
+      "y": 362
+    },
+    {
+      "x": 177,
+      "y": 362
+    },
+    {
+      "x": 180,
+      "y": 321
+    },
+    {
+      "x": 160,
+      "y": 326
+    },
+    {
+      "x": 168,
+      "y": 325
+    },
+    {
+      "x": 147,
+      "y": 326
+    }
+  ],
+  "portrait": {
+    "x": 87,
+    "y": 169,
+    "width": 171,
+    "height": 273
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

@@ -1,0 +1,282 @@
+[
+  {
+    "id": 15,
+    "name": "Grom",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-fcaf61e3-b9bd-4bcc-832c-4fb966b9d123.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/15-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game character animation atlas for Wolf Totem. Input image is the approved Grom 1-star design and animation reference. Evolve to 2-star: arms and back grow stronger, silver hair stripe, fists surrounded by compact blue-white spiritual energy. Preserve identity, face, primitive clothing, palette family, weapon and polished painted pixel art. EXACTLY 12 full-body poses on one genuinely transparent canvas, 4 equal columns by 3 equal rows. Row1 four subtle breathing idle poses; row2 four distinct alternating walk-cycle poses; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing view, body/head size and grounded foot anchor throughout each row. CRITICAL: miniature figures; each figure and all equipment/effects must fit in CENTRAL 60% width and 65% height of its cell. Leave fully transparent wide gutters at x=25%,50%,75% and y=33.33%,66.67%, and all outer edges. No effect may reach another cell. No scenery, floor, shadow, grid, captions, border or watermark. No duplicate ghost limbs except canonically requested spiritual effects. Whole sheet at once."
+  },
+  {
+    "id": 16,
+    "name": "Ilya",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-e63800d1-92fa-493b-8627-c1e07f41e712.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/16-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game character animation atlas for Wolf Totem. Input image is the approved Ilya 1-star design and animation reference. Evolve to 2-star: golden eyes and compact spiritual eagle feathers on arms; preserve human anatomy, feather cape, short spear. Preserve identity, face, primitive clothing, palette family, weapon and polished painted pixel art. EXACTLY 12 full-body poses on one genuinely transparent canvas, 4 equal columns by 3 equal rows. Row1 four subtle breathing idle poses; row2 four distinct alternating walk-cycle poses; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing view, body/head size and grounded foot anchor throughout each row. CRITICAL: miniature figures; each figure and all equipment/effects must fit in CENTRAL 60% width and 65% height of its cell. Leave fully transparent wide gutters at x=25%,50%,75% and y=33.33%,66.67%, and all outer edges. No effect may reach another cell. No scenery, floor, shadow, grid, captions, border or watermark. No duplicate ghost limbs except canonically requested spiritual effects. Whole sheet at once."
+  },
+  {
+    "id": 17,
+    "name": "Nask",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-208e95a1-a822-4148-9131-db32e3c60f89.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/17-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game character animation atlas for Wolf Totem. Input image is the approved Nask 1-star design and animation reference. Evolve to 2-star: green scaly skin texture, larger teeth, yellow reptilian eyes; preserve human proportions, heavy axe and shoulder plates. Preserve identity, face, primitive clothing, palette family, weapon and polished painted pixel art. EXACTLY 12 full-body poses on one genuinely transparent canvas, 4 equal columns by 3 equal rows. Row1 four subtle breathing idle poses; row2 four distinct alternating walk-cycle poses; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing view, body/head size and grounded foot anchor throughout each row. CRITICAL: miniature figures; each figure and all equipment/effects must fit in CENTRAL 60% width and 65% height of its cell. Leave fully transparent wide gutters at x=25%,50%,75% and y=33.33%,66.67%, and all outer edges. No effect may reach another cell. No scenery, floor, shadow, grid, captions, border or watermark. No duplicate ghost limbs except canonically requested spiritual effects. Whole sheet at once."
+  },
+  {
+    "id": 18,
+    "name": "Rava",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-02f682b7-6aa8-431f-949f-968616efe006.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/18-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game character animation atlas for Wolf Totem. Input image is the approved Rava 1-star design and animation reference. Evolve to 2-star: eyes turn fully dark, several compact black feathers permanently float around shoulders; preserve human black-haired shaman and thin staff. Preserve identity, face, primitive clothing, palette family, weapon and polished painted pixel art. EXACTLY 12 full-body poses on one genuinely transparent canvas, 4 equal columns by 3 equal rows. Row1 four subtle breathing idle poses; row2 four distinct alternating walk-cycle poses; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing view, body/head size and grounded foot anchor throughout each row. CRITICAL: miniature figures; each figure and all equipment/effects must fit in CENTRAL 60% width and 65% height of its cell. Leave fully transparent wide gutters at x=25%,50%,75% and y=33.33%,66.67%, and all outer edges. No effect may reach another cell. No scenery, floor, shadow, grid, captions, border or watermark. No duplicate ghost limbs except canonically requested spiritual effects. Whole sheet at once."
+  },
+  {
+    "id": 19,
+    "name": "Tembu",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-73438586-2d35-4ba0-b034-396a358219af.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/19-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Tembu 1-star design. Evolve to 2-star: thicker neck and shoulders, translucent amber spiritual horns grow above helmet; human guardian, keep horizontal shield. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 20,
+    "name": "Zakka",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-96e4b6aa-a7ec-49e7-85fa-915a85a73824.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/20-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Zakka 1-star design. Evolve to 2-star: dark red chitin plates on shoulders, short compact spectral scorpion tail curved upward behind body; preserve red-painted human duelist and curved forearm blade. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 21,
+    "name": "Omi",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-f3e8d413-4c1c-4a7b-94d0-8760a57d8404.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/21-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Omi 1-star design. Evolve to 2-star: permanently wet shiny hair, compact turquoise water ribbon around feet; human slinger, keep sling and polished stones. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 27,
+    "name": "Amaru",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-dc7c3b41-7ed9-4d65-8c14-806554436423.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/27-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Amaru 1-star design. Evolve to 2-star: reflective SILVER eyes, small silver-white energy claws, glowing silver spot paint; human woman with black hair and twin curved blades. Reduce all hair and purple attack crescents so no pose or particle crosses cell gutters. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 28,
+    "name": "Duma",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-e3c9da73-3e1d-4de1-9545-414fd75370fe.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/28-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Duma 1-star design. Evolve to 2-star: braços engrossam e pequenas presas espirituais surgem ao lado do rosto.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 29,
+    "name": "Roko",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-347125b0-1d45-4a42-a613-bf3bcbfbcd9d.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/29-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Roko 1-star design. Evolve to 2-star: braços ficam ainda mais longos, mãos maiores e uma cauda espiritual aparece.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 30,
+    "name": "Khepri",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-6af55afa-dfd8-46c7-a879-39ec9d8969c0.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/30-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Khepri 1-star design. Evolve to 2-star: placas criam uma carapaça parcial; dois pequenos chifres aparecem na testa.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 31,
+    "name": "Vesh",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-ecb400c4-1e41-4842-a36f-b3ad8479f303.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/31-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Vesh 1-star design. Evolve to 2-star: gola se abre como um capuz, olhos ficam dourados e língua torna-se bifurcada.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 32,
+    "name": "Toru",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-000a2d4d-b4a9-4ac6-a737-09a4612796e4.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/32-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Toru 1-star design. Evolve to 2-star: corpo ganha enorme volume, nariz fica largo e presas espirituais surgem na mandíbula.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 33,
+    "name": "Asha",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-1889f593-8c3a-472f-a487-c36a9b726f10.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/33-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Asha 1-star design. Evolve to 2-star: cabelos tornam-se parcialmente penas e sombra se movimenta de forma independente.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 34,
+    "name": "Thari",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-b00c2260-a4f7-411a-bd3c-553fb4ce56bf.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/34-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Thari 1-star design. Evolve to 2-star: pele engrossa sobre ombros, pernas ficam mais maciças e o chifre aumenta.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 36,
+    "name": "Sava",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-f89b29b6-ac4d-4944-b004-5523237cc99e.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/36-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Sava 1-star design. Evolve to 2-star: dentes, garras e olhos tornam-se felinos; cabelo cresce como pequena juba.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 37,
+    "name": "Nilo",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-14dc85f3-c4db-414e-9e4c-dad1f0a5d123.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/37-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Nilo 1-star design. Evolve to 2-star: mãos tornam-se grandes garras e rosto ganha linhas alongadas.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 38,
+    "name": "Yara",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-e1bf38ef-d5e3-4b99-9d71-96ff45c6548d.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/38-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Yara 1-star design. Evolve to 2-star: máscara ganha grandes olhos luminosos e penas aparecem no manto.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 39,
+    "name": "Fenra",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-49ef7b45-343c-4b30-95de-baf7a2ad8f63.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/39-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Fenra 1-star design. Evolve to 2-star: orelhas e olhos tornam-se lupinos; garras espirituais recobrem suas mãos.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 40,
+    "name": "Koru",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-cb336853-e7da-42e6-ab38-e24a653967bc.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/40-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Koru 1-star design. Evolve to 2-star: costas, braços e mandíbula assumem traços de grande símio.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 41,
+    "name": "Makara",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-8a90563b-8d50-437c-8568-24c203bf0749.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/41-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Makara 1-star design. Evolve to 2-star: placas escamosas cobrem grande parte das costas, mandíbula fica mais larga.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 42,
+    "name": "Nyala",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-713d8a96-1139-4223-88fd-ecf4b02a5fca.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/42-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Nyala 1-star design. Evolve to 2-star: dedos desenvolvem garras, sombra assume silhueta felina independente.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 43,
+    "name": "Vahara",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-e508e109-82fc-4760-bd83-262a4b342dd0.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/43-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Vahara 1-star design. Evolve to 2-star: pequenas presas espirituais surgem e sua pele ganha textura espessa.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 44,
+    "name": "Zyri",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-d3b96c48-8d23-4723-8ec7-4aadb1672136.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/44-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Zyri 1-star design. Evolve to 2-star: quatro braços espirituais extras surgem e olhos adicionais aparecem no rosto.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 45,
+    "name": "Orun",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-1c1a5725-f66b-4f7d-813b-a2af1cabca44.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/45-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Orun 1-star design. Evolve to 2-star: máscaras flutuam independentemente e modificam seus olhos/postura quando ativadas.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 46,
+    "name": "Sakar",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-a890d097-253f-4e61-abd6-4eb4f6b775cf.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/46-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Sakar 1-star design. Evolve to 2-star: escamas aparecem nos braços e grandes penas crescem sobre ombros.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 47,
+    "name": "Aruun",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-6cdec93a-87bb-46bd-9efe-d46aa029c1ea.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/47-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Aruun 1-star design. Evolve to 2-star: penas azuis e douradas aparecem nos braços e olhos ficam extremamente claros.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 48,
+    "name": "Boro",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-c9c22678-531e-40fc-8e40-c9b52b29212f.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/48-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Boro 1-star design. Evolve to 2-star: chifres espirituais verdadeiros atravessam a aura ao redor de sua cabeça e pescoço engrossa.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 49,
+    "name": "Uruq",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-7277fcc7-0fe1-45d7-8d5b-733625a7d188.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/49-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Uruq 1-star design. Evolve to 2-star: braços ficam cobertos por pelagem branca espiritual, mãos ganham garras e olhos tornam-se azuis.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 50,
+    "name": "Akh'ra",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-41e3eeaa-e004-434f-998d-5083eb72502a.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/50-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Akh'ra 1-star design. Evolve to 2-star: manchas solares surgem no corpo, rosto assume traços felinos e garras crescem.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 51,
+    "name": "Mahari",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-1dfb1433-9ce1-49a9-bc43-6616e2351c9c.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/51-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Mahari 1-star design. Evolve to 2-star: orelhas espirituais e pequenas presas surgem enquanto diversas mãos ancestrais aparecem ao seu redor.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 52,
+    "name": "Veyra",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-2ace7c78-b582-4936-bb62-f887ec0575d9.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/52-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Veyra 1-star design. Evolve to 2-star: dezenas de pequenos olhos aparecem sobre o manto e penas crescem nos braços.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 53,
+    "name": "Ssar'ka",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-7b2299b7-6263-4c4f-a628-70f902ad4681.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/53-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Ssar'ka 1-star design. Evolve to 2-star: pernas ficam parcialmente serpentinas, pupilas verticais e cabelo se move como pequenas cobras de energia.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 54,
+    "name": "N'Goro",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-c5f9e0a9-64ee-4d74-beda-44afa08d4d88.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/54-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved N'Goro 1-star design. Evolve to 2-star: três Totens flutuam ao redor e projeções de animais aparecem sobre braços e rosto conforme cada poder entra em ação.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  },
+  {
+    "id": 55,
+    "name": "Karkun",
+    "stars": 2,
+    "path": "C:/Users/bruno/.codex/generated_images/01a0f48a-b713-70a2-85c0-4ca70139c5f5/exec-ca807179-7be9-4d6f-9255-c34a86954627.png",
+    "source": "Built-in imagegen edit from public/assets/animations/v3/55-s1.png",
+    "prompt": "Use case: precise-object-edit. Asset: production game animation atlas for Wolf Totem. Input is approved Karkun 1-star design. Evolve to 2-star: costas cobertas por escamas, mandíbula ampliada, cauda espiritual e olhos completamente reptilianos.. Preserve identity, primitive outfit, face, palette family, weapon and painted pixel art. EXACTLY 12 full-body poses, four equal columns by three equal rows, truly transparent canvas. Row1 four breathing idle poses; row2 four DISTINCT alternating walking steps; row3 anticipation, wind-up, attack/cast release, recovery. Same three-quarter right-facing viewpoint, fixed head/body size and shared ground anchor per row. CRITICAL: first zoom ALL figures out to 65% of their reference size, including equipment and effects. Each pose fits CENTRAL 60% width and 65% height of its cell, with huge empty transparent gutters and transparent outer edges. No pixel touches x=25%,50%,75% or y=33%,67%. All effect arcs stay near hands and body, no long projectiles. No scenery, shadow, grid, text, border, watermark. Generate the entire sheet at once."
+  }
+]

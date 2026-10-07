@@ -1,0 +1,166 @@
+{
+  "characterId": 18,
+  "stars": 2,
+  "name": "Rava",
+  "image": "/assets/animations/v3/18-s2.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 253,
+  "anchorX": 156,
+  "anchorY": 400,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 311,
+      "height": 418
+    },
+    {
+      "x": 624,
+      "y": 836,
+      "width": 366,
+      "height": 418
+    },
+    {
+      "x": 990,
+      "y": 836,
+      "width": 264,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 156,
+      "y": 400
+    },
+    {
+      "x": 163,
+      "y": 400
+    },
+    {
+      "x": 152,
+      "y": 400
+    },
+    {
+      "x": 156,
+      "y": 400
+    },
+    {
+      "x": 174,
+      "y": 351
+    },
+    {
+      "x": 172,
+      "y": 349
+    },
+    {
+      "x": 172,
+      "y": 352
+    },
+    {
+      "x": 174,
+      "y": 351
+    },
+    {
+      "x": 172,
+      "y": 317
+    },
+    {
+      "x": 156,
+      "y": 316
+    },
+    {
+      "x": 142,
+      "y": 318
+    },
+    {
+      "x": 126,
+      "y": 318
+    }
+  ],
+  "portrait": {
+    "x": 65,
+    "y": 148,
+    "width": 199,
+    "height": 253
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

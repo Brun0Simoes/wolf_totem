@@ -1,0 +1,166 @@
+{
+  "characterId": 17,
+  "stars": 2,
+  "name": "Nask",
+  "image": "/assets/animations/v3/17-s2.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 252,
+  "anchorX": 160,
+  "anchorY": 397,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 322,
+      "height": 418
+    },
+    {
+      "x": 635,
+      "y": 836,
+      "width": 342,
+      "height": 418
+    },
+    {
+      "x": 977,
+      "y": 836,
+      "width": 277,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 160,
+      "y": 397
+    },
+    {
+      "x": 166,
+      "y": 397
+    },
+    {
+      "x": 172,
+      "y": 397
+    },
+    {
+      "x": 172,
+      "y": 397
+    },
+    {
+      "x": 157,
+      "y": 362
+    },
+    {
+      "x": 186,
+      "y": 361
+    },
+    {
+      "x": 170,
+      "y": 362
+    },
+    {
+      "x": 172,
+      "y": 361
+    },
+    {
+      "x": 158,
+      "y": 309
+    },
+    {
+      "x": 148,
+      "y": 309
+    },
+    {
+      "x": 139,
+      "y": 309
+    },
+    {
+      "x": 134,
+      "y": 311
+    }
+  ],
+  "portrait": {
+    "x": 64,
+    "y": 146,
+    "width": 181,
+    "height": 252
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

@@ -1,0 +1,166 @@
+{
+  "characterId": 40,
+  "stars": 2,
+  "name": "Koru",
+  "image": "/assets/animations/v3/40-s2.png",
+  "columns": 4,
+  "rows": 3,
+  "frameWidth": 314,
+  "frameHeight": 418,
+  "imageWidth": 1254,
+  "imageHeight": 1254,
+  "bodyHeight": 299,
+  "anchorX": 157,
+  "anchorY": 393,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 418,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 940,
+      "y": 418,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 0,
+      "y": 836,
+      "width": 313,
+      "height": 418
+    },
+    {
+      "x": 313,
+      "y": 836,
+      "width": 314,
+      "height": 418
+    },
+    {
+      "x": 627,
+      "y": 836,
+      "width": 326,
+      "height": 418
+    },
+    {
+      "x": 953,
+      "y": 836,
+      "width": 301,
+      "height": 418
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 157,
+      "y": 393
+    },
+    {
+      "x": 163,
+      "y": 393
+    },
+    {
+      "x": 162,
+      "y": 393
+    },
+    {
+      "x": 170,
+      "y": 393
+    },
+    {
+      "x": 172,
+      "y": 383
+    },
+    {
+      "x": 162,
+      "y": 387
+    },
+    {
+      "x": 173,
+      "y": 387
+    },
+    {
+      "x": 170,
+      "y": 382
+    },
+    {
+      "x": 165,
+      "y": 356
+    },
+    {
+      "x": 165,
+      "y": 357
+    },
+    {
+      "x": 181,
+      "y": 362
+    },
+    {
+      "x": 158,
+      "y": 362
+    }
+  ],
+  "portrait": {
+    "x": 49,
+    "y": 95,
+    "width": 214,
+    "height": 299
+  },
+  "clips": {
+    "idle": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "walk": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "attack": [
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": "Built-in imagegen. PNG copied without pixel edits. 12 alpha-validated atlas rectangles (gutters alpha8, visible bounds alpha32) separated by transparent gutters; individual foot anchors. Canonical star evolution from src/data/characters.ts."
+}

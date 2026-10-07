@@ -1,0 +1,10 @@
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+const root = resolve(import.meta.dirname, '../..');
+const source = readFileSync(resolve(root, 'src/data/characters.ts'), 'utf8');
+const start = source.indexOf('export const characters: Character[] = ') + 'export const characters: Character[] = '.length;
+const characters = JSON.parse(source.slice(start, source.lastIndexOf('];') + 1));
+const sheets = ['v2','v3'].flatMap(v => readdirSync(resolve(root, 'public/assets/animations', v)).filter(n=>n.endsWith('.json')).map(n=>JSON.parse(readFileSync(resolve(root,'public/assets/animations',v,n),'utf8'))));
+const ready = new Map(sheets.filter(s=>existsSync(resolve(root, 'public',s.image.slice(1)))).map(s=>[`${s.characterId}:${s.stars??1}`,s]));
+const jobs = [2,3].flatMap(stars => characters.flatMap(c=>ready.has(`${c.id}:${stars}`) ? [] : [{id:c.id,name:c.name,stars,evolution:c.evolution[stars-1],ability:c.ability,reference:ready.get(`${c.id}:${stars-1}`)?.image ?? ready.get(`${c.id}:1`)?.image, original:c.art?`/chars/${c.art}-${stars}star.png`:null}]));
+console.log(JSON.stringify(jobs));
