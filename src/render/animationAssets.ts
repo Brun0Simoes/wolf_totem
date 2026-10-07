@@ -1,15 +1,14 @@
 import type { SheetDefinition } from './animationModel';
+import { heroes, summons } from 'virtual:wolf-animations';
 
 /** Public files are addressed from the site root in data; the deployed site may live under a subpath. */
 export const assetUrl = (path: string) => import.meta.env.BASE_URL + path.replace(/^\//, '');
 
-const definitions = import.meta.glob<SheetDefinition>('../../public/assets/animations/{v2,v3}/*.json', { eager: true, import: 'default' });
-export const animationSheets = new Map<string, SheetDefinition>(Object.values(definitions)
+export const animationSheets = new Map<string, SheetDefinition>(heroes
   .filter(sheet => sheet.characterId && sheet.clips?.idle?.length && sheet.clips?.walk?.length && sheet.clips?.attack?.length)
   .map(sheet => [`${sheet.characterId}:${sheet.stars ?? 1}`, { ...sheet, image: assetUrl(sheet.image) }]));
 export const getAnimation = (id: number, stars = 1) => animationSheets.get(`${id}:${stars}`);
-const summonDefinitions = import.meta.glob<SheetDefinition>('../../public/assets/animations/summons/*.json', { eager: true, import: 'default' });
-export const summonSheets = new Map<string, SheetDefinition>(Object.values(summonDefinitions)
+export const summonSheets = new Map<string, SheetDefinition>(summons
   .filter(sheet => sheet.summonId && sheet.clips?.idle?.length && sheet.clips?.walk?.length && sheet.clips?.attack?.length)
   .map(sheet => [sheet.summonId!, { ...sheet, image: assetUrl(sheet.image) }]));
 export const getSummonAnimation = (kind: string) => summonSheets.get(kind);

@@ -4,6 +4,10 @@ import './refinements.css';
 import './ui.css';
 import './journey-ui.css';
 import './ritual-experience.css';
+import './settlement-ui.css';
+import { armyCoach, constructionPanel, economyPanel, researchPanel, territoryPanel } from './ui/settlementPanels';
+import { builderCount, constructionCount, INFRASTRUCTURE, populationCap, SETTLEMENT_MILESTONES, TERRITORIES, type CitizenJob, type InfrastructureId, type ResearchId } from './game/settlement';
+import { armyWarnings, ROLE_GUIDE, roleOf } from './game/armyAdvisor';
 import { RitualExperience, ritualExperienceMarkup } from './ui/RitualExperience';
 import { RITUAL_PLAY } from './game/ritualPlay';
 import type { PracticeId } from './game/tribe';
@@ -61,6 +65,14 @@ document.documentElement.classList.toggle('reduce-motion', reducedMotion());
 let view: 'village' | 'battle' = 'village';
 let selectedHero: string | null = null;
 let selectedBuilding: BuildingId = 'lumber';
+let villageMode:'economy'|'building'|'construct'|'territory'|'research'='economy';
+let selectedTerritory=TERRITORIES[0].id;
+let selectedCitizen:number|null=null;
+let placement:InfrastructureId|null=null;
+let settlementKey='';
+let sideContext='';
+let coachHero:string|null=null;
+let coachTrait='Caçador';
 let selectedItem: number | null = null;
 let activeModal = '';
 let ritualExperience: RitualExperience | null = null;
@@ -79,6 +91,7 @@ let panelOpen = !window.matchMedia('(max-width: 850px)').matches;
 let eventOpen = false;
 let inspectedHero: string | null = null;
 let awayKey = '';
+let coachStateKey='';
 let reportKey: string | null = null;
 let confirmNew = false;
 let storageFailed = false;
@@ -131,6 +144,7 @@ $('#app').innerHTML = `
    <button class="nav-button" data-action="tribe">${icon('users')}<span>Tribo</span></button><button class="nav-button" data-action="cura">${icon('flame')}<span>Rituais</span></button><button class="nav-button" data-action="codex">${icon('book-open')}<span>Códice</span></button>
   </div><div class="rail-bottom"><span class="vertical-caption">SIGA O CHAMADO</span><span class="rail-seal" id="rail-era">I</span></div></nav>
   <main class="main-area">
+   <div class="settlement-toolbar" id="settlement-toolbar"><span class="settlement-population">${icon('users')}<b id="settlement-population">4 / 6</b><small>aldeões</small></span><div><button data-rts-mode="economy">${icon('users')}População</button><button data-rts-mode="construct">${icon('hammer')}Construir <kbd>B</kbd></button><button data-rts-mode="territory">${icon('map')}Territórios</button><button data-rts-mode="research">${icon('book-open')}Pesquisas</button><button data-action="army-coach">${icon('swords')}Conselheiro</button></div><span id="settlement-order-count"></span></div>
    <div class="play-area"><section class="world-wrap" aria-label="Mundo da tribo">
     <div id="world"></div>
     <div class="world-heading"><p class="eyebrow" id="era-label"></p><h1 id="world-title"></h1><p id="world-subtitle"></p></div>
@@ -157,7 +171,14 @@ document.querySelector('.nav-group')!.insertBefore(document.querySelector('[data
 const world = createWorld($('#world'), game, {
   onHero(uid) { selectedHero = uid; panelOpen = true; renderCamp(); renderSide(); },
   onMove(uid, slot) { selectedHero = uid; act(game.deploy(uid, slot), 'click'); },
-  onBuilding(id) { panelOpen = true; selectedBuilding = id; if (view !== 'village') setView('village'); else renderSide(); },
+  onBuilding(id) {
+    const resource=BUILDINGS[id].resource;
+    if(selectedCitizen!==null&&resource){act(game.setCitizenJob(selectedCitizen,resource),'click');villageMode='economy';renderSide();return;}
+    panelOpen = true; villageMode='building';selectedBuilding = id;placement=null;world.setBuildMode(null);if (view !== 'village') setView('village'); else renderSide();
+  },
+  onTerritory(id){if(id==='hearth'){villageMode='economy';world.setStrategic(false);}else{selectedTerritory=id;villageMode='territory';world.setStrategic(true);}panelOpen=true;renderSide();},
+  onPlot(id){if(placement){const result=game.buildInfrastructure(placement,id);act(result);if(result.ok){placement=null;world.setBuildMode(null);}renderSide();}else{const type=game.state.settlement.sites[id];if(type)toast(`${INFRASTRUCTURE[type].name}: ${INFRASTRUCTURE[type].description}`);}},
+  onCitizen(id){selectedCitizen=id;world.selectCitizen(id);villageMode='economy';panelOpen=true;renderSide();},
   onSlot(slot) {
     if (!selectedHero) return toast('Escolha um herói abaixo e depois uma posição.');
     act(game.deploy(selectedHero, slot), 'click');
@@ -186,6 +207,11 @@ function setView(next: typeof view) {
 }
 
 function renderMetrics() {
+  $('#settlement-population').textContent=`${game.state.settlement.citizens.length} / ${populationCap(game.state)}`;
+  $('#settlement-order-count').textContent=game.state.settlement.orders.length?`${game.state.settlement.orders.length} ordem(ns)`:'Aldeia em atividade';
+  document.querySelectorAll<HTMLProgressElement>('[data-order-progress]').forEach(el=>{const o=game.state.settlement.orders.find(o=>o.id===Number(el.dataset.orderProgress));if(o)el.value=Math.min(1,(game.state.clock-o.started)/(o.until-o.started));});
+  const civic=JSON.stringify([game.state.settlement.citizens,game.state.settlement.orders.map(o=>o.id),game.state.settlement.sites,game.state.settlement.research,game.state.settlement.discovered,game.state.settlement.claimed,game.state.settlement.milestones,game.state.buildings]);
+  if(civic!==settlementKey){const first=!settlementKey;settlementKey=civic;if(!first){if(view==='village')renderVillageSide();if(activeModal==='army-coach')showArmyCoach();refreshIcons();}}
   const rates = getRates(game.state);
   for (const r of RESOURCES) {
     $(`#res-${r.id}`).textContent = fmt(game.state.resources[r.id]);
@@ -216,7 +242,7 @@ function renderMetrics() {
   const away = game.state.heroes.map(h => `${h.uid}:${h.away?.until ?? ''}:${h.level}:${h.ritualLevel}:${h.stars}:${h.panema}:${game.state.clock>=h.ritualReadyAt}`).join('|') + `|${game.state.cacao}|${game.state.buildings.cura}`;
   if (away !== awayKey) {
     const first = awayKey === ''; awayKey = away;
-    if (!first) { renderCamp(); renderSide(); if (activeModal === 'hunts') showHunts(); if (activeModal === 'cura') showCura(); if(activeModal==='hero'&&inspectedHero)showHero(inspectedHero); }
+    if (!first) { renderCamp(); renderSide(); if (activeModal === 'hunts') showHunts(); if (activeModal === 'cura') showCura(); if(activeModal==='hero'&&inspectedHero)showHero(inspectedHero); if(activeModal==='army-coach')showArmyCoach(); }
   }
   const last = game.state.reports.at(-1), key = last ? `${last.clock}:${last.uid}` : '';
   if (reportKey !== null && key !== reportKey && last) { toast(`${last.name} ${last.text}`); sound.play(last.ok ? 'recruit' : 'defeat'); }
@@ -226,6 +252,7 @@ function renderMetrics() {
   const bag = document.querySelector<HTMLElement>('#bag-count');
   if (bag) bag.textContent = `${game.state.inventory.length}/${MAX_INVENTORY}`;
   renderPowers();
+  if(activeModal==='army-coach'&&coachStateKey!==armyContextKey())showArmyCoach();
 }
 
 function objective(): { title: string; text: string } {
@@ -263,6 +290,10 @@ function showJournal() {
 }
 
 function renderSide() {
+  document.body.dataset.villageMode=villageMode;
+  const context=`${view}:${villageMode}:${selectedBuilding}:${selectedTerritory}:${selectedCitizen}:${placement}`;
+  if(context!==sideContext){sideContext=context;$('#side-panel').scrollTop=0;}
+  if(view==='village')$('#world-hint').textContent=placement?'Escolha um terreno marcado para construir.':selectedCitizen!==null?'Selecione um local de produção para dar a ordem.':villageMode==='territory'?'Toque em um território para reconhecer ou estabelecer um posto.':'Selecione aldeões, construções ou fronteiras no mapa.';
   $('#side-panel').hidden = !panelOpen;
   $('#journey-objective').innerHTML=journeyObjective();
   document.querySelector('.play-area')!.classList.toggle('panel-closed', !panelOpen);
@@ -271,13 +302,17 @@ function renderSide() {
 }
 
 function renderVillageSide() {
+  if(villageMode!=='building'){
+    $('#side-panel').innerHTML=villageMode==='economy'?economyPanel(game.state,selectedCitizen):villageMode==='construct'?constructionPanel(game.state,placement):villageMode==='territory'?territoryPanel(game.state,selectedTerritory):researchPanel(game.state);
+    refreshIcons();return;
+  }
   const s=game.state,id=selectedBuilding,b=BUILDINGS[id],level=s.buildings[id],cost=buildingCost(id,level);
   const workers=s.heroes.filter(h=>h.work===id), idle=s.heroes.filter(h=>!h.away&&!inFight(h)&&h.work!==id);
   const rate=b.resource?getRates(s)[b.resource]:0;
   $('#side-panel').innerHTML=`<button class="panel-close icon-button" data-action="panel-close" aria-label="Recolher painel">${icon('x')}</button>
     <div class="building-art">${environmentPortrait(id)}</div><div class="context-title"><span class="context-icon">${icon(b.icon)}</span><h2>${b.name}</h2><span>${level?`Nível ${level}`:'A construir'}</span></div><p>${b.desc}</p>
     <div class="context-output">${b.resource?`${icon(b.icon)} ${RESOURCES.find(r=>r.id===b.resource)!.name} <b>+${rate.toLocaleString('pt-BR',{maximumFractionDigits:1})}/s</b>`:id==='cura'?'Cerimônias e integração do vínculo ritual.':`Forja de componentes · ${level?Math.round(1/forgeRate(s)/60):'—'} min`}</div>
-    <button class="primary" data-action="building-upgrade" data-max="${level>=MAX_BUILDING_LEVEL}" ${costAttr(cost)}>${icon('hammer')}${level?'Melhorar construção':'Construir'}<span class="cost">${costHTML(cost)}</span></button>
+    <button class="primary" data-action="building-upgrade" data-max="${level>=MAX_BUILDING_LEVEL||game.state.settlement.orders.some(o=>o.kind==='building'&&o.target===id)||constructionCount(s)>=builderCount(s)}" ${costAttr(cost)}>${icon('hammer')}${game.state.settlement.orders.some(o=>o.kind==='building'&&o.target===id)?'Obra em andamento':level?'Melhorar · obra '+(25+level*12)+'s':'Construir · 25s'}<span class="cost">${costHTML(cost)}</span></button>
     ${id==='cura'?'<button class="outline-button" data-action="cura">Abrir rituais</button>':id==='hunt'?'<button class="outline-button" data-action="hunts">Explorar caçadas</button>':''}
     <div class="context-workers"><h3>Trabalhadores <small>${workers.length}/${workerSlots(s,id)}</small></h3><p>Trabalho concede 40 XP por minuto. Designar retira o herói da formação.</p>
     ${workers.map(h=>`<div class="worker"><b>${characterOf(h.characterId).name}</b><span>+${Math.round(workerBonus(h,id)*100)}%</span><button class="icon-button" data-unassign="${h.uid}" aria-label="Retirar ${characterOf(h.characterId).name} do trabalho">${icon('x')}</button></div>`).join('')}
@@ -317,7 +352,7 @@ function renderBattleSide() {
     <p class="stage-reward">${stage.raid ? 'Vitória: recursos e um componente garantido.' : reward ? `${stage.id <= s.progress && !game.battle?.firstClear ? 'Repetição' : 'Primeira vitória'}: <span class="cost">${costHTML(reward)}</span>` : `Recorde: ${s.endlessBest} · cada vitória aprofunda a caçada`}</p>
     <button class="outline-button" data-action="map" ${fighting ? 'disabled' : ''}>${icon('map')}Mapa das expedições <kbd>M</kbd></button>
    </div>
-   <div class="formation-count"><span>Sua formação</span><strong>${deployed.length}<small> / ${capacity(s)}</small></strong></div>
+   <div class="coach-launch"><button class="outline-button" data-action="army-coach">${icon('swords')}Conselheiro · classes e laços</button></div>${armyWarnings(s,stage.id).slice(0,2).map(w=>`<p class="battle-coach-note">${esc(w)}</p>`).join('')}<div class="formation-count"><span>Sua formação</span><strong>${deployed.length}<small> / ${capacity(s)}</small></strong></div>
    ${deployed.some(h => h.away) ? `<p class="away-note">${icon('footprints')}${deployed.filter(h => h.away).map(h => characterOf(h.characterId).name).join(', ')} fora da aldeia: luta${deployed.filter(h => h.away).length > 1 ? 'm' : ''} quando voltar${deployed.filter(h => h.away).length > 1 ? 'em' : ''}.</p>` : ''}
    <div class="synergies"><p class="eyebrow">LAÇOS DA TRIBO</p>${syn.length ? syn.slice(0, 5).map(t => `<div class="synergy ${t.active ? 'active' : ''}" title="${esc(t.description)}">${icon(t.active ? 'diamond' : 'hexagon')}<span>${esc(t.name)}${t.tier > 1 ? ` <i class="synergy-tier">${'◆'.repeat(t.tier)}</i>` : ''}</span><b>${t.count}/${t.threshold}</b></div>`).join('') : '<p>Reúna heróis que compartilham características.</p>'}</div>
    <div class="battle-controls">
@@ -393,13 +428,13 @@ function showTribe(tab=tribeTab,query=tribeQuery) {
 function showHero(uid:string) {
   const h=game.state.heroes.find(h=>h.uid===uid);if(!h)return;
   inspectedHero=uid;const c=characterOf(h.characterId),sheet=artFor(c,h.stars).sheet;
-  showModal('hero',`<div class="hero-inspector"><aside class="inspector-roster">${game.state.heroes.map(member=>`<button data-inspect="${member.uid}" class="${uid===member.uid?'selected':''}" aria-label="Ver ${characterOf(member.characterId).name}">${portraitHTML(characterOf(member.characterId),member.stars)}</button>`).join('')}</aside><section class="inspector-art"><canvas id="character-preview" width="640" height="560" role="img" aria-label="${c.name}, ${h.stars} estrelas"></canvas><h2>${c.name}</h2><p>${c.title}</p><span class="inspector-stars">${'★'.repeat(h.stars)}</span><p>${heroStatus(h)}</p><button class="text-button" data-character="${c.id}" data-stars="${h.stars}">Conhecer o espírito ${icon('arrow-right')}</button></section><section class="inspector-path"><button class="text-button" data-action="tribe">${icon('arrow-left')}Sua tribo</button><h2>O caminho do despertar</h2><p>Atividades fortalecem o corpo. Cerimônias aprofundam o vínculo.</p>${growthBars(h)}${awakeningMarkup(h)}<div class="hero-action-row"><button class="primary" data-ritual-hero="${uid}" ${h.away||inFight(h)?'disabled':''}>${icon('flame')}Preparar ritual</button><button class="outline-button" data-hunt-hero="${uid}" ${h.away||inFight(h)?'disabled':''}>${icon('footprints')}Enviar para uma caçada</button><button class="outline-button" data-formation-hero="${uid}" ${h.away||inFight(h)?'disabled':''}>${icon('move')}Organizar posição</button></div><details class="hero-equipment"><summary>Equipamento · ${h.items.length}/3</summary><div class="equipment-items">${h.items.map((id,i)=>itemChip(id,`data-unequip="${h.uid}:${i}"`)).join('')||'<p>Escolha um item da bolsa para equipar.</p>'}</div><div class="bag-items">${game.state.inventory.map((id,i)=>itemChip(id,`data-equip-direct="${h.uid}:${i}"`)).join('')||'<p>A bolsa está vazia.</p>'}</div></details><p class="integration-note">${h.away?`Atividade em andamento · ${countdown(h.away.until)}`:game.state.clock<h.ritualReadyAt?`Integração ritual · próximo rito em ${countdown(h.ritualReadyAt)}`:'Disponível para uma nova atividade.'}</p></section></div>`);
+  showModal('hero',`<div class="hero-inspector"><aside class="inspector-roster">${game.state.heroes.map(member=>`<button data-inspect="${member.uid}" class="${uid===member.uid?'selected':''}" aria-label="Ver ${characterOf(member.characterId).name}">${portraitHTML(characterOf(member.characterId),member.stars)}</button>`).join('')}</aside><section class="inspector-art"><canvas id="character-preview" width="640" height="560" role="img" aria-label="${c.name}, ${h.stars} estrelas"></canvas><h2>${c.name}</h2><p>${c.title}</p><span class="inspector-stars">${'★'.repeat(h.stars)}</span><p>${heroStatus(h)}</p><button class="text-button" data-character="${c.id}" data-stars="${h.stars}">Conhecer o espírito ${icon('arrow-right')}</button></section><section class="inspector-path"><div class="hero-role-guidance"><b>${ROLE_GUIDE[roleOf(c)].name} · ${ROLE_GUIDE[roleOf(c)].position}</b><p>${ROLE_GUIDE[roleOf(c)].description}</p><button class="text-button" data-coach-hero="${h.uid}">Analisar laços e equipamentos</button></div><button class="text-button" data-action="tribe">${icon('arrow-left')}Sua tribo</button><h2>O caminho do despertar</h2><p>Atividades fortalecem o corpo. Cerimônias aprofundam o vínculo.</p>${growthBars(h)}${awakeningMarkup(h)}<div class="hero-action-row"><button class="primary" data-ritual-hero="${uid}" ${h.away||inFight(h)?'disabled':''}>${icon('flame')}Preparar ritual</button><button class="outline-button" data-hunt-hero="${uid}" ${h.away||inFight(h)?'disabled':''}>${icon('footprints')}Enviar para uma caçada</button><button class="outline-button" data-formation-hero="${uid}" ${h.away||inFight(h)?'disabled':''}>${icon('move')}Organizar posição</button></div><details class="hero-equipment"><summary>Equipamento · ${h.items.length}/3</summary><div class="equipment-items">${h.items.map((id,i)=>itemChip(id,`data-unequip="${h.uid}:${i}"`)).join('')||'<p>Escolha um item da bolsa para equipar.</p>'}</div><div class="bag-items">${game.state.inventory.map((id,i)=>itemChip(id,`data-equip-direct="${h.uid}:${i}"`)).join('')||'<p>A bolsa está vazia.</p>'}</div></details><p class="integration-note">${h.away?`Atividade em andamento · ${countdown(h.away.until)}`:game.state.clock<h.ritualReadyAt?`Integração ritual · próximo rito em ${countdown(h.ritualReadyAt)}`:'Disponível para uma nova atividade.'}</p></section></div>`);
   if(sheet)preview.mount($<HTMLCanvasElement>('#character-preview'),c.id,h.stars,sheet);
 }
 
 function showFormation(uid=selectedHero??game.state.heroes[0]?.uid) {
   const s=game.state; if(s.heroes.find(h=>h.uid===uid)?.away)uid=s.heroes.find(h=>!h.away)?.uid??''; selectedHero=uid||null;
-  showModal('formation',`<h2>Prepare a expedição</h2><p class="modal-intro">Escolha um herói e toque em uma casa. Uma casa ocupada troca os dois companheiros de posição. No computador, você também pode arrastar os retratos para o campo.</p><div class="formation-layout"><div class="formation-roster">${s.heroes.map(h=>`<button data-formation-hero="${h.uid}" aria-pressed="${h.uid===uid}" ${h.away?'disabled':''}>${portraitHTML(characterOf(h.characterId),h.stars)}<span>${characterOf(h.characterId).name}<small>${h.slot!==null?`Casa ${h.slot+1}`:'Reserva'}</small></span></button>`).join('')}</div><div><div class="formation-grid" role="group" aria-label="Casas da formação">${Array.from({length:FORMATION_SLOTS},(_,slot)=>{const h=s.heroes.find(h=>h.slot===slot);return`<button data-place-slot="${slot}" aria-label="Casa ${slot+1}${h?`, ${characterOf(h.characterId).name}`:', vazia'}"><small>${slot+1}</small>${h?portraitHTML(characterOf(h.characterId),h.stars):icon('plus')}</button>`;}).join('')}</div><div class="formation-actions"><button class="primary" data-action="auto-formation">${icon('wand-sparkles')}Organizar por função</button>${uid?`<button class="outline-button" data-bench="${uid}">Mover para reserva</button>`:''}<button class="outline-button" data-action="formation-done">Voltar ao campo</button></div><p class="muted">Frente nas primeiras casas; atiradores e místicos nas fileiras de trás.</p></div></div>`);
+  showModal('formation',`<h2>Prepare a expedição</h2><p class="modal-intro">Escolha um herói e toque em uma casa. Uma casa ocupada troca os dois companheiros de posição. No computador, você também pode arrastar os retratos para o campo.</p><div class="formation-layout"><div class="formation-roster">${s.heroes.map(h=>`<button data-formation-hero="${h.uid}" aria-pressed="${h.uid===uid}" ${h.away?'disabled':''}>${portraitHTML(characterOf(h.characterId),h.stars)}<span>${characterOf(h.characterId).name}<small>${h.slot!==null?`Casa ${h.slot+1}`:'Reserva'}</small></span></button>`).join('')}</div><div><div class="formation-guidance"><span>Frente: Guardiões e Brigões.</span><span>Retaguarda: Caçadores, Místicos, Xamãs e Invocadores.</span></div><div class="formation-grid" role="group" aria-label="Casas da formação">${Array.from({length:FORMATION_SLOTS},(_,slot)=>{const h=s.heroes.find(h=>h.slot===slot);return`<button class="${slot<7?'front-line':'rear-line'}" data-place-slot="${slot}" aria-label="Casa ${slot+1}${h?`, ${characterOf(h.characterId).name}`:', vazia'}"><small>${slot+1}</small>${h?portraitHTML(characterOf(h.characterId),h.stars):icon('plus')}</button>`;}).join('')}</div><div class="formation-actions"><button class="outline-button" data-action="army-coach">Entender classes e sinergias</button><button class="primary" data-action="auto-formation">${icon('wand-sparkles')}Organizar por função</button>${uid?`<button class="outline-button" data-bench="${uid}">Mover para reserva</button>`:''}<button class="outline-button" data-action="formation-done">Voltar ao campo</button></div><p class="muted">Frente nas primeiras casas; atiradores e místicos nas fileiras de trás.</p></div></div>`);
 }
 
 function renderAll() {
@@ -412,9 +447,9 @@ function renderAll() {
   $('#rail-era').textContent = roman(s.villageLevel);
   $('#era-label').textContent = view === 'village' ? `ERA ${ERA_NAMES[s.villageLevel - 1].toUpperCase()}` : stage.raid ? 'DEFESA DA ALDEIA' : `EXPEDIÇÕES · ${stage.region ? stage.region.name.toUpperCase() : 'CAÇADA ETERNA'}`;
   $('#world-title').textContent = view === 'village' ? 'Clareira do Lobo' : stage.name + '.';
-  $('#world-subtitle').textContent = view === 'village' ? 'Sua tribo cresce entre a mata e os espíritos.' : stage.raid ? 'Saqueadores rondam as cabanas. A tribo defende o que construiu.' : stage.region ? stage.region.subtitle : 'Feras cada vez mais fortes. Até onde a tribo chega?';
+  $('#world-subtitle').textContent = view === 'village' ? 'Comande a população, erga obras e abra caminhos na mata.' : stage.raid ? 'Saqueadores rondam as cabanas. A tribo defende o que construiu.' : stage.region ? stage.region.subtitle : 'Feras cada vez mais fortes. Até onde a tribo chega?';
   $('#world-badge-text').textContent = view === 'village' ? 'Clareira do Lobo' : game.battle?.status === 'fighting' ? `Em combate · ${s.settings.speed}×` : 'Preparação';
-  $('#world-hint').textContent = view === 'village' ? 'Selecione uma construção para evoluir sua aldeia.' : 'Selecione um herói abaixo e uma posição no campo.';
+  $('#world-hint').textContent = view === 'village' ? placement?'Escolha um terreno marcado para construir.':selectedCitizen!==null?'Selecione um local de produção para dar a ordem.':'Selecione aldeões, construções ou fronteiras no mapa.' : 'Selecione um herói abaixo e uma posição no campo.';
   renderSide(); renderCamp(); renderMetrics(); renderResult();
 }
 
@@ -467,6 +502,18 @@ function showRitualExperience(id: PracticeId) {
     const result = id === 'cacau' ? game.holdCacaoCircle(quality) : game.performRitual(uid!, id, quality);
     act(result, 'heal'); showCura();
   }, () => updatePref('sound', !prefs.sound), reducedMotion());
+}
+
+function armyContextKey(){return JSON.stringify([game.battle?.status,game.state.selectedStage,game.state.inventory,game.state.heroes.map(h=>[h.uid,h.slot,h.work,h.away?.until,h.items])]);}
+function showArmyCoach(){
+  const alreadyOpen=activeModal==='army-coach',scroll=alreadyOpen?$('#modal').scrollTop:0;
+  const focused=alreadyOpen?(document.activeElement as HTMLElement|null)?.id:'';
+  const enemyOpen=alreadyOpen&&!!document.querySelector<HTMLDetailsElement>('.enemy-advice')?.open;
+  showModal('army-coach',armyCoach(game.state,coachHero,coachTrait,game.battle?.status==='fighting'));
+  if(enemyOpen)document.querySelector<HTMLDetailsElement>('.enemy-advice')!.open=true;
+  if(focused?.startsWith('coach-'))document.getElementById(focused)?.focus({preventScroll:true});
+  $('#modal').scrollTop=scroll;
+  coachStateKey=armyContextKey();
 }
 
 function codexTabs(active: string) {
@@ -599,21 +646,25 @@ function showCura() {
   if(!p.tribe&&hero){if(hero.level<p.minLevel)locks.push(`Experiência nível ${p.minLevel}`);if(p.requires&&!hero.rituals[p.requires])locks.push(`${practiceById(p.requires)!.name} antes`);if(hero.away)locks.push('Herói em atividade');if(inFight(hero))locks.push('Herói em combate');if(s.clock<hero.ritualReadyAt)locks.push(`Integração: ${timeLeft(hero.ritualReadyAt)}`);}
   const done=hero?.rituals[p.id]??0;
   showModal('cura',`<div class="ritual-layout"><aside class="ritual-roster"><h3>Sua tribo</h3>${s.heroes.map(h=>`<button data-cura-hero="${h.uid}" class="${h.uid===curaHero?'selected':''}" aria-label="Rituais de ${characterOf(h.characterId).name}">${portraitHTML(characterOf(h.characterId),h.stars)}<span>${characterOf(h.characterId).name}</span></button>`).join('')}</aside><section class="ritual-path"><h2>O caminho do despertar</h2><p>Atividades fortalecem o corpo. Cerimônias aprofundam o vínculo.</p>${hero?`<div class="ritual-growth"><div><h3>${characterOf(hero.characterId).name} ${'★'.repeat(hero.stars)}</h3>${growthBars(hero)}</div>${awakeningMarkup(hero)}</div>`:''}
-    <div class="ritual-heading"><h3>Cerimônias do espírito</h3>${level<15?`<button class="outline-button" data-cura-build="1" ${costAttr(build)}>${level?'Ampliar maloca':'Construir Casa de Cura'}<span class="cost">${costHTML(build)}</span></button>`:''}</div>
+    <div class="ritual-heading"><h3>Cerimônias do espírito</h3>${level<15?`<button class="outline-button" data-cura-build="1" ${costAttr(build)} data-max="${s.settlement.orders.some(o=>o.kind==='building'&&o.target==='cura')||constructionCount(s)>=builderCount(s)}">${s.settlement.orders.some(o=>o.kind==='building'&&o.target==='cura')?'Maloca em obra':level?'Ampliar maloca':'Construir Casa de Cura'}<span class="cost">${costHTML(build)}</span></button>`:''}</div>
     <div class="ritual-selection"><nav aria-label="Cerimônias">${PRACTICES.map(practice=>`<button data-practice-select="${practice.id}" aria-pressed="${p.id===practice.id}">${icon(({rape:'feather',sananga:'eye',kambo:'heart',ayahuasca:'leaf',cacau:'cup-soda'} as Record<string,string>)[practice.id])}<span>${practice.name}<small>+${RITUAL_XP[practice.id]} XP ritual</small></span>${icon('chevron-right')}</button>`).join('')}</nav><article class="ritual-detail"><div class="ritual-symbol">${icon('flame')}</div><h3>${p.name}</h3><p>${p.effect}</p><div class="ritual-values"><span>Duração <b>${p.tribe?'10 min de bênção':`${Math.round(p.rest/ritualSpeed(s)/60)} min`}</b></span><span>Vínculo <b>+${RITUAL_XP[p.id]} XP ritual</b></span></div><p class="ritual-mastery">${p.tribe?'XP ritual para quem concluiu a integração.':`Bônus aprendido: ${done}/${p.max}. Repetir continua concedendo XP ritual.`}</p><p class="ritual-participation">${RITUAL_PLAY[p.id].instruction} Até 20% de XP ritual extra pela sintonia. Também é possível seguir automaticamente.</p>${locks.length?`<p class="ritual-lock">${icon('lock')}${esc(locks.join(' · '))}</p>`:''}<button class="primary" ${p.tribe?'data-action="cacao"':`data-ritual="${p.id}"`} ${costAttr(p.cost(done))} data-max="${!!locks.length||!hero||(p.tribe&&s.clock<s.cacao)}">${p.tribe?'Participar da roda':'Participar da cerimônia'}<span class="cost">${costHTML(p.cost(done))}</span></button>${hero?`<button class="outline-button" data-hunt-hero="${hero.uid}" ${hero.away?'disabled':''}>Enviar para uma caçada ${icon('arrow-right')}</button>`:''}<details><summary>Tradição e contexto</summary><p>${esc(p.text)}</p><p>${esc(p.peoples)}</p><p>${esc(CURA_NOTE)}</p></details></article></div>${hero?.away?`<div class="integration-note">${hero.away.kind==='ritual'?'Cerimônia':'Caçada'} em andamento · ${countdown(hero.away.until)}${hero.away.returnWork?' · Retorna ao trabalho após o rito.':''}${hero.away.participationXp?` · +${hero.away.participationXp} XP extra pela participação.`:''}</div>`:hero&&s.clock<hero.ritualReadyAt?`<div class="integration-note">Integrando a experiência · próximo rito em ${countdown(hero.ritualReadyAt)}</div>`:''}</section></div>`);
 }
 
 function journeyObjective():string {
+  if(view==='village'){
+    const s=game.state,m=SETTLEMENT_MILESTONES.find(m=>!s.settlement.milestones.includes(m.id)),need=ERA_GROWTH[s.villageLevel-1];
+    if(m)return`<div><span class="context-icon">${icon('flag')}</span><span><strong>${m.name}</strong><small>${m.hint}</small></span></div><div class="objective-actions">${m.done(s)?`<button class="primary" data-settlement-milestone="${m.id}">Receber recursos</button>`:`<button class="outline-button" data-rts-mode="${({hands:'economy',roof:'construct',frontier:'territory',knowledge:'research',village:'economy',lands:'territory'} as Record<string,string>)[m.id]}">Planejar próximo passo</button>`}${pendingEra(s)?'<button class="primary" data-action="spirit-choice">Escolher espírito</button>':''}${s.villageLevel<5?`<button class="outline-button" data-action="village-upgrade" ${costAttr(villageCost(s.villageLevel))} data-max="${!s.heroes.some(h=>h.level>=need.level&&h.ritualLevel>=need.ritualLevel)}">Avançar era · XP ${need.level} / rito ${need.ritualLevel}</button>`:''}<button class="text-button" data-action="journal">Diário da jornada</button></div>`;
+  }
   const s=game.state,era=pendingEra(s),quest=openQuests(s)[0],need=ERA_GROWTH[s.villageLevel-1];
   return `<div><span class="context-icon">${icon(era?'sparkles':'compass')}</span><span><strong>${era?'Uma nova era desperta.':quest?esc(quest.title):objective().title}</strong><small>${era?'Escolha o espírito que acompanhará a tribo.':quest?esc(quest.hint):objective().text}</small></span></div><div class="objective-actions">${s.event?`<button class="outline-button" data-action="event-open">${icon('bell')}Acontecimento</button>`:''}${era?`<button class="primary" data-action="spirit-choice">Escolher espírito da Era ${roman(era)}</button>`:quest?.done(s)?`<button class="primary" data-quest="${quest.id}">Receber recompensa</button>`:'<button class="outline-button" data-action="journal">Ver diário</button>'}${s.villageLevel<5?`<button class="outline-button" data-action="village-upgrade" title="Experiência ${need.level} e ritual ${need.ritualLevel}" ${costAttr(villageCost(s.villageLevel))}>Avançar era · XP ${need.level} / rito ${need.ritualLevel}</button>`:''}${view==='battle'&&!panelOpen?`<button class="primary" data-action="battle-start" ${game.battle?.status==='fighting'||s.paused?'disabled':''}>${game.battle?.status==='fighting'?'Em expedição':'Iniciar expedição'}</button>`:''}${!panelOpen?`<button class="outline-button" data-action="panel-open">${view==='battle'?'Ações da expedição':'Ações da aldeia'}</button>`:''}</div>`;
 }
 
 function help() {
   showModal('help', `<p class="eyebrow">BEM-VINDO À PRIMEIRA CHAMA</p><h2>Uma tribo começa com você.</h2><div class="guide-steps">
-   <div><span>01</span><h3>Crie raízes</h3><p>A jornada começa com Akru sozinho. A aldeia produz madeira, alimento, pedra e espírito por conta própria. Melhore construções, recrute companheiros e avance de era para abrir vagas e heróis de custo maior. Mande heróis caçar para ganharem experiência e leve-os à Casa de Cura para as cerimônias da tribo.</p></div>
+   <div><span>01</span><h3>Comande a aldeia</h3><p>Akru chega com quatro aldeões. Distribua os ofícios em População e mantenha construtores disponíveis. Em Construir, escolha uma moradia, depósito ou roça e um terreno livre; as obras levam tempo. Reconheça Territórios, estabeleça postos e abra novos terrenos. Pesquisas melhoram a economia e a defesa. O trabalho continua enquanto você está fora.</p></div>
    <div><span>02</span><h3>Ouça os espíritos</h3><p>Acolha companheiros no catálogo: cada companheiro desperta estrelas ao alcançar os requisitos de experiência e ritualística. A cada era, escolha um Espírito Protetor: um bônus permanente e um poder para acionar em combate.</p></div>
-   <div><span>03</span><h3>Explore o desconhecido</h3><p>No mapa, escolha a expedição. Posicione até sete heróis, combine sinergias e itens da bolsa. O combate é automático; vitórias trazem recursos e componentes. Depois do Primeiro Inverno, a Caçada Eterna e o Grande Totem aguardam.</p></div></div>
-   <p class="development-note">Atalhos: 1 aldeia · 2 expedição · 3 códice · 4 totem · C caçadas · M mapa · P pausar · Esc fechar.</p><button class="primary" data-action="close">Seguir o chamado ${icon('arrow-right')}</button>`);
+   <div><span>03</span><h3>Prepare a expedição</h3><p>Abra o Conselheiro para entender funções, os 31 laços e os equipamentos dos seus heróis. Escolha duas prioridades e aplique uma formação sugerida, ou ajuste as casas manualmente. O conselho também analisa o próximo inimigo. Vitórias trazem recursos e componentes; depois do Primeiro Inverno, a Caçada Eterna e o Grande Totem aguardam.</p></div></div>
+   <p class="development-note">Atalhos: G população · B construir · V territórios · R pesquisas · A conselheiro · 1 aldeia · 2 expedição · 3 códice · 4 totem · C caçadas · M campanha · P pausar · Esc fechar.</p><button class="primary" data-action="close">Seguir o chamado ${icon('arrow-right')}</button>`);
 }
 
 function settings() {
@@ -729,7 +780,29 @@ document.addEventListener('click', event => {
   if (!target || target.disabled) return;
   const d = target.dataset;
   if (d.view) { setView(d.view as typeof view); return; }
-  if (d.building) { panelOpen=true; selectedBuilding = d.building as BuildingId; renderSide(); return; }
+  if (d.building) { panelOpen=true;villageMode='building'; selectedBuilding = d.building as BuildingId; renderSide(); return; }
+  if(d.rtsMode){villageMode=d.rtsMode as typeof villageMode;panelOpen=true;world.setStrategic(villageMode==='territory');if(villageMode!=='construct'){placement=null;world.setBuildMode(null);}if(view!=='village')setView('village');else renderSide();return;}
+  if(d.infrastructure){placement=d.infrastructure as InfrastructureId;villageMode='construct';world.setBuildMode(placement);renderSide();return;}
+  if(d.placementCancel!==undefined){placement=null;world.setBuildMode(null);renderSide();return;}
+  if(d.buildOnPlot!==undefined&&placement){const result=game.buildInfrastructure(placement,$<HTMLSelectElement>('#rts-plot').value);act(result);if(result.ok){placement=null;world.setBuildMode(null);}renderSide();return;}
+  if(d.trainCitizen!==undefined){act(game.trainCitizen());return;}
+  if(d.citizenAdjust){const [job,delta]=d.citizenAdjust.split(':');act(game.adjustCitizens(job as CitizenJob,Number(delta)),'click');return;}
+  if(d.citizenJob){act(game.setCitizenJob(Number(d.citizenId),d.citizenJob as CitizenJob),'click');return;}
+  if(d.citizenClear!==undefined){selectedCitizen=null;world.selectCitizen(null);renderSide();return;}
+  if(d.territory){selectedTerritory=d.territory;villageMode='territory';renderSide();return;}
+  if(d.scoutTerritory){act(game.scoutTerritory(d.scoutTerritory),'click');return;}
+  if(d.claimTerritory){act(game.claimTerritory(d.claimTerritory));return;}
+  if(d.research){act(game.researchVillage(d.research as ResearchId));return;}
+  if(d.cancelOrder){act(game.cancelVillageOrder(Number(d.cancelOrder)),'click');return;}
+  if(d.settlementMilestone){act(game.claimSettlementMilestone(d.settlementMilestone),'recruit');return;}
+  if(d.villageTrade!==undefined){act(game.tradeResources($<HTMLSelectElement>('#trade-from').value as Resource,$<HTMLSelectElement>('#trade-to').value as Resource),'item');return;}
+  if(d.coachHero){coachHero=d.coachHero;showArmyCoach();return;}
+  if(d.coachTrait){coachTrait=d.coachTrait;showArmyCoach();return;}
+  if(d.armyFocus){act(game.setArmyFocus(d.armyFocus),'click');showArmyCoach();return;}
+  if(d.armyPreset){for(const trait of [...game.state.settlement.focusTraits])game.setArmyFocus(trait);for(const trait of d.armyPreset.split(','))game.setArmyFocus(trait);save();showArmyCoach();return;}
+  if(d.advisorDeploy){const replacement=game.state.heroes.find(h=>h.uid===d.replaceHero);const slot=replacement?.slot??Array.from({length:FORMATION_SLOTS},(_,i)=>i).find(i=>!game.state.heroes.some(h=>h.slot===i))??0;act(game.deploy(d.advisorDeploy,slot),'click');showArmyCoach();return;}
+  if(d.advisorEquip){const [uid,index]=d.advisorEquip.split(':');act(game.equipItem(uid,Number(index)),'item');showArmyCoach();return;}
+  if(d.advisorRecipe){const [a,b]=d.advisorRecipe.split(':');act(game.combineItems(Number(a),Number(b)),'item');showArmyCoach();return;}
   if (d.gather) { act(game.gather(d.gather as Resource), 'click'); return; }
   if (d.recruit) { act(game.recruit(Number(d.recruit)), 'recruit'); if(activeModal==='tribe')showTribe(); return; }
   if (d.curaHero) { curaHero=d.curaHero; showCura(); return; }
@@ -772,10 +845,12 @@ document.addEventListener('click', event => {
   if (d.recall) { act(game.recallHunt(d.recall), 'click'); showHunts(); return; }
   if (d.huntHero) { showHunts(d.huntHero); return; }
   if (d.ritual) { if (curaHero) showRitualExperience(d.ritual as PracticeId); return; }
-  if (d.curaBuild) { act(game.upgradeBuilding('cura')); showCura(); return; }
+  if (d.curaBuild) { act(game.queueBuilding('cura')); showCura(); return; }
   if (d.quest) { const r = game.claimQuest(d.quest); act(r, 'item'); if (activeModal === 'journal') showJournal(); return; }
   if (d.memory) { act(game.buyMemory(d.memory as MemoryId), 'upgrade'); showAncestors(); return; }
   switch (d.action) {
+    case 'army-coach':showArmyCoach();break;
+    case 'apply-army-plan':act(game.applyArmyPlan(),'click');showArmyCoach();break;
     case 'tribe': showTribe(); break;
     case 'formation': showFormation(); break;
     case 'auto-formation': act(game.autoFormation(),'click'); showFormation(); break;
@@ -788,7 +863,7 @@ document.addEventListener('click', event => {
     case 'place-selected': if (selectedHero) act(game.deploy(selectedHero, Number($<HTMLSelectElement>('#formation-slot').value)), 'click'); break;
     case 'sell-selected': if (selectedHero) { act(game.sellHero(selectedHero), 'click'); selectedHero = null; } break;
     case 'assign': act(game.assignWorker($<HTMLSelectElement>('#worker-select').value, selectedBuilding), 'upgrade'); break;
-    case 'building-upgrade': act(game.upgradeBuilding(selectedBuilding)); break;
+    case 'building-upgrade': act(game.queueBuilding(selectedBuilding)); break;
     case 'village-upgrade': { const r = game.upgradeVillage(); act(r, 'era'); if (r.ok) showSpiritChoice(); break; }
     case 'spirit-choice': showSpiritChoice(); break;
     case 'reroll': act(game.rerollShop(), 'click'); break;
@@ -841,6 +916,8 @@ document.addEventListener('input', event => {
 });
 document.addEventListener('change', event => {
   const input = event.target as HTMLInputElement | HTMLSelectElement;
+  if(input.id==='coach-trait'){coachTrait=input.value;showArmyCoach();return;}
+  if(input.id==='coach-hero'){coachHero=input.value;showArmyCoach();return;}
   if (input.id === 'cura-hero') { curaHero = input.value; showCura(); return; }
   const key = input.dataset.pref;
   if (key === 'sound' || key === 'numbers') { updatePref(key, (input as HTMLInputElement).checked); if (key === 'sound') settings(); }
@@ -866,7 +943,7 @@ $<HTMLInputElement>('#save-file').addEventListener('change', async event => {
     if (file.size > 500_000) throw new Error();
     data = JSON.parse(await file.text());
     const root = data as { version?: number; state?: { heroes?: unknown; resources?: unknown } };
-    if (!root || ![1, 2, 3, 4].includes(root.version as number) || !root.state || !Array.isArray(root.state.heroes) || !root.state.resources) throw new Error();
+    if (!root || ![1, 2, 3, 4, 5].includes(root.version as number) || !root.state || !Array.isArray(root.state.heroes) || !root.state.resources) throw new Error();
   } catch { toast('Arquivo de progresso inválido. Sua jornada atual foi preservada.'); return; }
   const imported = new Game(data);
   try {
@@ -887,6 +964,8 @@ document.addEventListener('keydown', event => {
   if (key === 'm' && game.battle?.status !== 'fighting') showMap();
   if (key === 'c') showHunts();
   if (key === 'p') { game.togglePause(); save(); renderAll(); }
+  if (key === 'b'||key === 'g'||key === 'v'||key === 'r') {villageMode=({b:'construct',g:'economy',v:'territory',r:'research'} as const)[key];if(villageMode!=='construct'){placement=null;world.setBuildMode(null);}panelOpen=true;world.setStrategic(villageMode==='territory');if(view!=='village')setView('village');else renderSide();}
+  if (key === 'a') showArmyCoach();
 });
 $<HTMLDialogElement>('#modal').addEventListener('click', event => { if (event.target === $('#modal')) closeModal(); });
 $('#modal').addEventListener('close', () => { ritualExperience?.destroy(); ritualExperience = null; preview.clear(); activeModal = ''; });

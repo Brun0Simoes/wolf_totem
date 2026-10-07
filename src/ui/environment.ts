@@ -1,4 +1,4 @@
-import props from '../../public/assets/environment/village-props.json';
+import { props } from 'virtual:wolf-environment';
 import { assetUrl } from '../render/animationAssets';
 export const environmentProps = props;
 export function environmentPortrait(kind: keyof typeof props.frames): string {

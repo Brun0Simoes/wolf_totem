@@ -26,6 +26,8 @@ O despertar é automático e preserva o herói, sua posição e seus itens. O te
 
 ## Aldeia
 
+A população, as obras com duração, os oito territórios, as quatro pesquisas e o conselheiro estão detalhados em [Aldeia RTS](ALDEIA-RTS.md). Saves v5 preservam essas ordens e migram jornadas v1–v4.
+
 | Construção | Produção por nível | Afinidade dos trabalhadores |
 | --- | --- | --- |
 | Bosque dos coletores | 1,5 madeira/s | Copa, Enxame |
@@ -36,7 +38,7 @@ O despertar é automático e preserva o herói, sua posição e seus itens. O te
 | Casa de Cura | cerimônias (ver abaixo) | Xamã, Rio, Noturno |
 
 - Construções vão até o nível 15; o custo cresce 1,65× por nível.
-- Produção total = base × nível × (1 + 12% por era) × espíritos × (1 + 25% por Raízes Profundas) × trabalhadores.
+- Produção total = (produção das construções + população e território) × modificadores de era, espíritos, memórias e trabalhadores heróis. Ferramentas e depósitos afetam a parcela da população; roças e postos acrescentam produção. Veja as fórmulas da [aldeia RTS](ALDEIA-RTS.md).
 - **Trabalhadores:** heróis da reserva (fora da formação). Vagas por construção: 1 + nível/4, no máximo 4. Cada um soma 10% × custo × (1; 2,2; 4 conforme as estrelas), com ×1,5 de afinidade.
 - **Eras:** a aldeia de nível *n* custa 160/110/80/30 × 2,8^(n−1) (madeira, alimento, pedra, espírito). Cada era libera uma faixa do catálogo, uma vaga na formação e uma escolha de espírito. Avançar exige também, no mesmo herói, experiência/ritualística 4/2, 10/3, 16/5 e 22/7 para chegar às eras II–V.
 - Coleta manual: 5/4/3 por clique × nível da aldeia.

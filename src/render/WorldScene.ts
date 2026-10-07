@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
-import fx from '../../public/assets/environment/combat-fx.json';
-import props from '../../public/assets/environment/village-props.json';
+import { SettlementWorld } from './SettlementWorld';
+import { FrontierMap } from './FrontierMap';
+import type { InfrastructureId } from '../game/settlement';
+import { fx,props } from 'virtual:wolf-environment';
 import { OVERTIME_START, type BuildingId, type Game } from '../game/simulation';
 import { characters } from '../data/characters';
 import { animationSheets, assetUrl, bestAnimation, getAnimation, getSummonAnimation, frameRect, sheetKey, summonSheetKey } from './animationAssets';
@@ -18,7 +20,7 @@ type View = 'village' | 'battle';
 type Ctx = CanvasRenderingContext2D;
 type Point = [number, number];
 type Entity = NonNullable<Game['battle']>['entities'][number];
-type Callbacks = { onHero: (uid:string)=>void; onMove:(uid:string,slot:number)=>void; onBuilding: (id: BuildingId) => void; onSlot: (slot: number) => void };
+type Callbacks = { onHero: (uid:string)=>void; onMove:(uid:string,slot:number)=>void; onBuilding: (id: BuildingId) => void; onSlot: (slot: number) => void; onTerritory?:(id:string)=>void;onPlot?:(id:string)=>void;onCitizen?:(id:number)=>void };
 type UnitView = { dragging?: boolean; summon?: string; transform: boolean; layer: Phaser.GameObjects.Layer; aura?: Phaser.GameObjects.Image; sprite: Phaser.GameObjects.Sprite; bars: Phaser.GameObjects.Graphics; name: Phaser.GameObjects.Text; ring: Phaser.GameObjects.Ellipse; baseTexture: string; desiredHeight: number; characterId: number; stars: number; motion: MotionState; x: number; y: number; lastHp: number; enemy: boolean; lastHit: number; flashUntil: number; flashReady: number };
 type Villager = { uid: string; view: UnitView; phase: number; work: BuildingId | null; lastWork: number };
 
@@ -60,13 +62,16 @@ function glow(c: Ctx, x: number, y: number, radius: number, color: string): void
 export interface WorldOptions { reducedMotion: boolean; numbers: boolean }
 
 /** Presentation only: the caller owns the simulation clock, saves and all game rules. */
-export function createWorld(parent: HTMLElement, game: Game, callbacks: Callbacks, initial: WorldOptions): { setView(view: View): void; setOptions(options: WorldOptions): void; destroy(): void } {
+export function createWorld(parent: HTMLElement, game: Game, callbacks: Callbacks, initial: WorldOptions): { setView(view: View): void; setOptions(options: WorldOptions): void;setStrategic(value:boolean):void;setBuildMode(id:InfrastructureId|null):void;selectCitizen(id:number|null):void; destroy(): void } {
   let requestedView: View = 'village';
   let scene: WorldScene | undefined;
   let options = { ...initial };
 
   class WorldScene extends Phaser.Scene {
     private village!: Phaser.GameObjects.Layer;
+    settlementView?:SettlementWorld;
+    frontier?:FrontierMap;
+    strategic=false;
     private battlefield!: Phaser.GameObjects.Layer;
     private villageActors: Villager[] = [];
     private villageRoster = '';
@@ -104,6 +109,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     constructor() { super({ key: 'WolfTotemWorld' }); }
 
     preload(): void {
+      this.load.image('frontier-terrain',assetUrl('/assets/environment/frontier-terrain.png'));
       this.load.image('painted-terrain',assetUrl('/assets/environment/village-terrain.png'));
       this.load.image('painted-props',assetUrl(props.image));
       this.load.image('painted-fx',assetUrl(fx.image));
@@ -126,13 +132,15 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       this.village = this.add.layer().setDepth(0);
       this.battlefield = this.add.layer().setDepth(1).setVisible(false);
       this.createVillage();
+      this.settlementView=new SettlementWorld(this,this.village,game,id=>callbacks.onTerritory?.(id),id=>callbacks.onPlot?.(id),id=>callbacks.onCitizen?.(id));
+      this.frontier=new FrontierMap(this,game,id=>callbacks.onTerritory?.(id));
       this.createBattlefield();
       this.effects = new CombatEffects(this, this.battlefield, this.reducedMotion);
       this.ambience = this.add.graphics().setDepth(1200);
       const rng = random(91);
       this.stars = Array.from({ length: 22 }, () => ({ x: 140 + rng() * 920, y: 170 + rng() * 405, phase: rng() * 6.28, speed: .3 + rng() * .6 }));
       this.setWorldView(requestedView);
-      this.game.canvas.setAttribute('aria-label', 'Vila ancestral interativa. Selecione construções para melhorar a produção ou organize os heróis na expedição.');
+      this.updateCanvasLabel();
       this.game.canvas.setAttribute('role', 'img');
       this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
         this.tweens.killAll(); this.units.clear(); this.labels.clear(); this.seenEvents.clear();
@@ -658,10 +666,15 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
 
     setWorldView(view: View): void {
       this.activeView = view;
+      this.updateCanvasLabel();
       this.village.setVisible(view === 'village'); this.battlefield.setVisible(view === 'battle');
       for (const effect of this.floating) if ('setVisible' in effect) (effect as Phaser.GameObjects.Text).setVisible(false);
       this.floorHover.clear();
       if (view === 'battle') { this.lastFormation = ''; this.syncBattle(0); }
+    }
+
+    updateCanvasLabel():void {
+      this.game.canvas.setAttribute('aria-label',this.activeView==='battle'?'Campo de expedição interativo: selecione heróis e posições para organizar sua formação.':this.strategic?'Mapa territorial interativo: reconheça a mata, estabeleça postos e amplie a aldeia.':'Aldeia interativa: selecione aldeões, construções e terrenos para dar ordens.');
     }
 
     update(time: number, delta: number): void {
@@ -673,6 +686,9 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       }
       const dt = this.paused ? 0 : Math.min(delta / 1000, .1);
       this.clock += dt;
+      this.frontier?.layer.setVisible(this.activeView==='village'&&this.strategic);
+      if(this.activeView==='village')this.village.setVisible(!this.strategic);
+      this.frontier?.update(this.clock*1000,this.reducedMotion);
       this.input.enabled = !game.state.paused && !(this.activeView === 'battle' && game.battle);
       if (this.activeView === 'village') this.updateVillage(this.clock * 1000, dt);
       else this.syncBattle(dt);
@@ -681,10 +697,12 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     }
 
     private updateVillage(time: number, dt: number): void {
+      this.settlementView?.update(time,this.reducedMotion);
       this.syncVillageRoster();
       for (const b of BUILDINGS) {
         const level = game.state.buildings[b.id];
-        const label = this.labels.get(b.id), text = level ? `Nível ${level}  ·  ${level >= 10 ? 'máximo' : 'melhorar'}` : 'construir';
+        const order=game.state.settlement.orders.find(o=>o.kind==='building'&&o.target===b.id);
+        const label = this.labels.get(b.id), text = order?`EM OBRA · ${Math.max(0,Math.ceil(order.until-game.state.clock))}s`:level ? `Nível ${level}  ·  ${level >= 15 ? 'máximo' : 'melhorar'}` : 'construir';
         if (label?.text !== text) label?.setText(text);
         if (level > this.previousLevels[b.id]) {
           this.pulse(b.x, b.y, 0xe9d18e, this.village);
@@ -1107,6 +1125,9 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
   });
   return {
     setView(view) { requestedView = view; scene?.setWorldView(view); },
+    setStrategic(value){if(scene){scene.strategic=value;scene.updateCanvasLabel();}},
+    setBuildMode(id){scene?.settlementView?.setPlacement(id);},
+    selectCitizen(id){scene?.settlementView?.selectCitizen(id);},
     setOptions(next) {
       options = { ...next };
       if (scene) { scene.reducedMotion = next.reducedMotion; scene.applyMotion(); }

@@ -25,7 +25,7 @@ describe('saves', () => {
     expect(loaded.state.heroes.map(h => [h.characterId, h.stars, h.items, h.work, h.level])).toEqual([[1, 3, [], null, 24], [3, 2, [], null, 8], [8, 1, [], null, 1]]);
     expect(loaded.state.buildings.forge).toBe(0);
     expect(loaded.state.buildings.cura).toBe(0);
-    expect(JSON.parse(loaded.serialize()).version).toBe(4);
+    expect(JSON.parse(loaded.serialize()).version).toBe(5);
     const later = JSON.parse(fixture); later.state.wave = 7;
     expect(new Game(later, 1790800000000).state.progress).toBe(6);
   });

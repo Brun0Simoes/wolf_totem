@@ -42,3 +42,16 @@ Os conceitos `village-concept.png` e `ritual-concept.png` foram gerados antes da
 ## Assets
 
 Os PNGs de produção foram copiados sem alterar pixels. Os limites de alpha foram medidos apenas para definir frames. Origem, hashes e briefs estão em `production.json`. As artes originais em `chars` permanecem intactas.
+
+## Ampliação RTS e conselheiro — 7 de outubro de 2026
+
+- População própria, distribuição de ofícios, reserva de construtores, fila de obras e treinamento, cinco infraestruturas, oito territórios, quatro pesquisas e seis marcos integrados à economia. A vista territorial usa terreno contínuo gerado, névoa e postos ligados ao estado persistido.
+- Conselheiro com seis funções táticas, 31 laços, prioridades, formação sugerida, trocas com ganhos e perdas, itens e receitas da bolsa e orientação contra o próximo inimigo. Guia do herói e preparação da expedição também abrem esse conselho.
+- 283 testes em 11 arquivos passaram; build TypeScript/Vite concluído. A referência de duas visitas diárias continua chegando ao primeiro 3★ em seis dias. As 18 verificações novas cobrem a economia RTS, filas, fronteiras, persistência e recomendações.
+- Jornada nova no navegador: preparar aldeão, construir moradia, reconhecer e ocupar o bosque, pesquisar ferramentas, receber marcos, acolher companheiros e aplicar uma formação. População passou de 4/6 para 5/10 após a moradia na Era I.
+- Build de produção em `127.0.0.1:4181`: importação pela interface de um cenário isolado v4 da Era II, com cinco heróis e quatro componentes. Migração inicial para quatro aldeões e oito vagas; construção de moradia, reconhecimento, posto e roça no terreno liberado, pesquisa e formação com quatro heróis. O cenário serve para QA e não representa a jornada original do usuário.
+- Receita Escudo Totêmico criada com Couro Curtido e Pena Sagrada; item equipado e confirmado no painel de Akru. Durante uma expedição real, aplicar formação, trocar companheiros, equipar e combinar ficaram desativados. Ao terminar a luta, o conselho atualizou e liberou os comandos automaticamente. Nenhum erro ou aviso observado no console do build final.
+- Seleção direta do igarapé no canvas abriu seus comandos. Controles equivalentes também funcionam no painel. Desktop e largura de 390 px verificados; largura do documento igual à largura disponível no celular, sem transbordamento horizontal. Trocar o laço manteve a rolagem do guia em 1.688 px.
+- As figuras dos aldeões e parte das construções novas reaproveitam desenho procedural e props existentes. Expansão usa setores e terrenos definidos; não há movimentação livre de exércitos ou combate de unidades no mapa territorial.
+
+Regras, limitações e prompt do novo terreno: [Aldeia RTS](../ALDEIA-RTS.md). Evidências: [território](rts-territory.png), [aldeia](rts-village.png), [conselheiro](rts-coach.png), [guia móvel](rts-coach-mobile.png).

@@ -26,6 +26,16 @@ A cada envio para `main`, o workflow `.github/workflows/pages.yml` testa, gera o
 - Importar substitui a jornada daquele navegador. Exporte antes se quiser manter as duas.
 - Limpar os dados do site ou usar uma janela anônima apaga o progresso local. O arquivo exportado continua valendo.
 
+## Aldeia RTS e conselho de guerra
+
+A aldeia começa com quatro aldeões independentes dos heróis. Distribua madeira, alimento, pedra, espírito e construção; prepare novos trabalhadores e amplie a população com moradias. Melhorias e novas construções entram em uma fila com tempo e reserva de construtores.
+
+Explore oito territórios, revele recursos e estabeleça postos para liberar terrenos e aumentar a produção. A vista territorial tem névoa, caminhos e postos. Moradias, depósitos, roças, torres e casas de trocas complementam as construções existentes. Quatro pesquisas afetam produção, reconhecimento, caçadas, defesa e combate. Seis marcos recompensam a expansão. Ordens e produção continuam offline, respeitando a hora de conclusão de cada atividade.
+
+O **Conselheiro** explica as seis funções táticas e os 31 laços, analisa o inimigo escolhido, sugere companheiros e posições, mostra ganhos e perdas de sinergia e recomenda itens e receitas usando a sua bolsa. Escolha até duas prioridades e aplique o plano, ou ajuste as casas manualmente.
+
+Regras e limites: [Aldeia RTS e conselheiro](docs/ALDEIA-RTS.md).
+
 ## Jornada 2.0
 
 - Navegação por Aldeia, Tribo, Expedições, Rituais e Códice, com painel contextual recolhível.
@@ -68,14 +78,14 @@ Números e regras completas: [Sistemas do jogo](docs/SISTEMAS.md).
 
 ## Como jogar
 
-1. **Aldeia:** a jornada começa com Akru sozinho. Melhore construções, colete à mão no começo e avance de era. Cada era abre uma vaga na formação, heróis de custo maior e a escolha de um Espírito Protetor.
+1. **Aldeia:** distribua os quatro aldeões em **População**. Em **Construir**, selecione uma infraestrutura e um terreno; mantenha construtores livres. Prepare mais aldeões, reconheça **Territórios**, estabeleça postos e invista em **Pesquisas**. A evolução de era continua exigindo experiência e ritualística de um herói.
 2. **Caçadas e Casa de Cura:** mande heróis caçar (`C`) para ganharem experiência e alimento, e leve-os às cerimônias da Casa de Cura para fortalecê-los e limpar a panema.
 3. **Tribo:** escolha um companheiro no catálogo, conforme a era e o vínculo ritual. Cada personagem pertence à tribo uma única vez. Acompanhe suas duas barras e os requisitos de despertar no painel do herói.
-4. **Expedição:** escolha a expedição no mapa (`M`), selecione um herói e uma casa da sua metade do campo e entregue itens da bolsa. Os inimigos da próxima expedição já aparecem no tabuleiro.
+4. **Expedição:** escolha a expedição no mapa (`M`). Abra o **Conselheiro** (`A`) para analisar o inimigo, as funções, os laços e os itens. Aplique uma formação sugerida ou selecione um herói e uma casa da sua metade do campo. Os inimigos da próxima expedição já aparecem no tabuleiro.
 5. **Combate:** é automático. Use os poderes espirituais na barra do campo, troque a velocidade e ligue a repetição para farmar.
 6. **Totem:** depois do Primeiro Inverno, erga o Grande Totem, renasça e compre memórias.
 
-Atalhos: `1` aldeia, `2` expedição, `3` códice, `4` totem, `C` caçadas, `M` mapa, `P` pausar e `Esc` fechar.
+Atalhos: `G` população, `B` construir, `V` territórios, `R` pesquisas, `A` conselheiro, `1` aldeia, `2` expedição, `3` códice, `4` totem, `C` caçadas, `M` mapa, `P` pausar e `Esc` fechar.
 
 ## Arte
 
@@ -98,7 +108,9 @@ As cinco criaturas invocadas (aranha, corvo, escaravelho, lobo e elefante) tamb�
 chars/                     Artes originais, intactas
 public/assets/animations/  Folhas pintadas (v2/v3: 165 formas; summons: 5 criaturas)
 src/data/                  Os 55 personagens do plano e a animalidade
-src/game/simulation.ts     Estado, economia, combate, saves (v4) e ações
+src/game/simulation.ts     Estado, economia, combate, saves (v5) e ações
+src/game/settlement.ts     População, infraestrutura, fronteiras e pesquisas
+src/game/armyAdvisor.ts    Funções, sinergias, formação e recomendações de itens
 src/game/skills.ts         As 55 habilidades
 src/game/synergies.ts      Regras das 31 características
 src/game/roster.ts         Desbloqueios, preços e compatibilidade de visitas antigas
