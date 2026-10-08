@@ -5,6 +5,7 @@ import './ui.css';
 import './journey-ui.css';
 import './ritual-experience.css';
 import './ancestral-ui.css';
+import './reform-ui.css';
 import { armyCoach,type CoachTab } from './ui/ArmyCoach';
 import { journeyPage } from './ui/AncestralJourney';
 import { type JourneyBranch,TRIALS,trialProgress } from './game/ancestralJourney';
@@ -18,20 +19,17 @@ import { createIcons, icons } from 'lucide';
 import { SoundSystem, type Sfx } from './audio';
 import { characters } from './data/characters';
 import { ANIMALITY, ANIMALITY_RULES } from './data/animality';
-import { endlessLevel, expectedLevel, FINAL_STAGE, REGIONS, STAGES, regionOf, stageById, stageReward } from './game/campaign';
+import { endlessLevel, expectedLevel, FINAL_STAGE, REGIONS, STAGES, regionOf, stageById } from './game/campaign';
 import { COMPONENTS, ITEMS, MAX_ITEMS_PER_HERO, isComponent, itemById } from './game/items';
-import { shopOdds, unlockedCost } from './game/roster';
+import { unlockedCost } from './game/roster';
 import { ERA_NAMES, MEMORIES, memoryCost, spiritById, spiritsOfEra, type MemoryId, type SpiritId } from './game/spirits';
 import { TRAIT_RULES } from './game/synergies';
 import { QUESTS, openQuests, rewardText } from './game/quests';
-import { EVENT_TEXT } from './game/events';
 import { AWAKENING, ERA_GROWTH, MAX_RITUAL_LEVEL, RITUAL_XP, ritualXpToNext, CURA_NOTE, huntChance, huntSlots, MAX_HERO_LEVEL, MAX_PANEMA, PRACTICES, practiceById, TRAILS, trailById, xpToNext, type Practice } from './game/tribe';
 import { project } from './render/battleArena';
 import { allySlotCenter, FORMATION_SLOTS } from './game/board';
 import {
-  BUILDING_KEYS, Game, GATHER_AMOUNT, MAX_BUILDING_LEVEL, MAX_INVENTORY, REROLL_COST, SKILL_NOTES, WONDER_STAGES, WORK_AFFINITY,heroHuntChance,
-  buildingCost, capacity, embersFor, forgeRate, getRates, getSynergies, pendingEra, recruitCost, ritualSpeed, shopSize, stageUnlocked, villageCost,
-  wonderCost, workerBonus, workerSlots, type ActionResult, type BuildingId, type Hero, type Resource, type Resources,
+  Game, MAX_INVENTORY, SKILL_NOTES, WONDER_STAGES, heroHuntChance, capacity, embersFor, getSynergies, pendingEra, ritualSpeed, stageUnlocked, totemLock, type ActionResult, type Hero,
 } from './game/simulation';
 import type { MotionClip } from './render/animationModel';
 import { CharacterPreview } from './render/CharacterPreview';
@@ -63,10 +61,9 @@ const reducedMotion = () => motionReduced(prefs, systemMotion.matches);
 sound.setVolumes(prefs.sfx, prefs.music);
 document.documentElement.classList.toggle('reduce-motion', reducedMotion());
 
-let view: 'village' | 'battle' = 'village';
+let view: 'village' | 'battle' = 'battle';
 let selectedHero: string | null = null;
-let selectedBuilding: BuildingId = 'lumber';
-let villageMode:'paths'|'provisions'|'preparations'='paths';
+let villageMode:'paths'|'preparations'='paths';
 let journeyBranch:JourneyBranch='war';
 let journeyKey='';
 let coachTab:CoachTab='plan';
@@ -78,7 +75,7 @@ let activeModal = '';
 let ritualExperience: RitualExperience | null = null;
 let lastBattleStatus = '';
 let lastProgress = game.state.progress;
-let lastVillage = game.state.villageLevel;
+let lastVillage = game.state.era;
 let lastEventId = 0;
 let repeatTimer = 0;
 let confirmAscend = false;
@@ -88,7 +85,6 @@ let chosenPractice = 'rape';
 let tribeTab = 'owned';
 let tribeQuery = '';
 let panelOpen = !window.matchMedia('(max-width: 850px)').matches;
-let eventOpen = false;
 let inspectedHero: string | null = null;
 let awayKey = '';
 let coachStateKey='';
@@ -111,20 +107,6 @@ const timeLeft = (until: number) => { const left = Math.max(0, Math.ceil(until -
 const countdown = (until: number) => `<span class="countdown" data-until="${until}">${timeLeft(until)}</span>`;
 const inFight = (h: Hero) => game.battle?.status === 'fighting' && game.battle.party.includes(h.uid);
 const heroLabel = (h: Hero) => `${characterOf(h.characterId).name} ${'★'.repeat(h.stars)} · Nv ${h.level}${h.panema ? ` · panema ${h.panema}` : ''}`;
-const RESOURCES: { id: Resource; name: string; icon: string }[] = [
-  { id: 'wood', name: 'Madeira', icon: 'tree-pine' }, { id: 'food', name: 'Alimento', icon: 'wheat' },
-  { id: 'stone', name: 'Pedra', icon: 'mountain' }, { id: 'spirit', name: 'Espírito', icon: 'flame' },
-];
-const BUILDINGS: Record<BuildingId, { name: string; desc: string; icon: string; resource?: Resource }> = {
-  lumber: { name: 'Bosque dos coletores', desc: 'A madeira sustenta o crescimento da aldeia.', icon: 'trees', resource: 'wood' },
-  hunt: { name: 'Acampamento de caça', desc: 'Alimento para uma tribo cada vez maior.', icon: 'crosshair', resource: 'food' },
-  quarry: { name: 'Pedreira ancestral', desc: 'Pedras para construir o que vai permanecer.', icon: 'mountain', resource: 'stone' },
-  shrine: { name: 'Círculo dos espíritos', desc: 'A chama atrai novos guardiões para a tribo.', icon: 'flame', resource: 'spirit' },
-  forge: { name: 'Forja de Osso', desc: 'Ossos, couro e penas viram componentes de itens. Também combina componentes na bolsa.', icon: 'anvil' },
-  cura: { name: 'Casa de Cura', desc: 'A maloca do pajé, onde a tribo faz as cerimônias de rapé, sananga, kambô e ayahuasca e a roda de cacau.', icon: 'leaf' },
-};
-const costHTML = (cost: Resources) => RESOURCES.filter(r => cost[r.id] > 0).map(r => `<span title="${r.name}">${icon(r.icon)}${fmt(cost[r.id])}</span>`).join('');
-const costAttr = (cost: Resources) => `data-cost='${JSON.stringify(cost)}'`;
 const itemChip = (id: string, attrs = '', extra = '') => {
   const item = itemById(id)!;
   return `<button class="item-chip ${item.kind}${extra}" style="--item:${item.color}" title="${esc(`${item.name}: ${item.text}`)}" ${attrs}><span class="item-gem"></span><span class="item-name">${esc(item.name)}</span></button>`;
@@ -134,7 +116,7 @@ const spiritGlyph = (id: SpiritId, label = true) => { const spirit = spiritById(
 $('#app').innerHTML = `
  <header class="topbar">
   <a class="brand" href="#" aria-label="Wolf Totem, início"><span class="brand-mark">${icon('dog')}</span><span>WOLF <b>TOTEM</b><small>O DESPERTAR DA TRIBO</small></span></a>
-  <div class="resources" aria-label="Provisões da tribo">${RESOURCES.map(r => `<div class="resource ${r.id}" title="${r.name}"><span class="resource-icon">${icon(r.icon)}</span><div><small>${r.name}</small><strong id="res-${r.id}">0</strong></div><span class="rate" id="rate-${r.id}"></span></div>`).join('')}<div class="resource embers" id="embers-chip" title="Brasas ancestrais" hidden><span class="resource-icon">${icon('sparkles')}</span><div><small>Brasas</small><strong id="res-embers">0</strong></div></div></div>
+  <div class="journey-metrics" aria-label="Progresso da tribo"><div><small>Era</small><strong id="metric-era">I</strong></div><div><small>Campanha</small><strong id="metric-campaign">0 / 30</strong></div><div><small>Formação</small><strong id="metric-army">1 / 3</strong></div><div id="embers-chip" hidden><small>Brasas</small><strong id="res-embers">0</strong></div></div>
   <div class="header-actions"><button class="icon-button" data-action="audio" aria-label="Ativar sons" title="Sons e música">${icon('volume-x')}</button><button class="icon-button" data-action="pause" aria-label="Pausar jogo" title="Pausar (P)">${icon('pause')}</button><button class="icon-button" data-action="settings" aria-label="Ajuda e salvamento" title="Ajuda e salvamento">${icon('settings-2')}</button></div>
  </header>
  <div class="game-shell">
@@ -144,7 +126,7 @@ $('#app').innerHTML = `
    <button class="nav-button" data-action="tribe">${icon('users')}<span>Tribo</span></button><button class="nav-button" data-action="cura">${icon('flame')}<span>Rituais</span></button><button class="nav-button" data-action="codex">${icon('book-open')}<span>Códice</span></button>
   </div><div class="rail-bottom"><span class="vertical-caption">SIGA O CHAMADO</span><span class="rail-seal" id="rail-era">I</span></div></nav>
   <main class="main-area">
-   <nav class="ancestral-toolbar" id="journey-toolbar" aria-label="Atividades da jornada"><div><button data-journey-tab="paths">${icon('route')}Caminhos</button><button data-journey-tab="provisions">${icon('package')}Ofícios e provisões</button><button data-journey-tab="preparations">${icon('sparkles')}Preparativos</button><button data-action="hunts">${icon('trees')}Caçadas</button><button data-action="army-coach">${icon('swords')}Conselheiro</button></div></nav>
+   <nav class="ancestral-toolbar" id="journey-toolbar" aria-label="Atividades da jornada"><div><button data-journey-tab="paths">${icon('route')}Caminhos</button><button data-journey-tab="preparations">${icon('sparkles')}Bênçãos</button><button data-action="hunts">${icon('trees')}Caçadas</button><button data-action="army-coach">${icon('swords')}Conselheiro</button></div></nav>
    <section id="ancestral-hall" aria-label="Caminhos ancestrais"></section>
    <div class="play-area"><section class="world-wrap" aria-label="Mundo da tribo">
     <div id="world"></div>
@@ -152,12 +134,12 @@ $('#app').innerHTML = `
     <div class="world-badge"><span class="live-dot"></span><span id="world-badge-text">Clareira do Lobo</span>${icon('sun')}</div>
     <div class="world-caption"><span class="map-coordinate">23° N &nbsp; / &nbsp; 07° L</span><span id="world-hint"></span></div>
     <div id="power-bar" class="power-bar" hidden></div>
-    <div id="event-card" class="event-card" hidden></div>
+
     <div id="pause-overlay" class="pause-overlay" hidden><span>${icon('pause')}O tempo descansa.</span><button class="primary" data-action="pause">Retomar jornada</button></div>
     <div id="battle-result" class="battle-result" hidden></div>
    </section><aside class="side-panel" id="side-panel" aria-label="Ações"></aside></div>
    <section class="camp-section"><div class="section-heading"><div><p class="eyebrow">HERÓIS & ESPÍRITOS</p><h2 id="camp-title">Ao redor da fogueira</h2></div><button class="outline-button" data-action="tribe" id="reroll">Abrir tribo ${icon('arrow-right')}</button></div><div id="camp-content"></div></section>
-   <div id="journey-objective" class="journey-objective"></div><footer><span><span class="live-dot"></span><span id="save-status">Progresso salvo neste navegador</span></span><span>WOLF TOTEM <b>·</b> VERSÃO 2.1</span><button class="text-button" data-action="ancestors">Totem ancestral</button><button class="text-button" data-action="help">Guia da tribo ${icon('arrow-up-right')}</button></footer>
+   <div id="journey-objective" class="journey-objective"></div><footer><span><span class="live-dot"></span><span id="save-status">Progresso salvo neste navegador</span></span><span>WOLF TOTEM <b>·</b> VERSÃO 2.2</span><button class="text-button" data-action="ancestors">Totem ancestral</button><button class="text-button" data-action="help">Guia da tribo ${icon('arrow-up-right')}</button></footer>
   </main>
  </div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -166,16 +148,12 @@ $('#app').innerHTML = `
  <input id="save-file" type="file" accept="application/json,.json" hidden />`;
 
 document.querySelector('.main-area')!.insertBefore($('#journey-objective'),document.querySelector('.camp-section'));
-document.querySelector('.topbar')!.insertBefore(document.querySelector('.rail')!, document.querySelector('.resources'));
+document.querySelector('.topbar')!.insertBefore(document.querySelector('.rail')!, document.querySelector('.journey-metrics'));
 
 document.querySelector('.nav-group')!.insertBefore(document.querySelector('[data-action=tribe]')!,document.querySelector('[data-view=battle]'));
 const world = createWorld($('#world'), game, {
   onHero(uid) { selectedHero = uid; panelOpen = true; renderCamp(); renderSide(); },
   onMove(uid, slot) { selectedHero = uid; act(game.deploy(uid, slot), 'click'); },
-  onBuilding(id) {
-    const resource=BUILDINGS[id].resource;
-    selectedBuilding=id;villageMode='provisions';if(view!=='village')setView('village');else renderSide();
-  },
   onSlot(slot) {
     if (!selectedHero) return toast('Escolha um herói abaixo e depois uma posição.');
     act(game.deploy(selectedHero, slot), 'click');
@@ -204,23 +182,14 @@ function setView(next: typeof view) {
 }
 
 function renderMetrics() {
-  const journeyState=JSON.stringify([game.state.journey,game.state.stats,game.state.villageLevel,game.state.progress,game.state.buildings,game.state.heroes.map(h=>[h.uid,h.work,h.away?.until,h.slot,h.level,h.ritualLevel]),game.state.paused,game.battle?.status]);
+  const journeyState=JSON.stringify([game.state.journey,game.state.stats,game.state.era,game.state.progress,game.state.heroes.map(h=>[h.uid,h.away?.until,h.slot,h.level,h.ritualLevel]),game.state.paused,game.battle?.status]);
   if(journeyState!==journeyKey){journeyKey=journeyState;if(view==='village')renderVillageSide();}
-  document.querySelectorAll<HTMLElement>('[data-journey-rate]').forEach(el=>{el.textContent='+'+getRates(game.state)[el.dataset.journeyRate as Resource].toFixed(1)+'/s';});
-  const rates = getRates(game.state);
-  for (const r of RESOURCES) {
-    $(`#res-${r.id}`).textContent = fmt(game.state.resources[r.id]);
-    $(`#rate-${r.id}`).textContent = `+${rates[r.id].toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/s`;
-  }
-  $('#embers-chip').hidden = !game.state.embers && !game.state.rebirths;
-  const claimable = openQuests(game.state).some(q => q.done(game.state));
-  document.querySelector('.nav-button[data-view="village"]')?.classList.toggle('has-reward', claimable || !!game.state.event);
-  for (const r of RESOURCES) {
-    const omen = game.state.omen?.resource === r.id && game.state.clock < game.state.omen.until;
-    document.querySelector(`.resource.${r.id}`)?.classList.toggle('omen', omen);
-  }
+  $('#metric-era').textContent=roman(game.state.era);
+  $('#metric-campaign').textContent=`${game.state.progress} / 30`;
+  $('#metric-army').textContent=`${game.state.heroes.filter(h=>h.slot!==null&&!h.away).length} / ${capacity(game.state)}`;
+  $('#embers-chip').hidden=!game.state.embers&&!game.state.rebirths;
+  document.querySelector('.nav-button[data-view="village"]')?.classList.toggle('has-reward',openQuests(game.state).some(q=>q.done(game.state)));
   updateGrowthBars(game.state.heroes);
-  renderEvent();
   $('#res-embers').textContent = fmt(game.state.embers);
   $('#pause-overlay').hidden = !game.state.paused;
   const pause = $('[data-action="pause"]');
@@ -231,7 +200,7 @@ function renderMetrics() {
   updateCostButtons();
   document.querySelectorAll<HTMLElement>('[data-until]').forEach(el => { el.textContent = timeLeft(Number(el.dataset.until)); });
   // Hunters coming home and ceremonies ending refresh the cards and any open panel.
-  const away = game.state.heroes.map(h => `${h.uid}:${h.away?.until ?? ''}:${h.level}:${h.ritualLevel}:${h.stars}:${h.panema}:${game.state.clock>=h.ritualReadyAt}`).join('|') + `|${game.state.cacao}|${game.state.buildings.cura}`;
+  const away = game.state.heroes.map(h => `${h.uid}:${h.away?.until ?? ''}:${h.level}:${h.ritualLevel}:${h.stars}:${h.panema}:${game.state.clock>=h.ritualReadyAt}`).join('|') + `|${game.state.cacao}`;
   if (away !== awayKey) {
     const first = awayKey === ''; awayKey = away;
     if (!first) { renderCamp(); renderSide(); if (activeModal === 'hunts') showHunts(); if (activeModal === 'cura') showCura(); if(activeModal==='hero'&&inspectedHero)showHero(inspectedHero); if(activeModal==='army-coach')showArmyCoach(); }
@@ -239,8 +208,6 @@ function renderMetrics() {
   const last = game.state.reports.at(-1), key = last ? `${last.clock}:${last.uid}` : '';
   if (reportKey !== null && key !== reportKey && last) { toast(`${last.name} ${last.text}`); sound.play(last.ok ? 'recruit' : 'defeat'); }
   reportKey = key;
-  const forge = document.querySelector<HTMLElement>('#forge-progress');
-  if (forge) forge.style.setProperty('--progress', String(game.state.forgeProgress));
   const bag = document.querySelector<HTMLElement>('#bag-count');
   if (bag) bag.textContent = `${game.state.inventory.length}/${MAX_INVENTORY}`;
   renderPowers();
@@ -250,10 +217,10 @@ function renderMetrics() {
 function objective(): { title: string; text: string } {
   const s = game.state;
   if (pendingEra(s)) return { title: 'Uma nova era desperta.', text: 'Escolha o Espírito Protetor desta era para receber seu poder.' };
-  if (s.villageLevel === 1 && s.progress >= 4) return { title: 'Cresça antes do Alfa.', text: 'Evolua a aldeia: mais um herói na formação e viajantes de custo 2.' };
+  if (s.era === 1 && s.progress >= 4) return { title: 'Cresça antes do Alfa.', text: 'Aprofunde XP e vínculo ritual: uma vaga a mais na formação e novos companheiros.' };
   if (s.progress < FINAL_STAGE) {
     const next = stageById(s.progress + 1)!, region = regionOf(next.id);
-    if (region.village > s.villageLevel) return { title: `${region.name} aguarda.`, text: `Alcance a aldeia de nível ${region.village} para entrar nesta região.` };
+    if (region.village > s.era) return { title: `${region.name} aguarda.`, text: `Alcance a Era ${region.village} para entrar nesta região.` };
     return { title: `Expedição ${region.id}·${next.index}: ${next.name}.`, text: next.index === 5 ? `Chefe: ${region.boss}. Prepare sua melhor formação.` : region.subtitle };
   }
   if (s.wonder < WONDER_STAGES) return { title: 'Erga o Grande Totem.', text: `Parte ${s.wonder + 1} de ${WONDER_STAGES}. Ao completá-lo, a tribo pode renascer mais forte.` };
@@ -320,7 +287,6 @@ function renderBattleSide() {
   const s = game.state, deployed = s.heroes.filter(h => h.slot !== null), syn = getSynergies(s);
   const stage = encounter(), depth = stage.depth, region = stage.region;
   const fighting = game.battle?.status === 'fighting';
-  const reward = stage.id > 0 ? stageReward(stage.id, stage.id <= s.progress && !(game.battle?.firstClear)) : null;
   $('#side-panel').innerHTML = `
    <div class="panel-kicker">${stage.raid ? 'DEFESA' : 'EXPEDIÇÃO'} <span>${stage.raid ? 'ALDEIA' : stage.id ? `${region!.id}·${stage.index} · ${s.progress}/${FINAL_STAGE}` : `∞ · ${depth}`}</span></div>
    <div class="stage-card">
@@ -328,7 +294,7 @@ function renderBattleSide() {
     <h2>${esc(stage.name)}</h2>
     ${enemyPreview()}
     <p class="stage-level" title="Nível para o qual os inimigos estão preparados">${icon('swords')}Inimigos de nível ${Math.round(expectedLevel(stage.raid ? Math.max(2, s.progress * 0.85) : stage.id ? stage.id : endlessLevel(depth)))} · sua tribo até o nível ${Math.max(...s.heroes.map(h => h.level))}</p>
-    <p class="stage-reward">${stage.raid ? 'Vitória: recursos e um componente garantido.' : reward ? `${stage.id <= s.progress && !game.battle?.firstClear ? 'Repetição' : 'Primeira vitória'}: <span class="cost">${costHTML(reward)}</span>` : `Recorde: ${s.endlessBest} · cada vitória aprofunda a caçada`}</p>
+    <p class="stage-reward">${stage.id===0?`Recorde: ${s.endlessBest} · cada vitória concede componentes`:stage.id<=s.progress?'Repetição: XP e chance de componente.':'Primeira vitória: XP e componentes garantidos.'}</p>
     <button class="outline-button" data-action="map" ${fighting ? 'disabled' : ''}>${icon('map')}Mapa das expedições <kbd>M</kbd></button>
    </div>
    <div class="coach-launch"><button class="outline-button" data-action="army-coach">${icon('swords')}Conselheiro · classes e laços</button></div>${armyWarnings(s,stage.id).slice(0,2).map(w=>`<p class="battle-coach-note">${esc(w)}</p>`).join('')}<div class="formation-count"><span>Sua formação</span><strong>${deployed.length}<small> / ${capacity(s)}</small></strong></div>
@@ -357,33 +323,10 @@ function renderPowers() {
   }).join('')}`;
 }
 
-/** The village event card, with its countdown; raids can also be answered from the expedition view. */
-function renderEvent() {
-  const card = $('#event-card'), event = game.state.event;
-  const show = eventOpen && !!event && (view === 'village' || (event.kind === 'raid' && !game.battle));
-  card.hidden = !show;
-  if (!show || !event) { card.dataset.key = ''; return; }
-  const left = Math.max(0, Math.ceil(event.expires - game.state.clock));
-  const key = `${event.kind}|${event.expires}|${game.state.paused}`;
-  const timer=card.querySelector('.event-timer'); if(timer)timer.textContent=timeLeft(event.expires);
-  if (card.dataset.key === key) return;
-  card.dataset.key = key;
-  const text = EVENT_TEXT[event.kind];
-  const detail = event.kind === 'merchant' ? `<div class="event-offer">${itemChip(event.item!)}<span class="cost">${costHTML(event.price!)}</span></div>`
-    : event.kind === 'omen' ? `<p class="event-detail">+60% de ${RESOURCES.find(r => r.id === event.resource)!.name.toLowerCase()} por 3 minutos.</p>`
-    : event.kind === 'traveler' ? `<p class="event-detail">${portraitHTML(characterOf(event.characterId!))}<span><b>${characterOf(event.characterId!).name}</b>, ${characterOf(event.characterId!).title} · custo ${characterOf(event.characterId!).cost}</span></p>`
-    : '<p class="event-detail">Vencer rende recursos e um componente. O tributo custa 10% do alimento e do espírito; ignorar custa 6% da madeira e do alimento.</p>';
-  card.className = `event-card ${event.kind}`;
-  card.innerHTML = `<div class="event-head"><span class="eyebrow">ACONTECIMENTO</span><span class="event-timer">${icon('hourglass')}${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}</span></div><h3>${text.title}</h3><p>${text.text}</p>${detail}
-   <div class="event-actions"><button class="primary compact" data-event="accept" ${event.kind === 'merchant' && !game.canAfford(event.price!) ? 'disabled' : ''}>${text.accept}</button><button class="outline-button" data-event="decline">${text.decline}</button></div>`;
-  refreshIcons();
-}
-
 function heroStatus(h: Hero): string {
   if (h.away?.kind === 'hunt') return `${icon('footprints')}Caçando · ${countdown(h.away.until)}`;
   if (h.away?.kind === 'ritual') return `${icon('leaf')}${esc(practiceById(h.away.id)!.name)} · ${countdown(h.away.until)}`;
   if (h.slot !== null) return `Posição ${h.slot + 1}`;
-  if (h.work) return `Trabalhando · ${BUILDINGS[h.work].name.split(' ')[0]}`;
   return 'Reserva';
 }
 
@@ -399,8 +342,8 @@ function showTribe(tab=tribeTab,query=tribeQuery) {
   const list=tab==='owned'?characters.filter(c=>s.heroes.some(h=>h.characterId===c.id)):characters;
   showModal('tribe',`<h2>Os guardiões da tribo</h2><p class="modal-intro">Cada companheiro tem uma identidade e dois caminhos de crescimento. Novas eras e vínculos rituais abrem o catálogo.</p><div class="tribe-toolbar"><div class="segmented"><button data-tribe-tab="owned" aria-pressed="${tab==='owned'}">Sua tribo · ${s.heroes.length}</button><button data-tribe-tab="catalog" aria-pressed="${tab==='catalog'}">Companheiros · 55</button></div><label class="search">${icon('search')}<input id="tribe-search" aria-label="Buscar companheiro" placeholder="Buscar nome ou característica" value="${esc(query)}"></label></div>
     <div class="tribe-grid">${list.filter(c=>`${c.name} ${c.traits.join(' ')}`.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR'))).map(c=>{
-      const h=s.heroes.find(h=>h.characterId===c.id),rite=[1,2,3,5,7][c.cost-1],open=c.cost<=s.villageLevel&&s.heroes.some(h=>h.ritualLevel>=rite);
-      return `<article class="companion ${open||h?'':'locked'}"><button class="companion-art" ${h?`data-inspect="${h.uid}"`:`data-character="${c.id}"`} aria-label="Ver ${c.name}">${portraitHTML(c,h?.stars??1)}</button><div><h3>${c.name}<small>${h?'★'.repeat(h.stars):`Era ${roman(c.cost)}`}</small></h3><p>${c.title}</p>${h?growthBars(h,true):`<p class="recruit-requirement">Era ${roman(c.cost)} · vínculo ritual ${rite}</p>`}<button class="${h?'outline-button':'primary'}" ${h?`data-inspect="${h.uid}"`:`data-recruit="${c.id}" ${open?costAttr(recruitCost(c.id,s)):'disabled'}`} data-lock-battle="true">${h?'Acompanhar herói':open?'Acolher companheiro':'Vínculo a descobrir'}${h?'':open?`<span class="cost">${costHTML(recruitCost(c.id,s))}</span>`:''}</button></div></article>`;
+      const h=s.heroes.find(h=>h.characterId===c.id),rite=[1,2,3,5,7][c.cost-1],open=c.cost<=s.era&&s.heroes.some(h=>h.ritualLevel>=rite);
+      return `<article class="companion ${open||h?'':'locked'}"><button class="companion-art" ${h?`data-inspect="${h.uid}"`:`data-character="${c.id}"`} aria-label="Ver ${c.name}">${portraitHTML(c,h?.stars??1)}</button><div><h3>${c.name}<small>${h?'★'.repeat(h.stars):`Era ${roman(c.cost)}`}</small></h3><p>${c.title}</p>${h?growthBars(h,true):`<p class="recruit-requirement">Era ${roman(c.cost)} · vínculo ritual ${rite}</p>`}<button class="${h?'outline-button':'primary'}" ${h?`data-inspect="${h.uid}"`:`data-recruit="${c.id}" ${open&&!s.paused&&game.battle?.status!=='fighting'?'':'disabled'}`} data-lock-battle="true">${h?'Acompanhar herói':open?'Acolher companheiro':'Vínculo a descobrir'}</button></div></article>`;
     }).join('')||'<p>Nenhum companheiro com essa busca.</p>'}</div>`);
 }
 
@@ -423,10 +366,10 @@ function renderAll() {
   const s = game.state, stage = encounter();
   document.body.dataset.view=view;
   $('#journey-objective').innerHTML=journeyObjective();
-  $('#rail-era').textContent = roman(s.villageLevel);
-  $('#era-label').textContent = view === 'village' ? `ERA ${ERA_NAMES[s.villageLevel - 1].toUpperCase()}` : stage.raid ? 'DEFESA DA ALDEIA' : `EXPEDIÇÕES · ${stage.region ? stage.region.name.toUpperCase() : 'CAÇADA ETERNA'}`;
+  $('#rail-era').textContent = roman(s.era);
+  $('#era-label').textContent = view === 'village' ? `ERA ${ERA_NAMES[s.era - 1].toUpperCase()}` : stage.raid ? 'DEFESA DA ALDEIA' : `EXPEDIÇÕES · ${stage.region ? stage.region.name.toUpperCase() : 'CAÇADA ETERNA'}`;
   $('#world-title').textContent = view === 'village' ? 'Clareira do Lobo' : stage.name + '.';
-  $('#world-subtitle').textContent = view === 'village' ? 'Comande a população, erga obras e abra caminhos na mata.' : stage.raid ? 'Saqueadores rondam as cabanas. A tribo defende o que construiu.' : stage.region ? stage.region.subtitle : 'Feras cada vez mais fortes. Até onde a tribo chega?';
+  $('#world-subtitle').textContent = view === 'village' ? 'Escolha legados e bênçãos para aprofundar a jornada.' : stage.raid ? 'Saqueadores rondam as cabanas. A tribo se prepara para o encontro.' : stage.region ? stage.region.subtitle : 'Feras cada vez mais fortes. Até onde a tribo chega?';
   $('#world-badge-text').textContent = view === 'village' ? 'Clareira do Lobo' : game.battle?.status === 'fighting' ? `Em combate · ${s.settings.speed}×` : 'Preparação';
   $('#world-hint').textContent='Selecione um herói abaixo e uma posição no campo.';
   renderSide(); renderCamp(); renderMetrics(); renderResult();
@@ -439,8 +382,7 @@ function renderResult() {
   const victory = b.status === 'victory';
   const repeating = victory && game.state.settings.autoRepeat;
   el.innerHTML = `<span class="result-icon">${icon(victory ? 'crown' : 'shield')}</span><p class="eyebrow">${victory ? b.firstClear ? 'PRIMEIRA VITÓRIA' : 'A TRIBO PERMANECE' : 'OS ESPÍRITOS ENSINAM'}</p><h2>${victory ? b.stage < 0 ? 'A aldeia está a salvo.' : b.stage === 0 ? `Profundidade ${b.depth} vencida.` : 'Uma nova conquista.' : b.stage < 0 ? 'Os saqueadores escaparam.' : 'É hora de reagrupar.'}</h2>
-   <p>${victory ? `${esc(b.name)} concluída. Sua aldeia recebe os frutos da jornada.` : 'Evolua heróis, troque itens, busque sinergias ou use os poderes espirituais.'}</p>
-   ${b.reward ? `<div class="reward cost">${costHTML(b.reward)}</div>` : ''}
+   <p>${victory ? `${esc(b.name)} concluída. Sua tribo recebe XP e equipamentos da jornada.` : 'Evolua heróis, troque itens, busque sinergias ou use os poderes espirituais.'}</p>
    ${b.loot.length ? `<div class="loot">${b.loot.map(id => itemChip(id)).join('')}</div>` : ''}
    ${b.xp ? `<p class="xp-line">${icon('sparkles')}+${b.xp} XP para cada herói${b.levelUps.length ? ` · <b>${b.levelUps.map(esc).join(', ')}</b>` : ''}</p>` : ''}
    ${summaryHTML(b)}
@@ -463,10 +405,7 @@ function summaryHTML(b: NonNullable<typeof game.battle>): string {
 }
 
 function updateCostButtons() {
-  document.querySelectorAll<HTMLButtonElement>('[data-cost]').forEach(b => {
-    const cost = JSON.parse(b.dataset.cost!) as Resources;
-    b.disabled = b.dataset.max === 'true' || !game.canAfford(cost) || game.state.paused || !!(b.dataset.lockBattle && game.battle?.status === 'fighting');
-  });
+  document.querySelectorAll<HTMLButtonElement>('[data-lock-battle]').forEach(b=>{if(game.state.paused||game.battle?.status==='fighting')b.disabled=true;});
 }
 function showModal(name: string, html: string) {
   ritualExperience?.destroy(); ritualExperience = null;
@@ -489,7 +428,7 @@ function showRitualExperience(id: PracticeId) {
   }, () => updatePref('sound', !prefs.sound), reducedMotion());
 }
 
-function armyContextKey(){return JSON.stringify([game.battle?.status,game.state.paused,game.state.journey,game.state.spirits,game.state.villageLevel,game.state.selectedStage,game.state.inventory,game.state.heroes.map(h=>[h.uid,h.level,h.ritualLevel,h.rituals,h.stars,h.slot,h.work,h.away?.until,h.items])]);}
+function armyContextKey(){return JSON.stringify([game.battle?.status,game.state.paused,game.state.journey,game.state.spirits,game.state.era,game.state.selectedStage,game.state.inventory,game.state.heroes.map(h=>[h.uid,h.level,h.ritualLevel,h.rituals,h.stars,h.slot,h.away?.until,h.items])]);}
 function showArmyCoach(){
   const alreadyOpen=activeModal==='army-coach',scroll=alreadyOpen?$('#modal').scrollTop:0;
   const focused=alreadyOpen?(document.activeElement as HTMLElement|null)?.id:'';
@@ -509,13 +448,13 @@ function showCodex(cost = 0, query = '') {
   const list = characters.filter(c => (!cost || c.cost === cost) && `${c.name} ${c.title} ${c.traits.join(' ')}`.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')));
   showModal('codex', `<p class="eyebrow">O MUNDO DE WOLF TOTEM</p><h2>Memórias dos espíritos</h2>${codexTabs('heroes')}
    <div class="codex-tools"><label class="search">${icon('search')}<input id="codex-search" placeholder="Buscar herói ou característica" value="${esc(query)}" aria-label="Buscar no códice"/></label><div class="cost-filters">${[0, 1, 2, 3, 4, 5].map(n => `<button data-filter="${n}" class="${cost === n ? 'active' : ''}">${n === 0 ? 'Todos' : `Era ${roman(n)}`}</button>`).join('')}</div></div>
-   <div class="codex-grid">${list.map(c => `<button class="codex-card cost-${c.cost}" data-character="${c.id}">${portraitHTML(c)}<span class="codex-cost">${c.cost}</span><span class="codex-name">${c.name}<small>${c.title}</small></span><span class="codex-status">${c.cost <= unlockedCost(game.state.villageLevel) ? 'Vínculo acessível' : `Era ${roman(c.cost)}`} · ${ANIMALITY[c.id].category}</span></button>`).join('') || '<p>Nenhum espírito encontrado com essa busca.</p>'}</div>`);
+   <div class="codex-grid">${list.map(c => `<button class="codex-card cost-${c.cost}" data-character="${c.id}">${portraitHTML(c)}<span class="codex-cost">${c.cost}</span><span class="codex-name">${c.name}<small>${c.title}</small></span><span class="codex-status">${c.cost <= unlockedCost(game.state.era) ? 'Vínculo acessível' : `Era ${roman(c.cost)}`} · ${ANIMALITY[c.id].category}</span></button>`).join('') || '<p>Nenhum espírito encontrado com essa busca.</p>'}</div>`);
   $('#modal').dataset.filter = String(cost);
 }
 
 function showItemsCodex() {
   showModal('codex', `<p class="eyebrow">O MUNDO DE WOLF TOTEM</p><h2>Itens da tribo</h2>${codexTabs('items')}
-   <p class="modal-intro">Seis componentes surgem das expedições e da Forja de Osso. Dois componentes no mesmo herói — ou combinados na bolsa, com a forja construída — formam um dos 21 itens. Cada herói carrega até três.</p>
+   <p class="modal-intro">Seis componentes surgem das expedições e caçadas. Dois componentes no mesmo herói ou combinados na bolsa formam um dos 21 itens. Cada herói carrega até três.</p>
    <h3 class="codex-section">Componentes</h3><div class="item-grid">${COMPONENTS.map(c => `<div class="item-card" style="--item:${c.color}"><span class="item-gem big"></span><div><b>${c.name}</b><p>${c.text}</p></div></div>`).join('')}</div>
    <h3 class="codex-section">Receitas</h3><div class="recipe-table">${ITEMS.map(it => `<div class="recipe" style="--item:${it.color}"><span class="item-gem"></span><div><b>${it.name}</b><small>${itemById(it.recipe![0])!.name} + ${itemById(it.recipe![1])!.name}</small><p>${it.text}</p></div></div>`).join('')}</div>`);
 }
@@ -548,15 +487,15 @@ function showCharacter(id: number, stars = 1) {
    <div class="evolution"><span class="eyebrow">O DESPERTAR · ${stars} ESTRELA${stars > 1 ? 'S' : ''}</span><p>${c.evolution[stars - 1]}</p></div>
    <div class="prototype-skill"><span class="eyebrow">EFEITO EM COMBATE</span><p>${SKILL_NOTES[c.id]}</p></div>
    <div class="animality"><span class="eyebrow">VÍNCULO PRIMAL · ${animality.category.toUpperCase()}${animality.source === 'proposta' ? ' · PROPOSTA' : ''}</span><p>${ANIMALITY_RULES[animality.category]}</p></div>
-   <p class="development-note">${c.cost <= unlockedCost(game.state.villageLevel) ? 'Vínculo acessível desta aldeia.' : `Chega à fogueira na Era ${roman(c.cost)}.`} ${{ painted: 'Esta forma tem animação pintada.', illustration: 'Esta forma usa a ilustração original com movimentos programados.', standin: `A forma ${stars}★ ainda não tem folha pintada: o jogo mostra a forma ${art.sheet?.stars ?? 1}★ com a aura do espírito.`, procedural: 'Figura desenhada pelo próprio jogo enquanto a arte pintada não chega; ela é substituída automaticamente.' }[art.kind]}</p></div></div>`);
+   <p class="development-note">${c.cost <= unlockedCost(game.state.era) ? 'Companheiro disponível nesta era.' : `Chega à fogueira na Era ${roman(c.cost)}.`} ${{ painted: 'Esta forma tem animação pintada.', illustration: 'Esta forma usa a ilustração original com movimentos programados.', standin: `A forma ${stars}★ ainda não tem folha pintada: o jogo mostra a forma ${art.sheet?.stars ?? 1}★ com a aura do espírito.`, procedural: 'Figura desenhada pelo próprio jogo enquanto a arte pintada não chega; ela é substituída automaticamente.' }[art.kind]}</p></div></div>`);
   if (sheet) preview.mount($<HTMLCanvasElement>('#character-preview'), id, stars, sheet);
 }
 
 function showMap() {
   const s = game.state;
-  showModal('map', `<p class="eyebrow">MAPA DAS EXPEDIÇÕES</p><h2>Terras selvagens</h2><p class="modal-intro">Vença cada expedição para abrir a próxima. Expedições já vencidas podem ser repetidas por metade da recompensa e uma chance de componente. Cada região exige uma era da aldeia.</p>
+  showModal('map', `<p class="eyebrow">MAPA DAS EXPEDIÇÕES</p><h2>Terras selvagens</h2><p class="modal-intro">Vença cada expedição para abrir a próxima. Expedições já vencidas podem ser repetidas com XP reduzido e uma chance de componente. Cada região exige uma era da tribo.</p>
    <div class="map">${REGIONS.map(region => {
-     const open = region.village <= s.villageLevel;
+     const open = region.village <= s.era;
      return `<section class="map-region ${open ? '' : 'locked'}" style="--floor:#${region.palette.floor.toString(16)};--line:#${region.palette.line.toString(16)}"><header><b>${region.id}. ${region.name}</b><span>${open ? region.subtitle : `Exige a Era ${roman(region.village)}`}</span></header>
       <div class="map-nodes">${STAGES.filter(st => st.region === region.id).map(st => {
         const cleared = st.id <= s.progress, available = stageUnlocked(s, st.id), current = st.id === s.selectedStage;
@@ -576,76 +515,60 @@ function showSpiritChoice() {
 }
 
 function showAncestors() {
-  const s = game.state, complete = s.wonder >= WONDER_STAGES, cost = wonderCost(s.wonder);
-  const canBuild = s.villageLevel >= 5 && s.progress >= 25;
+  const s = game.state, complete = s.wonder >= WONDER_STAGES;
+  const canBuild = !totemLock(s);
   const canAscend = complete && s.progress >= FINAL_STAGE;
-  showModal('ancestors', `<p class="eyebrow">O GRANDE TOTEM</p><h2>A memória da tribo</h2><p class="modal-intro">Na Era V, depois de vencer o Leviatã do Pântano, a tribo pode erguer o Grande Totem. Completo e com o Primeiro Inverno vencido, ele permite o renascimento: a aldeia recomeça e as brasas ancestrais compram memórias permanentes.</p>
+  showModal('ancestors', `<p class="eyebrow">O GRANDE TOTEM</p><h2>A memória da tribo</h2><p class="modal-intro">Na Era V, depois de vencer o Leviatã do Pântano, a tribo inicia cinco consagrações do Grande Totem por conquistas de campanha e rituais. Completo e com o Primeiro Inverno vencido, ele permite o renascimento: a jornada recomeça e as brasas ancestrais compram memórias permanentes.</p>
    <div class="wonder"><div class="wonder-stages">${Array.from({ length: WONDER_STAGES }, (_, i) => `<span class="${i < s.wonder ? 'done' : ''}">${roman(i + 1)}</span>`).join('')}</div>
-    ${complete ? '<p class="wonder-note">O Grande Totem está completo.</p>' : `<button class="primary" data-action="wonder" ${canBuild ? costAttr(cost) : 'disabled'}>${icon('landmark')}Erguer a parte ${s.wonder + 1}<span class="cost">${costHTML(cost)}</span></button>${canBuild ? '' : '<p class="small muted">Exige a Era V e a vitória na expedição 5·5.</p>'}`}
-    <div class="ascend"><p>Renascer agora concede <b>${embersFor(s)} brasas</b> (8 + 2 por profundidade da Caçada Eterna + 2 por renascimento anterior).</p><button class="primary ${confirmAscend ? 'danger' : ''}" data-action="ascend" ${canAscend ? '' : 'disabled'}>${icon('flame')}${confirmAscend ? 'Confirmar: recomeçar a aldeia' : 'Renascer da chama'}</button>${canAscend ? '' : '<p class="small muted">Exige o Grande Totem completo e o Primeiro Inverno vencido.</p>'}</div></div>
+    ${complete ? '<p class="wonder-note">O Grande Totem está completo.</p>' : `<button class="primary" data-action="wonder" ${canBuild&&!s.paused&&game.battle?.status!=='fighting'?'':'disabled'}>${icon('landmark')}Consagrar a parte ${s.wonder + 1}</button>${canBuild?'':`<p class="small muted">${esc(totemLock(s)??'')}</p>`}`}
+    <div class="ascend"><p>Renascer agora concede <b>${embersFor(s)} brasas</b> (8 + 2 por profundidade da Caçada Eterna + 2 por renascimento anterior).</p><button class="primary ${confirmAscend ? 'danger' : ''}" data-action="ascend" ${canAscend ? '' : 'disabled'}>${icon('flame')}${confirmAscend ? 'Confirmar: recomeçar a jornada' : 'Renascer da chama'}</button>${canAscend ? '' : '<p class="small muted">Exige o Grande Totem completo e o Primeiro Inverno vencido.</p>'}</div></div>
    <h3 class="codex-section">Memórias ancestrais · ${fmt(s.embers)} brasas · ${s.rebirths} renascimento${s.rebirths === 1 ? '' : 's'}</h3>
    <div class="memory-grid">${MEMORIES.map(m => { const level = s.memories[m.id] ?? 0, price = memoryCost(m, level); return `<div class="memory-card"><b>${m.name}</b><span class="memory-level">${level}/${m.max}</span><p>${m.text}</p><button class="outline-button" data-memory="${m.id}" ${level >= m.max || s.embers < price ? 'disabled' : ''}>${level >= m.max ? 'Completa' : `${icon('sparkles')}${price} brasas`}</button></div>`; }).join('')}</div>`);
 }
 
 function showHunts(focus?: string) {
-  const s = game.state, out = s.heroes.filter(h => h.away?.kind === 'hunt'), slots = huntSlots(s.buildings.hunt);
+  const s = game.state, out = s.heroes.filter(h => h.away?.kind === 'hunt'), slots = huntSlots(s.era);
   const home = s.heroes.filter(h => !h.away && !inFight(h));
   showModal('hunts', `<p class="eyebrow">CAÇADAS · ${out.length}/${slots} NA MATA</p><h2>As trilhas da floresta</h2>
-   <p class="modal-intro">Os heróis caçam mesmo com o jogo fechado e voltam com experiência, alimento e às vezes um componente. Quem está na mata guarda o lugar na formação, mas só luta quando volta. Caçadas sem sucesso trazem <b>panema</b>, o azar do caçador: menos chance e menos experiência nas próximas, até ser limpa com sananga ou kambô na Casa de Cura.</p>
+   <p class="modal-intro">Os heróis caçam mesmo com o jogo fechado e voltam com experiência e às vezes um componente. Quem está na mata guarda o lugar na formação, mas só luta quando volta. Caçadas sem sucesso trazem <b>panema</b>, o azar do caçador: menos chance e menos experiência nas próximas, até ser limpa com sananga ou kambô na Casa de Cura.</p>
    ${out.length ? `<div class="away-list">${out.map(h => `<div class="away-row">${portraitHTML(characterOf(h.characterId), h.stars)}<span><b>${characterOf(h.characterId).name}</b> · ${esc(trailById(h.away!.id)!.name)} · volta em ${countdown(h.away!.until)}</span><button class="text-button" data-recall="${h.uid}">Chamar de volta</button></div>`).join('')}</div>` : ''}
    <div class="trail-grid">${TRAILS.map(t => {
-     const locked = s.villageLevel < t.era, eligible = home.filter(h => h.level >= t.minLevel);
+     const locked = s.era < t.era, eligible = home.filter(h => h.level >= t.minLevel);
      return `<article class="trail-card ${locked ? 'locked' : ''}"><header><h3>${t.name}</h3><span>${icon('hourglass')}${t.minutes} min</span></header><p>${t.text}</p>
-      <div class="trail-gains"><span title="Experiência">${icon('sparkles')}${t.xp} XP</span><span title="Alimento">${icon('wheat')}${t.food}</span><span title="Chance de componente">${icon('gem')}${Math.round(t.component * 100)}%</span></div>
+      <div class="trail-gains"><span title="Experiência">${icon('sparkles')}${t.xp} XP</span><span title="Chance de componente">${icon('gem')}${Math.round((t.component+(s.journey.legacies.forge??0)*.02) * 100)}%</span></div>
       <p class="trail-req">${locked ? `${icon('lock')}Abre na Era ${roman(t.era)}` : `Herói de nível ${t.minLevel} ou mais`}</p>
       ${locked ? '' : eligible.length ? `<div class="assign-row"><select id="trail-${t.id}" aria-label="Herói para ${t.name}">${eligible.map(h => `<option value="${h.uid}" ${h.uid === focus ? 'selected' : ''}>${esc(heroLabel(h))}${h.focus ? ' · foco' : ''} · ${Math.round(heroHuntChance(game.state,h) * 100)}%</option>`).join('')}</select><button class="primary compact" data-start-hunt="${t.id}" ${out.length >= slots ? 'disabled title="Todos os caçadores estão na mata"' : ''}>Enviar</button></div>` : '<p class="muted small">Nenhum herói disponível com esse nível.</p>'}</article>`;
    }).join('')}</div>
    ${s.reports.length ? `<h3 class="codex-section">Notícias da mata e da maloca</h3><ul class="report-list">${[...s.reports].reverse().map(r => `<li class="${r.ok ? 'ok' : 'miss'}"><b>${esc(r.name)}</b> ${esc(r.text)}</li>`).join('')}</ul>` : ''}`);
 }
 
-function practiceCard(p: Practice, hero: Hero | undefined): string {
-  const s = game.state, done = hero && !p.tribe ? hero.rituals[p.id] ?? 0 : 0;
-  const locks: string[] = [];
-  if (s.buildings.cura < p.curaLevel) locks.push(`Casa de Cura nível ${p.curaLevel}`);
-  if (s.villageLevel < p.era) locks.push(`Era ${roman(p.era)}`);
-  if (!p.tribe && hero && hero.level < p.minLevel) locks.push(`herói de nível ${p.minLevel}`);
-  if (!p.tribe && hero && p.requires && !hero.rituals[p.requires]) locks.push(`antes, ${practiceById(p.requires)!.name}`);
-  const full = !p.tribe && done >= p.max, lit = p.tribe && s.clock < s.cacao, cost = p.cost(done);
-  const rest = p.rest / ritualSpeed(s), duration = rest >= 60 ? `${Math.round(rest / 6) / 10} min` : `${Math.round(rest)} s`;
-  const state = p.tribe ? lit ? `Roda acesa · ${countdown(s.cacao)}` : '10 min para toda a tribo' : `${done}/${p.max} · ${duration}`;
-  const button = locks.length ? `<span class="practice-lock">${icon('lock')}${esc(locks.join(' · '))}</span>`
-    : full ? '<span class="practice-done">Completa</span>'
-    : `<button class="primary compact" ${p.tribe ? 'data-action="cacao"' : `data-ritual="${p.id}"`} ${costAttr(cost)} data-max="${lit || (!p.tribe && !hero)}">${p.tribe ? 'Reunir a tribo' : 'Iniciar cerimônia'}<span class="cost">${costHTML(cost)}</span></button>`;
-  return `<article class="practice-card ${p.id}"><header><h3>${p.name}</h3><span class="practice-native">${esc(p.native)}</span></header>
-   <p class="practice-peoples">${icon('users')}${esc(p.peoples)}</p><p>${esc(p.text)}</p><p class="practice-effect">${icon('sparkles')}${esc(p.effect)}</p>
-   <div class="practice-foot"><span class="practice-state">${state}</span>${button}</div></article>`;
-}
-
 function showCura() {
-  const s=game.state,level=s.buildings.cura;
+  const s=game.state;
   if(!curaHero||!s.heroes.some(h=>h.uid===curaHero))curaHero=s.heroes[0]?.uid??null;
-  const hero=s.heroes.find(h=>h.uid===curaHero),p=practiceById(chosenPractice)!,build=buildingCost('cura',level);
+  const hero=s.heroes.find(h=>h.uid===curaHero),p=practiceById(chosenPractice)!;
   const locks:string[]=[];
-  if(level<p.curaLevel)locks.push(`Casa de Cura nível ${p.curaLevel}`);
-  if(s.villageLevel<p.era)locks.push(`Era ${roman(p.era)}`);
+  if(s.era<p.era)locks.push(`Era ${roman(p.era)}`);
   if(!p.tribe&&hero){if(hero.level<p.minLevel)locks.push(`Experiência nível ${p.minLevel}`);if(p.requires&&!hero.rituals[p.requires])locks.push(`${practiceById(p.requires)!.name} antes`);if(hero.away)locks.push('Herói em atividade');if(inFight(hero))locks.push('Herói em combate');if(s.clock<hero.ritualReadyAt)locks.push(`Integração: ${timeLeft(hero.ritualReadyAt)}`);}
+  if(s.paused)locks.push('Jornada pausada');
+  if(p.tribe&&game.battle?.status==='fighting')locks.push('Combate em andamento');
+  if(p.tribe&&s.clock<s.cacaoReadyAt)locks.push(`Integração da roda: ${timeLeft(s.cacaoReadyAt)}`);
   const done=hero?.rituals[p.id]??0;
   showModal('cura',`<div class="ritual-layout"><aside class="ritual-roster"><h3>Sua tribo</h3>${s.heroes.map(h=>`<button data-cura-hero="${h.uid}" class="${h.uid===curaHero?'selected':''}" aria-label="Rituais de ${characterOf(h.characterId).name}">${portraitHTML(characterOf(h.characterId),h.stars)}<span>${characterOf(h.characterId).name}</span></button>`).join('')}</aside><section class="ritual-path"><h2>O caminho do despertar</h2><p>Atividades fortalecem o corpo. Cerimônias aprofundam o vínculo.</p>${hero?`<div class="ritual-growth"><div><h3>${characterOf(hero.characterId).name} ${'★'.repeat(hero.stars)}</h3>${growthBars(hero)}</div>${awakeningMarkup(hero)}</div>`:''}
-    <div class="ritual-heading"><h3>Cerimônias do espírito</h3>${level<15?`<button class="outline-button" data-cura-build="1" ${costAttr(build)} data-max="${false}">${level?'Ampliar maloca':'Abrir Casa de Cura'}<span class="cost">${costHTML(build)}</span></button>`:''}</div>
-    <div class="ritual-selection"><nav aria-label="Cerimônias">${PRACTICES.map(practice=>`<button data-practice-select="${practice.id}" aria-pressed="${p.id===practice.id}">${icon(({rape:'feather',sananga:'eye',kambo:'heart',ayahuasca:'leaf',cacau:'cup-soda'} as Record<string,string>)[practice.id])}<span>${practice.name}<small>+${RITUAL_XP[practice.id]} XP ritual</small></span>${icon('chevron-right')}</button>`).join('')}</nav><article class="ritual-detail"><div class="ritual-symbol">${icon('flame')}</div><h3>${p.name}</h3><p>${p.effect}</p><div class="ritual-values"><span>Duração <b>${p.tribe?'10 min de bênção':`${Math.round(p.rest/ritualSpeed(s)/60)} min`}</b></span><span>Vínculo <b>+${RITUAL_XP[p.id]} XP ritual</b></span></div><p class="ritual-mastery">${p.tribe?'XP ritual para quem concluiu a integração.':`Bônus aprendido: ${done}/${p.max}. Repetir continua concedendo XP ritual.`}</p><p class="ritual-participation">${RITUAL_PLAY[p.id].instruction} Até 20% de XP ritual extra pela sintonia. Também é possível seguir automaticamente.</p>${locks.length?`<p class="ritual-lock">${icon('lock')}${esc(locks.join(' · '))}</p>`:''}<button class="primary" ${p.tribe?'data-action="cacao"':`data-ritual="${p.id}"`} ${costAttr(p.cost(done))} data-max="${!!locks.length||!hero||(p.tribe&&s.clock<s.cacao)}">${p.tribe?'Participar da roda':'Participar da cerimônia'}<span class="cost">${costHTML(p.cost(done))}</span></button>${hero?`<button class="outline-button" data-hunt-hero="${hero.uid}" ${hero.away?'disabled':''}>Enviar para uma caçada ${icon('arrow-right')}</button>`:''}<details><summary>Tradição e contexto</summary><p>${esc(p.text)}</p><p>${esc(p.peoples)}</p><p>${esc(CURA_NOTE)}</p></details></article></div>${hero?.away?`<div class="integration-note">${hero.away.kind==='ritual'?'Cerimônia':'Caçada'} em andamento · ${countdown(hero.away.until)}${hero.away.returnWork?' · Retorna ao trabalho após o rito.':''}${hero.away.participationXp?` · +${hero.away.participationXp} XP extra pela participação.`:''}</div>`:hero&&s.clock<hero.ritualReadyAt?`<div class="integration-note">Integrando a experiência · próximo rito em ${countdown(hero.ritualReadyAt)}</div>`:''}</section></div>`);
+    <div class="ritual-heading"><h3>Cerimônias do espírito</h3><span class="ritual-free">Desbloqueadas pela experiência e pela era</span></div>
+    <div class="ritual-selection"><nav aria-label="Cerimônias">${PRACTICES.map(practice=>`<button data-practice-select="${practice.id}" aria-pressed="${p.id===practice.id}">${icon(({rape:'feather',sananga:'eye',kambo:'heart',ayahuasca:'leaf',cacau:'cup-soda'} as Record<string,string>)[practice.id])}<span>${practice.name}<small>+${RITUAL_XP[practice.id]} XP ritual</small></span>${icon('chevron-right')}</button>`).join('')}</nav><article class="ritual-detail"><div class="ritual-symbol">${icon('flame')}</div><h3>${p.name}</h3><p>${p.effect}</p><div class="ritual-values"><span>Duração <b>${p.tribe?'10 min de bênção':`${Math.round(p.rest/ritualSpeed(s)/60)} min`}</b></span><span>Vínculo <b>+${RITUAL_XP[p.id]} XP ritual</b></span></div><p class="ritual-mastery">${p.tribe?'XP ritual para quem concluiu a integração.':`Bônus aprendido: ${done}/${p.max}. Repetir continua concedendo XP ritual.`}</p><p class="ritual-participation">${RITUAL_PLAY[p.id].instruction} Até 20% de XP ritual extra pela sintonia. Também é possível seguir automaticamente.</p>${locks.length?`<p class="ritual-lock">${icon('lock')}${esc(locks.join(' · '))}</p>`:''}<button class="primary" ${p.tribe?'data-action="cacao"':`data-ritual="${p.id}"`} ${locks.length||(!p.tribe&&!hero)||(p.tribe&&s.clock<s.cacao)?'disabled':''}>${p.tribe?'Participar da roda':'Participar da cerimônia'}</button>${hero?`<button class="outline-button" data-hunt-hero="${hero.uid}" ${hero.away?'disabled':''}>Enviar para uma caçada ${icon('arrow-right')}</button>`:''}<details><summary>Tradição e contexto</summary><p>${esc(p.text)}</p><p>${esc(p.peoples)}</p><p>${esc(CURA_NOTE)}</p></details></article></div>${hero?.away?`<div class="integration-note">${hero.away.kind==='ritual'?'Cerimônia':'Caçada'} em andamento · ${countdown(hero.away.until)}${hero.away.participationXp?` · +${hero.away.participationXp} XP extra pela participação.`:''}</div>`:hero&&s.clock<hero.ritualReadyAt?`<div class="integration-note">Integrando a experiência · próximo rito em ${countdown(hero.ritualReadyAt)}</div>`:''}</section></div>`);
 }
 
 function journeyObjective():string {
-  const s=game.state,era=pendingEra(s),quest=openQuests(s)[0],need=ERA_GROWTH[s.villageLevel-1];
-  return `<div><span class="context-icon">${icon(era?'sparkles':'compass')}</span><span><strong>${era?'Uma nova era desperta.':quest?esc(quest.title):objective().title}</strong><small>${era?'Escolha o espírito que acompanhará a tribo.':quest?esc(quest.hint):objective().text}</small></span></div><div class="objective-actions">${s.event?`<button class="outline-button" data-action="event-open">${icon('bell')}Acontecimento</button>`:''}${era?`<button class="primary" data-action="spirit-choice">Escolher espírito da Era ${roman(era)}</button>`:quest?.done(s)?`<button class="primary" data-quest="${quest.id}">Receber recompensa</button>`:'<button class="outline-button" data-action="journal">Ver diário</button>'}${s.villageLevel<5?`<button class="outline-button" data-action="village-upgrade" title="Experiência ${need.level} e ritual ${need.ritualLevel}" ${costAttr(villageCost(s.villageLevel))}>Avançar era · XP ${need.level} / rito ${need.ritualLevel}</button>`:''}${view==='battle'&&!panelOpen?`<button class="primary" data-action="battle-start" ${game.battle?.status==='fighting'||s.paused?'disabled':''}>${game.battle?.status==='fighting'?'Em expedição':'Iniciar expedição'}</button>`:''}${!panelOpen?`<button class="outline-button" data-action="panel-open">${view==='battle'?'Ações da expedição':'Ações da aldeia'}</button>`:''}</div>`;
+  const s=game.state,era=pendingEra(s),quest=openQuests(s)[0],need=ERA_GROWTH[s.era-1];
+  return `<div><span class="context-icon">${icon(era?'sparkles':'compass')}</span><span><strong>${era?'Uma nova era desperta.':quest?esc(quest.title):objective().title}</strong><small>${era?'Escolha o espírito que acompanhará a tribo.':quest?esc(quest.hint):objective().text}</small></span></div><div class="objective-actions">${era?`<button class="primary" data-action="spirit-choice">Escolher espírito da Era ${roman(era)}</button>`:quest?.done(s)?`<button class="primary" data-quest="${quest.id}">Receber recompensa</button>`:'<button class="outline-button" data-action="journal">Ver diário</button>'}${s.era<5?`<button class="outline-button" data-action="village-upgrade" title="Experiência ${need.level} e ritual ${need.ritualLevel}" ${s.paused||game.battle?.status==='fighting'||!s.heroes.some(h=>h.level>=need.level&&h.ritualLevel>=need.ritualLevel)?'disabled':''}>Avançar era · XP ${need.level} / rito ${need.ritualLevel}</button>`:''}${view==='battle'&&!panelOpen?`<button class="primary" data-action="battle-start" ${game.battle?.status==='fighting'||s.paused?'disabled':''}>${game.battle?.status==='fighting'?'Em expedição':'Iniciar expedição'}</button>`:''}${!panelOpen?`<button class="outline-button" data-action="panel-open">${view==='battle'?'Ações da expedição':'Ações da jornada'}</button>`:''}</div>`;
 }
 
 function help() {
   showModal('help', `<p class="eyebrow">BEM-VINDO À PRIMEIRA CHAMA</p><h2>Uma tribo começa com você.</h2><div class="guide-steps">
-   <div><span>01</span><h3>Escolha seu caminho</h3><p>Assuma um desafio de combates, caçadas ou cerimônias. Receba conhecimento e escolha legados nos três Caminhos Ancestrais. Em Ofícios, a produção funciona automaticamente; melhorias são imediatas. Preparativos custam provisões e você pode levar dois por expedição. O estoque só é consumido quando uma expedição válida começa.</p></div>
+   <div><span>01</span><h3>Escolha seu caminho</h3><p>Assuma um desafio de combates, caçadas ou cerimônias. Receba conhecimento e escolha legados nos três Caminhos Ancestrais. Os rituais ensinam bênçãos reutilizáveis: escolha até duas para apoiar a formação.</p></div>
    <div><span>02</span><h3>Ouça os espíritos</h3><p>Acolha companheiros no catálogo: cada companheiro desperta estrelas ao alcançar os requisitos de experiência e ritualística. A cada era, escolha um Espírito Protetor: um bônus permanente e um poder para acionar em combate.</p></div>
-   <div><span>03</span><h3>Prepare a expedição</h3><p>Abra o Conselheiro para entender funções, os 31 laços e os equipamentos dos seus heróis. Escolha duas prioridades e aplique uma formação sugerida, ou ajuste as casas manualmente. O conselho também analisa o próximo inimigo. Vitórias trazem recursos e componentes; depois do Primeiro Inverno, a Caçada Eterna e o Grande Totem aguardam.</p></div></div>
-   <p class="development-note">Atalhos: J caminhos · O ofícios · R preparativos · A conselheiro · 1 jornada · 2 expedição · 3 códice · 4 totem · C caçadas · M campanha · P pausar · Esc fechar.</p><button class="primary" data-action="close">Seguir o chamado ${icon('arrow-right')}</button>`);
+   <div><span>03</span><h3>Prepare a expedição</h3><p>Abra o Conselheiro para entender funções, os 31 laços e os equipamentos dos seus heróis. Escolha duas prioridades e aplique uma formação sugerida, ou ajuste as casas manualmente. O conselho também analisa o próximo inimigo. Vitórias trazem XP e componentes; depois do Primeiro Inverno, a Caçada Eterna e o Grande Totem aguardam.</p></div></div>
+   <p class="development-note">Atalhos: J caminhos · R bênçãos · A conselheiro · 1 jornada · 2 expedição · 3 códice · 4 totem · C caçadas · M campanha · P pausar · Esc fechar.</p><button class="primary" data-action="close">Seguir o chamado ${icon('arrow-right')}</button>`);
 }
 
 function settings() {
@@ -656,7 +579,7 @@ function settings() {
   showModal('settings', `<p class="eyebrow">CONFIGURAÇÕES</p><h2>A fogueira da tribo</h2>
    <div class="settings-grid">
     <section><h3>${icon('volume-2')}Som</h3>
-     ${toggle('sound', 'Sons e música', 'Efeitos de combate e a música da aldeia')}
+     ${toggle('sound', 'Sons e música', 'Efeitos de combate e a música da tribo')}
      ${slider('sfx', 'Efeitos')}${slider('music', 'Música')}
     </section>
     <section><h3>${icon('eye')}Visual</h3>
@@ -664,11 +587,11 @@ function settings() {
      ${toggle('numbers', 'Números de dano e cura', 'Desligue para um campo mais limpo em lutas cheias')}
     </section>
     <section class="wide"><h3>${icon('book-marked')}Jornada</h3>
-     <p class="modal-intro">O progresso é salvo automaticamente neste navegador. Ao voltar, a aldeia recebe até 12 horas de produção e atividades acumuladas, inclusive da forja. Uma jornada pausada não acumula recursos.</p>
+     <p class="modal-intro">O progresso é salvo automaticamente neste navegador. Ao voltar, caçadas e cerimônias avançam por até 12 horas. Uma jornada pausada mantém as atividades no mesmo ponto.</p>
      <div class="settings-buttons"><button class="outline-button" data-action="export">${icon('download')}Exportar progresso</button><button class="outline-button" data-action="import">${icon('upload')}Importar progresso</button><button class="outline-button" data-action="help">${icon('book-open')}Como jogar</button><button class="outline-button" data-action="title-show">${icon('flame')}Tela inicial</button></div>
      <p class="development-note">Importar substitui o progresso deste navegador. Saves anteriores são convertidos automaticamente para a nova jornada.</p>
      <div class="danger-zone">${confirmWipe
-       ? `<p><b>Apagar tudo?</b> A aldeia, os heróis, as expedições, os renascimentos e as memórias deste navegador serão perdidos. Exporte antes se quiser guardar uma cópia.</p><div class="settings-buttons"><button class="outline-button" data-action="wipe-cancel">Manter a jornada</button><button class="primary danger" data-action="wipe-confirm">${icon('trash-2')}Apagar para sempre</button></div>`
+       ? `<p><b>Apagar tudo?</b> Os heróis, as expedições, os renascimentos e as memórias deste navegador serão perdidos. Exporte antes se quiser guardar uma cópia.</p><div class="settings-buttons"><button class="outline-button" data-action="wipe-cancel">Manter a jornada</button><button class="primary danger" data-action="wipe-confirm">${icon('trash-2')}Apagar para sempre</button></div>`
        : `<p>Recomeçar do zero apaga todo o progresso deste navegador.</p><button class="outline-button danger" data-action="wipe">${icon('trash-2')}Apagar jornada</button>`}</div>
     </section>
    </div>`);
@@ -702,7 +625,7 @@ function renderAudioButton() {
 function renderTitle() {
   const s = game.state;
   const summary = hasJourney
-    ? `<div class="title-journey"><span>Era ${roman(s.villageLevel)}</span><span>${s.progress}/${FINAL_STAGE} expedições</span><span>${s.heroes.length} herói${s.heroes.length === 1 ? '' : 's'}</span>${s.rebirths ? `<span>${s.rebirths} renascimento${s.rebirths === 1 ? '' : 's'}</span>` : ''}</div>`
+    ? `<div class="title-journey"><span>Era ${roman(s.era)}</span><span>${s.progress}/${FINAL_STAGE} expedições</span><span>${s.heroes.length} herói${s.heroes.length === 1 ? '' : 's'}</span>${s.rebirths ? `<span>${s.rebirths} renascimento${s.rebirths === 1 ? '' : 's'}</span>` : ''}</div>`
     : '';
   $('#title-screen').innerHTML = `<div class="title-embers" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>
    <div class="title-card">
@@ -712,7 +635,7 @@ function renderTitle() {
     <div class="title-story">
      <p>Antes das cidades e dos nomes escritos, as tribos caminhavam ao lado dos espíritos. Cada clã guardava um animal: o lobo que ensina a caçar em matilha, a coruja que enxerga no escuro, o urso que atravessa o inverno.</p>
      <p>Agora o Primeiro Inverno desce das montanhas. Os rios congelam, as manadas fogem e os clãs se dispersam. Na Clareira do Lobo, uma pequena tribo acende a última fogueira e ouve um uivo antigo chamando por guardiões.</p>
-     <p>Faça a aldeia crescer pelas cinco eras, honre os Espíritos Protetores, reúna heróis de todos os povos e leve a tribo além do inverno, até erguer o Grande Totem.</p>
+     <p>Guie a tribo pelas cinco eras, honre os Espíritos Protetores, reúna heróis de todos os povos e leve a tribo além do inverno, até erguer o Grande Totem.</p>
     </div>
     ${summary}
     <div class="title-actions">
@@ -720,7 +643,7 @@ function renderTitle() {
      ${hasJourney ? `<button class="outline-button ${confirmNew ? 'danger' : ''}" data-action="title-new">${icon(confirmNew ? 'triangle-alert' : 'sparkles')}${confirmNew ? 'Confirmar: apagar a jornada atual' : 'Nova jornada'}</button>` : ''}
      <div class="title-links"><button class="text-button" data-action="import">${icon('upload')}Carregar jornada salva</button><button class="text-button" data-action="settings">${icon('settings-2')}Configurações</button><button class="text-button" data-action="help">${icon('book-open')}Como jogar</button></div>
     </div>
-    <p class="title-version">VERSÃO 2.1 · ${storage ? 'progresso salvo neste navegador' : 'salvamento indisponível neste navegador'}</p>
+    <p class="title-version">VERSÃO 2.2 · ${storage ? 'progresso salvo neste navegador' : 'salvamento indisponível neste navegador'}</p>
    </div>`;
   refreshIcons();
 }
@@ -745,7 +668,7 @@ let welcomed = false;
 function welcomeBack() {
   if (welcomed) return;
   welcomed = true;
-  if (game.offlineGains && game.offlineSeconds > 60) toast(`A aldeia trabalhou por ${Math.round(game.offlineSeconds / 60)} min enquanto você esteve fora.`);
+  if (game.offlineSeconds > 60) toast(`Suas atividades avançaram por ${Math.round(game.offlineSeconds / 60)} min enquanto você esteve fora.`);
   // The objective strip keeps pending spirit choices available without interrupting another action.
 }
 
@@ -761,15 +684,12 @@ document.addEventListener('click', event => {
   if (!target || target.disabled) return;
   const d = target.dataset;
   if (d.view) { setView(d.view as typeof view); return; }
-  if(d.building){selectedBuilding=d.building as BuildingId;villageMode='provisions';setView('village');return;}
   if(d.journeyTab){villageMode=d.journeyTab as typeof villageMode;if(view!=='village')setView('village');else renderSide();return;}
   if(d.journeyBranch){journeyBranch=d.journeyBranch as JourneyBranch;renderVillageSide();return;}
   if(d.acceptTrial){act(game.acceptTrial(d.acceptTrial),'click');return;}
   if(d.claimTrial!==undefined){act(game.claimTrial(),'recruit');return;}
   if(d.learnLegacy){act(game.learnLegacy(d.learnLegacy));return;}
-  if(d.prepareExpedition){act(game.prepareExpedition(d.prepareExpedition),'item');if(activeModal==='army-coach')showArmyCoach();return;}
   if(d.selectPreparation){act(game.selectPreparation(d.selectPreparation),'click');if(activeModal==='army-coach')showArmyCoach();return;}
-  if(d.upgradeWorkshop){act(game.upgradeBuilding(d.upgradeWorkshop as BuildingId));return;}
   if(d.coachTab){coachTab=d.coachTab as CoachTab;$('#modal').scrollTop=0;showArmyCoach();return;}
   if(d.applyArmy){act(game.applyArmyPlan(d.applyArmy),'click');showArmyCoach();return;}
   if(d.distributeItems){act(game.applyEquipmentPlan(d.distributeItems),'item');showArmyCoach();return;}
@@ -780,7 +700,6 @@ document.addEventListener('click', event => {
   if(d.advisorDeploy){const replacement=game.state.heroes.find(h=>h.uid===d.replaceHero);const slot=replacement?.slot??Array.from({length:FORMATION_SLOTS},(_,i)=>i).find(i=>!game.state.heroes.some(h=>h.slot===i))??0;act(game.deploy(d.advisorDeploy,slot),'click');showArmyCoach();return;}
   if(d.advisorEquip){const [uid,index]=d.advisorEquip.split(':');act(game.equipItem(uid,Number(index)),'item');showArmyCoach();return;}
   if(d.advisorRecipe){const [a,b]=d.advisorRecipe.split(':');act(game.combineItems(Number(a),Number(b)),'item');showArmyCoach();return;}
-  if (d.gather) { act(game.gather(d.gather as Resource), 'click'); return; }
   if (d.recruit) { act(game.recruit(Number(d.recruit)), 'recruit'); if(activeModal==='tribe')showTribe(); return; }
   if (d.curaHero) { curaHero=d.curaHero; showCura(); return; }
   if (d.inspect) { showHero(d.inspect); return; }
@@ -796,14 +715,13 @@ document.addEventListener('click', event => {
   }
   if (d.inv !== undefined) {
     const index = Number(d.inv), current = selectedItem;
-    if (current !== null && current !== index && isComponent(game.state.inventory[current]) && isComponent(game.state.inventory[index]) && game.state.buildings.forge > 0) {
+    if (current !== null && current !== index && isComponent(game.state.inventory[current]) && isComponent(game.state.inventory[index])) {
       selectedItem = null; act(game.combineItems(current, index), 'item'); return;
     }
     selectedItem = current === index ? null : index; sound.play('click'); renderCamp(); return;
   }
   if (d.unequip) { const [uid, i] = d.unequip.split(':'); act(game.unequipItem(uid, Number(i)), 'item'); if(activeModal==='hero')showHero(uid); return; }
   if (d.bench) { act(game.deploy(d.bench, null), 'click'); if(activeModal==='formation')showFormation(d.bench); return; }
-  if (d.unassign) { act(game.assignWorker(d.unassign, null), 'click'); return; }
   if (d.character) { showCharacter(Number(d.character), Number(d.stars ?? 1)); return; }
   if (d.detail) { showCharacter(Number(d.detail), Number(d.stars)); return; }
   if (d.motion) { preview.select(d.motion as MotionClip); document.querySelectorAll<HTMLButtonElement>('[data-motion]').forEach(b => b.setAttribute('aria-pressed', String(b === target))); return; }
@@ -812,17 +730,10 @@ document.addEventListener('click', event => {
   if (d.stage !== undefined) { const r = game.selectStage(Number(d.stage)); toast(r.message); if (r.ok) { save(); closeModal(); if (view !== 'battle') setView('battle'); else renderAll(); } return; }
   if (d.spirit) { const r = game.chooseSpirit(d.spirit as SpiritId); if (r.ok) closeModal(); act(r, 'era'); return; }
   if (d.power) { const r = game.usePower(d.power as SpiritId); toast(r.message); if (r.ok) sound.play('power'); renderPowers(); return; }
-  if (d.event) {
-    const accept = d.event === 'accept', raid = game.state.event?.kind === 'raid';
-    const r = game.answerEvent(accept);
-    if (r.ok && raid && accept) { setView('battle'); sound.play('power'); }
-    act(r, accept ? 'recruit' : 'click'); return;
-  }
   if (d.startHunt) { const select = document.querySelector<HTMLSelectElement>(`#trail-${d.startHunt}`); if (select) { act(game.startHunt(select.value, d.startHunt), 'click'); showHunts(); } return; }
   if (d.recall) { act(game.recallHunt(d.recall), 'click'); showHunts(); return; }
   if (d.huntHero) { showHunts(d.huntHero); return; }
   if (d.ritual) { if (curaHero) showRitualExperience(d.ritual as PracticeId); return; }
-  if (d.curaBuild) { act(game.upgradeBuilding('cura')); showCura(); return; }
   if (d.quest) { const r = game.claimQuest(d.quest); act(r, 'item'); if (activeModal === 'journal') showJournal(); return; }
   if (d.memory) { act(game.buyMemory(d.memory as MemoryId), 'upgrade'); showAncestors(); return; }
   switch (d.action) {
@@ -834,16 +745,11 @@ document.addEventListener('click', event => {
     case 'formation-done': closeModal(); setView('battle'); break;
     case 'panel-close': panelOpen=false; renderSide(); break;
     case 'panel-open': panelOpen=true; renderSide(); break;
-    case 'event-open': eventOpen=!eventOpen; renderEvent(); break;
     case 'preview-flip': preview.flip(); break;
     case 'preview-pause': target.textContent = preview.toggle() ? 'Retomar prévia' : 'Pausar prévia'; break;
     case 'place-selected': if (selectedHero) act(game.deploy(selectedHero, Number($<HTMLSelectElement>('#formation-slot').value)), 'click'); break;
-    case 'sell-selected': if (selectedHero) { act(game.sellHero(selectedHero), 'click'); selectedHero = null; } break;
-    case 'assign': act(game.assignWorker($<HTMLSelectElement>('#worker-select').value, selectedBuilding), 'upgrade'); break;
-    case 'building-upgrade': act(game.upgradeBuilding(selectedBuilding)); break;
-    case 'village-upgrade': { const r = game.upgradeVillage(); act(r, 'era'); if (r.ok) showSpiritChoice(); break; }
+    case 'village-upgrade': { const r = game.advanceEra(); act(r, 'era'); if (r.ok) showSpiritChoice(); break; }
     case 'spirit-choice': showSpiritChoice(); break;
-    case 'reroll': act(game.rerollShop(), 'click'); break;
     case 'battle-start': startNext(); break;
     case 'battle-again': window.clearTimeout(repeatTimer); startNext(); break;
     case 'battle-dismiss': window.clearTimeout(repeatTimer); game.dismissBattle(); renderAll(); break;
@@ -858,7 +764,7 @@ document.addEventListener('click', event => {
     case 'wonder': act(game.buildWonder(), 'era'); showAncestors(); break;
     case 'ascend':
       if (!confirmAscend) { confirmAscend = true; showAncestors(); break; }
-      confirmAscend = false; act(game.ascend(), 'era'); selectedHero = null; selectedItem = null; lastProgress = game.state.progress; lastVillage = game.state.villageLevel; showAncestors(); break;
+      confirmAscend = false; act(game.ascend(), 'era'); selectedHero = null; selectedItem = null; lastProgress = game.state.progress; lastVillage = game.state.era; showAncestors(); break;
     case 'pause': game.togglePause(); save(); renderAll(); break;
     case 'codex': showCodex(); break;
     case 'help': help(); break;
@@ -893,7 +799,6 @@ document.addEventListener('input', event => {
 });
 document.addEventListener('change', event => {
   const input = event.target as HTMLInputElement | HTMLSelectElement;
-  if(input.dataset.workshopHero){if(input.value)act(game.assignWorker(input.value,input.dataset.workshopHero as BuildingId),'click');return;}
   if(input.id==='coach-trait'){coachTrait=input.value;showArmyCoach();return;}
   if(input.id==='coach-hero'){coachHero=input.value;showArmyCoach();return;}
   if (input.id === 'cura-hero') { curaHero = input.value; showCura(); return; }
@@ -920,8 +825,8 @@ $<HTMLInputElement>('#save-file').addEventListener('change', async event => {
   try {
     if (file.size > 500_000) throw new Error();
     data = JSON.parse(await file.text());
-    const root = data as { version?: number; state?: { heroes?: unknown; resources?: unknown } };
-    if (!root || ![1, 2, 3, 4, 5, 6].includes(root.version as number) || !root.state || !Array.isArray(root.state.heroes) || !root.state.resources) throw new Error();
+    const root = data as { version?: number; state?: { heroes?: unknown } };
+    if (!root || ![1, 2, 3, 4, 5, 6, 7].includes(root.version as number) || !root.state || !Array.isArray(root.state.heroes)) throw new Error();
   } catch { toast('Arquivo de progresso inválido. Sua jornada atual foi preservada.'); return; }
   const imported = new Game(data);
   try {
@@ -942,7 +847,7 @@ document.addEventListener('keydown', event => {
   if (key === 'm' && game.battle?.status !== 'fighting') showMap();
   if (key === 'c') showHunts();
   if (key === 'p') { game.togglePause(); save(); renderAll(); }
-  if (key==='j'||key==='o'||key==='r'){villageMode=key==='j'?'paths':key==='o'?'provisions':'preparations';if(view!=='village')setView('village');else renderSide();}
+  if (key==='j'||key==='r'){villageMode=key==='j'?'paths':'preparations';if(view!=='village')setView('village');else renderSide();}
   if (key === 'a') showArmyCoach();
 });
 $<HTMLDialogElement>('#modal').addEventListener('click', event => { if (event.target === $('#modal')) closeModal(); });
@@ -994,7 +899,7 @@ function frame(now: number) {
       if (status === 'defeat' && game.state.settings.autoRepeat) { game.toggleAutoRepeat(); toast('Derrota: a repetição automática foi desligada.'); }
     }
   }
-  if (game.state.villageLevel !== lastVillage) { lastVillage = game.state.villageLevel; renderAll(); }
+  if (game.state.era !== lastVillage) { lastVillage = game.state.era; renderAll(); }
   requestAnimationFrame(frame);
 }
 

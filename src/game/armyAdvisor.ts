@@ -36,15 +36,15 @@ export function armyScore(party:Hero[],focus:string[]=[]):number {
   return score;
 }
 export function recommendedParty(s:GameState):Hero[] {
-  const eligible=s.heroes.filter(h=>!h.away&&!h.work),limit=2+s.villageLevel,party:Hero[]=[];
+  const eligible=s.heroes.filter(h=>!h.away),limit=2+s.era,party:Hero[]=[];
   while(party.length<limit&&party.length<eligible.length){const best=eligible.filter(h=>!party.includes(h)).sort((a,b)=>strategicScore([...party,b],s)-strategicScore([...party,a],s)||a.characterId-b.characterId)[0];party.push(best);}
   // A bounded exchange pass catches pairs that the first greedy choice missed.
   for(let pass=0;pass<3;pass++)for(let i=0;i<party.length;i++)for(const h of eligible.filter(h=>!party.includes(h))){const swap=party.map((p,j)=>j===i?h:p);if(strategicScore(swap,s)>strategicScore(party,s)+.01)party[i]=h;}
   return party.sort((a,b)=>Number(roleOf(char(b))==='front')-Number(roleOf(char(a))==='front')||b.level-a.level||a.characterId-b.characterId);
 }
 export function armySuggestions(s:GameState) {
-  const current=activeArmy(s),score=armyScore(current,s.journey.focusTraits),limit=2+s.villageLevel;
-  return s.heroes.filter(h=>h.slot===null&&!h.away&&!h.work).map(hero=>{
+  const current=activeArmy(s),score=armyScore(current,s.journey.focusTraits),limit=2+s.era;
+  return s.heroes.filter(h=>h.slot===null&&!h.away).map(hero=>{
     const parties=current.length<limit?[{party:[...current,hero],replace:null as Hero|null}]:current.map(replace=>({party:current.map(h=>h===replace?hero:h),replace}));
     const choice=parties.sort((a,b)=>armyScore(b.party,s.journey.focusTraits)-armyScore(a.party,s.journey.focusTraits))[0];
     if(!choice)return null;
@@ -59,7 +59,7 @@ export function nearTraits(s:GameState) {
   return Object.entries(TRAIT_RULES).map(([name,rule])=>{
     const count=counts.get(name)??0,status=traitStatus(name,count);
     const members=characters.filter(c=>c.traits.includes(name));
-    const recruits=members.filter(c=>!s.heroes.some(h=>h.characterId===c.id)&&c.cost<=unlockedCost(s.villageLevel)&&ritual>=[0,1,2,3,5,7][c.cost]);
+    const recruits=members.filter(c=>!s.heroes.some(h=>h.characterId===c.id)&&c.cost<=unlockedCost(s.era)&&ritual>=[0,1,2,3,5,7][c.cost]);
     return {...status,missing:status.next-count,members,recruits,complete:status.tier===rule.thresholds.length};
   }).filter(t=>t.count>0||s.journey.focusTraits.includes(t.name)).sort((a,b)=>Number(b.name&&s.journey.focusTraits.includes(b.name))-Number(s.journey.focusTraits.includes(a.name))||a.missing-b.missing||b.count-a.count);
 }
@@ -77,7 +77,7 @@ export function itemAdvice(s:GameState,h:Hero) {
 export function armyWarnings(s:GameState,stage=s.selectedStage):string[] {
   const party=activeArmy(s),warnings:string[]=[];
   if(!party.length)return ['Sua formação está vazia ou os heróis estão em atividades.'];
-  if(party.length<2+s.villageLevel)warnings.push(`${2+s.villageLevel-party.length} vaga(s) livres: mais companheiros aumentam as opções de laços.`);
+  if(party.length<2+s.era)warnings.push(`${2+s.era-party.length} vaga(s) livres: mais companheiros aumentam as opções de laços.`);
   if(!party.some(h=>roleOf(char(h))==='front'))warnings.push('Falta uma linha de frente. Atiradores e conjuradores receberão os primeiros golpes.');
   for(const h of party){const role=roleOf(char(h));if(role==='front'&&h.slot!>=7)warnings.push(`${char(h).name} pode proteger melhor a primeira fileira.`);if(['ranged','support','caster','summon'].includes(role)&&h.slot!<7)warnings.push(`${char(h).name} está exposto na primeira fileira.`);}
   const average=party.reduce((sum,h)=>sum+h.level,0)/party.length;
@@ -143,7 +143,7 @@ export function positionPlan(s:GameState,party=recommendedParty(s)):PositionAdvi
   return result;
 }
 export function planSignature(s:GameState):string {
-  return JSON.stringify([s.selectedStage,s.villageLevel,s.journey.focusTraits,s.inventory,s.heroes.map(h=>[h.uid,h.characterId,h.stars,h.level,h.slot,h.work,h.away?.until,h.items])]);
+  return JSON.stringify([s.selectedStage,s.era,s.journey.focusTraits,s.inventory,s.heroes.map(h=>[h.uid,h.characterId,h.stars,h.level,h.slot,h.away?.until,h.items])]);
 }
 export function itemReason(c:Character,item:ItemDef,s:GameState):string {
   const role=ROLE_GUIDE[roleOf(c)].name,t=enemyThreats(s);
@@ -182,7 +182,7 @@ export function craftingPlan(s:GameState,party=activeArmy(s)) {
 export function buffAdvice(s:GameState) {
   const t=enemyThreats(s),party=activeArmy(s),roles=party.map(h=>roleOf(char(h)));
   return PREPARATIONS.map(p=>({...p,score:p.id==='amulet'?t.magic*4:p.id==='bark'?t.physical*3:p.id==='incense'?roles.filter(r=>['caster','support','summon'].includes(r)).length*4:p.id==='feast'?5:p.id==='spring'?3:4,
-    reason:p.id==='amulet'?`${t.magic} inimigo(s) com função de conjuração ou invocação.`:p.id==='bark'?`${t.physical} inimigo(s) com funções voltadas a golpes e aproximação.`:p.id==='incense'?'Mana inicial ajuda os seus conjuradores, suportes e invocadores a agir antes.':p.id==='feast'?'Mais vida ajuda a formação a suportar a abertura.':p.id==='spring'?'Sustenta batalhas longas; perde valor contra redução de cura.':'Fortalece o dano dos ataques básicos.'})).filter(p=>p.era<=s.villageLevel).sort((a,b)=>b.score-a.score);
+    reason:p.id==='amulet'?`${t.magic} inimigo(s) com função de conjuração ou invocação.`:p.id==='bark'?`${t.physical} inimigo(s) com funções voltadas a golpes e aproximação.`:p.id==='incense'?'Mana inicial ajuda os seus conjuradores, suportes e invocadores a agir antes.':p.id==='feast'?'Mais vida ajuda a formação a suportar a abertura.':p.id==='spring'?'Sustenta batalhas longas; perde valor contra redução de cura.':'Fortalece o dano dos ataques básicos.'})).filter(p=>p.era<=s.era).sort((a,b)=>b.score-a.score);
 }
 export function spiritAdvice(s:GameState) {
   const t=enemyThreats(s);

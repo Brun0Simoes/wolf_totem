@@ -1,0 +1,9 @@
+/* Progress, formation and ritual take the place of material counters. */
+.journey-metrics{display:flex;align-items:center;gap:22px;margin-left:auto;white-space:nowrap}
+.journey-metrics>div{display:grid;gap:3px;border-left:1px solid var(--line);padding-left:18px}
+.journey-metrics small{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.journey-metrics strong{font-size:18px;font-weight:500;color:var(--accent)}
+.ritual-free{color:var(--muted);font-size:12px}
+.preparation-card .outline-button{width:100%;margin-top:12px}
+@media(max-width:1200px){.journey-metrics{gap:14px}.journey-metrics>div{padding-left:12px}.journey-metrics>div:nth-child(3){display:none}}
+@media(max-width:850px){.journey-metrics{gap:12px;margin-left:auto}.journey-metrics>div{padding-left:10px}.journey-metrics strong{font-size:15px}.journey-metrics>div:nth-child(2){display:none}.ritual-heading{flex-wrap:wrap;gap:6px}}

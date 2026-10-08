@@ -1,4 +1,3 @@
-import type { Resources } from './simulation';
 
 /**
  * Hero growth outside the formation: experience and levels, hunting trails, panema and the
@@ -7,7 +6,6 @@ import type { Resources } from './simulation';
 
 export const MAX_HERO_LEVEL = 30;
 export const MAX_RITUAL_LEVEL = 10;
-export const WORK_XP_PER_MINUTE = 40;
 export const RITUAL_COOLDOWN = 3 * 3600;
 export const RITUAL_XP: Record<PracticeId, number> = { rape: 90, sananga: 180, kambo: 450, ayahuasca: 900, cacau: 60 };
 export const ritualXpToNext = (level: number): number => level >= MAX_RITUAL_LEVEL ? Infinity : Math.round(90 * Math.pow(level, 1.4));
@@ -52,13 +50,13 @@ export function battleXp(level: number, victory: boolean, boss: boolean, firstCl
 // ——— Hunting ———
 
 export type TrailId = 'igarape' | 'terra-firme' | 'varzea' | 'serra' | 'cabeceira';
-export interface Trail { id: TrailId; name: string; text: string; minutes: number; era: number; minLevel: number; xp: number; food: number; component: number }
+export interface Trail { id: TrailId; name: string; text: string; minutes: number; era: number; minLevel: number; xp: number; component: number }
 export const TRAILS: Trail[] = [
-  { id: 'igarape', name: 'Margem do igarapé', text: 'Pacas e peixes perto da aldeia. Bom para quem está começando.', minutes: 10, era: 1, minLevel: 1, xp: 600, food: 140, component: 0.05 },
-  { id: 'terra-firme', name: 'Mata de terra firme', text: 'Queixadas em bando e rastros fundos entre as castanheiras.', minutes: 60, era: 1, minLevel: 4, xp: 4000, food: 900, component: 0.15 },
-  { id: 'varzea', name: 'Várzea alagada', text: 'Na cheia, a caça se esconde entre as árvores submersas.', minutes: 180, era: 2, minLevel: 8, xp: 15000, food: 3000, component: 0.25 },
-  { id: 'serra', name: 'Serra das antas', text: 'Uma longa trilha atrás da maior caça da floresta.', minutes: 360, era: 3, minLevel: 14, xp: 42000, food: 6200, component: 0.4 },
-  { id: 'cabeceira', name: 'Cabeceiras do rio', text: 'Onde o rio nasce e os espíritos da mata vigiam cada passo.', minutes: 480, era: 4, minLevel: 18, xp: 65000, food: 9000, component: 0.6 },
+  { id: 'igarape', name: 'Margem do igarapé', text: 'Pacas e peixes perto da aldeia. Bom para quem está começando.', minutes: 10, era: 1, minLevel: 1, xp: 1600, component: 0.05 },
+  { id: 'terra-firme', name: 'Mata de terra firme', text: 'Queixadas em bando e rastros fundos entre as castanheiras.', minutes: 60, era: 1, minLevel: 4, xp: 8000, component: 0.15 },
+  { id: 'varzea', name: 'Várzea alagada', text: 'Na cheia, a caça se esconde entre as árvores submersas.', minutes: 180, era: 2, minLevel: 8, xp: 30000, component: 0.25 },
+  { id: 'serra', name: 'Serra das antas', text: 'Uma longa trilha atrás da maior caça da floresta.', minutes: 360, era: 3, minLevel: 14, xp: 80000, component: 0.4 },
+  { id: 'cabeceira', name: 'Cabeceiras do rio', text: 'Onde o rio nasce e os espíritos da mata vigiam cada passo.', minutes: 480, era: 4, minLevel: 18, xp: 120000, component: 0.6 },
 ];
 export const trailById = (id: string) => TRAILS.find(trail => trail.id === id);
 
@@ -72,8 +70,8 @@ export const PANEMA_XP_LOSS = 0.15;
 export function huntChance(stars: number, panema: number, sananga: number): number {
   return Math.max(0.3, Math.min(0.98, 0.86 + 0.04 * (stars - 1) + 0.04 * sananga - 0.14 * panema));
 }
-/** The hunting camp sends more hunters as it grows. */
-export const huntSlots = (campLevel: number): number => Math.min(4, 1 + Math.floor(campLevel / 4));
+/** Each era makes room for another hunter, up to four. */
+export const huntSlots = (era: number): number => Math.max(1, Math.min(4, Math.floor(era)));
 /** Rapé before the hunt: focus and a steady aim. */
 export const FOCUS_BONUS = 0.5;
 
@@ -86,53 +84,43 @@ export interface Practice {
   text: string;
   /** What it does in the game. */
   effect: string;
-  max: number; curaLevel: number; era: number; minLevel: number;
+  max: number; era: number; minLevel: number;
   /** Seconds the hero spends in ceremony and integration, away from fights. */
   rest: number;
   /** Shared by the whole tribe instead of one hero. */
   tribe?: boolean;
   requires?: PracticeId;
-  cost: (stack: number) => Resources;
 }
-const price = (wood: number, food: number, stone: number, spirit: number, stack: number): Resources => {
-  const growth = 1 + stack * 0.8;
-  return { wood: Math.round(wood * growth), food: Math.round(food * growth), stone: Math.round(stone * growth), spirit: Math.round(spirit * growth) };
-};
 export const PRACTICES: Practice[] = [
   {
     id: 'rape', name: 'Rapé', native: 'rume', peoples: 'Huni Kuin, Yawanawá, Noke Koî e outros povos do Acre',
     text: 'Tabaco moído com cinzas de árvores, soprado pelo tepi por quem conduz ou pelo kuripe, em si mesmo. Para os povos que o guardam, limpa o pensamento, protege e firma a presença; também prepara para outras cerimônias.',
     effect: '+5% de velocidade de ataque por cerimônia (até 3) e foco na próxima caçada: +50% de experiência.',
-    max: 3, curaLevel: 1, era: 1, minLevel: 1, rest: 1200,
-    cost: stack => price(0, 15, 0, 30, stack),
+    max: 3, era: 1, minLevel: 1, rest: 1200,
   },
   {
     id: 'sananga', name: 'Sananga', native: 'colírio da floresta', peoples: 'Matsés, Huni Kuin e Tikuna',
     text: 'Gotas da raiz da sananga (gênero Tabernaemontana) nos olhos. Arde forte e, para os caçadores, devolve a nitidez da mata e afasta a panema.',
     effect: 'Tira 1 de panema; +6% de dano por cerimônia (até 3) e +4% de sucesso nas caçadas por cerimônia.',
-    max: 3, curaLevel: 1, era: 1, minLevel: 2, rest: 2700,
-    cost: stack => price(20, 20, 0, 40, stack),
+    max: 3, era: 1, minLevel: 2, rest: 2700,
   },
   {
     id: 'kambo', name: 'Kambô', native: 'kampô', peoples: 'Noke Koî (Katukina), Matsés, Yawanawá e Huni Kuin',
     text: 'A secreção do sapo Phyllomedusa bicolor, aplicada por quem conhece o rito. É uma prova física dura, feita para afastar a panema e devolver o vigor ao caçador.',
     effect: 'Tira toda a panema; +8% de vida máxima por cerimônia (até 3). A cerimônia dura 2 horas.',
-    max: 3, curaLevel: 2, era: 2, minLevel: 8, rest: 7200,
-    cost: stack => price(40, 60, 30, 90, stack),
+    max: 3, era: 2, minLevel: 8, rest: 7200,
   },
   {
     id: 'ayahuasca', name: 'Ayahuasca', native: 'nixi pae', peoples: 'Huni Kuin; também Yawanawá, Asháninka e outros povos da Amazônia',
     text: 'O cipó e a folha, bebidos à noite em roda, guiados pelos cantos huni meka: a abertura (pae txanima), as mirações (dautibuya) e o fechamento (kayatibu). Para os Huni Kuin, nixi pae é o encanto do cipó, caminho de cura e conhecimento.',
     effect: '+20% de poder de habilidade e +25 de mana inicial, uma vez por herói. Exige um rapé antes. A cerimônia e a dieta duram 6 horas.',
-    max: 1, curaLevel: 3, era: 3, minLevel: 14, rest: 21600, requires: 'rape',
-    cost: stack => price(150, 200, 60, 400, stack),
+    max: 1, era: 3, minLevel: 14, rest: 21600, requires: 'rape',
   },
   {
     id: 'cacau', name: 'Roda de cacau', native: 'Theobroma, alimento dos deuses', peoples: 'Mayo-Chinchipe da Alta Amazônia, que o cultivavam há mais de 5 mil anos; depois maias e outros povos',
     text: 'O cacau nasceu domesticado na Alta Amazônia e virou bebida de festa e aliança entre os maias. Em roda, a tribo bebe, canta e celebra junta.',
     effect: 'Toda a tribo por 10 minutos: +25% de experiência de caçadas e batalhas e +10% de cura e escudos.',
-    max: Infinity, curaLevel: 2, era: 2, minLevel: 1, rest: 0, tribe: true,
-    cost: () => ({ wood: 60, food: 260, stone: 0, spirit: 80 }),
+    max: Infinity, era: 2, minLevel: 1, rest: 0, tribe: true,
   },
 ];
 export const practiceById = (id: string) => PRACTICES.find(practice => practice.id === id);

@@ -4,7 +4,7 @@ import { Game, newHero } from '../src/game/simulation';
 import { RITUAL_XP, ritualTotalXp, RITUAL_COOLDOWN } from '../src/game/tribe';
 
 const advance = (play: RitualPlay, seconds: number) => { for (let n=0;n<Math.round(seconds*100);n++) play.tick(.01); };
-const prepared = () => { const game=new Game();game.state.resources={wood:1e6,food:1e6,stone:1e6,spirit:1e6};game.state.villageLevel=3;game.state.buildings.cura=3;const h=game.state.heroes[0];h.level=24;h.rituals.rape=1;return game; };
+const prepared = () => { const game=new Game();game.state.era=3;const h=game.state.heroes[0];h.level=24;h.rituals.rape=1;return game; };
 
 describe('interactive ritual mechanics',()=>{
   it('measures three separate blows and scores release timing',()=>{
@@ -55,8 +55,8 @@ describe('participation and lasting progression',()=>{
     loaded.catchUp(30);expect(ritualTotalXp(hero.ritualLevel,hero.ritualXp)).toBe(108);
   });
   it('keeps automatic ceremonies at base XP and rejects unmet requirements without spending',()=>{
-    const game=prepared(),h=game.state.heroes[0];h.level=1;const before={...game.state.resources};
-    expect(game.performRitual(h.uid,'ayahuasca',1).ok).toBe(false);expect(game.state.resources).toEqual(before);
+    const game=prepared(),h=game.state.heroes[0];h.level=1;const before=game.state.era;
+    expect(game.performRitual(h.uid,'ayahuasca',1).ok).toBe(false);expect(game.state.era).toEqual(before);
     expect(game.performRitual(h.uid,'rape').ok).toBe(true);game.catchUp(1201);expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBe(RITUAL_XP.rape);
   });
   it('caps a forged persisted bonus without damaging an older save',()=>{
@@ -68,7 +68,7 @@ describe('participation and lasting progression',()=>{
     const game=prepared(),h=game.state.heroes[0],busy=newHero('busy',2),resting=newHero('resting',3);
     busy.away={kind:'hunt',id:'igarape',until:600};resting.ritualReadyAt=500;game.state.heroes.push(busy,resting);
     expect(game.holdCacaoCircle(1).ok).toBe(true);expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBe(72);
-    expect(busy.ritualXp).toBe(0);expect(resting.ritualXp).toBe(0);const resources={...game.state.resources};
-    expect(game.holdCacaoCircle(1).ok).toBe(false);expect(game.state.resources).toEqual(resources);expect(h.ritualXp).toBe(72);
+    expect(busy.ritualXp).toBe(0);expect(resting.ritualXp).toBe(0);const resources=game.state.era;
+    expect(game.holdCacaoCircle(1).ok).toBe(false);expect(game.state.era).toEqual(resources);expect(h.ritualXp).toBe(72);
   });
 });

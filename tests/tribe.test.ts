@@ -5,7 +5,6 @@ import { nextRandom } from '../src/game/roster';
 import { Game, newHero, type Hero } from '../src/game/simulation';
 import { CACAO_DURATION, huntChance, huntSlots, levelFromTotal, MAX_HERO_LEVEL, RITUAL_COOLDOWN, PRACTICES, totalXp, TRAILS, xpToNext } from '../src/game/tribe';
 
-const rich = (game: Game) => { game.state.resources = { wood: 1e7, food: 1e7, stone: 1e7, spirit: 1e7 }; };
 const akru = (game: Game) => game.state.heroes[0];
 /** Advances village time in steps, as the live clock does. */
 const wait = (game: Game, seconds: number) => { for (let t = 0; t < seconds; t += 10) game.tick(10); };
@@ -41,7 +40,7 @@ describe('levels', () => {
   });
 
   it('keeps ritual learning independent from normal levels', () => {
-    const game=new Game();rich(game);akru(game).level=4;akru(game).rituals={rape:2};
+    const game=new Game();akru(game).level=4;akru(game).rituals={rape:2};
     expect(game.recruit(1).ok).toBe(false);
     expect(akru(game)).toMatchObject({stars:1,level:4,ritualLevel:1,ritualXp:0,rituals:{rape:2}});
   });
@@ -57,12 +56,11 @@ describe('hunting', () => {
     expect(game.startHunt('hero-1', 'igarape').ok).toBe(true);
     expect(game.startHunt('hero-1', 'igarape').ok).toBe(false);
     expect(game.startBattle().ok).toBe(false);
-    const food = game.state.resources.food;
+    const xp = totalXp(game.state.heroes[0].level,game.state.heroes[0].xp);
     const loaded = new Game(game.serialize(1_000_000), 1_000_000 + (TRAILS[0].minutes+1) * 60 * 1000);
     const hero = loaded.state.heroes[0];
     expect(hero.away).toBeNull();
     expect(totalXp(hero.level,hero.xp)).toBe(TRAILS[0].xp);
-    expect(loaded.state.resources.food).toBeGreaterThan(food + TRAILS[0].food);
     expect(loaded.state.reports.at(-1)?.ok).toBe(true);
     expect(loaded.state.stats.hunts).toBe(1);
   });
@@ -81,61 +79,51 @@ describe('hunting', () => {
 
   it('limits hunters by the camp and lets one be called home early', () => {
     const game = new Game();
-    rich(game);
+
     game.state.heroes.push(newHero('b', 3), newHero('c', 8));
     expect(huntSlots(1)).toBe(1);
     expect(game.startHunt('hero-1', 'igarape').ok).toBe(true);
     expect(game.startHunt('b', 'igarape').ok).toBe(false);
-    game.state.buildings.hunt = 4;
+    game.state.era = 2;
     expect(game.startHunt('b', 'igarape').ok).toBe(true);
     expect(game.recallHunt('b').ok).toBe(true);
     expect(game.state.heroes.find(hero => hero.uid === 'b')!.away).toBeNull();
-    expect(game.assignWorker('hero-1', 'lumber').ok).toBe(false);
-    expect(game.sellHero('hero-1').ok).toBe(false);
   });
 });
 
 describe('the Casa de Cura', () => {
-  it('describes five practices with their peoples and meaning', () => {
-    expect(PRACTICES.map(practice => practice.id)).toEqual(['rape', 'sananga', 'kambo', 'ayahuasca', 'cacau']);
-    for (const practice of PRACTICES) { expect(practice.peoples.length).toBeGreaterThan(5); expect(practice.text.length).toBeGreaterThan(40); }
-  });
-
-  it('holds ceremonies only with the house built, for heroes in the village, and applies them when they end', () => {
-    const game = new Game();
-    rich(game);
-    const hero = akru(game);
-    expect(game.performRitual('hero-1', 'rape').ok).toBe(false);
-    expect(game.upgradeBuilding('cura').ok).toBe(true);
-    const spirit = game.state.resources.spirit;
-    expect(game.performRitual('hero-1', 'rape').ok).toBe(true);
-    expect(game.state.resources.spirit).toBe(spirit - PRACTICES[0].cost(0).spirit);
-    expect(game.performRitual('hero-1', 'sananga').ok).toBe(false);
-    wait(game, PRACTICES[0].rest+10);
+  it('completes the four personal rites with integration, lifts panema and preserves their combat effects', () => {
+    const game = new Game(), hero = akru(game);
+    expect(game.performRitual(hero.uid, 'rape').ok).toBe(true);
+    expect(game.performRitual(hero.uid, 'rape').ok).toBe(false);
+    wait(game, PRACTICES[0].rest + 10);
     expect(hero.rituals.rape).toBe(1);
     expect(hero.focus).toBe(true);
-    expect(game.performRitual('hero-1', 'kambo').ok).toBe(false);
-    expect(game.performRitual('hero-1', 'ayahuasca').ok).toBe(false);
-    game.state.villageLevel = 3; game.state.buildings.cura = 3; hero.level = 14; hero.panema = 2;
-    wait(game,RITUAL_COOLDOWN);
-    expect(game.performRitual('hero-1', 'sananga').ok).toBe(true);
-    wait(game, PRACTICES[1].rest+10+RITUAL_COOLDOWN);
+    expect(game.performRitual(hero.uid, 'sananga').ok).toBe(false);
+    game.state.era = 3; hero.level = 14; hero.panema = 2;
+    wait(game, RITUAL_COOLDOWN);
+    expect(game.performRitual(hero.uid, 'sananga').ok).toBe(true);
+    wait(game, PRACTICES[1].rest + 10 + RITUAL_COOLDOWN);
     expect(hero.panema).toBe(1);
-    expect(game.performRitual('hero-1', 'kambo').ok).toBe(true);
-    wait(game, PRACTICES[2].rest+10+RITUAL_COOLDOWN);
+    expect(game.performRitual(hero.uid, 'kambo').ok).toBe(true);
+    wait(game, PRACTICES[2].rest + 10 + RITUAL_COOLDOWN);
     expect(hero.panema).toBe(0);
-    expect(game.performRitual('hero-1', 'ayahuasca').ok).toBe(true);
-    wait(game, PRACTICES[3].rest+10);
+    expect(game.performRitual(hero.uid, 'ayahuasca').ok).toBe(true);
+    wait(game, PRACTICES[3].rest + 10);
     expect(hero.rituals).toEqual({ rape: 1, sananga: 1, kambo: 1, ayahuasca: 1 });
-    expect(game.performRitual('hero-1', 'ayahuasca').ok).toBe(false);
+    expect(game.performRitual(hero.uid, 'ayahuasca').ok).toBe(false);
     game.startBattle();
-    const entity = game.battle!.entities.find(e => e.uid === 'hero-1')!;
-    const plain = new Game(); akru(plain).level = 14; akru(plain).stars=hero.stars; plain.startBattle();
+    const entity = game.battle!.entities.find(e => e.uid === hero.uid)!;
+    const plain = new Game(); akru(plain).level = hero.level; akru(plain).stars = hero.stars; plain.startBattle();
     const base = plain.battle!.entities.find(e => e.uid === 'hero-1')!;
     expect(entity.maxHp).toBeCloseTo(base.maxHp * 1.08);
     expect(entity.attack).toBeCloseTo(base.attack * 1.06);
     expect(entity.attackSpeed).toBeCloseTo(base.attackSpeed * 1.05);
     expect(entity.spellPower).toBeCloseTo(base.spellPower * 1.2);
+  });
+  it('describes five practices with their peoples and meaning', () => {
+    expect(PRACTICES.map(practice => practice.id)).toEqual(['rape', 'sananga', 'kambo', 'ayahuasca', 'cacau']);
+    for (const practice of PRACTICES) { expect(practice.peoples.length).toBeGreaterThan(5); expect(practice.text.length).toBeGreaterThan(40); }
   });
 
   it('gives rapé focus to the next hunt', () => {
@@ -149,12 +137,9 @@ describe('the Casa de Cura', () => {
 
   it('gathers the whole tribe in the cacao circle for a while', () => {
     const game = new Game();
-    rich(game);
-    game.state.buildings.cura = 1;
-    expect(game.holdCacaoCircle().ok).toBe(false);
-    game.state.buildings.cura = 2; game.state.villageLevel = 2;
+
+     game.state.era = 2;
     expect(game.holdCacaoCircle().ok).toBe(true);
-    expect(game.holdCacaoCircle().ok).toBe(false);
     expect(game.xpBonus()).toBeCloseTo(1.25);
     wait(game, CACAO_DURATION + 10);
     expect(game.xpBonus()).toBe(1);
@@ -174,7 +159,7 @@ describe('a harder field', () => {
     const game = new Game();
     const data = JSON.parse(game.serialize(1000));
     data.version = 2;
-    data.state.heroes = [{ uid: 'old', characterId: 1, stars: 1, slot: 9, items: [], work: null }] as Partial<Hero>[];
+    data.state.heroes = [{ uid: 'old', characterId: 1, stars: 1, slot: 9, items: [] }] as Partial<Hero>[];
     expect(new Game(data, 1000).state.heroes[0]).toMatchObject({ slot: 17, level: 1, panema: 0, away: null });
   });
 });

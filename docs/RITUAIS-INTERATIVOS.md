@@ -1,3 +1,5 @@
+> Registro de uma versão anterior. As regras atuais estão em [Reformulação 2.2](REFORMULACAO-2.2.md); economia, construções, custos de rituais e trabalho descritos abaixo foram retirados.
+
 # Participação nos rituais
 
 As interações representam gestos simbólicos do universo do jogo. As cinco experiências usam um modelo puro em `src/game/ritualPlay.ts`, uma apresentação descartável em `src/ui/RitualExperience.ts` e efeitos Web Audio em `src/audio.ts`.

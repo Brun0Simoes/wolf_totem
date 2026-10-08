@@ -1,3 +1,5 @@
+> Registro de uma versão anterior. As regras atuais estão em [Reformulação 2.2](REFORMULACAO-2.2.md); economia, construções, custos de rituais e trabalho descritos abaixo foram retirados.
+
 # Caminhos Ancestrais — versão 2.1
 
 A Jornada substitui a gestão de aldeões, terrenos, construções civis e pesquisas de RTS. O ciclo passa a ser: escolher um desafio, jogar batalhas ou realizar atividades, receber conhecimento, aprender legados e preparar a próxima expedição.

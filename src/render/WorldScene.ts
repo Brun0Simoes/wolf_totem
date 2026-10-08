@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { fx,props,spellAtlas } from 'virtual:wolf-environment';
-import { OVERTIME_START, type BuildingId, type Game } from '../game/simulation';
+import { OVERTIME_START, type Game } from '../game/simulation';
 import { characters } from '../data/characters';
 import { animationSheets, assetUrl, bestAnimation, getAnimation, getSummonAnimation, frameRect, sheetKey, summonSheetKey } from './animationAssets';
 import { advanceMotion, createMotion, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState, type SheetDefinition } from './animationModel';
@@ -19,23 +19,14 @@ type View = 'village' | 'battle';
 type Ctx = CanvasRenderingContext2D;
 type Point = [number, number];
 type Entity = NonNullable<Game['battle']>['entities'][number];
-type Callbacks = { onHero: (uid:string)=>void; onMove:(uid:string,slot:number)=>void; onBuilding: (id: BuildingId) => void; onSlot: (slot: number) => void; onTerritory?:(id:string)=>void;onPlot?:(id:string)=>void;onCitizen?:(id:number)=>void };
+type Callbacks = { onHero: (uid:string)=>void; onMove:(uid:string,slot:number)=>void; onSlot: (slot: number) => void; onTerritory?:(id:string)=>void;onPlot?:(id:string)=>void;onCitizen?:(id:number)=>void };
 type UnitView = { dragging?: boolean; summon?: string; transform: boolean; morph:number;stealth:boolean;shadow:Phaser.GameObjects.Ellipse;conditions:Phaser.GameObjects.Graphics;hpTrail:number;step:number;trailAt:number;layer: Phaser.GameObjects.Layer; aura?: Phaser.GameObjects.Image; sprite: Phaser.GameObjects.Sprite; bars: Phaser.GameObjects.Graphics; name: Phaser.GameObjects.Text; ring: Phaser.GameObjects.Ellipse; baseTexture: string; desiredHeight: number; characterId: number; stars: number; motion: MotionState; x: number; y: number; lastHp: number; enemy: boolean; lastHit: number; flashUntil: number; flashReady: number };
-type Villager = { uid: string; view: UnitView; phase: number; work: BuildingId | null; lastWork: number };
 
 const COST_TINT = [0xdfd8c0, 0xc7dccf, 0xc3cde6, 0xdccbe6, 0xf1dca6];
 const SUMMON_HEIGHT: Record<string, number> = { spider: 34, crow: 40, beetle: 36, elephant: 82, wolf: 48 };
 const ZONE_COLOR: Record<string, number> = { web: 0xc8ebd8, water: 0x7fc8d6, veil: 0x4f7fa8, domain: 0xa77d4f, frost: 0xcfe9f7 };
 const W = 1200;
 const H = 740;
-const BUILDINGS: { id: BuildingId; name: string; x: number; y: number; icon: string; labelY?: number }[] = [
-  { id: 'lumber', name: 'BOSQUE DOS COLETORES', x: 390, y: 329, icon: '↟' },
-  { id: 'hunt', name: 'ACAMPAMENTO DE CAÇA', x: 797, y: 337, icon: '⌁' },
-  { id: 'quarry', name: 'PEDREIRA ANCESTRAL', x: 838, y: 494, icon: '◇' },
-  { id: 'shrine', name: 'CÍRCULO DOS ESPÍRITOS', x: 398, y: 493, icon: '✦' },
-  { id: 'forge', name: 'FORJA DE OSSO', x: 672, y: 254, icon: '⚒', labelY: -118 },
-  { id: 'cura', name: 'CASA DE CURA', x: 566, y: 578, icon: '❦' },
-];
 const procKey = (id: number, stars: number) => `proc-${id}-${stars}`;
 
 function random(seed: number): () => number {
@@ -62,21 +53,15 @@ export interface WorldOptions { reducedMotion: boolean; numbers: boolean }
 
 /** Presentation only: the caller owns the simulation clock, saves and all game rules. */
 export function createWorld(parent: HTMLElement, game: Game, callbacks: Callbacks, initial: WorldOptions): { setView(view: View): void; setOptions(options: WorldOptions): void; destroy(): void } {
-  let requestedView: View = 'village';
+  let requestedView: View = 'battle';
   let scene: WorldScene | undefined;
   let options = { ...initial };
 
   class WorldScene extends Phaser.Scene {
-    private village!: Phaser.GameObjects.Layer;
     private battlefield!: Phaser.GameObjects.Layer;
-    private villageActors: Villager[] = [];
-    private villageRoster = '';
-    private scenery: { object: Phaser.GameObjects.Image; angle: number; phase: number }[] = [];
     private clock = 0;
     private paused = false;
-    private previousLevels = { ...game.state.buildings };
     private effects!: CombatEffects;
-    private labels = new Map<BuildingId, Phaser.GameObjects.Text>();
     private units = new Map<string, UnitView>();
     private seenEvents = new Set<number>();
     private impactAt = new Map<string,number>();
@@ -86,20 +71,13 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private loadingArt = new Set<string>();
     private atlasUsed = new Map<string, number>();
     private lastAtlasSweep = 0;
-    private fire!: Phaser.GameObjects.Graphics;
     private ambience!: Phaser.GameObjects.Graphics;
     private floorHover!: Phaser.GameObjects.Graphics;
     private zoneLayer!: Phaser.GameObjects.Graphics;
     private board!: Phaser.GameObjects.Image;
     private boardRegion = 0;
-    private totemImage!: Phaser.GameObjects.Image;
-    private forgeImage!: Phaser.GameObjects.Image;
-    private curaImage!: Phaser.GameObjects.Image;
-    private banners: Phaser.GameObjects.Image[] = [];
-    private bannerKey = '';
-    private totemStage = -1;
     private stars: { x: number; y: number; phase: number; speed: number }[] = [];
-    private activeView: View = 'village';
+    private activeView: View = 'battle';
     private lastFormation = '';
     private floating: Phaser.GameObjects.GameObject[] = [];
     private dusk!: Phaser.GameObjects.Rectangle;
@@ -108,7 +86,6 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     constructor() { super({ key: 'WolfTotemWorld' }); }
 
     preload(): void {
-      this.load.image('painted-terrain',assetUrl('/assets/environment/village-terrain.png'));
       this.load.image('painted-props',assetUrl(props.image));
       this.load.image('painted-fx',assetUrl(fx.image));
       this.load.image('painted-spells',assetUrl(spellAtlas.image));
@@ -124,14 +101,10 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         if (this.textures.exists(sheetKey(sheet.characterId, sheet.stars))) this.registerAtlas(sheet);
       }
       this.cameras.main.setBackgroundColor('#111a17');
-      this.paint('land', W, H, (c) => this.paintLandscape(c));
-      this.add.image(0, 0, this.textures.exists('painted-terrain')?'painted-terrain':'land').setOrigin(0).setDisplaySize(W,H).setDepth(-1000);
       if(this.textures.exists('painted-fx'))for(const [name,r]of Object.entries(fx.frames))this.textures.get('painted-fx').add(name,0,r.x,r.y,r.width,r.height);
       if(this.textures.exists('painted-spells'))for(const [name,r]of Object.entries(spellAtlas.frames))this.textures.get('painted-spells').add(name,0,r.x,r.y,r.width,r.height);
       if(this.textures.exists('painted-props'))for(const [name,r]of Object.entries(props.frames))this.textures.get('painted-props').add(name,0,r.x,r.y,r.width,r.height);
-      this.village = this.add.layer().setDepth(0);
       this.battlefield = this.add.layer().setDepth(1).setVisible(false);
-      this.createVillage();
       this.createBattlefield();
       this.effects = new CombatEffects(this, this.battlefield, this.reducedMotion);
       this.ambience = this.add.graphics().setDepth(1200);
@@ -142,7 +115,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       this.game.canvas.setAttribute('role', 'img');
       this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
         this.effects.destroy();
-        this.tweens.killAll(); this.units.clear(); this.labels.clear(); this.seenEvents.clear();
+        this.tweens.killAll(); this.units.clear(); this.seenEvents.clear();
       });
     }
 
@@ -152,433 +125,12 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       draw(texture.context); texture.refresh();
     }
 
-    private paintLandscape(c: Ctx): void {
-      const rng = random(4791);
-      const bg = c.createLinearGradient(0, 0, 0, H);
-      bg.addColorStop(0, '#1d2a23'); bg.addColorStop(.5, '#182820'); bg.addColorStop(1, '#101e1e');
-      c.fillStyle = bg; c.fillRect(0, 0, W, H);
-      glow(c, 470, 190, 500, '#9c93531a');
-      // Deep forest silhouettes dissolve into the mist behind the clearing.
-      for (let i = 0; i < 75; i++) {
-        const x = rng() * W, y = 90 + rng() * 190, h = 40 + rng() * 110;
-        const shade = i % 3 ? '#22352a' : '#293d2e';
-        polygon(c, [[x, y - h], [x - h * .24, y - h * .34], [x - h * .15, y - h * .34], [x - h * .35, y], [x + h * .32, y], [x + h * .13, y - h * .34], [x + h * .22, y - h * .34]], shade);
-      }
-      const mist = c.createLinearGradient(0, 90, 0, 330);
-      mist.addColorStop(0, '#b8bda707'); mist.addColorStop(1, '#142b2400'); c.fillStyle = mist; c.fillRect(0, 90, W, 260);
-      // River, ripples and submerged stone shelves.
-      polygon(c, [[1030, 230], [1200, 300], [1200, 740], [280, 740], [541, 579], [909, 416]], '#213e3b');
-      const water = c.createLinearGradient(0, 360, 1200, 710); water.addColorStop(0, '#335446'); water.addColorStop(1, '#142f31');
-      polygon(c, [[1150, 337], [1200, 360], [1200, 740], [430, 740], [670, 582]], water);
-      for (let i = 0; i < 135; i++) {
-        const x = rng() * W, y = 370 + rng() * 370;
-        line(c, [[x, y], [x + 5 + rng() * 41, y - 1]], i % 4 ? '#82a7970d' : '#bcd1af20', 1);
-      }
-      ellipse(c, 627, 518, 516, 162, '#0a15176b');
-      const edge: Point[] = [[77, 361], [299, 230], [590, 132], [849, 230], [1127, 363], [875, 534], [599, 648], [313, 530]];
-      polygon(c, edge.map(([x, y]) => [x, y + 33]), '#283b34', '#385047', 2);
-      polygon(c, [[77, 361], [313, 530], [599, 648], [599, 680], [313, 563], [77, 389]], '#3a493b');
-      polygon(c, [[599, 648], [875, 534], [1127, 363], [1127, 393], [875, 565], [599, 680]], '#273d35');
-      for (let i = 0; i < 24; i++) {
-        const t = i / 24, x = 79 + t * 518, y = 363 + t * 285;
-        polygon(c, [[x, y + 8], [x + 18, y + 18], [x + 14, y + 35], [x - 5, y + 23]], i % 3 ? '#455241' : '#566047');
-      }
-      polygon(c, edge, '#667251', '#849071', 3);
-      polygon(c, [[93, 360], [309, 239], [591, 142], [840, 237], [1111, 363], [866, 525], [596, 637], [321, 521]], '#697451');
-      // Soil color subtly changes across the sunny clearing.
-      c.save(); c.beginPath(); edge.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.clip();
-      glow(c, 547, 352, 360, '#c2b36d47'); glow(c, 979, 440, 240, '#204f3c45');
-      for (let i = 0; i < 4700; i++) {
-        const x = 70 + rng() * 1060, y = 130 + rng() * 520;
-        c.fillStyle = ['#c1bd7f13', '#2c4a2e15', '#d1c58f13'][i % 3];
-        c.fillRect(x, y, 1 + rng() * 3, .7 + rng() * 1.3);
-      }
-      // Branching paths connect the actual places the player can improve.
-      const paths: Point[][] = [
-        [[362, 318], [456, 369], [593, 412], [669, 463], [655, 558], [596, 630]],
-        [[586, 415], [678, 358], [790, 335]],
-        [[645, 447], [732, 473], [851, 493]],
-        [[586, 414], [521, 447], [405, 485]],
-        [[576, 397], [578, 304], [648, 259]],
-      ];
-      for (const p of paths) { line(c, p, '#52604680', 40); line(c, p, '#a49a6e', 29); line(c, p, '#b3a579', 22); }
-      ellipse(c, 591, 411, 82, 42, '#ac9e71');
-      for (let i = 0; i < 550; i++) {
-        const x = 90 + rng() * 1020, y = 155 + rng() * 470;
-        if (Math.abs(x - 600) < 180 && y > 320 && y < 480) continue;
-        if (rng() < .3) {
-          line(c, [[x, y], [x - 2, y - 3]], '#4b633b88', 1); line(c, [[x, y], [x + 3, y - 4]], '#a1a67466', 1);
-        } else ellipse(c, x, y, .9 + rng() * 1.9, .7, '#d0c79b55');
-      }
-      c.restore();
-      // Thin light on the grassy edge helps the map read as physical terrain.
-      line(c, [[93, 360], [319, 520], [596, 638], [866, 525]], '#adb18066', 2);
-      for (let i = 0; i < 22; i++) {
-        const t = i / 22, x = 627 + t * 474, y = 644 - t * 249;
-        ellipse(c, x + 20, y + 40, 5 + rng() * 13, 3 + rng() * 3, '#8faaa51b');
-      }
-      // A wooden footbridge meets the near river bank.
-      polygon(c, [[556, 645], [594, 630], [661, 703], [625, 722]], '#302f24');
-      for (let i = 0; i < 9; i++) {
-        const t = i / 9; line(c, [[559 + t * 66, 644 + t * 76], [592 + t * 65, 633 + t * 73]], i % 2 ? '#8a7950' : '#a28a5b', 7);
-      }
-      for (const [x, y] of [[555, 645], [594, 631], [627, 718], [662, 702]]) {
-        line(c, [[x, y], [x, y - 25]], '#5b4d35', 5); ellipse(c, x, y - 25, 3, 2, '#bb9c61');
-      }
-      line(c, [[555, 621], [627, 693]], '#b8a27c', 2); line(c, [[594, 607], [662, 677]], '#b8a27c', 2);
-    }
-
-    private addVillageProp(x:number,y:number,key:string,scale:number,depth=y):Phaser.GameObjects.Image {
-      const mapping:Record<string,[keyof typeof props.frames,number]>={'hut-lumber':['lumber',248],'hut-hunt':['hunt',248],shrine:['shrine',210],quarry:['quarry',230],forge:['forge',230],cura:['cura',240]};
-      if(key.startsWith('tree-'))mapping[key]=['tree',172];
-      const mapped=mapping[key];
-      if(mapped&&this.textures.exists('painted-props'))return this.add.image(x,y,'painted-props',mapped[0]).setOrigin(.5,1).setScale(scale*mapped[1]/props.frames[mapped[0]].width).setDepth(depth);
-      return this.add.image(x,y,key).setOrigin(.5,1).setScale(scale).setDepth(depth);
-    }
-
-    private createVillage(): void {
-      const rng = random(412);
-      for (let i = 0; i < 5; i++) this.paint(`tree-${i}`, 172, 213, c => this.paintTree(c, i));
-      this.paint('rock', 106, 72, c => this.paintRocks(c));
-      this.paint('hut-lumber', 248, 225, c => this.paintHut(c, false));
-      this.paint('hut-hunt', 248, 225, c => this.paintHut(c, true));
-      this.paint('shrine', 210, 183, c => this.paintShrine(c));
-      this.paint('quarry', 230, 175, c => this.paintQuarry(c));
-      for (let stage = 0; stage <= 5; stage++) this.paint(`totem-${stage}`, 220, 330, c => this.paintGreatTotem(c, stage));
-      this.paint('forge', 230, 200, c => this.paintForge(c, true));
-      this.paint('forge-site', 230, 200, c => this.paintForge(c, false));
-      this.paint('cura', 240, 210, c => this.paintCura(c, true));
-      this.paint('cura-site', 240, 210, c => this.paintCura(c, false));
-      this.paint('logs', 105, 65, c => this.paintLogs(c));
-      this.paint('tent', 160, 148, c => this.paintTent(c));
-
-      const groves: Point[] = [
-        [247, 300], [290, 268], [352, 247], [418, 220], [490, 202], [551, 193], [618, 194], [692, 213], [738, 232],
-        [846, 272], [899, 297], [957, 330], [995, 374], [952, 413], [987, 409],
-        [210, 350], [225, 388], [274, 417], [301, 445], [267, 362], [877, 533], [777, 568],
-        [480, 590], [428, 556], [700, 590], [740, 572],
-      ];
-      groves.forEach(([x, y], i) => {
-        if (i % 2) return;
-        const tree = this.addVillageProp(x,y,`tree-${i % 5}`,.55+rng()*.2);
-        this.village.add(tree);
-        this.scenery.push({ object: tree, angle: .5 + rng() * .5, phase: rng() * 6.28 });
-      });
-      const objects = [
-        { key: 'hut-lumber', x: 390, y: 329, scale: .91 },
-        { key: 'hut-hunt', x: 797, y: 337, scale: .92 },
-        { key: 'shrine', x: 398, y: 493, scale: .96 },
-        { key: 'quarry', x: 838, y: 494, scale: .97 },
-        { key: 'logs', x: 308, y: 350, scale: .85 },
-        { key: 'logs', x: 455, y: 326, scale: .65 },
-        { key: 'tent', x: 520, y: 262, scale: .5 },
-        { key: 'tent', x: 746, y: 425, scale: .50 },
-        { key: 'rock', x: 970, y: 448, scale: .74 },
-        { key: 'rock', x: 187, y: 368, scale: .79 },
-        { key: 'rock', x: 698, y: 606, scale: .6 },
-      ];
-      objects.forEach(o => this.village.add(this.addVillageProp(o.x,o.y,o.key,o.scale)));
-      this.totemImage = this.add.image(610,412,'painted-props','totem').setOrigin(.5,1).setDisplaySize(140,153).setDepth(410); this.village.add(this.totemImage);
-      this.forgeImage = this.add.image(672, 256, 'forge-site').setOrigin(.5, 1).setScale(.62).setDepth(268); this.village.add(this.forgeImage);
-      this.curaImage = this.add.image(566, 580, 'cura-site').setOrigin(.5, 1).setScale(.6).setDepth(580); this.village.add(this.curaImage);
-
-      for (const b of BUILDINGS) {
-        const ring = this.add.ellipse(b.x, b.y - 8, 156, 67).setStrokeStyle(1.5, 0xe9c47c, 0).setDepth(b.y - 1);
-        this.village.add(ring);
-        const zone = this.add.zone(b.x, b.y - 58, 179, 135).setInteractive({ useHandCursor: true }).setDepth(b.y + 300);
-        zone.on('pointerover', () => { ring.setStrokeStyle(1.5, 0xe9c47c, .7); badge.setColor('#f6db9a'); });
-        zone.on('pointerout', () => { ring.setStrokeStyle(1.5, 0xe9c47c, 0); badge.setColor('#e8ddba'); });
-        zone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-          if (pointer.event.target !== this.game.canvas || game.state.paused) return;
-          callbacks.onBuilding(b.id); this.pulse(b.x, b.y - 7, 0xe2bd79, this.village);
-        });
-        this.village.add(zone);
-        const labelY = b.y + (b.labelY ?? 17);
-        const bg = this.add.rectangle(b.x,labelY,190,28,0x102629,.92).setStrokeStyle(1, 0xc5b481, .27).setDepth(1000);
-        const badge = this.add.text(b.x, labelY, `${b.icon}  ${b.name}`, { fontFamily: 'Georgia, serif', fontSize: '11px', color: '#e8e2d4', letterSpacing: .8 }).setOrigin(.5).setDepth(1001);
-        const level = this.add.text(b.x, labelY + 19, '', { fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#c1d2c5' }).setOrigin(.5).setDepth(1001);
-        this.village.add([bg, badge, level]); this.labels.set(b.id, level);
-      }
-      this.fire = this.add.graphics().setDepth(465); this.village.add(this.fire);
-      // Small flag claims the center, leaving the place itself as the hero of the screen.
-      const centerTitle = this.add.text(610, 429, 'TOTEM DO LOBO', { fontFamily: 'Georgia, serif', fontSize: '11px', color: '#f4dda1', letterSpacing: 1.8 }).setOrigin(.5).setDepth(1001);
-      this.village.add(centerTitle);
-    }
-
-    /** Each raised stage of the Great Totem stacks another carved spirit; the last one opens wings and glows. */
-    private paintGreatTotem(c: Ctx, stage: number): void {
-      if (stage >= 5) glow(c, 110, 120, 120, '#f2d48633');
-      const animals: AnimalId[] = ['bear', 'eagle', 'owl', 'serpent', 'elephant'];
-      for (let i = 0; i < stage; i++) {
-        const top = 139 - 27 * (i + 1);
-        polygon(c, [[92, top + 28], [93, top], [127, top], [128, top + 28]], i % 2 ? '#7d5c3c' : '#8e6b45', '#3b2e20', 2);
-        line(c, [[95, top + 3], [125, top + 3]], '#c9a66c88', 2);
-        paintGlyph(c, animals[i], 110, top + 14, 30, i === stage - 1 && stage === 5 ? '#f2d486' : '#d9c39a', 1, '#3b2e20');
-      }
-      if (stage >= 3) {
-        const top = 139 - 27 * stage;
-        for (const side of [-1, 1]) polygon(c, [[110 + side * 16, top + 10], [110 + side * 70, top - 12], [110 + side * 86, top + 6], [110 + side * 58, top + 14], [110 + side * 72, top + 26], [110 + side * 22, top + 22]], stage >= 5 ? '#e8c77a' : '#b39a6c', '#4a3a26', 2);
-      }
-      c.save(); c.translate(25, 132); this.paintTotem(c); c.restore();
-    }
-
-    private paintForge(c: Ctx, built: boolean): void {
-      ellipse(c, 118, 186, 100, 18, '#1c2c2363');
-      if (!built) {
-        for (const [x, y] of [[50, 176], [186, 176], [80, 150], [160, 150]]) { line(c, [[x, y], [x, y - 34]], '#7b6545', 4); ellipse(c, x, y - 34, 3, 2, '#c7ab78'); }
-        line(c, [[50, 150], [80, 124], [160, 124], [186, 150]], '#b9a172', 1.5);
-        for (let i = 0; i < 9; i++) { const a = i * Math.PI * 2 / 9; polygon(c, [[118 + Math.cos(a) * 34 - 6, 168 + Math.sin(a) * 11], [118 + Math.cos(a) * 34, 160 + Math.sin(a) * 11], [118 + Math.cos(a) * 34 + 7, 168 + Math.sin(a) * 11]], '#8e9386', '#5f665c', 1); }
-        return;
-      }
-      // Hide canopy over the hearth.
-      for (const [x, y] of [[44, 182], [192, 182], [70, 150], [168, 150]]) line(c, [[x, y], [x + (x < 118 ? 6 : -6), y - 92]], '#6b5236', 5);
-      polygon(c, [[40, 94], [118, 64], [198, 94], [176, 112], [118, 88], [62, 112]], '#b08a5c', '#5a4430', 2);
-      polygon(c, [[118, 64], [198, 94], [176, 112], [118, 88]], '#94714a');
-      for (let i = 0; i < 6; i++) line(c, [[62 + i * 22, 108 - Math.abs(2.5 - i) * 3], [62 + i * 22, 116 - Math.abs(2.5 - i) * 3]], '#d8bf8f', 2);
-      // Stone hearth with embers.
-      ellipse(c, 118, 168, 46, 16, '#6f7468'); ellipse(c, 118, 164, 38, 12, '#3a2a20');
-      glow(c, 118, 156, 44, '#f2a24f66');
-      for (let i = 0; i < 5; i++) polygon(c, [[104 + i * 7, 166], [108 + i * 7, 146 - (i % 2) * 10], [112 + i * 7, 166]], i % 2 ? '#f9d378' : '#e0843e');
-      for (let i = 0; i < 10; i++) { const a = i * Math.PI * 2 / 10; ellipse(c, 118 + Math.cos(a) * 44, 166 + Math.sin(a) * 14, 7, 5, '#9a9f8f'); }
-      // Anvil stone, bones and a finished spear on the rack.
-      polygon(c, [[160, 176], [166, 158], [194, 156], [200, 174], [182, 182]], '#868b80', '#4f564c', 2);
-      line(c, [[170, 157], [192, 155]], '#c7c9b8', 2);
-      line(c, [[52, 176], [58, 120]], '#7b6545', 4); line(c, [[78, 176], [84, 120]], '#7b6545', 4); line(c, [[50, 132], [88, 128]], '#7b6545', 3);
-      for (let i = 0; i < 4; i++) line(c, [[56 + i * 8, 130], [54 + i * 8, 160]], '#e8dcc0', 3);
-      line(c, [[34, 178], [64, 96]], '#9d8358', 3); polygon(c, [[64, 96], [70, 84], [60, 92]], '#c2c7bb');
-    }
-
-    /** A round maloca with a thatched roof, painted bands and a small fire for the ceremonies. */
-    private paintCura(c: Ctx, built: boolean): void {
-      ellipse(c, 120, 196, 104, 16, '#1c2c2363');
-      if (!built) {
-        for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; line(c, [[120 + Math.cos(a) * 64, 186 + Math.sin(a) * 16], [120 + Math.cos(a) * 64, 150 + Math.sin(a) * 16]], '#7b6545', 4); }
-        line(c, [[56, 150], [120, 96], [184, 150]], '#b9a172', 1.5);
-        for (let i = 0; i < 10; i++) { const a = i * Math.PI * 2 / 10; ellipse(c, 120 + Math.cos(a) * 28, 186 + Math.sin(a) * 8, 5, 3.5, '#8e9386'); }
-        return;
-      }
-      // Walls of split palm with a painted band of zigzags.
-      polygon(c, [[42, 128], [198, 128], [194, 190], [46, 190]], '#8a6a44', '#4a3826', 2);
-      for (let i = 0; i < 14; i++) line(c, [[50 + i * 11, 132], [50 + i * 11, 188]], i % 2 ? '#7a5c3a' : '#9c7a50', 3);
-      polygon(c, [[44, 146], [196, 146], [196, 160], [44, 160]], '#d8c8a2');
-      const zig: Point[] = [];
-      for (let i = 0; i <= 20; i++) zig.push([46 + i * 7.5, i % 2 ? 156 : 150]);
-      line(c, zig, '#8c3b2a', 2.2);
-      polygon(c, [[104, 190], [104, 152], [136, 152], [136, 190]], '#2a1d14', '#4a3826', 2);
-      // Thatched cone, lit from the front.
-      polygon(c, [[24, 132], [120, 26], [216, 132], [196, 140], [120, 132], [44, 140]], '#b5955f', '#5a4430', 2);
-      polygon(c, [[120, 26], [216, 132], [196, 140], [120, 132]], '#9a7b4b');
-      for (let i = 0; i < 9; i++) line(c, [[120, 30], [36 + i * 21, 134 + Math.abs(4 - i) * 0.6]], '#d6bd88', 1);
-      line(c, [[40, 134], [200, 134]], '#6e5434', 3);
-      line(c, [[120, 26], [120, 10]], '#6b5236', 3); ellipse(c, 120, 9, 4, 4, '#e3c27c');
-      // Herbs drying under the eaves, and the ceremony fire.
-      for (const x of [62, 80, 160, 178]) { line(c, [[x, 136], [x, 150]], '#6b8a4a', 3); ellipse(c, x, 152, 4, 3, '#86a85a'); }
-      glow(c, 170, 196, 30, '#f2a24f55');
-      polygon(c, [[162, 200], [170, 184], [178, 200]], '#f2a24f'); polygon(c, [[166, 200], [170, 190], [174, 200]], '#f9d378');
-      for (let i = 0; i < 3; i++) ellipse(c, 158 + i * 12, 201, 6, 2.5, '#6f7468');
-    }
-
-    private paintBanner(c: Ctx, color: string, animal: AnimalId): void {
-      line(c, [[24, 116], [24, 6]], '#6b5236', 4); ellipse(c, 24, 6, 3, 3, '#e3c27c');
-      polygon(c, [[26, 12], [66, 14], [62, 40], [66, 66], [44, 58], [26, 64]], '#d8c7a2', '#5a4430', 2);
-      paintGlyph(c, animal, 46, 38, 30, color, 1, '#3b2e20');
-      line(c, [[26, 64], [30, 76]], color, 2); line(c, [[44, 58], [46, 72]], color, 2);
-    }
-
-    private updateVillageStructures(t: number): void {
-      const s = game.state;
-      if (s.wonder !== this.totemStage) {
-        if (this.totemStage >= 0) { this.pulse(610, 360, 0xf2d486, this.village); this.pulse(610, 300, 0xf2d486, this.village); }
-        this.totemStage = s.wonder; this.totemImage.setTexture('painted-props','totem').setDisplaySize(140+s.wonder*12,153+s.wonder*18);
-      }
-      const forgeKey = s.buildings.forge > 0 ? 'forge' : 'forge-site';
-      if(s.buildings.forge>0){this.forgeImage.setTexture('painted-props','forge').setDisplaySize(145,143);}else if(this.forgeImage.texture.key!==forgeKey)this.forgeImage.setTexture(forgeKey).setScale(.62);
-      const curaKey = s.buildings.cura > 0 ? 'cura' : 'cura-site';
-      if(s.buildings.cura>0){this.curaImage.setTexture('painted-props','cura').setDisplaySize(170,172);}else if(this.curaImage.texture.key!==curaKey)this.curaImage.setTexture(curaKey).setScale(.6);
-      const key = s.spirits.join(',');
-      if (key !== this.bannerKey) {
-        this.bannerKey = key;
-        for (const banner of this.banners) banner.destroy();
-        const spots: Point[] = [[530, 402], [694, 404], [548, 462], [676, 462]];
-        this.banners = s.spirits.map((id, i) => {
-          const spirit = spiritById(id)!, texture = `banner-${id}`;
-          if (!this.textures.exists(texture)) this.paint(texture, 72, 120, c => this.paintBanner(c, spirit.color, spirit.animal as AnimalId));
-          const image = this.add.image(spots[i][0], spots[i][1], texture).setOrigin(.33, 1).setScale(.62).setDepth(spots[i][1]);
-          this.village.add(image); this.pulse(spots[i][0], spots[i][1], 0xe9d18e, this.village);
-          return image;
-        });
-      }
-      this.banners.forEach((banner, i) => banner.setAngle(this.reducedMotion ? 0 : Math.sin(t * 1.3 + i) * 2.5));
-    }
-
-    /** The arena backdrop and board follow the region of the selected expedition. */
     private paintBoard(region: number): void {
       if (region === this.boardRegion) return;
       this.boardRegion = region;
       const key = `arena-${region}`;
       if (!this.textures.exists(key)) this.paint(key, W, H, c => paintArena(c, REGIONS[region - 1] ?? REGIONS[0]));
       this.board.setTexture(key);
-    }
-
-    private paintTree(c: Ctx, variant: number): void {
-      const rng = random(51 + variant * 47), pine = variant % 3 !== 1;
-      ellipse(c, 88, 197, 43, 12, '#182a2263');
-      polygon(c, [[77, 199], [82, 102], [91, 89], [96, 198], [88, 205]], '#514d32');
-      polygon(c, [[83, 195], [87, 103], [91, 195]], '#8a7650');
-      line(c, [[79, 193], [69, 202]], '#484630', 3); line(c, [[96, 194], [107, 200]], '#4c4b31', 3);
-      if (pine) {
-        for (let tier = 0; tier < 5; tier++) {
-          const top = 111 - tier * 19, bottom = 177 - tier * 26, width = 66 - tier * 11;
-          const p: Point[] = [[88, top - 37]];
-          for (let j = 0; j < 7; j++) p.push([88 - width + j * width / 3, bottom + (j % 2 ? 2 : -5) + rng() * 5]);
-          polygon(c, p, ['#314b35', '#3a583b', '#435f3d', '#536d44', '#667e4e'][tier]);
-          polygon(c, [[88, top - 37], [88 - width, bottom - 5], [79, bottom - 15]], ['#506344', '#5b714a', '#698052', '#75885a', '#819262'][tier]);
-          line(c, [[88 - width + 7, bottom - 4], [78, bottom - 13]], '#a8b57627', 1);
-        }
-      } else {
-        line(c, [[87, 152], [44, 98]], '#665b37', 8); line(c, [[88, 127], [124, 76]], '#635b38', 7);
-        const clusters: Point[] = [[51, 106], [110, 111], [128, 74], [72, 59], [49, 66], [91, 89], [89, 43]];
-        clusters.forEach(([x, y], i) => {
-          const r = 29 + rng() * 12, points: Point[] = [];
-          for (let j = 0; j < 11; j++) { const a = j * Math.PI * 2 / 11, s = r * (.84 + rng() * .18); points.push([x + Math.cos(a) * s, y + Math.sin(a) * s * .76]); }
-          polygon(c, points, ['#425c3b', '#4a643f', '#597246', '#6c8150', '#657a4b', '#6a8150', '#82905a'][i]);
-          for (let j = 0; j < 14; j++) { const px = x - 24 + rng() * 44, py = y - 16 + rng() * 30; ellipse(c, px, py, 3.5, 1.8, '#c1c88815'); }
-        });
-      }
-      for (let i = 0; i < 6; i++) { const x = 69 + rng() * 37; line(c, [[x, 202], [x - 2, 194 - rng() * 4]], '#7e8952', 1); }
-    }
-
-    private paintHut(c: Ctx, hunting: boolean): void {
-      ellipse(c, 122, 204, 107, 19, '#19261e63');
-      polygon(c, [[55, 146], [127, 169], [196, 143], [195, 192], [126, 221], [53, 194]], '#68513b', '#473f2d', 2);
-      polygon(c, [[55, 146], [127, 169], [127, 219], [54, 193]], '#a18659');
-      for (let i = 0; i < 9; i++) { const x = 59 + i * 7.5; line(c, [[x, 149 + i * 2.5], [x, 193 + i * 2.9]], i % 2 ? '#7c6547' : '#bba271', 3); }
-      for (let i = 0; i < 8; i++) { const x = 133 + i * 8; line(c, [[x, 171 - i * 3], [x, 216 - i * 3.6]], '#92774f', 4); }
-      polygon(c, [[143, 176], [169, 165], [169, 204], [143, 215]], '#252d23');
-      polygon(c, [[149, 180], [165, 173], [165, 202], [149, 209]], '#161e19');
-      line(c, [[139, 175], [170, 163], [173, 206]], '#b79a6a', 4);
-      polygon(c, [[45, 142], [120, 54], [212, 135], [129, 174]], hunting ? '#a49466' : '#bba36d', '#66583c', 3);
-      polygon(c, [[45, 142], [120, 54], [129, 174]], hunting ? '#c5b57b' : '#dcc187');
-      polygon(c, [[120, 54], [212, 135], [129, 174]], hunting ? '#a4915a' : '#b5985f');
-      const rng = random(hunting ? 92 : 24);
-      for (let i = 0; i < 70; i++) {
-        const t = i / 70;
-        line(c, [[120 - t * 73, 61 + t * 82], [130 - t * 77, 169 - t * 24]], i % 3 ? '#8e794733' : '#fff0b256', 1.3);
-        line(c, [[122 + t * 86, 59 + t * 75], [130 + t * 80, 172 - t * 34]], i % 3 ? '#7761393b' : '#f5d89448', 1.5);
-      }
-      for (let i = 0; i < 26; i++) {
-        const t = i / 26; line(c, [[47 + t * 82, 144 + t * 29], [46 + t * 82, 148 + t * 29 + rng() * 5]], '#e0c385', 2);
-        line(c, [[129 + t * 82, 173 - t * 37], [129 + t * 82, 179 - t * 37]], '#af935b', 2);
-      }
-      line(c, [[119, 51], [129, 174]], '#ebd19788', 2);
-      line(c, [[47, 143], [55, 201]], '#695335', 5); line(c, [[130, 173], [130, 224]], '#725738', 5); line(c, [[205, 139], [196, 198]], '#725738', 5);
-      line(c, [[44, 154], [52, 156]], '#d0b579', 2); line(c, [[126, 182], [133, 183]], '#d0b579', 2);
-      ellipse(c, 101, 187, 8, 10, '#3e3826'); line(c, [[93, 187], [109, 191]], '#cbb48a', 2);
-      if (hunting) {
-        line(c, [[189, 200], [231, 123]], '#9d8b5e', 4); line(c, [[218, 211], [185, 124]], '#a28f5e', 4);
-        line(c, [[190, 135], [223, 140]], '#d6c592', 3);
-        polygon(c, [[194, 139], [218, 141], [217, 166], [209, 178], [198, 167]], '#b38351');
-        ellipse(c, 203, 151, 4, 7, '#654631');
-        line(c, [[180, 107], [181, 91], [187, 84]], '#e7d7ae', 3); line(c, [[181, 95], [172, 85]], '#e7d7ae', 2);
-      } else {
-        line(c, [[33, 199], [39, 167]], '#766547', 4); line(c, [[32, 166], [49, 172]], '#a6b1a3', 6);
-        ellipse(c, 29, 203, 13, 6, '#685a3c'); ellipse(c, 29, 200, 13, 5, '#c5a87b');
-      }
-      for (let i = 0; i < 7; i++) { const x = 61 + i * 20; ellipse(c, x, 212 - Math.abs(125 - x) * .22, 7, 4, '#919080'); }
-    }
-
-    private paintShrine(c: Ctx): void {
-      ellipse(c, 105, 160, 91, 21, '#1c2e2466');
-      ellipse(c, 105, 150, 78, 27, '#92916f'); ellipse(c, 105, 146, 69, 23, '#c1b58a');
-      ellipse(c, 105, 144, 46, 16, '#8a8f6e');
-      for (let i = 0; i < 8; i++) {
-        const a = i * Math.PI / 4, x = 105 + Math.cos(a) * 63, y = 145 + Math.sin(a) * 21;
-        polygon(c, [[x - 9, y], [x - 8, y - 15], [x + 1, y - 23], [x + 11, y - 17], [x + 12, y - 2], [x + 3, y + 4]], '#7f8776', '#aaa993', 1);
-      }
-      polygon(c, [[72, 139], [73, 54], [85, 42], [96, 52], [96, 147]], '#6c7769');
-      polygon(c, [[119, 146], [119, 56], [133, 42], [144, 57], [144, 138]], '#818a74');
-      polygon(c, [[68, 59], [76, 34], [135, 32], [151, 55], [126, 66], [88, 66]], '#a0a28a', '#626c5b', 2);
-      polygon(c, [[76, 34], [135, 32], [144, 40], [85, 47]], '#c0bda1');
-      line(c, [[79, 77], [85, 89], [78, 99], [85, 113]], '#c6d8ad', 2); line(c, [[133, 73], [126, 87], [133, 101]], '#d4dcba', 2);
-      glow(c, 109, 117, 47, '#c4e59d3c');
-      ellipse(c, 108, 132, 18, 8, '#527956');
-      polygon(c, [[108, 87], [121, 115], [110, 133], [99, 115]], '#bcdda6', '#e7efc0', 1.3);
-      polygon(c, [[108, 87], [111, 118], [99, 115]], '#ecf3c6');
-      line(c, [[79, 66], [64, 80], [48, 75], [30, 90]], '#615b36', 1);
-      for (const [x, y] of [[64, 82], [48, 78], [32, 88]]) polygon(c, [[x - 4, y], [x + 4, y], [x + 2, y + 12]], '#b5a16c');
-    }
-
-    private paintQuarry(c: Ctx): void {
-      ellipse(c, 115, 149, 106, 23, '#1c2c2363');
-      polygon(c, [[18, 128], [29, 78], [69, 57], [97, 76], [129, 112], [116, 148], [62, 161]], '#727c74', '#5d695e', 2);
-      polygon(c, [[29, 78], [69, 57], [97, 76], [69, 114], [18, 128]], '#a4a798');
-      polygon(c, [[69, 114], [97, 76], [129, 112], [116, 148], [62, 161]], '#7a877b');
-      polygon(c, [[113, 129], [121, 95], [153, 65], [183, 85], [205, 131], [171, 152]], '#768078');
-      polygon(c, [[121, 95], [153, 65], [183, 85], [161, 107]], '#b2b5a0');
-      polygon(c, [[121, 95], [161, 107], [171, 152], [113, 129]], '#939b8b');
-      line(c, [[77, 68], [66, 93], [76, 105], [69, 128]], '#53665c', 2); line(c, [[175, 89], [166, 113], [186, 129]], '#53665c', 2);
-      line(c, [[72, 78], [66, 93], [71, 100]], '#cfd0b755', 1);
-      for (let i = 0; i < 9; i++) { const x = 57 + i * 15, y = 149 + Math.sin(i) * 12; polygon(c, [[x - 9, y], [x - 5, y - 10], [x + 5, y - 12], [x + 10, y - 3], [x + 4, y + 4]], '#9a9f8d'); }
-      line(c, [[143, 165], [179, 116]], '#ac8c56', 5); line(c, [[164, 112], [193, 127]], '#d3d0b4', 5);
-      polygon(c, [[18, 127], [40, 132], [38, 145], [19, 141]], '#8a7551');
-      line(c, [[22, 127], [25, 114], [37, 118], [37, 131]], '#a38c63', 2);
-    }
-
-    private paintTotem(c: Ctx): void {
-      ellipse(c, 84, 179, 67, 17, '#2e352568');
-      ellipse(c, 84, 174, 57, 17, '#877a53');
-      for (let i = 0; i < 9; i++) {
-        const a = i * Math.PI * 2 / 9, x = 85 + Math.cos(a) * 49, y = 172 + Math.sin(a) * 13;
-        polygon(c, [[x - 9, y], [x - 6, y - 7], [x + 4, y - 9], [x + 9, y - 3], [x + 7, y + 3]], '#b2ac87', '#70785e', 1);
-      }
-      polygon(c, [[65, 169], [67, 59], [103, 54], [108, 168], [87, 181]], '#725437');
-      polygon(c, [[65, 169], [67, 59], [82, 60], [82, 178]], '#a28252');
-      line(c, [[74, 74], [72, 158]], '#c7a66c66', 2); line(c, [[98, 90], [101, 159]], '#382e2166', 2);
-      for (const y of [108, 128, 152]) { line(c, [[67, y], [85, y + 6], [105, y - 2]], '#d1b88d', 3); }
-      polygon(c, [[55, 51], [49, 11], [73, 31], [90, 25], [116, 7], [115, 48], [130, 62], [108, 85], [84, 104], [63, 82], [43, 63]], '#858f7e', '#414e40', 2);
-      polygon(c, [[49, 11], [58, 48], [76, 52], [72, 31]], '#b7bd9d');
-      polygon(c, [[90, 25], [116, 7], [109, 45], [96, 48]], '#a7b395');
-      polygon(c, [[47, 59], [75, 49], [83, 75], [68, 86]], '#b4b99c');
-      polygon(c, [[96, 48], [125, 62], [103, 84], [83, 75]], '#7c8e76');
-      polygon(c, [[82, 60], [95, 77], [84, 101], [74, 79]], '#d0d0ad');
-      polygon(c, [[74, 79], [95, 78], [85, 88]], '#354c40');
-      line(c, [[61, 62], [74, 67]], '#e7e1a8', 4); line(c, [[98, 65], [111, 59]], '#e7e1a8', 4);
-      glow(c, 68, 64, 15, '#eeda9155'); glow(c, 103, 63, 15, '#eeda9155');
-      line(c, [[50, 112], [56, 143], [68, 155]], '#82683d', 3);
-      polygon(c, [[49, 110], [45, 141], [60, 137]], '#b55335');
-      line(c, [[119, 115], [117, 164]], '#b3a477', 3); polygon(c, [[119, 116], [143, 121], [126, 132], [119, 127]], '#b49a5a');
-    }
-
-    private paintRocks(c: Ctx): void {
-      ellipse(c, 50, 60, 48, 10, '#24372d55');
-      polygon(c, [[6, 55], [19, 21], [50, 8], [73, 25], [79, 57], [40, 69]], '#6c7c70');
-      polygon(c, [[6, 55], [19, 21], [50, 8], [51, 46]], '#a1a791');
-      polygon(c, [[51, 46], [50, 8], [73, 25], [79, 57], [40, 69]], '#829080');
-      polygon(c, [[69, 56], [77, 35], [96, 40], [103, 61], [88, 69]], '#939d86');
-      line(c, [[21, 28], [39, 20], [47, 29]], '#c4c5a366', 2);
-      ellipse(c, 17, 56, 11, 3, '#7b8c55');
-    }
-
-    private paintLogs(c: Ctx): void {
-      ellipse(c, 53, 53, 49, 10, '#24322555');
-      for (let row = 0; row < 3; row++) {
-        for (let i = 0; i < 3 - row; i++) {
-          const x = 13 + i * 20 + row * 10, y = 49 - row * 12;
-          line(c, [[x, y], [x + 40, y - 17]], '#6c5637', 17);
-          line(c, [[x, y - 5], [x + 40, y - 22]], '#9e8051', 3);
-          ellipse(c, x, y, 8, 7, '#c6ac75'); ellipse(c, x, y, 5, 4, '#967744'); ellipse(c, x, y, 3, 2, '#cdb887');
-        }
-      }
-      line(c, [[43, 20], [37, 49]], '#c8b786', 2);
-    }
-
-    private paintTent(c: Ctx): void {
-      ellipse(c, 83, 126, 68, 16, '#24332466');
-      polygon(c, [[81, 24], [19, 113], [78, 142], [141, 114]], '#bda77d', '#8b795a', 2);
-      polygon(c, [[81, 24], [78, 142], [141, 114]], '#928363');
-      polygon(c, [[81, 76], [62, 133], [96, 135]], '#343d30');
-      line(c, [[69, 10], [131, 132]], '#b7a174', 4); line(c, [[90, 10], [33, 130]], '#b7a174', 4);
-      line(c, [[42, 87], [61, 91], [60, 109]], '#785d43', 2); line(c, [[114, 100], [128, 104]], '#c6b28a', 2);
     }
 
     private createBattlefield(): void {
@@ -667,7 +219,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       this.activeView = view;
       this.updateCanvasLabel();
       if(view!=='battle'){this.effects?.clear();this.cameras.main.shakeEffect.reset();}
-      this.village.setVisible(view === 'village'); this.battlefield.setVisible(view === 'battle');
+      this.battlefield.setVisible(view === 'battle');
       for (const effect of this.floating) if ('setVisible' in effect) (effect as Phaser.GameObjects.Text).setVisible(false);
       this.floorHover.clear();
       if (view === 'battle') { this.lastFormation = ''; this.syncBattle(0); }
@@ -678,7 +230,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     }
 
     update(time: number, delta: number): void {
-      if (!this.village) return;
+      if (!this.battlefield) return;
       if (this.paused !== game.state.paused) {
         this.paused = game.state.paused;
         if(this.paused)this.cameras.main.shakeEffect.reset();
@@ -689,71 +241,11 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       if(this.paused){this.input.enabled=false;return;}
       const dt = this.paused ? 0 : Math.min(delta / 1000, .1);
       this.clock += dt;
-      if(this.activeView==='village')this.village.setVisible(true);
       this.input.enabled = !game.state.paused && !(this.activeView === 'battle' && game.battle);
-      if (this.activeView === 'village') this.updateVillage(this.clock * 1000, dt);
-      else this.syncBattle(dt);
+      if(this.activeView==='battle')this.syncBattle(dt);
       this.effects.update(dt,this.activeView==='battle'&&game.battle?.status==='fighting'?game.state.settings.speed:1);
       this.updateAmbience(this.clock * 1000);
       if (this.clock - this.lastAtlasSweep > 5) { this.evictAtlases(); this.lastAtlasSweep = this.clock; }
-    }
-
-    private updateVillage(time: number, dt: number): void {
-      this.syncVillageRoster();
-      for (const b of BUILDINGS) {
-        const level = game.state.buildings[b.id];
-        const label = this.labels.get(b.id), text = level ? `Nível ${level}  ·  ${level >= 15 ? 'máximo' : 'melhorar'}` : 'construir';
-        if (label?.text !== text) label?.setText(text);
-        if (level > this.previousLevels[b.id]) {
-          this.pulse(b.x, b.y, 0xe9d18e, this.village);
-          this.pulse(b.x, b.y - 15, 0xbce3ad, this.village);
-        }
-        this.previousLevels[b.id] = level;
-      }
-      const t = this.reducedMotion ? 0 : time / 1000;
-      for (const tree of this.scenery) tree.object.setAngle(Math.sin(t * .8 + tree.phase) * tree.angle);
-      this.updateVillageStructures(t);
-      const idle = this.villageActors.filter(actor => !actor.work);
-      this.villageActors.forEach(actor => {
-        let x: number, y: number, moving = false;
-        if (actor.work) {
-          // Workers walk from the fire to the building they really work in, labour, and return.
-          const cycle = (this.clock + actor.phase) % 20;
-          const building = BUILDINGS.find(b => b.id === actor.work)!;
-          const slot = this.villageActors.filter(other => other.work === actor.work).indexOf(actor);
-          const start = { x: 560 + (actor.phase * 13) % 90, y: 440 + (actor.phase * 7) % 30 };
-          const end = { x: building.x + 30 + slot * 22, y: building.y + 6 + slot * 6 };
-          let progress = 0;
-          if (cycle >= 2 && cycle < 6) { progress = (cycle - 2) / 4; moving = true; }
-          else if (cycle >= 6 && cycle < 16) progress = 1;
-          else if (cycle >= 16) { progress = 1 - (cycle - 16) / 4; moving = true; }
-          if (this.reducedMotion) { progress = 1; moving = false; }
-          x = Phaser.Math.Linear(start.x, end.x, progress); y = Phaser.Math.Linear(start.y, end.y, progress);
-          const workBeat = Math.floor((this.clock + actor.phase) / 1.5);
-          if (cycle >= 6 && cycle < 16 && actor.lastWork !== workBeat && dt > 0) { triggerMotion(actor.view.motion, 'attack', building.x - x); actor.lastWork = workBeat; }
-        } else {
-          // Resting heroes gather around the fire and stroll a little.
-          const index = idle.indexOf(actor), angle = index / Math.max(1, idle.length) * Math.PI * 2 + .4;
-          const sway = this.reducedMotion ? 0 : Math.sin(this.clock * .25 + actor.phase) * 10;
-          x = 612 + Math.cos(angle) * (78 + sway); y = 418 + Math.sin(angle) * 34 + 6;
-          moving = !this.reducedMotion && Math.abs(Math.cos(this.clock * .25 + actor.phase)) > .85;
-        }
-        this.presentUnit(actor.view, moving ? 'walk' : 'idle', dt, x, y, x - actor.view.x);
-        actor.view.name.setVisible(false); actor.view.bars.clear(); actor.view.ring.setAlpha(.2);
-      });
-      const f = this.fire; f.clear();
-      f.fillStyle(0xe6a855, .04 + Math.sin(t * 4) * .012); f.fillEllipse(613, 411, 122, 57);
-      f.fillStyle(0x422e22, 1); f.fillEllipse(605, 405, 26, 11);
-      f.lineStyle(4, 0x8a6540, 1); f.lineBetween(591, 408, 616, 398); f.lineBetween(593, 398, 617, 409);
-      for (let i = 0; i < 4; i++) {
-        const x = 599 + i * 4, h = 15 + Math.sin(t * 7 + i * 2) * 6;
-        f.fillStyle(i % 2 ? 0xf9d378 : 0xdb8a41, .94);
-        f.fillTriangle(x - 5, 404, x + Math.sin(t * 6 + i) * 3, 404 - h, x + 5, 404);
-      }
-      for (let i = 0; i < 6; i++) {
-        const p = (t * .22 + i / 6) % 1;
-        f.fillStyle(0xe6bd74, (1 - p) * .55); f.fillCircle(605 + Math.sin(t + i) * p * 13, 392 - p * 43, 1 - p * .4);
-      }
     }
 
     private updateAmbience(time: number): void {
@@ -827,7 +319,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
 
     private evictAtlases(): void {
       if (this.atlasUsed.size <= 24) return;
-      const active = new Set([...this.units.values(), ...this.villageActors.map(a => a.view)].flatMap(v => {
+      const active = new Set([...this.units.values()].flatMap(v => {
         if (v.summon && v.summon !== 'echo') return [summonSheetKey(v.summon)];
         const best = bestAnimation(v.characterId, v.stars);
         return [sheetKey(v.characterId, v.stars), procKey(v.characterId, v.stars), ...(best ? [sheetKey(best.characterId, best.stars)] : [])];
@@ -891,17 +383,6 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       }
       this.units.set(id, view);
       return view;
-    }
-
-    private syncVillageRoster(): void {
-      const home = game.state.heroes.filter(h => !h.away);
-      const workers = home.filter(h => h.work);
-      const heroes = [...workers, ...home.filter(h => !h.work)].slice(0, Math.max(8, workers.length));
-      const key = heroes.map(h => h.uid + ':' + h.stars + ':' + (h.work ?? '')).join(',');
-      if (key === this.villageRoster) return;
-      this.villageRoster = key;
-      for (const actor of this.villageActors) this.destroyUnit(actor.view);
-      this.villageActors = heroes.map((hero, i) => ({ uid: hero.uid, view: this.makeUnit(hero.characterId, false, hero.stars, this.village, 69 + hero.stars * 3), phase: i * 3.7, work: hero.work, lastWork: -1 }));
     }
 
     private presentUnit(view: UnitView, desired: MotionClip, dt: number, x: number, y: number, direction = 0): void {

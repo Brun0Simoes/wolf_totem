@@ -73,15 +73,6 @@ export function enemyScale(level: number, cost: number): number {
 /** Bosses grow with the region: the Alpha is a lesson, the First Winter a wall. */
 export const bossScale = (region: number) => ({ hp: 1.66 + 0.06 * region, attack: 1.12 + 0.02 * region });
 
-export interface Reward { wood: number; food: number; stone: number; spirit: number }
-export function stageReward(level: number, repeat: boolean): Reward {
-  const factor = repeat ? 0.5 : 1;
-  return {
-    wood: Math.round((40 + level * 14) * factor), food: Math.round((35 + level * 12) * factor),
-    stone: Math.round((25 + level * 10) * factor), spirit: Math.round((40 + level * 10) * factor),
-  };
-}
-
 /** The endless hunt: seeded lineups that keep growing in size, stars and strength. */
 export function endlessStage(depth: number): Stage {
   let seed = 7919 * depth + 17;

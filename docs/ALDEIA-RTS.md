@@ -1,3 +1,5 @@
+> Registro de uma versão anterior. As regras atuais estão em [Reformulação 2.2](REFORMULACAO-2.2.md); economia, construções, custos de rituais e trabalho descritos abaixo foram retirados.
+
 # Aldeia RTS e conselheiro
 
 > Registro histórico da versão 2.0. A mecânica de RTS foi removida na versão 2.1 e substituída pelos [Caminhos Ancestrais](CAMINHOS-ANCESTRAIS.md). As regras abaixo descrevem a implementação anterior.

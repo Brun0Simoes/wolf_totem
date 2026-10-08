@@ -11,7 +11,7 @@ export function ritualExperienceMarkup(id: PracticeId, companion: string): strin
     <div class="rite-controls" hidden>${id === 'kambo' ? [0,1,2,3].map(n=>`<button class="rite-stone" data-rite-stone="${n}" aria-label="Pedra ${n+1}"><span>${['◇','△','◉','✧'][n]}</span><small>${n+1}</small></button>`).join('') : id === 'ayahuasca' ? '<button data-rite-steer="-1" aria-label="Conduzir para a esquerda">←</button><span>Dentro do rio<br><small>Arraste a luz ou use as setas</small></span><button data-rite-steer="1" aria-label="Conduzir para a direita">→</button>' : `<button class="rite-touch" data-rite-touch>${design.verb}<small>${id==='rape'?'Segure e solte · Espaço':'Toque · Espaço'}</small></button>`}</div>
     <div class="rite-result" hidden aria-live="polite"></div><p class="rite-instruction">${design.instruction}</p>
     <footer class="rite-footer"><button class="text-button" data-rite-audio>Ativar som</button><button class="text-button" data-rite-pause hidden>Pausar participação</button><button class="outline-button" data-rite-auto>Seguir automaticamente</button></footer>
-    <p class="rite-note">${design.sound}. Sonoridade original do jogo. A cerimônia começa ao confirmar ou seguir automaticamente; fechar agora não gasta recursos. O tempo de integração continua após a participação.</p>
+    <p class="rite-note">${design.sound}. Sonoridade original do jogo. A cerimônia começa ao confirmar ou seguir automaticamente. Fechar antes disso mantém o herói disponível. O tempo de integração continua após a participação.</p>
   </section>`;
 }
 
