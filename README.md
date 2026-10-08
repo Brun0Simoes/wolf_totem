@@ -36,6 +36,12 @@ O **Conselheiro** explica as seis funções táticas e os 31 laços, analisa o i
 
 Regras e limites: [Aldeia RTS e conselheiro](docs/ALDEIA-RTS.md).
 
+## Combate e animações
+
+Ataques têm preparação, recuperação e projéteis com tempo de viagem. Os 55 heróis e suas formas usam perfis de movimento, arma e efeitos; habilidades combinam partículas, rastros e sequências pintadas. Estados, escudos, transformações e derrotas têm resposta visual, com sons por arma e poder. Pausa, velocidade e movimento reduzido acompanham o combate.
+
+Detalhes, verificações e limites artísticos: [Combate e animações](docs/COMBATE-ANIMACOES.md).
+
 ## Jornada 2.0
 
 - Navegação por Aldeia, Tribo, Expedições, Rituais e Códice, com painel contextual recolhível.

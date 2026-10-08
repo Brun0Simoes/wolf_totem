@@ -810,6 +810,11 @@ footer button {
 .power-label {
   display:none
 }
+@media(max-width:720px) {
+  .power-bar {top:auto;bottom:40px;width:auto;max-width:calc(100% - 24px);height:auto;flex-wrap:nowrap;gap:6px;padding:5px}
+  .power-button {width:44px;min-width:44px;min-height:44px;padding:9px;justify-content:center}
+  .power-button span {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
 .pause-overlay {
   background:#0b1c219c;
   backdrop-filter:blur(2px)

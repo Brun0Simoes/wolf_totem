@@ -1,4 +1,5 @@
 import { characters, type Character } from '../data/characters';
+import { attackTiming, castWindup } from './combatTiming';
 import { participationBonus } from './ritualPlay';
 import { recommendedParty, roleOf } from './armyAdvisor';
 import { SETTLEMENT_MILESTONES } from './settlement';
@@ -155,7 +156,7 @@ export interface CombatEntity {
 }
 export interface CombatEvent {
   id: number;
-  type: 'attack' | 'skill' | 'damage' | 'heal' | 'death' | 'shield' | 'summon' | 'revive' | 'power' | 'phase' | 'overtime';
+  type: 'prepare' | 'attack' | 'skill' | 'damage' | 'heal' | 'death' | 'shield' | 'summon' | 'revive' | 'power' | 'phase' | 'overtime';
   sourceId: string;
   targetId?: string;
   amount?: number;
@@ -163,6 +164,11 @@ export interface CombatEvent {
   x: number;
   y: number;
   time: number;
+  duration?:number;
+  sourceX?:number;
+  sourceY?:number;
+  school?:'physical'|'magic'|'true';
+  absorbed?:number;
 }
 export type ZoneKind = 'web' | 'water' | 'veil' | 'domain' | 'frost';
 export interface CombatZone {
@@ -553,6 +559,8 @@ export class Game {
   private traitTiers = new Map<string, number>();
   private healBonus = 0;
   private summonBonus = 0;
+  private windups=new Map<string,{kind:'attack'|'cast';targetId:string;remaining:number}>();
+  private projectiles:{source:CombatEntity;target:CombatEntity;remaining:number;power:number;third:boolean}[]=[];
 
   /** A save can be the serialized JSON string or the parsed versioned save object. */
   constructor(save?: unknown, now = Date.now()) {
@@ -1317,6 +1325,7 @@ export class Game {
     const enemies = stage.units.map((unit, index) => this.entity(unit.id, unit.stars, 'enemy', index, slots[index], level, undefined, !!unit.boss, stage.region));
     this.events = [];
     this.summonCounter = 0;
+    this.windups.clear();this.projectiles=[];
     const firstClear = stage.id > 0 && stage.id > this.state.progress;
     this.battle = { entities: [...allies, ...enemies], zones: [], time: 0, stage: stage.id, depth, region: stage.id ? stage.region : 6, name: stage.name, status: 'fighting', reward: null, loot: [], firstClear, prey: {}, lastCast: {}, powersUsed: [], party: party.map(hero => hero.uid), xp: 0, levelUps: [] };
     if (stage.id < 0) this.battle.region = stage.region;
@@ -1396,7 +1405,7 @@ export class Game {
   private living(team: Team): CombatEntity[] { return this.battle!.entities.filter(entity => entity.team === team && entity.hp > 0); }
   private opponents(entity: CombatEntity): CombatEntity[] { return this.living(entity.team === 'ally' ? 'enemy' : 'ally'); }
   private emit(type: CombatEvent['type'], source: CombatEntity, target?: CombatEntity, amount?: number, text?: string): void {
-    this.events.push({ id: ++this.eventCounter, type, sourceId: source.id, targetId: target?.id, amount, text, x: (target ?? source).x, y: (target ?? source).y, time: this.battle!.time });
+    this.events.push({ id: ++this.eventCounter, type, sourceId: source.id, targetId: target?.id, amount, text, x: (target ?? source).x, y: (target ?? source).y, sourceX:source.x,sourceY:source.y,time: this.battle!.time });
   }
 
   private insideZone(entity: CombatEntity, zone: CombatZone): boolean { return distance(entity, zone) <= zone.radius; }
@@ -1428,6 +1437,7 @@ export class Game {
     if (source !== target) this.creditOf(source).dealt += dealt + absorbed;
     target.mana = Math.min(target.manaMax, target.mana + 5);
     this.emit('damage', source, target, Math.round(dealt));
+    Object.assign(this.events[this.events.length-1],{school:trueDamage?'true':magic?'magic':'physical',absorbed:Math.round(absorbed)});
     const lifesteal = source !== target ? modTotal(source, 'lifesteal') : 0;
     if (lifesteal > 0 && dealt > 0) this.heal(source, source, dealt * lifesteal);
     if (!magic && source !== target && target.perks.thorns && source.hp > 0 && damage > 0) this.damage(target, source, damage * target.perks.thorns, true);
@@ -1579,7 +1589,7 @@ export class Game {
   private cast(source: CombatEntity, target: CombatEntity): void {
     const battle = this.battle!;
     source.mana = 0;
-    source.action = 'cast'; source.actionTime = 0.6; source.cooldown = Math.max(source.cooldown, 0.6);
+    source.action = 'cast'; source.actionTime = 0.26; source.cooldown = Math.max(source.cooldown, 0.26);
     this.emit('skill', source, target, undefined, characterById(source.characterId).ability.name);
     castAbility(this.api(), source.characterId, source, target, effectiveAttack(source) * source.spellPower);
     if (source.characterId !== 29) battle.lastCast[source.team] = source.characterId;
@@ -1643,15 +1653,23 @@ export class Game {
   }
 
   private basicAttack(entity: CombatEntity, target: CombatEntity): void {
-    entity.action = 'attack'; entity.actionTime = 0.25;
+    const timing=attackTiming(entity.range,attackRate(entity),distance(entity,target));
+    entity.action = 'attack'; entity.actionTime = timing.recovery;
     if (target.huntMarked > 0) entity.haste = Math.max(entity.haste, 1.5);
     entity.attackCount++;
     const perks = entity.perks;
     if (perks.asStack) addMod(entity, 'attackSpeed', perks.asStack * Math.min(10, entity.attackCount), Infinity, 'garra');
-    entity.cooldown = 1 / attackRate(entity);
     this.emit('attack', entity, target);
+    this.events[this.events.length-1].duration=timing.flight;
     const third = entity.attackCount % 3 === 0;
     const power = effectiveAttack(entity);
+    if(timing.flight){this.projectiles.push({source:entity,target,remaining:timing.flight,power,third});return;}
+    this.attackImpact(entity,target,power,third);
+  }
+
+  private attackImpact(entity:CombatEntity,target:CombatEntity,power:number,third:boolean):void {
+    if(target.hp<=0)return;
+    const perks=entity.perks;
     this.damage(entity, target, power * (third && perks.crit3 ? 1 + perks.crit3 : 1));
     const cleave = modTotal(entity, 'cleave');
     if (cleave > 0) for (const other of this.opponents(entity).filter(other => other !== target && distance(other, target) <= 1.3)) this.damage(entity, other, power * cleave);
@@ -1661,6 +1679,14 @@ export class Game {
     if (entity.manaMax > 0) entity.mana = Math.min(entity.manaMax, entity.mana + 12 + (perks.manaOnHit ?? 0));
     if (entity.manaDrain > 0) target.mana = Math.max(0, target.mana - entity.manaDrain);
     if (entity.empowered > 0) { target.poison = 4; target.poisonDamage = power * 0.45; }
+  }
+
+  private prepareAction(entity:CombatEntity,target:CombatEntity,kind:'attack'|'cast'):void {
+    const duration=kind==='cast'?castWindup(entity.characterId):attackTiming(entity.range,attackRate(entity),distance(entity,target)).windup;
+    entity.action=kind==='cast'?'cast':'attack';entity.actionTime=duration;
+    if(kind==='attack')entity.cooldown=1/attackRate(entity);
+    this.windups.set(entity.id,{kind,targetId:target.id,remaining:duration});
+    this.emit('prepare',entity,target,undefined,kind);this.events[this.events.length-1].duration=duration;
   }
 
   private combatStep(dt: number): void {
@@ -1674,8 +1700,10 @@ export class Game {
       if (prey) { prey.time -= dt; if (prey.time <= 0) delete battle.prey[team]; }
     }
     this.processZones(dt);
+    const flying=this.projectiles;this.projectiles=[];
+    for(const shot of flying){shot.remaining-=dt;if(shot.remaining<=.000001)this.attackImpact(shot.source,shot.target,shot.power,shot.third);else this.projectiles.push(shot);}
     for (const entity of [...battle.entities]) {
-      if (entity.hp <= 0) continue;
+      if (entity.hp <= 0) {this.windups.delete(entity.id);continue;}
       // Item protection against crowd control cancels a freshly applied stun.
       if (entity.stun > entity.prevStun + 0.01 && (entity.perks.ccShield ?? 0) > 0) { entity.stun = entity.prevStun; entity.perks.ccShield!--; }
       const wasGuarded = entity.guard > 0;
@@ -1701,18 +1729,28 @@ export class Game {
       if (entity.hp <= 0) continue;
       if (entity.regen > 0) entity.hp = Math.min(entity.maxHp, entity.hp + entity.maxHp * entity.regen * dt * (entity.antiheal > 0 ? 0.5 : 1) * overtimeHealing(battle.time));
       if (entity.manaRegen > 0 && entity.manaMax > 0) entity.mana = Math.min(entity.manaMax, entity.mana + entity.manaRegen * dt);
-      if (entity.stun > 0 && !(entity.characterId === 4 && entity.mana >= entity.manaMax)) { entity.action = 'idle'; continue; }
+      if (entity.stun > 0 && !(entity.characterId === 4 && entity.mana >= entity.manaMax)) { this.windups.delete(entity.id);entity.action = 'idle'; continue; }
+      const winding=this.windups.get(entity.id);
+      if(winding){
+        winding.remaining-=dt;
+        if(winding.remaining<=.000001){
+          this.windups.delete(entity.id);
+          const target=battle.entities.find(e=>e.id===winding.targetId&&e.hp>0&&e.stealth<=0)??this.chooseTarget(entity);
+          if(target){if(winding.kind==='cast')this.cast(entity,target);else if(distance(entity,target)<=entity.range+.65)this.basicAttack(entity,target);}
+        }
+        continue;
+      }
       const target = this.chooseTarget(entity);
       if (!target) { if (!this.opponents(entity).length) break; entity.action = 'idle'; continue; }
       if (entity.actionTime > 0) continue;
-      if (entity.mana >= entity.manaMax && entity.manaMax > 0) { this.cast(entity, target); continue; }
+      if (entity.mana >= entity.manaMax && entity.manaMax > 0) { this.prepareAction(entity, target,'cast'); continue; }
       const gap = distance(entity, target);
       if (gap > entity.range + 0.15) {
         const step = Math.min(gap - entity.range, dt * 1.5);
         entity.x += (target.x - entity.x) / gap * step;
         entity.y += (target.y - entity.y) / gap * step;
         entity.action = 'walk';
-      } else if (entity.cooldown <= 0) this.basicAttack(entity, target);
+      } else if (entity.cooldown <= 0) this.prepareAction(entity, target,'attack');
       else entity.action = 'idle';
     }
     const standing = (team: Team) => this.living(team).some(entity => !entity.summon);
@@ -1724,6 +1762,7 @@ export class Game {
     const battle = this.battle!;
     if (battle.status !== 'fighting') return;
     battle.status = victory ? 'victory' : 'defeat';
+    this.windups.clear();this.projectiles=[];
     battle.zones = [];
     for (const entity of battle.entities) if (entity.summon && entity.hp > 0) { entity.hp = 0; entity.action = 'dead'; }
     // Everyone who marched learns from the fight, a little even in defeat.

@@ -2,6 +2,7 @@
 export type Sfx = 'click' | 'hit' | 'cast' | 'heal' | 'death' | 'recruit' | 'upgrade' | 'victory' | 'defeat' | 'power' | 'item' | 'era' | 'summon';
 
 import type { PracticeId } from './game/tribe';
+import { combatProfile } from './render/combatProfiles';
 const PENTATONIC = [0, 3, 5, 7, 10, 12, 15];
 
 export class SoundSystem {
@@ -15,6 +16,7 @@ export class SoundSystem {
   private timer = 0;
   private step = 0;
   private nextTime = 0;
+  private combatLast=new Map<string,number>();
   muted = true;
   mood: 'village' | 'battle' = 'village';
 
@@ -107,6 +109,29 @@ export class SoundSystem {
   }
 
   /** Effects are throttled so a crowded battle does not become noise. */
+  combat(type:'prepare'|'attack'|'skill'|'damage'|'shield',id:number,pan=0,magic=false,weight=.4):void {
+    if(this.muted)return;const c=this.ensure();if(!c)return;
+    const profile=combatProfile(id),key=type==='damage'?(magic?'magic-hit':'body-hit'):type,t=c.currentTime;
+    if(t-(this.combatLast.get(key)??-1)<(type==='damage'?.075:.11))return;this.combatLast.set(key,t);
+    const node=c.createStereoPanner();node.pan.value=Math.max(-.65,Math.min(.65,pan*.65));node.connect(this.effectsGain!);
+    window.setTimeout(()=>node.disconnect(),1100);
+    const volume=.035+Math.min(1,weight)*.035;
+    if(type==='prepare'){this.noise(t,.09,.025,profile.weapon==='hammer'?550:2300,node);return;}
+    if(type==='attack'){
+      if(profile.weapon==='bow'||profile.weapon==='spear'){this.tone(290,t,.11,'triangle',volume,105,node);this.noise(t,.065,.025,3100,node);}
+      else this.noise(t,.08,volume,profile.weapon==='hammer'?380:1700,node);
+      return;
+    }
+    if(type==='damage'){this.noise(t,.055,volume,magic?2300:750,node);this.tone(profile.weight>1?82:125,t,.075,'sine',volume,55,node);return;}
+    if(type==='shield'){this.tone(720,t,.22,'sine',.035,360,node);return;}
+    if(['rain','tide','swamp'].includes(profile.spell)){this.noise(t,.38,.045,1100,node);this.tone(160,t,.3,'sine',.025,100,node);}
+    else if(['venom','sting','silk'].includes(profile.spell)){this.noise(t,.32,.035,2600,node);this.tone(410,t,.25,'triangle',.025,180,node);}
+    else if(['frost','moon','revive'].includes(profile.spell)){for(const [i,f]of [660,990,1320].entries())this.tone(f,t+i*.035,.4,'sine',.025,undefined,node);}
+    else if(['charge','wall','domain','storm','grapple'].includes(profile.spell)){this.tone(90,t,.28,'sine',.1,38,node);this.noise(t,.18,.055,400,node);}
+    else if(['night','eclipse'].includes(profile.spell)){this.tone(130,t,.5,'sine',.055,65,node);this.tone(195,t+.04,.45,'triangle',.018,90,node);}
+    else{this.tone(260,t,.27,'triangle',.04,520,node);this.noise(t,.12,.025,1900,node);}
+  }
+
   play(sfx: Sfx): void {
     if (this.muted) return;
     const context = this.ensure();

@@ -982,6 +982,10 @@ function playBattleSounds() {
   for (const event of game.events) {
     if (event.id <= lastEventId) continue;
     lastEventId = event.id;
+    const actor=game.battle?.entities.find(e=>e.id===event.sourceId);
+    if(actor&&['prepare','attack','skill','damage','shield'].includes(event.type)){
+      sound.combat(event.type as 'prepare'|'attack'|'skill'|'damage'|'shield',actor.characterId,actor.x/6.5*2-1,event.school==='magic',Math.min(1,(event.amount??30)/180));continue;
+    }
     const sfx: Partial<Record<typeof event.type, Sfx>> = { damage: 'hit', skill: 'cast', heal: 'heal', death: 'death', summon: 'summon', revive: 'era', power: 'power', phase: 'power', overtime: 'era' };
     if (sfx[event.type]) sound.play(sfx[event.type]!);
   }

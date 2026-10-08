@@ -127,6 +127,7 @@ describe('abilities, summons and traits', () => {
     const nima = game.battle!.entities.find(entity => entity.uid === 'nima')!;
     nima.mana = nima.manaMax;
     game.tick(0.05);
+    game.tick(.5);
     const spiders = game.battle!.entities.filter(entity => entity.summon === 'spider');
     expect(spiders).toHaveLength(5);
     expect(game.battle!.zones.some(zone => zone.kind === 'web')).toBe(true);

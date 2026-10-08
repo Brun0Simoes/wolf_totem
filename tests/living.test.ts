@@ -17,6 +17,8 @@ describe('battle summary', () => {
     const nima = game.battle!.entities.find(e => e.uid === 'nima')!;
     nima.mana = nima.manaMax;
     game.tick(0.05);
+    expect(game.battle!.entities.some(e=>e.summon==='spider')).toBe(false);
+    game.tick(.5);
     const spiders = game.battle!.entities.filter(e => e.summon === 'spider');
     expect(spiders.length).toBeGreaterThan(0);
     const before = nima.dealt;

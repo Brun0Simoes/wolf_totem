@@ -176,11 +176,11 @@ export function paintArena(c: Ctx, region: Region): void {
   for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLUMNS; col++) {
     const enemy = row < SIDE_ROWS, base = enemy ? ((col + row) % 2 ? palette.floor : palette.floorAlt) : ((col + row) % 2 ? palette.ally : palette.allyAlt);
     const corners = hexCorners(cellCenter(col, row), .93).map(p => project(p.x, p.y));
-    const tone = mix(base, 0x000000, rng() * .08);
+    const tone = mix(base, 0x101915, .16+rng() * .06);
     g = c.createLinearGradient(0, corners[4][1], 0, corners[1][1]);
     g.addColorStop(0, css(mix(tone, 0xfff4d6, .12))); g.addColorStop(1, css(mix(tone, 0x0b0a08, .12)));
     shape(c, corners, g);
-    stroke(c, [corners[2], corners[3], corners[4], corners[5], corners[0]], 'rgba(255,244,214,.22)', 1.5);
+    stroke(c, [corners[2], corners[3], corners[4], corners[5], corners[0]], 'rgba(255,244,214,.14)', 1.2);
     stroke(c, [corners[0], corners[1], corners[2]], 'rgba(10,10,6,.38)', 2);
     const [cx, cy] = project(cellCenter(col, row).x, cellCenter(col, row).y);
     oval(c, cx, cy, 10 * widthAt(row) / UNIT, 4 * widthAt(row) / UNIT, enemy ? 'rgba(60,30,20,.12)' : 'rgba(20,40,20,.12)');

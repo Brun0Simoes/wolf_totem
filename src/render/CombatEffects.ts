@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { ARENA_CENTER as C, ARENA_SPAN as S } from './battleArena';
+import { CombatParticles } from './CombatParticles';
+import { combatProfile } from './combatProfiles';
 
 export interface FxPoint { x: number; y: number }
 export const SKILL_COLORS:Record<number,number>={1:0xb7dfff,2:0xaadcca,3:0xd2ac78,4:0xa4df72,5:0xe5bd74,6:0x84d9d0,7:0xe6a189,8:0xd5cdf6,9:0xb3d6aa,10:0xc4e984,11:0xf2d486,12:0xf4dfa0,13:0xc7a3ec,
@@ -22,20 +24,53 @@ const RECIPES:Record<number,Recipe[]>={
 export class CombatEffects {
  private sprites=new Map<Phaser.GameObjects.Image,Phaser.Tweens.Tween>();
  private active=new Map<Phaser.GameObjects.Graphics, Phaser.Tweens.Tween>();
- constructor(private scene:Phaser.Scene,private layer:Phaser.GameObjects.Layer,public reduced=false){}
+ private particles:CombatParticles;
+ private speed=1;
+ private sequences=new Map<Phaser.GameObjects.Image,{age:number;duration:number;row:number;scale:number}>();
+ constructor(private scene:Phaser.Scene,private layer:Phaser.GameObjects.Layer,public reduced=false){this.particles=new CombatParticles(scene,layer);}
+ update(seconds:number,speed=1){
+  this.speed=speed;this.particles.reduced=this.reduced;this.particles.update(seconds*speed);for(const t of [...this.sprites.values(),...this.active.values()])t.timeScale=speed;
+  for(const [image,clip]of this.sequences){
+   clip.age+=Math.min(.3,Math.max(0,seconds*speed));const p=clip.age/clip.duration;
+   if(p>=1){image.destroy();this.sequences.delete(image);continue;}
+   image.setFrame(`${clip.row}-${Math.min(3,Math.floor(p*4))}`).setAlpha((this.reduced?.3:.65)*Math.min(1,p*12,(1-p)*8)).setScale(clip.scale*(.96+p*.08));
+  }
+ }
+ private animatedSpell(id:number,source:FxPoint,target:FxPoint,stars:number){
+  if(!this.scene.textures.exists('painted-spells')||this.sequences.size>=8)return;
+  const spell=combatProfile(id).spell;
+  const row=['venom','sting','drain','swamp'].includes(spell)?1:spell==='frost'?2:['hunt','flurry','grapple','leap','charge','dive','eclipse'].includes(spell)?0:3;
+  const p=row<2?target:source;
+  const image=this.scene.add.image(p.x,p.y-(row<2?42:24),'painted-spells',`${row}-0`).setDepth(p.y+6).setAlpha(0);
+  if(row===0)image.setFlipX(target.x<source.x);
+  const scale=(88+stars*10)/image.width;image.setScale(scale);this.layer.add(image);
+  this.sequences.set(image,{age:0,duration:this.reduced?.32:.62,row,scale});
+ }
+ prepare(p:FxPoint,id:number,seconds:number){this.particles.charge(p,id,seconds);}
+ footstep(p:FxPoint){if(!this.reduced)this.particles.footstep(p);}
+ afterimage(sprite:Phaser.GameObjects.Sprite,color:number){
+  if(this.reduced||this.sprites.size>=24)return;
+  const image=this.scene.add.image(sprite.x,sprite.y,sprite.texture.key,sprite.frame.name).setOrigin(sprite.originX,sprite.originY).setScale(sprite.scaleX,sprite.scaleY).setFlipX(sprite.flipX).setAngle(sprite.angle).setTint(color).setAlpha(.2).setDepth(sprite.depth-1);this.layer.add(image);
+  const tween=this.scene.tweens.add({targets:image,alpha:0,duration:190,timeScale:this.speed,onComplete:()=>{this.sprites.delete(image);image.destroy();}});this.sprites.set(image,tween);
+ }
+ crest(texture:string,p:FxPoint,color:number,stars:number){
+  if(this.sprites.size>=24)return;
+  const image=this.scene.add.image(p.x,p.y-60,texture).setTint(color).setScale(.22+stars*.035).setAlpha(0).setDepth(p.y+9).setBlendMode(Phaser.BlendModes.ADD);this.layer.add(image);
+  const tween=this.scene.tweens.add({targets:image,alpha:.36,y:p.y-90,scale:.4+stars*.025,duration:230,hold:100,yoyo:true,timeScale:this.speed,onComplete:()=>{this.sprites.delete(image);image.destroy();}});this.sprites.set(image,tween);
+ }
 
  private stamp(frame:string,p:FxPoint,width:number,duration:number,angle=0,destination=p){
   if(!this.scene.textures.exists('painted-fx')||this.sprites.size>=24)return;
   const image=this.scene.add.image(p.x,p.y,'painted-fx',frame).setDepth(1101).setAngle(angle);
-  const scale=width/image.width;image.setScale(scale*.72).setAlpha(this.reduced?.45:.8);this.layer.add(image);
-  const tween=this.scene.tweens.add({targets:image,x:destination.x,y:destination.y,scale:scale*1.15,alpha:0,duration:this.reduced?Math.min(250,duration):duration,ease:'Cubic.easeOut',onComplete:()=>{this.sprites.delete(image);image.destroy();}});
+  const scale=width/image.width;image.setScale(scale*.72).setAlpha(this.reduced?.32:.54);this.layer.add(image);
+  const tween=this.scene.tweens.add({targets:image,x:destination.x,y:destination.y,scale:scale*1.15,alpha:0,duration:this.reduced?Math.min(250,duration):duration,timeScale:this.speed,ease:'Cubic.easeOut',onComplete:()=>{this.sprites.delete(image);image.destroy();}});
   this.sprites.set(image,tween);
  }
  private draw(duration:number,paint:(g:Phaser.GameObjects.Graphics,t:number)=>void,delay=0){
   if(this.active.size>=48){const oldest=this.active.entries().next().value;if(oldest){oldest[1].stop();oldest[0].destroy();this.active.delete(oldest[0]);}}
   const g=this.scene.add.graphics().setDepth(1100);this.layer.add(g);
   const clock={t:0};paint(g,0);
-  const tween=this.scene.tweens.add({targets:clock,t:1,duration:this.reduced?Math.min(300,duration):duration,delay,
+  const tween=this.scene.tweens.add({targets:clock,t:1,duration:this.reduced?Math.min(300,duration):duration,delay,timeScale:this.speed,
    onUpdate:()=>{g.clear();paint(g,clock.t);},onComplete:()=>{g.destroy();this.active.delete(g);}});
   this.active.set(g,tween);return g;
  }
@@ -46,8 +81,9 @@ export class CombatEffects {
   this.stamp('dust',{x:p.x,y:p.y-12},55,520);
   this.draw(520,(g,t)=>{for(let i=0;i<(this.reduced?2:count);i++){const a=i*2.399;const r=10+t*(17+i*3);g.fillStyle(color,(1-t)*.4);g.fillCircle(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r*.38-t*10,(2+i%3)*(1-t*.6));}});
  }
- hit(p:FxPoint,color=0xf6e1ad){
-  this.stamp('hit',{x:p.x,y:p.y-42},42,210);
+ hit(p:FxPoint,color=0xf6e1ad,id=1,intensity=.2,magic=false,absorbed=0){
+  this.particles.impact(p,id,intensity,magic,absorbed);
+  this.stamp('hit',{x:p.x,y:p.y-42},26+intensity*14,150);
   this.draw(210,(g,t)=>{g.lineStyle(2,color,1-t);for(let i=0;i<5;i++){const a=i*1.256;const r=4+t*20;g.lineBetween(p.x+Math.cos(a)*r,p.y-42+Math.sin(a)*r,p.x+Math.cos(a)*(r+7),p.y-42+Math.sin(a)*(r+7));}});
  }
  heal(p:FxPoint){
@@ -83,14 +119,20 @@ export class CombatEffects {
    else {g.fillStyle(color,.22);g.fillCircle(x,y,8);g.fillStyle(color,.9);g.fillCircle(x,y,3);}
   });
  }
- attack(id:number,source:FxPoint,target:FxPoint,ranged:boolean){
-  if(ranged)this.projectile(source,target,id);
+ attack(id:number,source:FxPoint,target:FxPoint,ranged:boolean,flight=.2,follow=()=>target){
+  if(ranged)this.particles.projectile(source,follow,id,flight);
+  else if(combatProfile(id).weapon==='spear'){
+   const dx=target.x-source.x,dy=target.y-source.y,a=Math.atan2(dy,dx);
+   this.draw(180,(g,t)=>{const reach=18+Math.sin(t*Math.PI)*30,x=target.x-Math.cos(a)*reach,y=target.y-42-Math.sin(a)*reach;g.lineStyle(3,combatProfile(id).color,(1-t)*.8);g.lineBetween(x,y,target.x,target.y-42);});
+  }
   else if(id===3||id===9){this.ring(target,colors[id],38,320);this.dust(target,colors[id],5);}
   else this.slash(source,target,colors[id],id===7||id===10?2:1);
  }
- skill(id:number,source:FxPoint,target:FxPoint,allies:FxPoint[],enemies:FxPoint[]){
+ skill(id:number,source:FxPoint,target:FxPoint,allies:FxPoint[],enemies:FxPoint[],stars=1){
   const color=colors[id]??0xe7d091;
-  this.stamp('cast',{x:source.x,y:source.y-15},85,650);
+  this.particles.spell(id,source,target,allies,enemies,stars);
+  this.animatedSpell(id,source,target,stars);
+  this.stamp('cast',{x:source.x,y:source.y-15},60,450);
   this.ring(source,color,80,650);
   switch(id){
    case 1:
@@ -176,5 +218,6 @@ export class CombatEffects {
   this.draw(1100,(g,t)=>{const a=Math.sin(Math.PI*t);g.lineStyle(3,color,a*.7);g.strokeEllipse(C.x,C.y,200+t*700,90+t*320);g.fillStyle(color,a*.06);g.fillEllipse(C.x,C.y,200+t*700,90+t*320);});
   for(const p of [...allies,...enemies])this.ring(p,color,46,700,120);
  }
- clear(){for(const [image,tween]of this.sprites){tween.stop();image.destroy();}this.sprites.clear();for(const [g,tween] of this.active){tween.stop();g.destroy();}this.active.clear();}
+ clear(){this.particles.clear();for(const image of this.sequences.keys())image.destroy();this.sequences.clear();for(const [image,tween]of this.sprites){tween.stop();image.destroy();}this.sprites.clear();for(const [g,tween] of this.active){tween.stop();g.destroy();}this.active.clear();}
+ destroy(){this.clear();this.particles.destroy();}
 }

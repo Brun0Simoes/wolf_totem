@@ -145,6 +145,8 @@ describe('automatic combat', () => {
       const hero = game.battle!.entities.find(entity => entity.team === 'ally')!;
       hero.mana = hero.manaMax;
       game.tick(0.05);
+      expect(game.events.some(event => event.type === 'prepare' && event.sourceId === hero.id)).toBe(true);
+      game.tick(.5);
       expect(game.events.some(event => event.type === 'skill' && event.sourceId === hero.id)).toBe(true);
       game.tick(10);
       expect(game.battle!.entities.every(entity => [entity.hp, entity.mana, entity.attack, entity.x, entity.y].every(Number.isFinite))).toBe(true);

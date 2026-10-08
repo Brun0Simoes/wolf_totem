@@ -1,5 +1,6 @@
 import { getAnimation, frameRect } from './animationAssets';
 import { CLIP_DURATION, createMotion, frameForMotion, poseForMotion, type MotionClip, type SheetDefinition } from './animationModel';
+import { combatProfile } from './combatProfiles';
 
 /** Uses the shipped atlas and the same frame timing as the battlefield. */
 export class CharacterPreview {
@@ -58,6 +59,7 @@ export class CharacterPreview {
     const looping = this.clip === 'idle' || this.clip === 'walk' || this.clip === 'victory';
     const phase = this.elapsed % (duration + (looping ? 0 : .65));
     const state = createMotion();
+    const profile=combatProfile(sheet.characterId);Object.assign(state,{weight:profile.weight,stride:profile.stride,reach:profile.reach});
     state.clip = this.clip === 'hurt' ? 'idle' : this.clip;
     state.elapsed = looping ? this.elapsed : Math.min(phase, duration);
     state.facing = this.facing;
