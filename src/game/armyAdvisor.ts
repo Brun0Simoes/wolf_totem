@@ -3,7 +3,10 @@ import { countTraits, TRAIT_RULES, traitStatus } from './synergies';
 import { ITEMS, itemById, recipeFor, type ItemDef } from './items';
 import type { GameState, Hero } from './simulation';
 import { unlockedCost } from './roster';
-import { expectedLevel, stageById } from './campaign';
+import { expectedLevel, stageById, endlessStage } from './campaign';
+import { allySlotCenter, enemyFormation, enemySlotCenter, FORMATION_SLOTS } from './board';
+import { PREPARATIONS } from './ancestralJourney';
+import { spiritById } from './spirits';
 
 export type ArmyRole = 'front'|'ranged'|'caster'|'support'|'flank'|'summon';
 export const ROLE_GUIDE: Record<ArmyRole,{name:string;position:string;description:string;items:string[]}> = {
@@ -18,7 +21,7 @@ export function roleOf(c:Character):ArmyRole {
   if(c.traits.includes('Invocador'))return 'summon';
   if(c.traits.includes('Guardião')||c.traits.includes('Brigão'))return 'front';
   if(c.traits.includes('Espreitador')||c.traits.includes('Trapaceiro'))return 'flank';
-  if(/cura|curar|escudo para|aliados.*escudo/i.test(c.ability.description)&&c.range>1)return 'support';
+  if(/cura|curar|escudo para|aliados.*escudo|concede AS e Mana/i.test(c.ability.description)&&c.range>1)return 'support';
   if(c.traits.includes('Xamã')||c.traits.includes('Místico'))return 'caster';
   return c.range>1?'ranged':'front';
 }
@@ -34,21 +37,21 @@ export function armyScore(party:Hero[],focus:string[]=[]):number {
 }
 export function recommendedParty(s:GameState):Hero[] {
   const eligible=s.heroes.filter(h=>!h.away&&!h.work),limit=2+s.villageLevel,party:Hero[]=[];
-  while(party.length<limit&&party.length<eligible.length){const best=eligible.filter(h=>!party.includes(h)).sort((a,b)=>armyScore([...party,b],s.settlement.focusTraits)-armyScore([...party,a],s.settlement.focusTraits)||a.characterId-b.characterId)[0];party.push(best);}
+  while(party.length<limit&&party.length<eligible.length){const best=eligible.filter(h=>!party.includes(h)).sort((a,b)=>strategicScore([...party,b],s)-strategicScore([...party,a],s)||a.characterId-b.characterId)[0];party.push(best);}
   // A bounded exchange pass catches pairs that the first greedy choice missed.
-  for(let pass=0;pass<3;pass++)for(let i=0;i<party.length;i++)for(const h of eligible.filter(h=>!party.includes(h))){const swap=party.map((p,j)=>j===i?h:p);if(armyScore(swap,s.settlement.focusTraits)>armyScore(party,s.settlement.focusTraits)+.01)party[i]=h;}
+  for(let pass=0;pass<3;pass++)for(let i=0;i<party.length;i++)for(const h of eligible.filter(h=>!party.includes(h))){const swap=party.map((p,j)=>j===i?h:p);if(strategicScore(swap,s)>strategicScore(party,s)+.01)party[i]=h;}
   return party.sort((a,b)=>Number(roleOf(char(b))==='front')-Number(roleOf(char(a))==='front')||b.level-a.level||a.characterId-b.characterId);
 }
 export function armySuggestions(s:GameState) {
-  const current=activeArmy(s),score=armyScore(current,s.settlement.focusTraits),limit=2+s.villageLevel;
+  const current=activeArmy(s),score=armyScore(current,s.journey.focusTraits),limit=2+s.villageLevel;
   return s.heroes.filter(h=>h.slot===null&&!h.away&&!h.work).map(hero=>{
     const parties=current.length<limit?[{party:[...current,hero],replace:null as Hero|null}]:current.map(replace=>({party:current.map(h=>h===replace?hero:h),replace}));
-    const choice=parties.sort((a,b)=>armyScore(b.party,s.settlement.focusTraits)-armyScore(a.party,s.settlement.focusTraits))[0];
+    const choice=parties.sort((a,b)=>armyScore(b.party,s.journey.focusTraits)-armyScore(a.party,s.journey.focusTraits))[0];
     if(!choice)return null;
     const old=countTraits(current.map(h=>h.characterId)),next=countTraits(choice.party.map(h=>h.characterId));
     const gained=[...next].filter(([name,count])=>traitStatus(name,count).tier>traitStatus(name,old.get(name)??0).tier).map(([name])=>name);
     const lost=[...old].filter(([name,count])=>traitStatus(name,count).tier>traitStatus(name,next.get(name)??0).tier).map(([name])=>name);
-    return {hero,replace:choice.replace,gained,lost,improvement:armyScore(choice.party,s.settlement.focusTraits)-score};
+    return {hero,replace:choice.replace,gained,lost,improvement:armyScore(choice.party,s.journey.focusTraits)-score};
   }).filter((v):v is NonNullable<typeof v>=>!!v).sort((a,b)=>b.improvement-a.improvement).slice(0,5);
 }
 export function nearTraits(s:GameState) {
@@ -58,7 +61,7 @@ export function nearTraits(s:GameState) {
     const members=characters.filter(c=>c.traits.includes(name));
     const recruits=members.filter(c=>!s.heroes.some(h=>h.characterId===c.id)&&c.cost<=unlockedCost(s.villageLevel)&&ritual>=[0,1,2,3,5,7][c.cost]);
     return {...status,missing:status.next-count,members,recruits,complete:status.tier===rule.thresholds.length};
-  }).filter(t=>t.count>0||s.settlement.focusTraits.includes(t.name)).sort((a,b)=>Number(b.name&&s.settlement.focusTraits.includes(b.name))-Number(s.settlement.focusTraits.includes(a.name))||a.missing-b.missing||b.count-a.count);
+  }).filter(t=>t.count>0||s.journey.focusTraits.includes(t.name)).sort((a,b)=>Number(b.name&&s.journey.focusTraits.includes(b.name))-Number(s.journey.focusTraits.includes(a.name))||a.missing-b.missing||b.count-a.count);
 }
 export function itemFit(c:Character,item:ItemDef):number {
   const r=roleOf(c),s=item.stats,p=item.perks??{},front=r==='front',spell=['caster','support','summon'].includes(r);
@@ -84,7 +87,7 @@ export function armyWarnings(s:GameState,stage=s.selectedStage):string[] {
 }
 
 export function enemyAdvice(s:GameState):{name:string;roles:{role:ArmyRole;count:number}[];tips:string[]} {
-  const stage=stageById(s.selectedStage);if(!stage)return{name:'Caçada Eterna',roles:[],tips:['Prepare uma formação capaz de sustentar dano e cura por batalhas mais longas.']};
+  const stage=stageById(s.selectedStage)??endlessStage(s.endlessBest+1);
   const roster=stage.units.map(u=>characters.find(c=>c.id===u.id)!).filter(Boolean),roles=Object.keys(ROLE_GUIDE).map(r=>({role:r as ArmyRole,count:roster.filter(c=>roleOf(c)===r).length})).filter(r=>r.count>0);
   const count=(role:ArmyRole)=>roles.find(r=>r.role===role)?.count??0,tips:string[]=[];
   if(count('caster')+count('summon')>=2)tips.push('Há vários conjuradores ou invocadores: resistência mágica e conjurações rápidas são opções úteis.');
@@ -93,4 +96,99 @@ export function enemyAdvice(s:GameState):{name:string;roles:{role:ArmyRole;count
   if(count('front')>=2)tips.push('A frente inimiga é numerosa: dano sustentado e habilidades ajudam a atravessá-la.');
   if(!tips.length)tips.push('Distribua as funções, equipe seus companheiros e confira a experiência antes de partir.');
   return{name:stage.name,roles,tips};
+}
+
+export function enemyThreats(s:GameState) {
+  const roster=(stageById(s.selectedStage)??endlessStage(s.endlessBest+1)).units.map(u=>char({characterId:u.id} as Hero));
+  const magic=roster.filter(c=>['caster','support','summon'].includes(roleOf(c))).length;
+  const front=roster.filter(c=>roleOf(c)==='front').length,flank=roster.filter(c=>roleOf(c)==='flank').length;
+  const area=roster.filter(c=>/área|todos os|inimigos próximos|ao redor|linha|cone/i.test(c.ability.description)).length;
+  const control=roster.filter(c=>/atordoa|atordoamento|lentidão|mana|silencia/i.test(c.ability.description)).length;
+  return {magic,physical:roster.length-magic,front,flank,area,control,total:roster.length};
+}
+function strategicScore(party:Hero[],s:GameState):number {
+  const t=enemyThreats(s),roles=party.map(h=>roleOf(char(h)));
+  let score=armyScore(party,s.journey.focusTraits);
+  score+=party.reduce((n,h)=>n+h.items.reduce((v,id)=>v+itemFit(char(h),itemById(id)!)*.035,0),0);
+  if(t.front>=2){score+=Math.min(2,roles.filter(r=>r==='front').length)*5;score+=roles.filter(r=>r==='caster').length*2;}
+  if(t.magic>=2)score+=roles.filter(r=>r==='flank').length*3;
+  if(t.flank&&roles.includes('front'))score+=3;
+  return score;
+}
+export interface PositionAdvice {hero:Hero;slot:number;row:number;reason:string;adjacent:string[]}
+/** Scores real board cells. Adjacent shields follow the simulation's 1.1-cell radius. */
+export function positionPlan(s:GameState,party=recommendedParty(s)):PositionAdvice[] {
+  const t=enemyThreats(s),taken=new Set<number>(),result:PositionAdvice[]=[];
+  const order=[...party].sort((a,b)=>{
+    const rank=(h:Hero)=>({front:0,flank:2,ranged:3,caster:4,support:5,summon:1})[roleOf(char(h))];
+    return rank(a)-rank(b)||char(b).hp[b.stars-1]-char(a).hp[a.stars-1]||a.uid.localeCompare(b.uid);
+  });
+  for(const hero of order){
+    const c=char(hero),role=roleOf(c),shield=hero.items.some(id=>(itemById(id)?.perks?.teamShield??0)>0);
+    const scored=Array.from({length:FORMATION_SLOTS},(_,slot)=>{
+      const row=Math.floor(slot/7),col=slot%7,p=allySlotCenter(slot),center=Math.abs(col-3);
+      let score=role==='front'?-row*12-center*2:role==='flank'?-row*10+center*2:role==='support'?-Math.abs(row-2)*8-center*3:-Math.abs(row-1)*9-center;
+      if(t.flank&&['support','caster','ranged'].includes(role))score-=center*3;
+      for(const other of result){const q=allySlotCenter(other.slot),distance=Math.hypot(p.x-q.x,p.y-q.y);if(t.area>=2&&distance<1.1)score-=3;
+        if(other.hero.items.some(id=>(itemById(id)?.perks?.teamShield??0)>0)&&distance<=1.1)score+=7;
+        if(shield&&distance<=1.1)score+=5;
+      }
+      return {slot,score};
+    }).filter(v=>!taken.has(v.slot)).sort((a,b)=>b.score-a.score||a.slot-b.slot);
+    const slot=scored[0].slot;taken.add(slot);
+    const reason=role==='front'?'Absorve a aproximação e protege a retaguarda.':role==='flank'?'A lateral abre uma rota de aproximação; seu alcance continua sendo respeitado.':role==='support'?'Centro protegido para sustentar curas e escudos.':role==='summon'?'Segunda fileira para conjurar cedo com proteção.':'Atrás dos resistentes, mantendo distância para atacar e conjurar.';
+    result.push({hero,slot,row:Math.floor(slot/7)+1,reason:reason+(t.flank&&role==='support'?' Evita a lateral exposta aos flanqueadores.':'')+(t.area>=2?' A formação busca reduzir agrupamentos contra dano em área.':''),adjacent:[]});
+  }
+  for(const a of result){const p=allySlotCenter(a.slot);a.adjacent=result.filter(b=>b!==a&&Math.hypot(p.x-allySlotCenter(b.slot).x,p.y-allySlotCenter(b.slot).y)<=1.1).map(b=>char(b.hero).name);}
+  return result;
+}
+export function planSignature(s:GameState):string {
+  return JSON.stringify([s.selectedStage,s.villageLevel,s.journey.focusTraits,s.inventory,s.heroes.map(h=>[h.uid,h.characterId,h.stars,h.level,h.slot,h.work,h.away?.until,h.items])]);
+}
+export function itemReason(c:Character,item:ItemDef,s:GameState):string {
+  const role=ROLE_GUIDE[roleOf(c)].name,t=enemyThreats(s);
+  if(item.perks?.teamShield)return 'Escuda o portador e aliados até 1,1 célula dele: confira os vizinhos no plano.';
+  if(item.stats.magicResist&&t.magic>=2)return `${role}: resistência contra ${t.magic} conjurador(es) ou invocador(es) adversários.`;
+  if(item.stats.armor&&t.physical>=2)return `${role}: armadura reduz os golpes físicos esperados neste encontro.`;
+  if(item.stats.mana||item.stats.spellPower||item.perks?.manaAfterCast)return `${role}: antecipa ou fortalece a habilidade ${c.ability.name}.`;
+  if(item.stats.attackSpeedPct||item.perks?.asStack)return `${role}: favorece ataques contínuos e efeitos acionados por ataque.`;
+  if(item.stats.hp||item.stats.hpPct)return `${role}: mais vida para permanecer em combate.`;
+  return `${role}: ${item.text}`;
+}
+function contextualItemFit(s:GameState,h:Hero,item:ItemDef):number {
+  const t=enemyThreats(s),r=roleOf(char(h));
+  return itemFit(char(h),item)+(item.stats.magicResist??0)*Math.min(3,t.magic)*.15+(item.stats.armor??0)*Math.min(3,t.physical)*.1+(item.perks?.ccShield??0)*t.control*4+(r==='front'?(item.perks?.teamShield??0)*60:0);
+}
+export function equipmentPlan(s:GameState,party=activeArmy(s)) {
+  const used=new Set<number>(),slots=new Map(party.map(h=>[h.uid,h.items.length]));
+  const result:{hero:Hero;item:ItemDef;index:number;reason:string}[]=[];
+  // A global greedy allocation prevents the same inventory entry being offered to several heroes.
+  const candidates=party.flatMap(hero=>s.inventory.flatMap((id,index)=>{const item=itemById(id)!;return item.kind==='item'?[{hero,item,index,score:contextualItemFit(s,hero,item)}]:[];})).sort((a,b)=>b.score-a.score||a.index-b.index||a.hero.uid.localeCompare(b.hero.uid));
+  for(const c of candidates)if(c.score>0&&!used.has(c.index)&&(slots.get(c.hero.uid)??3)<3){used.add(c.index);slots.set(c.hero.uid,slots.get(c.hero.uid)!+1);result.push({...c,reason:itemReason(char(c.hero),c.item,s)});}
+  return result;
+}
+export function craftingPlan(s:GameState,party=activeArmy(s)) {
+  const used=new Set<number>(),result:{item:ItemDef;a:number;b:number;hero:Hero;reason:string}[]=[];
+  const remaining=new Map(party.map(h=>[h.uid,3-h.items.length]));
+  const candidates=[] as {item:ItemDef;a:number;b:number;hero:Hero;score:number}[];
+  for(let a=0;a<s.inventory.length;a++)for(let b=a+1;b<s.inventory.length;b++){
+    const item=recipeFor(s.inventory[a],s.inventory[b]);if(!item)continue;
+    for(const hero of party.filter(h=>h.items.length<3))candidates.push({item,a,b,hero,score:contextualItemFit(s,hero,item)});
+  }
+  candidates.sort((a,b)=>b.score-a.score||a.a-b.a||a.b-b.b);
+  for(const c of candidates)if(!used.has(c.a)&&!used.has(c.b)&&(remaining.get(c.hero.uid)??0)>0){used.add(c.a);used.add(c.b);remaining.set(c.hero.uid,remaining.get(c.hero.uid)!-1);result.push({...c,reason:itemReason(char(c.hero),c.item,s)});}
+  return result;
+}
+export function buffAdvice(s:GameState) {
+  const t=enemyThreats(s),party=activeArmy(s),roles=party.map(h=>roleOf(char(h)));
+  return PREPARATIONS.map(p=>({...p,score:p.id==='amulet'?t.magic*4:p.id==='bark'?t.physical*3:p.id==='incense'?roles.filter(r=>['caster','support','summon'].includes(r)).length*4:p.id==='feast'?5:p.id==='spring'?3:4,
+    reason:p.id==='amulet'?`${t.magic} inimigo(s) com função de conjuração ou invocação.`:p.id==='bark'?`${t.physical} inimigo(s) com funções voltadas a golpes e aproximação.`:p.id==='incense'?'Mana inicial ajuda os seus conjuradores, suportes e invocadores a agir antes.':p.id==='feast'?'Mais vida ajuda a formação a suportar a abertura.':p.id==='spring'?'Sustenta batalhas longas; perde valor contra redução de cura.':'Fortalece o dano dos ataques básicos.'})).filter(p=>p.era<=s.villageLevel).sort((a,b)=>b.score-a.score);
+}
+export function spiritAdvice(s:GameState) {
+  const t=enemyThreats(s);
+  return s.spirits.map(id=>{const spirit=spiritById(id)!;const timing=id==='urso'?'Use após perder companheiros; o poder revive os caídos.':id==='coruja'?'Observe as barras inimigas: use perto da mana cheia para atrasar conjurações.':id==='cervo'?'Guarde para aliados feridos ou envenenados.':id==='crocodilo'?'Use quando um inimigo ficar abaixo de 40% de vida.':id==='elefante'?'Use antes de uma sequência forte de dano para aproveitar o escudo.':id==='lobo'?'Use quando a sua formação já estiver alcançando os alvos.':id==='aguia'?'Use antes da sequência de dano ou para revelar furtivos.':t.magic?'Interrompa a abertura dos inimigos e acompanhe as barras de mana.':'Use quando os aliados estiverem em posição de aproveitar o efeito.';return{spirit,timing};});
+}
+export function synergyChanges(s:GameState,party=recommendedParty(s)) {
+  const current=countTraits(activeArmy(s).map(h=>h.characterId)),next=countTraits(party.map(h=>h.characterId));
+  return Object.keys(TRAIT_RULES).flatMap(name=>{const before=traitStatus(name,current.get(name)??0),after=traitStatus(name,next.get(name)??0);return before.count||after.count?[{name,before,after,delta:after.tier-before.tier}]:[];}).sort((a,b)=>b.delta-a.delta||b.after.tier-a.after.tier);
 }

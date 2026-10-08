@@ -1,9 +1,8 @@
 import { characters, type Character } from '../data/characters';
 import { attackTiming, castWindup } from './combatTiming';
 import { participationBonus } from './ritualPlay';
-import { recommendedParty, roleOf } from './armyAdvisor';
-import { SETTLEMENT_MILESTONES } from './settlement';
-import { builderCount, constructionCount, INFRASTRUCTURE, initialSettlement, orderTitle, populationCap, raidProtection, RESEARCH, researchCost, sanitizeSettlement, settlementRates, territoryById, territoryLock, trainingCost, villagePlots, type CitizenJob, type InfrastructureId, type ResearchId, type Settlement, type VillageOrder } from './settlement';
+import { recommendedParty, positionPlan, equipmentPlan, planSignature } from './armyAdvisor';
+import { initialJourney, sanitizeJourney, migrateSettlement, legacyLevel, legacyCost, legacyLock, LEGACIES, PREPARATIONS, TRIALS, trialProgress, type AncestralJourney, type PreparationId } from './ancestralJourney';
 import { ALL_CHARACTER_IDS, nextRandom, recruitPrice, rollVisitor, sellRefund, unlockedCost } from './roster';
 import { bossScale, endlessLevel, endlessStage, enemyScale, expectedLevel, FINAL_STAGE, regionOf, stageById, stageReward, type Stage } from './campaign';
 import { COMPONENT_IDS, isComponent, itemById, MAX_ITEMS_PER_HERO, recipeFor, type ItemPerks } from './items';
@@ -37,7 +36,7 @@ export interface Hero {
 }
 export interface HuntReport { clock: number; uid: string; name: string; text: string; ok: boolean }
 export interface GameState {
-  settlement: Settlement;
+  journey: AncestralJourney;
   resources: Resources;
   villageLevel: number;
   buildings: Record<BuildingId, number>;
@@ -211,6 +210,7 @@ export interface BattleState {
   prey: Partial<Record<Team, { id: string; time: number }>>;
   lastCast: Partial<Record<Team, number>>;
   powersUsed: SpiritId[];
+  preparations:PreparationId[];
   /** Heroes who marched, and what they learned. */
   party: string[];
   xp: number;
@@ -241,7 +241,7 @@ const OPTIONAL_BUILDINGS: BuildingId[] = ['forge', 'cura'];
 export const PLAYABLE_IDS = ALL_CHARACTER_IDS;
 export const MAX_BUILDING_LEVEL = 15;
 export const MAX_VILLAGE_LEVEL = 5;
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 export const OFFLINE_CAP_SECONDS = 12 * 3600;
 export const MAX_ROSTER_SIZE = 55;
 export const MAX_INVENTORY = 180;
@@ -280,8 +280,8 @@ export function buildingMultiplier(state: GameState, building: BuildingId): numb
 }
 
 export function getRates(state: GameState): Resources {
-  const civic = settlementRates(state);
-  const bonus = (1 + (state.villageLevel - 1) * 0.12) * (1 + 0.25 * memory(state, 'raizes'));
+  const civic = {wood:.65,food:.55,stone:.35,spirit:.04};
+  const bonus = (1+legacyLevel(state,'roots')*.08) * (1 + (state.villageLevel - 1) * 0.12) * (1 + 0.25 * memory(state, 'raizes'));
   const omen = (resource: Resource) => state.omen && state.omen.resource === resource && state.clock < state.omen.until ? 1 + OMEN_BONUS : 1;
   const spirit = (resource: Resource) => (1 + chosenSpirits(state).reduce((sum, entry) => sum + (entry.passive.production?.[resource] ?? 0), 0)) * omen(resource);
   return {
@@ -296,7 +296,7 @@ export function forgeRate(state: GameState): number {
   const level = state.buildings.forge;
   if (!level) return 0;
   const speed = 1 + chosenSpirits(state).reduce((sum, spirit) => sum + (spirit.passive.forgeSpeed ?? 0), 0);
-  return level / 900 * buildingMultiplier(state, 'forge') * speed;
+  return level / 900 * buildingMultiplier(state, 'forge') * speed * (1+legacyLevel(state,'forge')*.1);
 }
 
 /** level is the current building level; this returns the price of its next level. */
@@ -379,12 +379,13 @@ export const newHero = (uid: string, characterId: number, stars = 1, slot: numbe
 const starterHeroes = (): Hero[] => [newHero('hero-1', 1, 1, 3)];
 /** A hero is in the village when not hunting or in ceremony. */
 export const available = (hero: Hero) => !hero.away;
+export const heroHuntChance=(state:GameState,hero:Hero)=>Math.min(.98,huntChance(hero.stars,hero.panema,hero.rituals.sananga??0)+legacyLevel(state,'tracking')*.02);
 /** Ceremonies run faster with helpers in the Casa de Cura. */
 export const ritualSpeed = (state: GameState): number => Math.min(1.5, buildingMultiplier(state, 'cura'));
 
 function initialState(): GameState {
   return {
-    settlement: initialSettlement(),
+    journey: initialJourney(),
     resources: { wood: 120, food: 90, stone: 60, spirit: 75 },
     villageLevel: 1,
     buildings: { lumber: 1, hunt: 1, quarry: 1, shrine: 1, forge: 0, cura: 0 },
@@ -460,8 +461,9 @@ function sanitizeState(value: unknown, version: number): GameState {
     omen: sanitizeOmen(input.omen),
   };
   state.nextEventAt = finite(input.nextEventAt, state.clock + FIRST_EVENT_AT, 0, state.clock + 3600);
-  state.settlement = sanitizeSettlement(input.settlement, state.clock);
-  state.settlement.focusTraits = state.settlement.focusTraits.filter(trait => Object.hasOwn(TRAIT_RULES,trait));
+  state.journey = version >= 6 ? sanitizeJourney(input.journey) : initialJourney();
+  if(version<6)migrateSettlement(state,input.settlement);
+  state.journey.focusTraits=state.journey.focusTraits.filter(trait=>Object.hasOwn(TRAIT_RULES,trait));
   state.cacao = finite(input.cacao, 0, 0, state.clock + CACAO_DURATION);
   state.endlessRecord = Math.max(state.endlessRecord, state.endlessBest);
   const spirits: SpiritId[] = [];
@@ -559,6 +561,7 @@ export class Game {
   private traitTiers = new Map<string, number>();
   private healBonus = 0;
   private summonBonus = 0;
+  private battlePreparations:PreparationId[]=[];
   private windups=new Map<string,{kind:'attack'|'cast';targetId:string;remaining:number}>();
   private projectiles:{source:CombatEntity;target:CombatEntity;remaining:number;power:number;third:boolean}[]=[];
 
@@ -567,7 +570,7 @@ export class Game {
     this.state = initialState();
     if (typeof save === 'string') { try { save = JSON.parse(save); } catch { return; } }
     const root = record(save);
-    if (root.version !== 1 && root.version !== 2 && root.version !== 3 && root.version !== 4 && root.version !== SAVE_VERSION) return;
+    if (root.version !== 1 && root.version !== 2 && root.version !== 3 && root.version !== 4 && root.version !== 5 && root.version !== SAVE_VERSION) return;
     this.state = sanitizeState(root.state, root.version as number);
     const savedAt = finite(root.savedAt, now, 0, Number.MAX_SAFE_INTEGER);
     this.offlineSeconds = this.state.paused ? 0 : Math.min(OFFLINE_CAP_SECONDS, Math.max(0, (now - savedAt) / 1000));
@@ -607,9 +610,8 @@ export class Game {
 
   /** Village production and the forge; shared by the live clock and offline time. */
   private produce(seconds: number): void {
-    this.resolveVillageOrders();
     this.resolveAway();
-    const nextReturn = Math.min(...this.state.heroes.filter(h => h.away).map(h => h.away!.until), ...this.state.settlement.orders.map(o=>o.until));
+    const nextReturn = Math.min(...this.state.heroes.filter(h => h.away).map(h => h.away!.until));
     const segment = nextReturn - this.state.clock;
     if (segment > 0 && segment < seconds) { this.produce(segment); this.produce(seconds - segment); return; }
     const learningSeconds = seconds + Math.min(seconds, Math.max(0, this.state.cacao - this.state.clock)) * CACAO_XP;
@@ -625,7 +627,6 @@ export class Game {
       this.state.forgeProgress = Math.min(1, this.state.forgeProgress);
     }
     this.resolveAway();
-    this.resolveVillageOrders();
   }
 
   /** Unanswered raiders steal provisions; a quiet village sees a new event every few minutes from the second era. */
@@ -633,7 +634,7 @@ export class Game {
     const s = this.state;
     if (s.omen && s.clock >= s.omen.until) s.omen = null;
     if (s.event && s.clock > s.event.expires) {
-      if (s.event.kind === 'raid') { const loss=RAID_PENALTY*(1-raidProtection(s)); s.resources.wood *= 1 - loss; s.resources.food *= 1 - loss; }
+      if (s.event.kind === 'raid') { const loss=RAID_PENALTY*(1-Math.min(.5,legacyLevel(s,'ward')*.04)); s.resources.wood *= 1 - loss; s.resources.food *= 1 - loss; }
       s.event = null;
     }
     if (!s.event && s.villageLevel >= 2 && s.clock >= s.nextEventAt) {
@@ -693,112 +694,44 @@ export class Game {
     this.produce(Math.min(OFFLINE_CAP_SECONDS, seconds));
   }
 
-  private villageLog(text:string, at=this.state.clock):void {
-    this.state.settlement.log.push({at,text});this.state.settlement.log=this.state.settlement.log.slice(-12);
-  }
-  private resolveVillageOrders():void {
-    const s=this.state,v=s.settlement;
-    const complete=v.orders.filter(o=>o.until<=s.clock).sort((a,b)=>a.until-b.until||a.id-b.id);
-    v.orders=v.orders.filter(o=>o.until>s.clock);
-    for(const o of complete) {
-      if(o.kind==='building')s.buildings[o.target as BuildingId]=Math.max(s.buildings[o.target as BuildingId],o.level);
-      if(o.kind==='infrastructure'&&o.plot&&!v.sites[o.plot])v.sites[o.plot]=o.target as InfrastructureId;
-      if(o.kind==='train'&&v.citizens.length<40)v.citizens.push({id:v.nextCitizen++,job:'idle'});
-      if(o.kind==='research')v.research[o.target as ResearchId]=Math.max(v.research[o.target as ResearchId],Math.min(3,o.level));
-      if(o.kind==='scout'&&!v.discovered.includes(o.target)) {
-        v.discovered.push(o.target);const t=territoryById(o.target)!;const cache=emptyResources();cache[t.resource]=35*t.era;this.addResources(cache);
-      }
-      if(o.kind==='claim'&&!v.claimed.includes(o.target))v.claimed.push(o.target);
-      this.villageLog(`${orderTitle(o)} concluído.`,o.until);
-    }
-  }
-  private queueVillageOrder(order:Omit<VillageOrder,'id'|'started'|'until'>,seconds:number):ActionResult {
-    if(this.state.paused)return fail('Retome a jornada para dar uma ordem.');
-    if(this.state.settlement.orders.length>=12)return fail('Conclua uma das ordens em andamento.');
-    if(!this.spend(order.cost))return fail('Faltam recursos para esta ordem.');
-    const o={...order,id:this.state.settlement.nextOrder++,started:this.state.clock,until:this.state.clock+seconds};
-    this.state.settlement.orders.push(o);this.villageLog(`${orderTitle(o)} iniciado.`);
-    return success(`${orderTitle(o)} em andamento.`);
-  }
-  queueBuilding(id:BuildingId):ActionResult {
-    const s=this.state;
-    if(!BUILDING_KEYS.includes(id))return fail('Construção desconhecida.');
-    if(s.settlement.orders.some(o=>o.kind==='building'&&o.target===id))return fail('Esta construção já tem uma obra em andamento.');
-    if(s.buildings[id]>=MAX_BUILDING_LEVEL)return fail('Nível máximo alcançado.');
-    if(id==='forge'&&s.villageLevel<2)return fail('A Forja de Osso exige a Era II.');
-    if(constructionCount(s)>=builderCount(s))return fail('Designe mais um construtor ou conclua a obra atual.');
-    return this.queueVillageOrder({kind:'building',target:id,level:s.buildings[id]+1,cost:buildingCost(id,s.buildings[id])},25+s.buildings[id]*12);
-  }
-  buildInfrastructure(id:InfrastructureId,plot:string):ActionResult {
-    const s=this.state,def=INFRASTRUCTURE[id];
-    if(!def)return fail('Escolha uma construção.');
-    if(s.villageLevel<def.era)return fail(`Esta construção exige a Era ${def.era}.`);
-    if(!villagePlots(s).some(p=>p.id===plot)||s.settlement.sites[plot]||s.settlement.orders.some(o=>o.plot===plot))return fail('Escolha um terreno livre dentro do território da tribo.');
-    if(constructionCount(s)>=builderCount(s))return fail('Todos os construtores estão ocupados.');
-    return this.queueVillageOrder({kind:'infrastructure',target:id,plot,level:1,cost:{...def.cost}},def.seconds);
-  }
-  trainCitizen():ActionResult {
-    const s=this.state;
-    if(s.settlement.orders.some(o=>o.kind==='train'))return fail('Um aldeão já está em preparação.');
-    if(s.settlement.citizens.length>=populationCap(s))return fail('Erga uma moradia para acolher mais aldeões.');
-    return this.queueVillageOrder({kind:'train',target:'citizen',level:1,cost:trainingCost()},30);
-  }
-  setCitizenJob(id:number,job:CitizenJob):ActionResult {
-    if(!['wood','food','stone','spirit','builder','idle'].includes(job))return fail('Ofício desconhecido.');
-    if(this.state.paused)return fail('Retome a jornada para dar uma ordem.');
-    const c=this.state.settlement.citizens.find(c=>c.id===id);
-    if(!c)return fail('Aldeão não encontrado.');
-    if(this.state.settlement.orders.some(o=>o.citizenId===id))return fail('Este aldeão volta ao ofício após o reconhecimento.');
-    if(c.job==='builder'&&job!=='builder'&&builderCount(this.state)<=constructionCount(this.state))return fail('Este construtor precisa concluir a obra antes de mudar de ofício.');
-    c.job=job;return success('Ofício do aldeão atualizado.');
-  }
-  adjustCitizens(job:CitizenJob,delta:number):ActionResult {
-    const v=this.state.settlement,reserved=(id:number)=>v.orders.some(o=>o.citizenId===id);
-    if(delta<0){const c=v.citizens.find(c=>c.job===job&&!reserved(c.id));return c?this.setCitizenJob(c.id,'idle'):fail('Nenhum aldeão disponível neste ofício.');}
-    const candidate=v.citizens.find(c=>c.job==='idle'&&!reserved(c.id))??v.citizens.filter(c=>c.job!==job&&c.job!=='builder'&&!reserved(c.id)).sort((a,b)=>v.citizens.filter(c=>c.job===b.job).length-v.citizens.filter(c=>c.job===a.job).length)[0];
-    return candidate?this.setCitizenJob(candidate.id,job):fail('Prepare outro aldeão ou libere um ofício.');
-  }
-  scoutTerritory(id:string):ActionResult {
-    const s=this.state,t=territoryById(id);if(!t)return fail('Território desconhecido.');
-    const lock=territoryLock(s,t);if(lock)return fail(lock);
-    if(s.settlement.discovered.includes(id)||s.settlement.orders.some(o=>o.kind==='scout'))return fail('O território já foi reconhecido ou a equipe está explorando.');
-    const c=s.settlement.citizens.filter(c=>c.job!=='builder').sort((a,b)=>Number(b.job==='idle')-Number(a.job==='idle'))[0];
-    if(!c)return fail('Disponibilize um aldeão para reconhecer a mata.');
-    return this.queueVillageOrder({kind:'scout',target:id,citizenId:c.id,level:1,cost:{wood:0,food:20*t.era,stone:0,spirit:0}},t.scout*(1-.15*s.settlement.research.tracking));
-  }
-  claimTerritory(id:string):ActionResult {
-    const s=this.state,t=territoryById(id);if(!t)return fail('Território desconhecido.');
-    const lock=territoryLock(s,t);if(lock)return fail(lock);
-    if(!s.settlement.discovered.includes(id))return fail('Reconheça a mata antes de estabelecer o posto.');
-    if(s.settlement.claimed.includes(id)||s.settlement.orders.some(o=>o.kind==='claim'&&o.target===id))return fail('O posto já existe ou está em construção.');
-    if(constructionCount(s)>=builderCount(s))return fail('Disponibilize um construtor para o posto avançado.');
-    return this.queueVillageOrder({kind:'claim',target:id,level:1,cost:{...t.cost}},45+t.era*15);
-  }
-  researchVillage(id:ResearchId):ActionResult {
-    const s=this.state,def=RESEARCH[id];if(!def)return fail('Pesquisa desconhecida.');
-    if(s.villageLevel<def.era)return fail(`Esta pesquisa exige a Era ${def.era}.`);
-    if(s.settlement.research[id]>=3||s.settlement.orders.some(o=>o.kind==='research'&&o.target===id))return fail('Pesquisa no máximo ou já em andamento.');
-    return this.queueVillageOrder({kind:'research',target:id,level:s.settlement.research[id]+1,cost:researchCost(s,id)},def.seconds*(1+s.settlement.research[id]*.5));
-  }
-  cancelVillageOrder(id:number):ActionResult {
-    this.resolveVillageOrders();const v=this.state.settlement,o=v.orders.find(o=>o.id===id);if(!o)return fail('Esta ordem já foi concluída.');
-    v.orders=v.orders.filter(o=>o.id!==id);this.addResources(Object.fromEntries(RESOURCE_KEYS.map(r=>[r,o.cost[r]*.8])) as Resources);
-    this.villageLog(`${orderTitle(o)} cancelado. 80% dos recursos devolvidos.`);return success('Ordem cancelada; 80% dos recursos foram devolvidos.');
-  }
-  tradeResources(from:Resource,to:Resource):ActionResult {
-    if(!Object.values(this.state.settlement.sites).includes('market'))return fail('Erga a Casa de trocas primeiro.');
-    if(!['wood','food','stone'].includes(from)||!['wood','food','stone'].includes(to)||from===to)return fail('Escolha dois recursos materiais diferentes.');
-    if(this.state.paused)return fail('Retome a jornada.');const cost=emptyResources();cost[from]=100;
-    if(!this.spend(cost))return fail('São necessários 100 recursos para a troca.');const gain=emptyResources();gain[to]=65;this.addResources(gain);return success('Troca concluída: 100 por 65.');
-  }
   setArmyFocus(trait:string):ActionResult {
-    if(!Object.hasOwn(TRAIT_RULES,trait))return fail('Laço desconhecido.');const v=this.state.settlement;
-    v.focusTraits=v.focusTraits.includes(trait)?v.focusTraits.filter(t=>t!==trait):[...v.focusTraits.slice(-1),trait];return success('Plano da formação atualizado.');
+    if(!Object.hasOwn(TRAIT_RULES,trait))return fail('Laço desconhecido.');
+    const j=this.state.journey;j.focusTraits=j.focusTraits.includes(trait)?j.focusTraits.filter(t=>t!==trait):[...j.focusTraits.slice(-1),trait];return success('Prioridades da formação atualizadas.');
   }
-  claimSettlementMilestone(id:string):ActionResult {
-    const v=this.state.settlement,m=SETTLEMENT_MILESTONES.find(m=>m.id===id);
-    if(!m||v.milestones.includes(id)||!m.done(this.state))return fail('Este marco ainda não está disponível ou já foi recebido.');
-    v.milestones.push(id);this.addResources(m.reward);this.villageLog(`${m.name}: recompensa recebida.`);return success(`${m.name}: a aldeia recebeu os recursos.`);
+  acceptTrial(id:string):ActionResult {
+    const def=TRIALS.find(t=>t.id===id);if(!def||this.state.paused)return fail('Escolha um desafio com a jornada em atividade.');
+    if(this.state.journey.trial?.id===id)return fail('Este desafio já está ativo.');
+    this.state.journey.trial={id:def.id,start:this.state.stats[def.stat]};return success(`${def.name}: suas próximas atividades contam para este desafio.`);
+  }
+  claimTrial():ActionResult {
+    const j=this.state.journey,def=TRIALS.find(t=>t.id===j.trial?.id);
+    if(!def||trialProgress(this.state)<def.goal||this.state.paused)return fail('Conclua o desafio ativo antes de receber conhecimento.');
+    j.knowledge+=def.reward;j.completed++;j.trial=null;return success(`Desafio concluído: +${def.reward} de conhecimento ancestral.`);
+  }
+  learnLegacy(id:string):ActionResult {
+    const def=LEGACIES.find(d=>d.id===id);if(!def||this.state.paused)return fail('Retome a jornada e escolha um legado.');
+    if(this.fighting())return fail('Escolha legados entre os combates.');
+    const lock=legacyLock(this.state,def);if(lock)return fail(lock);
+    const level=legacyLevel(this.state,def.id),cost=legacyCost(level);if(this.state.journey.knowledge<cost)return fail(`São necessários ${cost} de conhecimento.`);
+    this.state.journey.knowledge-=cost;this.state.journey.legacies[def.id]=level+1;return success(`${def.name} chegou ao nível ${level+1}.`);
+  }
+  prepareExpedition(id:string):ActionResult {
+    const def=PREPARATIONS.find(d=>d.id===id),j=this.state.journey;
+    if(!def||this.state.paused||this.fighting())return fail('Prepare a formação entre os combates.');
+    if(this.state.villageLevel<def.era)return fail(`Exige Era ${def.era}.`);
+    if((j.preparations[def.id]??0)>=5)return fail('O estoque deste preparativo já tem cinco cargas.');
+    if(!this.spend(def.cost))return fail('Faltam provisões para este preparativo.');
+    j.preparations[def.id]=(j.preparations[def.id]??0)+1;
+    if(j.selected.length<2&&!j.selected.includes(def.id))j.selected.push(def.id);
+    return success(`${def.name} preparado. Selecione até dois para a próxima expedição.`);
+  }
+  selectPreparation(id:string):ActionResult {
+    const j=this.state.journey,def=PREPARATIONS.find(d=>d.id===id);
+    if(!def||this.state.paused||this.fighting())return fail('Ajuste os preparativos entre os combates.');
+    if(j.selected.includes(def.id)){j.selected=j.selected.filter(p=>p!==def.id);return success('Preparativo guardado para depois.');}
+    if(!(j.preparations[def.id]??0))return fail('Prepare uma carga primeiro.');
+    if(j.selected.length>=2)return fail('Retire um dos dois preparativos selecionados.');
+    j.selected.push(def.id);return success('Preparativo selecionado para a próxima expedição.');
   }
 
   gather(resource: Resource): ActionResult {
@@ -810,6 +743,7 @@ export class Game {
 
   upgradeBuilding(id: BuildingId): ActionResult {
     if (!BUILDING_KEYS.includes(id)) return fail('Construção desconhecida.');
+    if(this.state.paused)return fail('Retome a jornada.');
     const level = this.state.buildings[id];
     if (level >= MAX_BUILDING_LEVEL) return fail('Esta construção chegou ao nível máximo.');
     if (id === 'forge' && this.state.villageLevel < 2) return fail('A Forja de Osso exige a aldeia de nível 2.');
@@ -888,13 +822,21 @@ export class Game {
     return success('Formação organizada: combatentes à frente, conjuradores e atiradores atrás.');
   }
 
-  applyArmyPlan():ActionResult {
+  applyArmyPlan(expected?:string):ActionResult {
     if(this.fighting())return fail('Aguarde o fim do combate para mudar a formação.');
     if(this.state.paused)return fail('Retome a jornada.');
+    if(expected&&expected!==planSignature(this.state))return fail('O elenco mudou. Confira o plano atualizado.');
     const party=recommendedParty(this.state);if(!party.length)return fail('Disponibilize companheiros que estejam na aldeia e fora do trabalho.');
-    const slots=enemyFormation(party.map(h=>!['front','flank'].includes(roleOf(characterById(h.characterId)))));
+    const positions=positionPlan(this.state,party);
     for(const h of this.state.heroes)h.slot=null;
-    party.forEach((h,i)=>{h.slot=slots[i];});return success('Plano aplicado: laços priorizados, linha de frente protegendo a retaguarda.');
+    positions.forEach(p=>{p.hero.slot=p.slot;});return success('Formação aplicada: posições, funções e laços ajustados ao encontro.');
+  }
+  applyEquipmentPlan(expected?:string):ActionResult {
+    if(this.fighting()||this.state.paused)return fail('Distribua equipamentos entre os combates, com a jornada em atividade.');
+    if(expected&&expected!==planSignature(this.state))return fail('A bolsa ou formação mudou. Confira a distribuição atualizada.');
+    const plan=equipmentPlan(this.state);if(!plan.length)return fail('Não há itens prontos e vagas na formação para distribuir.');
+    for(const p of [...plan].sort((a,b)=>b.index-a.index)){p.hero.items.push(this.state.inventory[p.index]);this.state.inventory.splice(p.index,1);}
+    return success(`${plan.length} item(ns) distribuído(s). Os equipamentos anteriores foram preservados.`);
   }
 
   deploy(uid: string, slot: number | null): ActionResult {
@@ -1002,7 +944,7 @@ export class Game {
     if (this.fighting()) return fail('Conclua a expedição antes do ritual.');
     if (this.state.wonder < WONDER_STAGES || this.state.progress < FINAL_STAGE) return fail('O renascimento exige o Grande Totem completo e a vitória no Primeiro Inverno.');
     const gained = embersFor(this.state);
-    const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, shopSeed: this.state.shopSeed, lootSeed: this.state.lootSeed, quests: [...this.state.quests], stats: { ...this.state.stats }, clock: this.state.clock };
+    const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, shopSeed: this.state.shopSeed, lootSeed: this.state.lootSeed, quests: [...this.state.quests], stats: { ...this.state.stats }, journey:{...this.state.journey,preparations:initialJourney().preparations,selected:[]}, clock: this.state.clock };
     this.state = { ...initialState(), ...keep };
     const heritage = 150 * memory(this.state, 'heranca');
     for (const key of RESOURCE_KEYS) this.state.resources[key] += heritage;
@@ -1021,7 +963,7 @@ export class Game {
     // Newcomers learn faster from the tribe's veterans: +25% per level beyond the first behind the strongest, up to double.
     const top = Math.max(...this.state.heroes.map(other => other.level));
     const mentoring = mentored ? Math.min(2, 1 + 0.25 * Math.max(0, top - hero.level - 1)) : 1;
-    const before = hero.level, next = levelFromTotal(totalXp(hero.level, hero.xp) + amount * mentoring);
+    const before = hero.level, next = levelFromTotal(totalXp(hero.level, hero.xp) + amount * mentoring*(1+legacyLevel(this.state,'learning')*.04));
     hero.level = next.level; hero.xp = next.xp;
     this.awaken(hero);
     return hero.level - before;
@@ -1059,7 +1001,7 @@ export class Game {
   private finishHunt(hero: Hero, trailId: TrailId, focus: boolean): void {
     const trail = trailById(trailId)!;
     this.state.stats.hunts++;
-    const ok = this.random() < Math.min(.98,huntChance(hero.stars, hero.panema, hero.rituals.sananga ?? 0)+this.state.settlement.research.tracking*.03);
+    const ok = this.random() < heroHuntChance(this.state,hero);
     const xp = Math.round(trail.xp * (1 - PANEMA_XP_LOSS * hero.panema) * (focus ? 1 + FOCUS_BONUS : 1) * (ok ? 1 : 0.4) * this.xpBonus());
     const levels = this.gainXp(hero, xp);
     const gains = [`+${xp} XP`];
@@ -1076,13 +1018,13 @@ export class Game {
     const practice = practiceById(id)!;
     this.state.stats.rituals++;
     hero.rituals[id] = Math.min(practice.max, (hero.rituals[id] ?? 0) + 1);
-    Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + RITUAL_XP[id] + bonus));
+    Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + (RITUAL_XP[id] + bonus)*(1+legacyLevel(this.state,'ceremony')*.04)));
     hero.ritualReadyAt = completedAt + RITUAL_COOLDOWN;
     this.awaken(hero);
     if (id === 'rape') hero.focus = true;
     if (id === 'sananga') hero.panema = Math.max(0, hero.panema - 1);
     if (id === 'kambo') hero.panema = 0;
-    this.report(hero, `concluiu ${practice.name}: +${RITUAL_XP[id] + bonus} XP ritual${bonus ? ` (${bonus} pela participação)` : ''}. Integração de 3 horas antes da próxima cerimônia.`, true);
+    this.report(hero, `concluiu ${practice.name}: +${(RITUAL_XP[id] + bonus)*(1+legacyLevel(this.state,'ceremony')*.04)} XP ritual${bonus ? ` (${bonus} pela participação)` : ''}. Integração de 3 horas antes da próxima cerimônia.`, true);
   }
 
   /** Sends a hero along a hunting trail; the hero keeps a place in the formation but cannot fight until back. */
@@ -1141,7 +1083,7 @@ export class Game {
     this.state.cacao = this.state.clock + CACAO_DURATION;
     this.state.stats.rituals++;
     for (const hero of this.state.heroes.filter(hero => !hero.away && this.state.clock >= hero.ritualReadyAt)) {
-      Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + RITUAL_XP.cacau + participationBonus(RITUAL_XP.cacau, quality)));
+      Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + (RITUAL_XP.cacau + participationBonus(RITUAL_XP.cacau, quality))*(1+legacyLevel(this.state,'ceremony')*.04)));
       hero.ritualReadyAt = this.state.clock + RITUAL_COOLDOWN;
       this.awaken(hero);
     }
@@ -1254,8 +1196,13 @@ export class Game {
     // Levels and ceremonies.
     if (hero) {
       const growth = levelMultiplier(hero.level), r = hero.rituals;
-      const tactics=1+this.state.settlement.research.warfare*.04;
-      entity.maxHp*=tactics;entity.attack*=tactics;
+      entity.maxHp*=1+legacyLevel(this.state,'vigor')*.03;entity.attack*=1+legacyLevel(this.state,'tactics')*.03;
+      entity.attackSpeed*=1+legacyLevel(this.state,'resolve')*.03;entity.spellPower*=1+legacyLevel(this.state,'insight')*.04;
+      entity.magicResist+=legacyLevel(this.state,'ward')*4;entity.mana+=legacyLevel(this.state,'channel')*5;
+      for(const id of this.battlePreparations){
+        if(id==='feast')entity.maxHp*=1.12;if(id==='warpaint')entity.attack*=1.08;if(id==='incense')entity.mana+=12;
+        if(id==='bark')entity.armor+=12;if(id==='amulet')entity.magicResist+=15;if(id==='spring')entity.regen+=.005;
+      }
       entity.level = hero.level;
       entity.maxHp *= growth.hp * (1 + RITUAL_EFFECT.kamboHp * (r.kambo ?? 0));
       entity.attack *= growth.attack * (1 + RITUAL_EFFECT.sanangaDamage * (r.sananga ?? 0));
@@ -1282,6 +1229,7 @@ export class Game {
     entity.taunt = Math.max(entity.taunt, entity.perks.startTaunt ?? 0);
     entity.mana = Math.min(entity.manaMax, entity.mana);
     entity.manaRegen += 2 * (this.traitTiers.get('Totêmico') ?? 0);
+    if(hero)entity.shield+=entity.maxHp*legacyLevel(this.state,'guard')*.03;
     entity.hp = entity.maxHp;
     return entity;
   }
@@ -1316,6 +1264,7 @@ export class Game {
     const spirits = chosenSpirits(this.state);
     this.healBonus = spirits.reduce((sum, spirit) => sum + (spirit.passive.healPower ?? 0), 0) + (this.state.clock < this.state.cacao ? CACAO_HEAL : 0);
     this.summonBonus = spirits.reduce((sum, spirit) => sum + (spirit.passive.summonPct ?? 0), 0);
+    this.battlePreparations=stage.id>=0?this.state.journey.selected.filter(id=>(this.state.journey.preparations[id]??0)>0):[];
     const allies = party.map((hero, index) => this.entity(hero.characterId, hero.stars, 'ally', index, hero.slot!, 0, hero));
     for (const ally of allies) {
       if (!ally.perks.teamShield) continue;
@@ -1327,8 +1276,10 @@ export class Game {
     this.summonCounter = 0;
     this.windups.clear();this.projectiles=[];
     const firstClear = stage.id > 0 && stage.id > this.state.progress;
-    this.battle = { entities: [...allies, ...enemies], zones: [], time: 0, stage: stage.id, depth, region: stage.id ? stage.region : 6, name: stage.name, status: 'fighting', reward: null, loot: [], firstClear, prey: {}, lastCast: {}, powersUsed: [], party: party.map(hero => hero.uid), xp: 0, levelUps: [] };
+    this.battle = { entities: [...allies, ...enemies], zones: [], time: 0, stage: stage.id, depth, region: stage.id ? stage.region : 6, name: stage.name, status: 'fighting', reward: null, loot: [], firstClear, prey: {}, lastCast: {}, powersUsed: [], preparations:[...this.battlePreparations],party: party.map(hero => hero.uid), xp: 0, levelUps: [] };
     if (stage.id < 0) this.battle.region = stage.region;
+    for(const id of this.battlePreparations)this.state.journey.preparations[id]!--;
+    this.state.journey.selected=this.state.journey.selected.filter(id=>(this.state.journey.preparations[id]??0)>0);
     return success(`${stage.name}: a caçada começou.`);
   }
 
@@ -1773,7 +1724,7 @@ export class Game {
       if (hero && this.gainXp(hero, battle.xp)) battle.levelUps.push(`${characterById(hero.characterId).name} · nível ${hero.level}`);
     }
     // Raiders who win the fight still escape with provisions.
-    if (!victory && battle.stage < 0) { const loss=RAID_PENALTY*(1-raidProtection(this.state)); this.state.resources.wood *= 1 - loss; this.state.resources.food *= 1 - loss; }
+    if (!victory && battle.stage < 0) { const loss=RAID_PENALTY*(1-Math.min(.5,legacyLevel(this.state,'ward')*.04)); this.state.resources.wood *= 1 - loss; this.state.resources.food *= 1 - loss; }
     if (!victory) return;
     this.state.stats.victories++;
     if (battle.stage < 0) {

@@ -1,5 +1,7 @@
 # Aldeia RTS e conselheiro
 
+> Registro histórico da versão 2.0. A mecânica de RTS foi removida na versão 2.1 e substituída pelos [Caminhos Ancestrais](CAMINHOS-ANCESTRAIS.md). As regras abaixo descrevem a implementação anterior.
+
 ## Ciclo da aldeia
 
 A aldeia possui uma população própria. Heróis continuam com experiência, ritualística, caçadas, cerimônias e trabalho especializado. Os aldeões cuidam da economia e da expansão.

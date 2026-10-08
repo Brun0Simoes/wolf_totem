@@ -1,6 +1,6 @@
 # Wolf Totem
 
-Jogo incremental de estratégia e combate automático, em português. Uma tribo cresce ao redor de uma fogueira: a aldeia produz recursos e avança por cinco eras, como em *Age of Mythology*, honrando um espírito protetor em cada uma. Heróis ligados a espíritos animais são acolhidos uma única vez e despertam novas formas com experiência de atividades e nível ritual. O combate usa formação estratégica e acontece automaticamente. Depois partem em expedições automáticas até o Primeiro Inverno, a Caçada Eterna e o renascimento no Grande Totem.
+Jogo incremental de estratégia e combate automático, em português. A tribo avança por cinco eras e pelos Caminhos Ancestrais: desafios de combate, caçada e cerimônia rendem conhecimento para legados permanentes. Ofícios produzem provisões para acolher companheiros, conduzir rituais e preparar a próxima batalha. Heróis ligados a espíritos animais despertam novas formas com experiência de atividades e nível ritual. A formação estratégica luta automaticamente até o Primeiro Inverno, a Caçada Eterna e o renascimento no Grande Totem.
 
 ## Jogar localmente
 
@@ -26,15 +26,15 @@ A cada envio para `main`, o workflow `.github/workflows/pages.yml` testa, gera o
 - Importar substitui a jornada daquele navegador. Exporte antes se quiser manter as duas.
 - Limpar os dados do site ou usar uma janela anônima apaga o progresso local. O arquivo exportado continua valendo.
 
-## Aldeia RTS e conselho de guerra
+## Caminhos Ancestrais e conselho de guerra
 
-A aldeia começa com quatro aldeões independentes dos heróis. Distribua madeira, alimento, pedra, espírito e construção; prepare novos trabalhadores e amplie a população com moradias. Melhorias e novas construções entram em uma fila com tempo e reserva de construtores.
+Escolha um desafio e realize as atividades depois de aceitá-lo. Duas vitórias, uma caçada concluída ou uma cerimônia concluída rendem conhecimento. Os três caminhos — Matilha, Raízes e Encanto — oferecem 12 legados com três níveis cada, para combate, produção e aprendizado. Conhecimento e legados atravessam o renascimento.
 
-Explore oito territórios, revele recursos e estabeleça postos para liberar terrenos e aumentar a produção. A vista territorial tem névoa, caminhos e postos. Moradias, depósitos, roças, torres e casas de trocas complementam as construções existentes. Quatro pesquisas afetam produção, reconhecimento, caçadas, defesa e combate. Seis marcos recompensam a expansão. Ordens e produção continuam offline, respeitando a hora de conclusão de cada atividade.
+Os seis ofícios têm melhorias imediatas e produção offline por até 12 horas. Companheiros da reserva podem ajudar para ganhar XP. Prepare até cinco cargas de cada um dos seis preparativos e selecione até dois para a próxima expedição; cada partida válida consome uma carga dos selecionados. A gestão de aldeões, terrenos e filas de obras foi removida.
 
-O **Conselheiro** explica as seis funções táticas e os 31 laços, analisa o inimigo escolhido, sugere companheiros e posições, mostra ganhos e perdas de sinergia e recomenda itens e receitas usando a sua bolsa. Escolha até duas prioridades e aplique o plano, ou ajuste as casas manualmente.
+O **Conselheiro** tem quatro áreas: formação com prévia das 28 casas e justificativa por herói; distribuição de equipamentos e receitas com os componentes da bolsa; buffs, rituais e momento dos poderes espirituais; seis funções táticas e 31 laços. Ele mostra ganhos e perdas de sinergia, respeita as vagas e reserva cada item uma vez. Escolha até duas prioridades e aplique o plano exibido, ou ajuste as casas manualmente. A análise usa regras e estimativas do inimigo.
 
-Regras e limites: [Aldeia RTS e conselheiro](docs/ALDEIA-RTS.md).
+Regras, migração de saves e verificações: [Caminhos Ancestrais e conselheiro](docs/CAMINHOS-ANCESTRAIS.md).
 
 ## Combate e animações
 
@@ -42,9 +42,9 @@ Ataques têm preparação, recuperação e projéteis com tempo de viagem. Os 55
 
 Detalhes, verificações e limites artísticos: [Combate e animações](docs/COMBATE-ANIMACOES.md).
 
-## Jornada 2.0
+## Jornada 2.1
 
-- Navegação por Aldeia, Tribo, Expedições, Rituais e Códice, com painel contextual recolhível.
+- Navegação por Jornada, Tribo, Expedições, Rituais e Códice, com painel contextual recolhível no combate.
 - Experiência e ritualística têm barras independentes. Trabalho concede 40 XP/min; rituais concedem XP ritual e pedem 3 horas de integração antes do próximo rito.
 - Caçadas duram de 10 minutos a 8 horas; rituais individuais, de 20 minutos a 6 horas. Ajudantes encurtam cerimônias em até 1,5×.
 - Um trabalhador retorna ao posto após sua cerimônia, se a vaga continua livre. O tempo offline é dividido no momento de retorno para contabilizar apenas o trabalho efetivamente realizado.
@@ -66,7 +66,7 @@ Há controles por toque e teclado, pausa, margem ampliada no modo tranquilo e um
 
 | Pilar | O que existe |
 | --- | --- |
-| **Aldeia (incremental)** | Madeira, alimento, pedra e espírito com produção automática e offline (até 12 h). Seis construções até o nível 15, incluindo a Forja de Osso e a Casa de Cura. Heróis da reserva trabalham nas construções e aumentam a produção, com bônus de afinidade. |
+| **Caminhos e provisões** | Desafios rendem conhecimento para 12 legados permanentes. Madeira, alimento, pedra e espírito com produção automática e offline (até 12 h). Seis ofícios até o nível 15; heróis da reserva ajudam e ganham XP. Seis preparativos, até dois por expedição. |
 | **Eras (Age of Mythology)** | Cinco eras. A cada nova era a tribo escolhe 1 de 3 Espíritos Protetores (12 no total): um bônus permanente e um **Poder Espiritual** acionado uma vez por expedição. |
 | **Heróis (auto chess)** | Os 55 personagens do Set 1, com catálogo liberado por era e vínculo ritual. 2★ exige experiência 8 e ritual 3; 3★ exige experiência 24, ritual 8 e ayahuasca concluída. As 55 habilidades funcionam em combate, com invocações, zonas, metamorfoses e renascimento. |
 | **Itens e laços (TFT)** | 6 componentes e 21 itens, até 3 por herói; dois componentes no mesmo herói se combinam sozinhos. As 31 características (povos, funções e espíritos animais) ativam laços em dois níveis. |
@@ -114,9 +114,11 @@ As cinco criaturas invocadas (aranha, corvo, escaravelho, lobo e elefante) tamb�
 chars/                     Artes originais, intactas
 public/assets/animations/  Folhas pintadas (v2/v3: 165 formas; summons: 5 criaturas)
 src/data/                  Os 55 personagens do plano e a animalidade
-src/game/simulation.ts     Estado, economia, combate, saves (v5) e ações
-src/game/settlement.ts     População, infraestrutura, fronteiras e pesquisas
-src/game/armyAdvisor.ts    Funções, sinergias, formação e recomendações de itens
+src/game/simulation.ts     Estado, economia, combate, saves (v6) e ações
+src/game/ancestralJourney.ts Desafios, legados, preparativos e migração de RTS
+src/game/armyAdvisor.ts    Formação, laços, equipamentos, receitas e buffs
+src/ui/AncestralJourney.ts Página de caminhos, ofícios e preparativos
+src/ui/ArmyCoach.ts        Conselho de guerra em quatro áreas
 src/game/skills.ts         As 55 habilidades
 src/game/synergies.ts      Regras das 31 características
 src/game/roster.ts         Desbloqueios, preços e compatibilidade de visitas antigas
