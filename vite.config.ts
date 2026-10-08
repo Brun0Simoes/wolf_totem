@@ -13,7 +13,7 @@ export default defineConfig({
     }
     if(id==='\0virtual:wolf-environment'){
       const read=(name:string)=>{const path=resolve('public/assets/environment',name+'.json');this.addWatchFile(path);return readFileSync(path,'utf8');};
-      return `export const props=${read('village-props')};export const fx=${read('combat-fx')};`;
+      return `export const props=${read('village-props')};export const fx=${read('combat-fx')};export const spellAtlas=${read('combat-spell-atlas')};`;
     }
   }},{ name: 'character-assets', configureServer(server) {
     server.middlewares.use((req, res, next) => {
