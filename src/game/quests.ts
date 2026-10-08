@@ -13,16 +13,16 @@ const deployedTiers = (state: GameState) => [...countTraits(state.heroes.filter(
 const hasFinishedItem = (state: GameState) => [...state.inventory, ...state.heroes.flatMap(h => h.items)].some(id => !isComponent(id));
 
 export const QUESTS: QuestDef[] = [
-  { id: 'primeira-cacada', title: 'Vença a primeira expedição', hint: 'Na aba Expedição, toque em Iniciar expedição. O combate é automático.', done: s => s.progress >= 1, reward: { knowledge: 2 } },
-  { id: 'recrutar', title: 'Acolha um companheiro', hint: 'Abra Tribo e escolha um companheiro no catálogo de acordo com a era e o vínculo ritual.', done: s => s.stats.recruits >= 1, reward: { knowledge: 2 } },
-  { id: 'cacar', title: 'Mande um herói caçar', hint: 'Em Caçadas, escolha uma trilha. O herói volta com experiência e pode encontrar componentes, mesmo com o jogo fechado.', done: s => s.stats.hunts >= 1, reward: { knowledge: 2 } },
+  { id: 'primeira-cacada', title: 'Vença a primeira expedição', hint: 'No Campo, toque em Iniciar expedição. O combate é automático.', done: s => s.progress >= 1, reward: { knowledge: 2 } },
+  { id: 'recrutar', title: 'Acolha um companheiro', hint: 'Abra Guardiões → Descobrir e acolha um companheiro conforme a era e o vínculo ritual.', done: s => s.stats.recruits >= 1, reward: { knowledge: 2 } },
+  { id: 'cacar', title: 'Mande um herói caçar', hint: 'Atividade opcional: Jornada → Atividades offline. Escolha uma trilha para quem ficará fora do campo.', done: s => s.stats.hunts >= 1, reward: { knowledge: 2 } },
   { id: 'nivel-3', title: 'Leve um herói ao nível 3', hint: 'Batalhas e caçadas dão experiência; cada nível fortalece a vida e o ataque.', done: s => s.heroes.some(h => h.level >= 3), reward: { knowledge: 2 } },
   { id: 'rape', title: 'Faça uma cerimônia de rapé', hint: 'O rapé firma o foco: um pouco mais de velocidade de ataque e uma caçada mais proveitosa.', done: s => s.heroes.some(h => (h.rituals.rape ?? 0) >= 1), reward: { knowledge: 2 } },
   { id: 'era-2', title: 'Avance para a Era II', hint: 'XP e vínculo ritual abrem uma vaga na formação e companheiros da Era II.', done: s => s.era >= 2, reward: { components: 1 } },
   { id: 'espirito', title: 'Honre um Espírito Protetor', hint: 'Cada nova era pede um espírito: um bônus permanente e um poder de combate.', done: s => s.spirits.length >= 1, reward: { knowledge: 2 } },
   { id: 'duas-estrelas', title: 'Forme um herói 2★', hint: 'Alcance experiência nível 8 e ritual nível 3 no mesmo herói.', done: s => s.heroes.some(h => h.stars >= 2), reward: { knowledge: 2 } },
   { id: 'alfa', title: 'Derrote o Alfa Cinzento', hint: 'O chefe da Clareira do Lobo fecha a primeira região.', done: s => s.progress >= 5, reward: { components: 1 } },
-  { id: 'item', title: 'Forje um item completo', hint: 'Entregue dois componentes ao mesmo herói, ou combine-os na bolsa na bolsa.', done: hasFinishedItem, reward: { components: 1 } },
+  { id: 'item', title: 'Forje um item completo', hint: 'Entregue dois componentes ao mesmo herói, ou combine-os nas receitas do Conselho de Guerra.', done: hasFinishedItem, reward: { components: 1 } },
   { id: 'cacau', title: 'Reúna a tribo na roda de cacau', hint: 'Na Era II, a roda de cacau acelera o aprendizado de toda a tribo.', done: s => s.cacao > 0, reward: { knowledge: 4 } },
   { id: 'poder', title: 'Chame um Poder Espiritual', hint: 'Durante uma expedição, use a barra de poderes no campo.', done: s => s.stats.powers >= 1, reward: { knowledge: 2 } },
   { id: 'era-3', title: 'Avance para a Era III', hint: 'Novos companheiros e mais uma vaga na formação.', done: s => s.era >= 3, reward: { knowledge: 4 } },

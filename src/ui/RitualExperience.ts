@@ -10,8 +10,8 @@ export function ritualExperienceMarkup(id: PracticeId, companion: string): strin
     <div class="rite-hud"><span data-rite-round>Preparação interativa</span><progress max="1" value="0" aria-label="Progresso da participação"></progress><span data-rite-bonus>Até +${participationBonus(RITUAL_XP[id], 1)} XP ritual</span></div>
     <div class="rite-controls" hidden>${id === 'kambo' ? [0,1,2,3].map(n=>`<button class="rite-stone" data-rite-stone="${n}" aria-label="Pedra ${n+1}"><span>${['◇','△','◉','✧'][n]}</span><small>${n+1}</small></button>`).join('') : id === 'ayahuasca' ? '<button data-rite-steer="-1" aria-label="Conduzir para a esquerda">←</button><span>Dentro do rio<br><small>Arraste a luz ou use as setas</small></span><button data-rite-steer="1" aria-label="Conduzir para a direita">→</button>' : `<button class="rite-touch" data-rite-touch>${design.verb}<small>${id==='rape'?'Segure e solte · Espaço':'Toque · Espaço'}</small></button>`}</div>
     <div class="rite-result" hidden aria-live="polite"></div><p class="rite-instruction">${design.instruction}</p>
-    <footer class="rite-footer"><button class="text-button" data-rite-audio>Ativar som</button><button class="text-button" data-rite-pause hidden>Pausar participação</button><button class="outline-button" data-rite-auto>Seguir automaticamente</button></footer>
-    <p class="rite-note">${design.sound}. Sonoridade original do jogo. A cerimônia começa ao confirmar ou seguir automaticamente. Fechar antes disso mantém o herói disponível. O tempo de integração continua após a participação.</p>
+    <footer class="rite-footer"><button class="text-button" data-rite-audio>Ativar som</button><button class="text-button" data-rite-pause hidden>Pausar participação</button><button class="outline-button" data-rite-auto>Concluir com auxílio</button></footer>
+    <p class="rite-note">${design.sound}. Sonoridade original do jogo. Confirme para receber XP ritual agora. Fechar antes disso mantém o herói disponível. Depois, integre com duas vitórias na expedição mais avançada, ou contra inimigos até três níveis abaixo do herói; alternativa offline: três horas.</p>
   </section>`;
 }
 
@@ -94,7 +94,7 @@ export class RitualExperience {
       this.get('.rite-controls').hidden = true; this.get('[data-rite-pause]').hidden = true; this.sound.stopRitual();
       this.get('[data-rite-auto]').hidden = true;
       const bonus = participationBonus(RITUAL_XP[this.id], p.quality), result = this.get('.rite-result'); result.hidden = false;
-      result.innerHTML = `<div><h3>${p.quality >= .8 ? 'Um vínculo em harmonia' : 'Cada gesto deixa uma memória'}</h3><p>${Math.round(p.quality * 100)}% de sintonia · <strong>+${bonus} XP ritual extra</strong></p><small>${this.id === 'cacau' ? 'O bônus vale para os companheiros disponíveis.' : 'Você recebe o XP ao concluir a cerimônia.'}</small></div><button class="primary" data-rite-confirm>Confirmar cerimônia</button>`;
+      result.innerHTML = `<div><h3>${p.quality >= .8 ? 'Um vínculo em harmonia' : 'Cada gesto deixa uma memória'}</h3><p>${Math.round(p.quality * 100)}% de sintonia · <strong>+${bonus} XP ritual extra</strong></p><small>${this.id === 'cacau' ? 'O bônus vale para os companheiros disponíveis.' : 'Confirme para receber o XP ritual imediatamente.'}</small></div><button class="primary" data-rite-confirm>Confirmar cerimônia</button>`;
       this.get('[data-rite-confirm]').addEventListener('click', () => this.complete(p.quality), { signal: this.abort.signal });
     }
     this.get<HTMLProgressElement>('progress').value = Math.min(1, p.progress);

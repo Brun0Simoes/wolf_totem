@@ -2,7 +2,7 @@
 
 Jogo de estratégia e combate automático, em português. A tribo acolhe heróis ligados a espíritos animais, desenvolve experiência e vínculo ritual e desperta as formas 1★, 2★ e 3★. As expedições combinam posicionamento, equipamentos, laços, bênçãos e poderes espirituais.
 
-A versão **2.2** concentra a jornada em **autochess e rituais**. O campo de combate é a tela principal. Eras, caçadas, Caminhos Ancestrais e consagrações do Totem orientam a progressão ao longo de dias.
+A versão **3.0** traz uma interface nova, com quatro áreas: **Campo, Guardiões, Rituais e Jornada**. Combates e provas pessoais dão experiência; rituais interativos dão XP ritual ao confirmar. A integração pode ser concluída jogando, com duas vitórias elegíveis, ou offline.
 
 ## Jogar
 
@@ -19,11 +19,11 @@ Abra **http://127.0.0.1:5173** enquanto o servidor estiver funcionando.
 
 ## Como jogar
 
-1. **Tribo:** acolha gratuitamente companheiros conforme a era e o vínculo ritual. Cada personagem tem sua própria experiência e ritualística.
+1. **Guardiões:** acolha gratuitamente companheiros conforme a era e o vínculo ritual. Cada personagem tem sua própria experiência e ritualística.
 2. **Formação:** posicione combatentes, atiradores e suportes no campo hexagonal. Abra o **Conselheiro** para ver posições, laços, equipamentos e buffs recomendados.
 3. **Expedições:** escolha o encontro no mapa. O combate é automático; use poderes espirituais, pausa, velocidade e repetição entre partidas.
-4. **Caçadas:** envie heróis às cinco trilhas para ganhar XP e encontrar componentes. Um herói em atividade mantém a posição e volta a lutar quando retorna.
-5. **Rituais:** participe dos minigames de rapé, sananga, kambô, ayahuasca e cacau. Cerimônias concedem XP ritual e efeitos aprendidos; há integração de três horas entre ritos.
+4. **Provas pessoais:** cada guardião tem oito objetivos por participação em batalhas. Explore encontros diferentes, use habilidades, itens e laços; receba recompensas de XP únicas para ele. Caçadas ficam na Jornada como opção offline.
+5. **Rituais:** participe dos minigames de rapé, sananga, kambô, ayahuasca e cacau. Confirme para receber XP ritual imediatamente. Depois, vença duas vezes a expedição mais avançada alcançada, ou inimigos até três níveis abaixo do herói. A integração também termina após três horas offline.
 6. **Bênçãos:** ative até duas das seis bênçãos desbloqueadas pelos rituais. Elas acompanham as próximas batalhas.
 7. **Caminhos e eras:** conclua desafios para aprender legados. Avance de era quando um herói cumprir os marcos de experiência e ritualística.
 8. **Grande Totem:** consagre suas cinco partes por conquistas, vença a Caçada Eterna e renasça com memórias ancestrais.
@@ -39,14 +39,14 @@ Atalhos: `J` caminhos, `R` bênçãos, `A` conselheiro, `1` jornada, `2` campo, 
 | Combate | Campo hexagonal 7 × 8, 55 habilidades, invocações, zonas, chefes, escudos e resumo da batalha. |
 | Equipamentos | 6 componentes, 21 receitas e até três itens por herói. Combinação disponível desde a primeira era. |
 | Conselho de guerra | Formação com justificativas, distribuição de itens, receitas, buffs, seis funções e 31 laços. |
-| Rituais | Cinco experiências interativas com sons e controles próprios, modo tranquilo e opção automática. Até 20% de XP ritual extra pela sintonia. |
+| Rituais | Cinco experiências interativas com sons e controles próprios, modo tranquilo e conclusão com auxílio. Até 20% de XP ritual extra pela sintonia. |
 | Bênçãos | Seis escolhas reutilizáveis, até duas ativas, abertas por era e ritos concluídos. |
 | Caminhos Ancestrais | Três caminhos, 12 legados e desafios de combate, caçada e cerimônia. |
 | Eras e espíritos | Cinco eras, 12 Espíritos Protetores e poderes acionáveis em combate. |
 | Campanha | Seis regiões, 30 expedições, Caçada Eterna e renascimento no Grande Totem. |
 | Atividades offline | Caçadas e cerimônias iniciadas avançam por até 12 horas. |
 
-Regras atuais, migração e evidências: [Reformulação 2.2](docs/REFORMULACAO-2.2.md).
+Regras atuais e referências de design: [Interface e progressão 3.0](docs/UI-E-PROGRESSAO-3.0.md). Histórico da retirada da economia: [Reformulação 2.2](docs/REFORMULACAO-2.2.md).
 
 ## Próxima atividade pesquisada
 
@@ -58,7 +58,7 @@ Esse modo ainda é uma proposta. Leia [Travessias do Encanto](docs/PROPOSTA-TRAV
 
 O progresso é salvo automaticamente no navegador. Use **Configurações → Exportar progresso** para baixar uma cópia e **Importar progresso** ou **Carregar jornada salva** para restaurá-la em outro aparelho. Importar substitui a jornada local; exporte antes para guardar as duas.
 
-O formato atual é **v7**. Saves anteriores preservam heróis, XP, ritos, estrelas, equipamentos, eras e campanha. Investimentos econômicos registrados rendem conhecimento na conversão, até o limite de 60 pontos adicionais. Madeira, alimento, pedra, estoque espiritual, ofícios e trabalho foram retirados. As formas já despertas continuam válidas.
+O formato atual é **v8**. Provas pessoais e integração por vitórias são persistidas. Saves anteriores preservam heróis, XP, ritos, estrelas, equipamentos, eras e campanha. Investimentos econômicos registrados rendem conhecimento na conversão, até o limite de 60 pontos adicionais. Madeira, alimento, pedra, estoque espiritual, ofícios e trabalho foram retirados. As formas já despertas continuam válidas.
 
 O progresso pertence ao navegador e ao endereço usado. Exporte antes de limpar dados do site ou trocar de porta, navegador ou domínio.
 
@@ -89,10 +89,12 @@ As cinco criaturas invocadas (aranha, corvo, escaravelho, lobo e elefante) tamb�
 chars/                       Artes originais
 public/assets/animations/    Atlas dos heróis e criaturas
 src/data/                    Elenco e animalidade
-src/game/simulation.ts       Estado, combate, atividades e saves v7
+src/game/simulation.ts       Estado, combate, atividades e saves v8
 src/game/ancestralJourney.ts  Desafios, legados, bênçãos e migração
 src/game/armyAdvisor.ts       Formação, equipamentos, receitas e buffs
 src/game/tribe.ts             XP, caçadas, ritualística e despertar
+src/game/heroMastery.ts       Provas pessoais e integração ativa
+src/game-shell.css           Interface única, responsiva, versão 3.0
 src/game/skills.ts            Habilidades dos 55 heróis
 src/game/synergies.ts         Regras dos laços
 src/game/campaign.ts          Expedições e Caçada Eterna

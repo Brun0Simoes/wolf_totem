@@ -10,7 +10,7 @@ describe('ancestral progression',()=>{
   it('begins with a meaningful legacy choice and no RTS state',()=>{
     const g=new Game();expect(g.state.journey.knowledge).toBe(3);expect('settlement' in g.state).toBe(false);
     expect(g.learnLegacy('vigor').ok).toBe(true);expect(g.state.journey.knowledge).toBe(0);expect(g.state.heroes[0].stars).toBe(1);
-    const save=JSON.parse(g.serialize(1000));expect(save.version).toBe(7);expect(save.state.settlement).toBeUndefined();
+    const save=JSON.parse(g.serialize(1000));expect(save.version).toBe(8);expect(save.state.settlement).toBeUndefined();
   });
   it('counts only activities after accepting and pays each challenge once',()=>{
     const g=rich();g.state.stats.victories=10;g.acceptTrial('combat');expect(trialProgress(g.state)).toBe(0);expect(g.claimTrial().ok).toBe(false);
@@ -32,7 +32,7 @@ describe('ancestral progression',()=>{
   });
   it('sanitizes knowledge, legacy levels, selections and invalid focused traits',()=>{
     const g=rich(),save=JSON.parse(g.serialize(1000));save.state.journey={knowledge:-4,legacies:{vigor:999,toString:3},preparations:{feast:99},selected:['feast','feast','bad'],focusTraits:['toString','Presas'],trial:{id:'bad',start:-3}};
-    const loaded=new Game(save,1000);expect(loaded.state.journey.knowledge).toBe(0);expect(loaded.state.journey.legacies.vigor).toBe(3);expect(loaded.state.journey.selected).toEqual([]);expect(loaded.state.journey.focusTraits).toEqual(['Presas']);expect(loaded.state.journey.trial).toBeNull();expect(SAVE_VERSION).toBe(7);
+    const loaded=new Game(save,1000);expect(loaded.state.journey.knowledge).toBe(0);expect(loaded.state.journey.legacies.vigor).toBe(3);expect(loaded.state.journey.selected).toEqual([]);expect(loaded.state.journey.focusTraits).toEqual(['Presas']);expect(loaded.state.journey.trial).toBeNull();expect(SAVE_VERSION).toBe(8);
   });
   it('carries learned legacies and challenge progress through rebirth, clearing consumables',()=>{
     const g=rich();g.state.journey.knowledge=30;g.learnLegacy('roots');g.learnLegacy('vigor');g.acceptTrial('combat');g.state.stats.victories++;g.state.progress=30;g.state.wonder=5;

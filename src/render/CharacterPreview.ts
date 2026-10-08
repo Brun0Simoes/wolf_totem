@@ -44,6 +44,7 @@ export class CharacterPreview {
   }
   get currentClip(): MotionClip { return this.clip; }
   get isPaused(): boolean { return this.paused; }
+  setReducedMotion(value: boolean): void { this.reduced = value; this.draw(); }
 
   update(seconds: number): void {
     if (!this.canvas?.isConnected || !this.image || document.hidden) return;

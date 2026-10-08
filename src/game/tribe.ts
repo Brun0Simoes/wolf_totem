@@ -44,7 +44,7 @@ export function levelFromTotal(total: number): { level: number; xp: number } {
 export const levelMultiplier = (level: number) => ({ hp: 1 + 0.07 * (level - 1), attack: 1 + 0.05 * (level - 1) });
 /** Experience for each hero of the formation after a fight; repeats and defeats teach less. */
 export function battleXp(level: number, victory: boolean, boss: boolean, firstClear: boolean): number {
-  return Math.round((14 + level * 5) * (victory ? firstClear ? 1.5 : 0.3 : 0.25) * (boss ? 1.5 : 1));
+  return Math.round((80 + Math.pow(Math.min(60, Math.max(1, level)), 2) * 28) * (victory ? firstClear ? 2 : 0.8 : 0.25) * (boss ? 1.3 : 1));
 }
 
 // ——— Hunting ———

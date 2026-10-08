@@ -1,6 +1,7 @@
 import { characters, type Character } from '../data/characters';
 import { attackTiming, castWindup } from './combatTiming';
 import { participationBonus } from './ritualPlay';
+import { freshMastery, sanitizeMastery, HERO_PROOFS, integrationEligible, type HeroMastery } from './heroMastery';
 import { recommendedParty, positionPlan, equipmentPlan, planSignature } from './armyAdvisor';
 import { initialJourney, sanitizeJourney, migrateSettlement, blessingLock, legacyLevel, legacyCost, legacyLock, LEGACIES, PREPARATIONS, TRIALS, trialProgress, type AncestralJourney, type PreparationId } from './ancestralJourney';
 import { ALL_CHARACTER_IDS, nextRandom, unlockedCost } from './roster';
@@ -22,6 +23,9 @@ export interface HeroAway { kind: 'hunt' | 'ritual'; id: TrailId | PracticeId; u
 export interface Hero {
   uid: string; characterId: number; stars: number; slot: number | null; items: string[];
   level: number; xp: number; ritualLevel: number; ritualXp: number; ritualReadyAt: number;
+  mastery: HeroMastery;
+  /** Two suitable victories may replace the offline integration time. */
+  integrationWins: number;
   /** A hunter's bad luck, 0–3. */
   panema: number;
   /** Completed ceremonies per practice. */
@@ -55,6 +59,7 @@ export interface GameState {
   /** The cacao circle's blessing lasts until this village time. */
   cacao: number;
   cacaoReadyAt: number;
+  cacaoIntegrationWins: number;
   /** Latest hunt and ceremony results, newest last. */
   reports: HuntReport[];
   /** Seconds of village time, offline included. */
@@ -224,7 +229,7 @@ export interface CombatApi {
 
 export const PLAYABLE_IDS = ALL_CHARACTER_IDS;
 export const MAX_ERA = 5;
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 export const OFFLINE_CAP_SECONDS = 12 * 3600;
 export const MAX_ROSTER_SIZE = 55;
 export const MAX_INVENTORY = 180;
@@ -296,7 +301,7 @@ export const clampToBoard = (entity: CombatEntity): void => {
 };
 
 export const newHero = (uid: string, characterId: number, stars = 1, slot: number | null = null): Hero =>
-  ({ uid, characterId, stars, slot, items: [], level: 1, xp: 0, ritualLevel: 1, ritualXp: 0, ritualReadyAt: 0, panema: 0, rituals: {}, away: null, focus: false });
+  ({ uid, characterId, stars, slot, items: [], level: 1, xp: 0, ritualLevel: 1, ritualXp: 0, ritualReadyAt: 0, integrationWins: 0, mastery: freshMastery(), panema: 0, rituals: {}, away: null, focus: false });
 /** The journey begins with Akru alone at the front centre; the tribe grows from there. */
 const starterHeroes = (): Hero[] => [newHero('hero-1', 1, 1, 3)];
 /** A hero is in the village when not hunting or in ceremony. */
@@ -314,7 +319,7 @@ function initialState(): GameState {
     inventory: [], lootSeed: 11,
     spirits: [], wonder: 0, embers: 0, memories: {}, rebirths: 0,
     settings: { speed: 1, autoRepeat: false },
-    quests: [], stats: { recruits: 0, powers: 0, victories: 0, hunts: 0, rituals: 0 }, clock: 0, cacao: 0, cacaoReadyAt: 0, reports: [],
+    quests: [], stats: { recruits: 0, powers: 0, victories: 0, hunts: 0, rituals: 0 }, clock: 0, cacao: 0, cacaoReadyAt: 0, cacaoIntegrationWins: 0, reports: [],
     paused: false,
   };
 }
@@ -356,6 +361,7 @@ function sanitizeState(value: unknown, version: number): GameState {
   state.journey.focusTraits=state.journey.focusTraits.filter(trait=>Object.hasOwn(TRAIT_RULES,trait));
   state.cacao = finite(input.cacao, 0, 0, state.clock + CACAO_DURATION);
   state.cacaoReadyAt = finite(input.cacaoReadyAt, state.cacao > state.clock ? state.clock + RITUAL_COOLDOWN : 0, 0, state.clock + RITUAL_COOLDOWN);
+  state.cacaoIntegrationWins = state.cacaoReadyAt > state.clock ? integer(input.cacaoIntegrationWins, 2, 0, 2) : 0;
   state.endlessRecord = Math.max(state.endlessRecord, state.endlessBest);
   const spirits: SpiritId[] = [];
   if (Array.isArray(input.spirits)) for (const [index, id] of input.spirits.entries()) {
@@ -392,6 +398,8 @@ function sanitizeState(value: unknown, version: number): GameState {
         ritualLevel: integer(hero.ritualLevel, 1, 1, MAX_RITUAL_LEVEL),
         ritualXp: integer(hero.ritualLevel, 1, 1, MAX_RITUAL_LEVEL) >= MAX_RITUAL_LEVEL ? 0 : finite(hero.ritualXp, 0, 0, ritualXpToNext(integer(hero.ritualLevel, 1, 1, MAX_RITUAL_LEVEL)) - 1),
         ritualReadyAt: finite(hero.ritualReadyAt, 0, 0, state.clock + 24 * 3600),
+        integrationWins: finite(hero.ritualReadyAt, 0, 0, state.clock + 24 * 3600) > state.clock ? integer(hero.integrationWins, 2, 0, 2) : 0,
+        mastery: sanitizeMastery(hero.mastery),
         xp: level >= MAX_HERO_LEVEL ? 0 : finite(hero.xp, 0, 0, xpToNext(level) - 1),
         panema: integer(hero.panema, 0, 0, MAX_PANEMA),
         rituals: Object.fromEntries(PRACTICES.filter(entry => !entry.tribe).map(entry => [entry.id, integer(rituals[entry.id], 0, 0, entry.max)]).filter(([, count]) => (count as number) > 0)),
@@ -443,6 +451,7 @@ export class Game {
   private healBonus = 0;
   private summonBonus = 0;
   private battlePreparations:PreparationId[]=[];
+  private battleSkillUsers = new Set<string>();
   private windups=new Map<string,{kind:'attack'|'cast';targetId:string;remaining:number}>();
   private projectiles:{source:CombatEntity;target:CombatEntity;remaining:number;power:number;third:boolean}[]=[];
 
@@ -451,7 +460,7 @@ export class Game {
     this.state = initialState();
     if (typeof save === 'string') { try { save = JSON.parse(save); } catch { return; } }
     const root = record(save);
-    if (typeof root.version !== 'number' || ![1,2,3,4,5,6,SAVE_VERSION].includes(root.version)) return;
+    if (typeof root.version !== 'number' || ![1,2,3,4,5,6,7,SAVE_VERSION].includes(root.version)) return;
     this.state = sanitizeState(root.state, root.version as number);
     const savedAt = finite(root.savedAt, now, 0, Number.MAX_SAFE_INTEGER);
     this.offlineSeconds = this.state.paused ? 0 : Math.min(OFFLINE_CAP_SECONDS, Math.max(0, (now - savedAt) / 1000));
@@ -735,11 +744,12 @@ export class Game {
     hero.rituals[id] = Math.min(practice.max, (hero.rituals[id] ?? 0) + 1);
     Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + (RITUAL_XP[id] + bonus)*(1+legacyLevel(this.state,'ceremony')*.04)));
     hero.ritualReadyAt = completedAt + RITUAL_COOLDOWN;
+    hero.integrationWins = 2;
     this.awaken(hero);
     if (id === 'rape') hero.focus = true;
     if (id === 'sananga') hero.panema = Math.max(0, hero.panema - 1);
     if (id === 'kambo') hero.panema = 0;
-    this.report(hero, `concluiu ${practice.name}: +${(RITUAL_XP[id] + bonus)*(1+legacyLevel(this.state,'ceremony')*.04)} XP ritual${bonus ? ` (${bonus} pela participação)` : ''}. Integração de 3 horas antes da próxima cerimônia.`, true);
+    this.report(hero, `concluiu ${practice.name}: +${Math.round((RITUAL_XP[id] + bonus)*(1+legacyLevel(this.state,'ceremony')*.04))} XP ritual. Integre com 2 vitórias adequadas ou 3 horas offline.`, true);
   }
 
   /** Sends a hero along a hunting trail; the hero keeps a place in the formation but cannot fight until back. */
@@ -779,10 +789,30 @@ export class Game {
     if (this.inBattle(hero)) return fail(`${name} está em combate.`);
     if (hero.level < practice.minLevel) return fail(`${practice.name} pede um herói de nível ${practice.minLevel}.`);
     const done = hero.rituals[practice.id] ?? 0;
-    if (this.state.clock < hero.ritualReadyAt) return fail(`${name} está integrando a última cerimônia. Aguarde antes do próximo ritual.`);
+    if (this.state.clock < hero.ritualReadyAt) return fail(`${name} integra a cerimônia: vença ${hero.integrationWins} vezes a expedição mais avançada ou inimigos de nível adequado. A integração também termina offline.`);
     if (practice.requires && !hero.rituals[practice.requires]) return fail(`Antes, ${name} precisa de uma cerimônia de ${practiceById(practice.requires)!.name}.`);
     hero.away = { kind: 'ritual', id: practice.id, until: this.state.clock + practice.rest / ritualSpeed(this.state), participationXp: participationBonus(RITUAL_XP[practice.id], quality) };
     return success(`${name} entrou na cerimônia de ${practice.name}.`);
+  }
+  /** The interactive route shares every eligibility check with an offline ceremony. */
+  performActiveRitual(uid: string, id: string, quality = 0): ActionResult {
+    const result = this.performRitual(uid, id, quality);
+    if (!result.ok) return result;
+    const hero = this.state.heroes.find(h => h.uid === uid)!;
+    const away = hero.away!;
+    hero.away = null;
+    this.finishRitual(hero, away.id as PracticeId, this.state.clock, away.participationXp ?? 0);
+    return success(`${characterById(hero.characterId).name} concluiu ${practiceById(id)!.name}. XP ritual recebido agora!`);
+  }
+  claimHeroProof(uid: string, id: string): ActionResult {
+    if (this.state.paused || this.fighting()) return fail('Receba a prova entre os combates, com a jornada em atividade.');
+    const hero = this.state.heroes.find(h => h.uid === uid), proof = HERO_PROOFS.find(p => p.id === id);
+    if (!hero || !proof) return fail('Prova desconhecida.');
+    if (hero.mastery.claimed.includes(id)) return fail('Esta prova já foi recebida.');
+    if (proof.progress(hero.mastery) < proof.goal) return fail('Conclua o objetivo da prova primeiro.');
+    hero.mastery.claimed.push(id);
+    this.gainXp(hero, proof.xp);
+    return success(`${proof.name}: +${proof.xp} XP para ${characterById(hero.characterId).name}. Nível ${hero.level}.`);
   }
   /** The cacao circle blesses the whole tribe for a while. */
   holdCacaoCircle(quality = 0): ActionResult {
@@ -793,10 +823,12 @@ export class Game {
     if (this.state.clock < this.state.cacaoReadyAt) return fail('A tribo integra a última roda. Aguarde a integração de 3 horas.');
     this.state.cacao = this.state.clock + CACAO_DURATION;
     this.state.cacaoReadyAt = this.state.clock + RITUAL_COOLDOWN;
+    this.state.cacaoIntegrationWins = 2;
     this.state.stats.rituals++;
     for (const hero of this.state.heroes.filter(hero => !hero.away && this.state.clock >= hero.ritualReadyAt)) {
       Object.assign(hero, ritualFromTotal(ritualTotalXp(hero.ritualLevel, hero.ritualXp) + (RITUAL_XP.cacau + participationBonus(RITUAL_XP.cacau, quality))*(1+legacyLevel(this.state,'ceremony')*.04)));
       hero.ritualReadyAt = this.state.clock + RITUAL_COOLDOWN;
+      hero.integrationWins = 2;
       this.awaken(hero);
     }
     return success('A tribo se reúne na roda de cacau.');
@@ -989,6 +1021,7 @@ export class Game {
     this.summonCounter = 0;
     this.windups.clear();this.projectiles=[];
     const firstClear = stage.id > 0 && stage.id > this.state.progress;
+    this.battleSkillUsers.clear();
     this.battle = { entities: [...allies, ...enemies], zones: [], time: 0, stage: stage.id, depth, region: stage.id ? stage.region : 6, name: stage.name, status: 'fighting', loot: [], firstClear, prey: {}, lastCast: {}, powersUsed: [], preparations:[...this.battlePreparations],party: party.map(hero => hero.uid), xp: 0, levelUps: [] };
     if (stage.id < 0) this.battle.region = stage.region;
     this.state.journey.selected=this.state.journey.selected.filter(id=>!blessingLock(this.state,id));
@@ -1252,6 +1285,7 @@ export class Game {
   private cast(source: CombatEntity, target: CombatEntity): void {
     const battle = this.battle!;
     source.mana = 0;
+    if (source.uid) this.battleSkillUsers.add(source.uid);
     source.action = 'cast'; source.actionTime = 0.26; source.cooldown = Math.max(source.cooldown, 0.26);
     this.emit('skill', source, target, undefined, characterById(source.characterId).ability.name);
     castAbility(this.api(), source.characterId, source, target, effectiveAttack(source) * source.spellPower);
@@ -1433,10 +1467,30 @@ export class Game {
     battle.xp = Math.round(battleXp(xpLevel, victory, battle.entities.some(entity => entity.boss), battle.firstClear) * this.xpBonus());
     for (const uid of battle.party) {
       const hero = this.state.heroes.find(entry => entry.uid === uid);
+      if (hero && victory) {
+        const mastery = hero.mastery;
+        mastery.wins++;
+        if (battle.stage > 0 && !mastery.stages.includes(battle.stage)) mastery.stages.push(battle.stage);
+        if (this.battleSkillUsers.has(uid)) mastery.skillWins++;
+        if (hero.items.length) mastery.equippedWins++;
+        if (battle.entities.some(e => e.boss)) mastery.bossWins++;
+        if (getSynergies(this.state).some(s => s.active && characterById(hero.characterId).traits.includes(s.name))) mastery.linkedWins++;
+        if (hero.ritualReadyAt > this.state.clock && integrationEligible(battle.stage,this.state.progress,expectedLevel(xpLevel),hero.level)) {
+          hero.integrationWins = Math.max(0, hero.integrationWins - 1);
+          if (!hero.integrationWins) hero.ritualReadyAt = this.state.clock;
+        }
+      }
       if (hero && this.gainXp(hero, battle.xp)) battle.levelUps.push(`${characterById(hero.characterId).name} · nível ${hero.level}`);
     }
     if (!victory) return;
     this.state.stats.victories++;
+    if (this.state.cacaoReadyAt > this.state.clock && battle.party.some(uid => {
+      const entity = battle.entities.find(e => e.uid === uid);
+      return entity && integrationEligible(battle.stage,this.state.progress,expectedLevel(xpLevel),entity.level);
+    })) {
+      this.state.cacaoIntegrationWins = Math.max(0, this.state.cacaoIntegrationWins - 1);
+      if (!this.state.cacaoIntegrationWins) { this.state.cacaoReadyAt = this.state.clock; this.state.cacao = this.state.clock; }
+    }
     const endless = battle.stage === 0;
     const drops = endless ? (battle.depth % 5 === 0 ? 2 : 1) : battle.firstClear ? (stageById(battle.stage)!.index === 5 ? 2 : 1) : this.random() < 0.35+memory(this.state,'botim')*.05 ? 1 : 0;
     for (let i = 0; i < drops; i++) { const id = this.randomComponent(); if (this.addItem(id)) battle.loot.push(id); }
