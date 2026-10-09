@@ -68,7 +68,8 @@ export const difficulty = (level: number): number => Math.max(1.1, 1.25 - 0.005 
 /** Enemy strength grows with the stage level and the levels heroes are expected to have; costlier units start from stronger canonical stats. */
 export function enemyScale(level: number, cost: number): number {
   const base = (0.56 + level * 0.03 + level * level * 0.0009) / (1 + 0.12 * (cost - 1));
-  return base * difficulty(level) * (1 + 0.05 * (expectedLevel(level) - 1));
+  const tacticalPressure = level <= 2 ? 1 : 1.15 + Math.min(30, level) * .009;
+  return base * difficulty(level) * (1 + 0.05 * (expectedLevel(level) - 1)) * tacticalPressure;
 }
 /** Bosses grow with the region: the Alpha is a lesson, the First Winter a wall. */
 export const bossScale = (region: number) => ({ hp: 1.66 + 0.06 * region, attack: 1.12 + 0.02 * region });

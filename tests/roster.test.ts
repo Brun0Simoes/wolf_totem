@@ -6,6 +6,8 @@ import { unlockedCost } from '../src/game/roster';
 import { REGIONS, STAGES } from '../src/game/campaign';
 import type { SpiritId } from '../src/game/spirits';
 import { BOARD, migrateSlot } from '../src/game/board';
+import {roleOf} from '../src/game/armyAdvisor';
+import {BUILDS} from '../src/game/builds';
 
 /** A hero placed with a 1.2 slot number, as old saves are, at the given level. */
 const placed = (uid: string, characterId: number, stars: number, slot: number, level = 1): Hero => ({ ...newHero(uid, characterId, stars, migrateSlot(slot)), level });
@@ -120,7 +122,7 @@ describe('expeditions', () => {
     const alpha = (team: [number, number, number][]) => {
       const game = new Game();
       game.state.era = 2; game.state.progress = 4; game.state.selectedStage = 5;
-      game.state.heroes = team.map(([id, stars, slot], i) => placed(`a-${i}`, id, stars, slot, 8));
+      game.state.heroes = team.map(([id, stars, slot], i) => ({...placed(`a-${i}`, id, stars, slot, 8),items:team.length===4?['muralha','garra','talisma']:[]}));
       game.startBattle(); fight(game);
       return game.battle!.status;
     };
@@ -128,16 +130,19 @@ describe('expeditions', () => {
     expect(alpha([[1, 2, 1], [3, 1, 2], [8, 2, 9], [15, 1, 10]])).toBe('victory');
   });
 
-  it('lets a tribe behind on levels make up for it with spirits or ceremonies against the King of Buffalo', () => {
-    const king = (spirits: SpiritId[], rituals: Hero['rituals']) => {
+  it('requires a developed build as well as spirits or ceremonies against the King of Buffalo', () => {
+    const king = (spirits: SpiritId[], rituals: Hero['rituals'],level=16) => {
       const game = new Game();
       game.state.era = 5; game.state.progress = 19; game.state.selectedStage = 20; game.state.spirits = spirits;
-      game.state.heroes = [39, 40, 28, 8, 25, 33, 1].map((characterId, index) => ({ ...placed(`final-${index}`, characterId, 2, [1, 2, 0, 9, 10, 5, 6][index], 16), rituals: { ...rituals } }));
+      game.state.heroes = [39, 40, 28, 8, 25, 33, 1].map((characterId, index) => ({ ...placed(`final-${index}`, characterId, 2, [1, 2, 0, 9, 10, 5, 6][index], level), rituals: { ...rituals },items:['garra','talisma','carvalho'] }));
+      game.state.amber=10000;
+      for(const h of game.state.heroes){const c=characters.find(c=>c.id===h.characterId)!;game.prepareBuild(h.uid,BUILDS.find(b=>b.role===roleOf(c))!.id);}
+      game.applyArmyPlan();
       game.startBattle(); fight(game);
       return game.battle!.status;
     };
     expect(king([], {})).toBe('defeat');
-    expect(king(['lobo', 'coruja', 'elefante', 'urso'], {})).toBe('victory');
-    expect(king([], { rape: 2, sananga: 2, kambo: 2 })).toBe('victory');
+    expect(king(['lobo', 'coruja', 'elefante', 'urso'], {rape:3,sananga:3,kambo:3,ayahuasca:1},23)).toBe('victory');
+    expect(king([], { rape: 3, sananga: 3, kambo: 3,ayahuasca:1 },30)).toBe('victory');
   });
 });

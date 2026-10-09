@@ -10,7 +10,7 @@ describe('ancestral progression',()=>{
   it('begins with a meaningful legacy choice and no RTS state',()=>{
     const g=new Game();expect(g.state.journey.knowledge).toBe(3);expect('settlement' in g.state).toBe(false);
     expect(g.learnLegacy('vigor').ok).toBe(true);expect(g.state.journey.knowledge).toBe(0);expect(g.state.heroes[0].stars).toBe(1);
-    const save=JSON.parse(g.serialize(1000));expect(save.version).toBe(8);expect(save.state.settlement).toBeUndefined();
+    const save=JSON.parse(g.serialize(1000));expect(save.version).toBe(9);expect(save.state.settlement).toBeUndefined();
   });
   it('counts only activities after accepting and pays each challenge once',()=>{
     const g=rich();g.state.stats.victories=10;g.acceptTrial('combat');expect(trialProgress(g.state)).toBe(0);expect(g.claimTrial().ok).toBe(false);
@@ -20,10 +20,8 @@ describe('ancestral progression',()=>{
   it('resets a changed challenge without spending knowledge or claiming past activities',()=>{
     const g=rich();g.acceptTrial('combat');g.state.stats.victories++;g.state.stats.hunts=5;expect(g.acceptTrial('hunt').ok).toBe(true);expect(trialProgress(g.state)).toBe(0);expect(g.state.journey.knowledge).toBe(3);expect(g.acceptTrial('hunt').ok).toBe(false);
   });
-  it('finishes a real hunt offline and preserves its challenge for return',()=>{
-    const g=rich();g.acceptTrial('hunt');const uid=g.state.heroes[0].uid;expect(g.startHunt(uid,'igarape').ok).toBe(true);
-    const until=g.state.heroes[0].away!.until;const loaded=new Game(g.serialize(1000),1000+until*1000);
-    expect(loaded.state.stats.hunts).toBe(1);expect(trialProgress(loaded.state)).toBe(1);expect(loaded.claimTrial().ok).toBe(true);expect(loaded.state.journey.knowledge).toBe(7);
+  it('finishes a draft recruitment challenge and preserves the reward through reload',()=>{
+    const g=rich();g.acceptTrial('hunt');g.openDraft();g.recruit(g.state.draft!.offers[0]);const loaded=new Game(g.serialize(1000),1e9);expect(loaded.state.stats.recruits).toBe(1);expect(trialProgress(loaded.state)).toBe(1);expect(loaded.claimTrial().ok).toBe(true);expect(loaded.state.journey.knowledge).toBe(7);
   });
   it('requires parents, era and knowledge, and stops at three legacy levels',()=>{
     const g=rich();g.state.journey.knowledge=1e4;expect(g.learnLegacy('tactics').ok).toBe(false);g.learnLegacy('vigor');g.learnLegacy('tactics');expect(g.learnLegacy('guard').ok).toBe(false);g.state.era=2;
@@ -32,7 +30,7 @@ describe('ancestral progression',()=>{
   });
   it('sanitizes knowledge, legacy levels, selections and invalid focused traits',()=>{
     const g=rich(),save=JSON.parse(g.serialize(1000));save.state.journey={knowledge:-4,legacies:{vigor:999,toString:3},preparations:{feast:99},selected:['feast','feast','bad'],focusTraits:['toString','Presas'],trial:{id:'bad',start:-3}};
-    const loaded=new Game(save,1000);expect(loaded.state.journey.knowledge).toBe(0);expect(loaded.state.journey.legacies.vigor).toBe(3);expect(loaded.state.journey.selected).toEqual([]);expect(loaded.state.journey.focusTraits).toEqual(['Presas']);expect(loaded.state.journey.trial).toBeNull();expect(SAVE_VERSION).toBe(8);
+    const loaded=new Game(save,1000);expect(loaded.state.journey.knowledge).toBe(0);expect(loaded.state.journey.legacies.vigor).toBe(3);expect(loaded.state.journey.selected).toEqual([]);expect(loaded.state.journey.focusTraits).toEqual(['Presas']);expect(loaded.state.journey.trial).toBeNull();expect(SAVE_VERSION).toBe(9);
   });
   it('carries learned legacies and challenge progress through rebirth, clearing consumables',()=>{
     const g=rich();g.state.journey.knowledge=30;g.learnLegacy('roots');g.learnLegacy('vigor');g.acceptTrial('combat');g.state.stats.victories++;g.state.progress=30;g.state.wonder=5;

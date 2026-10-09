@@ -12,7 +12,7 @@ export interface AncestralJourney {
 export interface LegacyDef {id:LegacyId;branch:JourneyBranch;name:string;icon:string;text:string;era:number;parent?:LegacyId}
 export const JOURNEY_BRANCHES:Record<JourneyBranch,{name:string;animal:string;color:string;description:string}>={
   war:{name:'Caminho da Matilha',animal:'wolf',color:'#d8af72',description:'Resistência, ataque e proteção para quem luta pela tribo.'},
-  wild:{name:'Caminho das Raízes',animal:'bear',color:'#91bf9a',description:'Caçadas, aprendizado e descoberta de equipamentos.'},
+  wild:{name:'Caminho das Raízes',animal:'bear',color:'#91bf9a',description:'Recursos de combate, aprendizado e equipamentos.'},
   spirit:{name:'Caminho do Encanto',animal:'owl',color:'#a4b7db',description:'Conjurações, cerimônias e proteção espiritual.'},
 };
 export const LEGACIES:LegacyDef[]=[
@@ -20,10 +20,10 @@ export const LEGACIES:LegacyDef[]=[
   {id:'tactics',branch:'war',name:'Dentes do Lobo',icon:'swords',text:'+3% de ataque dos heróis por nível.',era:1,parent:'vigor'},
   {id:'guard',branch:'war',name:'Pele de Pedra',icon:'shield',text:'Escudo inicial de 3% da vida por nível.',era:2,parent:'tactics'},
   {id:'resolve',branch:'war',name:'Passo de Guerra',icon:'wind',text:'+3% de velocidade de ataque por nível.',era:3,parent:'guard'},
-  {id:'roots',branch:'wild',name:'Raízes Profundas',icon:'sprout',text:'+8% de experiência nas caçadas por nível.',era:1},
+  {id:'roots',branch:'wild',name:'Raízes Profundas',icon:'sprout',text:'+4% de âmbar de combate por nível.',era:1},
   {id:'learning',branch:'wild',name:'Memória dos Caminhos',icon:'book-open',text:'+4% de experiência de atividades por nível.',era:1,parent:'roots'},
-  {id:'tracking',branch:'wild',name:'Olhos da Mata',icon:'crosshair',text:'+2 pontos percentuais de sucesso nas caçadas por nível.',era:2,parent:'learning'},
-  {id:'forge',branch:'wild',name:'Mãos de Osso',icon:'anvil',text:'+2 pontos percentuais de chance de componente nas caçadas por nível.',era:3,parent:'tracking'},
+  {id:'tracking',branch:'wild',name:'Olhos da Mata',icon:'crosshair',text:'+2% de ataque dos heróis por nível.',era:2,parent:'learning'},
+  {id:'forge',branch:'wild',name:'Mãos de Osso',icon:'anvil',text:'+2 pontos percentuais de chance de componente em vitórias repetidas por nível.',era:3,parent:'tracking'},
   {id:'insight',branch:'spirit',name:'Voz do Encanto',icon:'sparkles',text:'+4% de poder de habilidade por nível.',era:1},
   {id:'ceremony',branch:'spirit',name:'Círculo dos Ancestrais',icon:'flame',text:'+4% de experiência ritual por nível.',era:1,parent:'insight'},
   {id:'ward',branch:'spirit',name:'Véu Protetor',icon:'feather',text:'+4 de resistência mágica por nível.',era:2,parent:'ceremony'},
@@ -45,9 +45,9 @@ export function blessingLock(s:GameState,id:PreparationId):string|null {
   if(d.ritualLevel&&!s.heroes.some(h=>h.ritualLevel>=d.ritualLevel!))return `Exige vínculo ritual ${d.ritualLevel}`;
   return null;
 }
-export const TRIALS:{id:TrialId;name:string;icon:string;text:string;goal:number;reward:number;stat:'victories'|'hunts'|'rituals'}[]=[
+export const TRIALS:{id:TrialId;name:string;icon:string;text:string;goal:number;reward:number;stat:'victories'|'recruits'|'rituals'}[]=[
   {id:'combat',name:'Provar a coragem',icon:'swords',text:'Vença duas batalhas após assumir este desafio.',goal:2,reward:3,stat:'victories'},
-  {id:'hunt',name:'Ouvir a mata',icon:'trees',text:'Conclua uma caçada após assumir este desafio.',goal:1,reward:4,stat:'hunts'},
+  {id:'hunt',name:'Ampliar a tribo',icon:'users',text:'Acolha um guardião pelo draft após assumir este desafio.',goal:1,reward:4,stat:'recruits'},
   {id:'ritual',name:'Honrar o encanto',icon:'flame',text:'Conclua uma cerimônia após assumir este desafio.',goal:1,reward:5,stat:'rituals'},
 ];
 export const legacyLevel=(s:GameState,id:LegacyId)=>s.journey.legacies[id]??0;

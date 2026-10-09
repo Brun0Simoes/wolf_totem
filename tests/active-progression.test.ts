@@ -31,147 +31,40 @@ function win(g: Game, stage?: number) {
 }
 
 describe("active ritual progression", () => {
-  it("grants XP immediately, keeps the hero available and commits once", () => {
-    const g = new Game(),
-      h = g.state.heroes[0];
-    expect(g.performActiveRitual(h.uid, "rape", 1).ok).toBe(true);
-    expect(h.away).toBeNull();
-    expect(h.ritualLevel).toBe(2);
-    expect(ritualTotalXp(h.ritualLevel, h.ritualXp)).toBe(108);
-    expect(h.integrationWins).toBe(2);
-    expect(g.state.stats.rituals).toBe(1);
-    const before = g.serialize(1000);
-    expect(g.performActiveRitual(h.uid, "rape", 1).ok).toBe(false);
-    expect(g.serialize(1000)).toBe(before);
+  it('grants immediate XP and charges every requested ceremony',()=>{
+    const g=new Game(),h=g.state.heroes[0];expect(g.performActiveRitual(h.uid,'rape',1).ok).toBe(true);expect(h.away).toBeNull();expect(h.ritualLevel).toBe(2);expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBe(108);expect(h.integrationWins).toBe(0);expect(g.state.amber).toBe(64);g.state.amber=0;const before=g.serialize(1000);expect(g.performActiveRitual(h.uid,'rape',1).ok).toBe(false);expect(g.serialize(1000)).toBe(before);
   });
-  it("integrates through two victories by the actual participating hero", () => {
-    const g = new Game(),
-      h = g.state.heroes[0];
-    g.state.heroes.push(newHero("reserve", 3));
-    g.performActiveRitual(h.uid, "rape");
-    g.performActiveRitual("reserve", "rape");
-    win(g);
-    expect(h.integrationWins).toBe(1);
-    expect(g.state.heroes[1].integrationWins).toBe(2);
-    win(g);
-    expect(h.integrationWins).toBe(0);
-    expect(h.ritualReadyAt).toBe(g.state.clock);
-    g.dismissBattle();
-    expect(g.performActiveRitual(h.uid, "sananga").ok).toBe(true);
+  it('keeps participants and reserves available immediately after paid rites',()=>{
+    const g=new Game(),h=g.state.heroes[0];g.state.heroes.push(newHero('reserve',3));g.performActiveRitual(h.uid,'rape');g.performActiveRitual('reserve','rape');expect(g.state.heroes.every(h=>!h.away&&!h.integrationWins&&!h.ritualReadyAt)).toBe(true);win(g);g.dismissBattle();h.level=2;expect(g.performActiveRitual(h.uid,'sananga').ok).toBe(true);
   });
-  it("cannot integrate a veteran by repeating trivial fights or losing", () => {
-    const g = new Game(),
-      h = g.state.heroes[0];
-    h.level = 24;
-    g.state.era = 5;
-    g.state.progress = 30;
-    g.performActiveRitual(h.uid, "rape");
-    win(g, 1);
-    expect(h.integrationWins).toBe(2);
-    g.dismissBattle();
-    g.startBattle();
-    finish(g, false);
-    expect(h.integrationWins).toBe(2);
-    expect(h.ritualReadyAt).toBe(RITUAL_COOLDOWN);
+  it('awards fewer resources for early repeats and defeats than advanced victories',()=>{
+    const g=new Game();g.state.era=5;g.state.progress=30;win(g,1);const earned=g.battle!.amber;g.dismissBattle();g.selectStage(20);g.startBattle();finish(g,false);expect(g.battle!.amber).toBeLessThan(earned*5);g.dismissBattle();win(g,20);expect(g.battle!.amber).toBeGreaterThan(earned*4);
   });
-  it("retains era, prior ritual, hero level, away, pause and combat checks", () => {
-    const g = new Game(),
-      h = g.state.heroes[0];
-    expect(g.performActiveRitual(h.uid, "ayahuasca", 1).ok).toBe(false);
-    g.state.paused = true;
-    expect(g.performActiveRitual(h.uid, "rape").ok).toBe(false);
-    g.state.paused = false;
-    g.startBattle();
-    expect(g.performActiveRitual(h.uid, "rape").ok).toBe(false);
-    finish(g);
-    g.dismissBattle();
-    g.startHunt(h.uid, "igarape");
-    expect(g.performActiveRitual(h.uid, "rape").ok).toBe(false);
-    expect(g.state.stats.rituals).toBe(0);
+  it('retains era, prior ritual, level, funds, pause and combat checks',()=>{
+    const g=new Game(),h=g.state.heroes[0];expect(g.performActiveRitual(h.uid,'ayahuasca',1).ok).toBe(false);g.state.paused=true;expect(g.performActiveRitual(h.uid,'rape').ok).toBe(false);g.state.paused=false;g.startBattle();expect(g.performActiveRitual(h.uid,'rape').ok).toBe(false);finish(g);g.dismissBattle();g.state.amber=0;expect(g.performActiveRitual(h.uid,'rape').ok).toBe(false);expect(g.state.stats.rituals).toBe(0);
   });
-  it("also integrates offline and keeps the optional timed ceremony intact", () => {
-    const g = new Game(),
-      h = g.state.heroes[0];
-    h.level = 2;
-    g.performActiveRitual(h.uid, "rape");
-    g.catchUp(RITUAL_COOLDOWN);
-    expect(g.performRitual(h.uid, "sananga").ok).toBe(true);
-    const xp = ritualTotalXp(h.ritualLevel, h.ritualXp);
-    expect(h.away!.kind).toBe("ritual");
-    g.catchUp(h.away!.until - g.state.clock);
-    expect(ritualTotalXp(h.ritualLevel, h.ritualXp)).toBeGreaterThan(xp);
+  it('both ritual entry points pay resources and have no timer route',()=>{
+    const g=new Game(),h=g.state.heroes[0];h.level=2;g.performActiveRitual(h.uid,'rape');expect(g.performRitual(h.uid,'sananga').ok).toBe(true);expect(h.away).toBeNull();expect(h.ritualReadyAt).toBe(0);const xp=ritualTotalXp(h.ritualLevel,h.ritualXp);g.catchUp(1e9);expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBe(xp);
   });
-  it("integrates cacao after two suitable wins and allows another circle immediately", () => {
-    const g = new Game();
-    g.state.era = 2;
-    expect(g.holdCacaoCircle().ok).toBe(true);
-    win(g);
-    expect(g.state.cacaoIntegrationWins).toBe(1);
-    win(g);
-    g.dismissBattle();
-    expect(g.state.cacaoIntegrationWins).toBe(0);
-    expect(g.holdCacaoCircle().ok).toBe(true);
+  it('cacao expires after three battles and requires another paid circle',()=>{
+    const g=new Game();g.state.era=2;expect(g.holdCacaoCircle().ok).toBe(true);for(let remaining=2;remaining>=0;remaining--){win(g,1);expect(g.state.cacaoBattles).toBe(remaining);}g.dismissBattle();expect(g.holdCacaoCircle().ok).toBe(true);
   });
 });
 
 describe("personal guardian proofs", () => {
-  it("advances the first era and awakening with real battles and rituals, without offline catch-up", () => {
-    const g = new Game(),
-      h = g.state.heroes[0];
-    g.recruit(3);
-    g.recruit(8);
-    g.autoFormation();
-    g.performActiveRitual(h.uid, "rape");
-    for (let run = 0; run < 24 && h.stars < 2; run++) {
-      if (g.battle) g.dismissBattle();
-      if (g.state.era >= 2) {
-        g.recruit(2);
-        g.autoFormation();
-      }
-      if (g.advanceEra().ok) {
-        const pending = g.state.era;
-        const spirit = { 2: "lobo", 3: "coruja", 4: "urso", 5: "elefante" }[
-          pending as 2 | 3 | 4 | 5
-        ];
-        if (spirit)
-          g.chooseSpirit(spirit as Parameters<Game["chooseSpirit"]>[0]);
-      }
-      g.selectStage(Math.min(30, g.state.progress + 1));
-      expect(g.startBattle().ok).toBe(true);
-      for (
-        let frame = 0;
-        frame < 1500 && g.battle!.status === "fighting";
-        frame++
-      )
-        g.advanceBattle(0.1);
-      if (g.battle!.status === "defeat") {
-        g.dismissBattle();
-        g.selectStage(Math.max(1, g.state.progress));
-        continue;
-      }
-      for (const proof of HERO_PROOFS)
-        if (proof.progress(h.mastery) >= proof.goal)
-          g.claimHeroProof(h.uid, proof.id);
-      if (g.state.clock >= h.ritualReadyAt)
-        g.performActiveRitual(h.uid, h.level >= 2 ? "sananga" : "rape");
-    }
-    expect(
-      h.stars,
-      JSON.stringify({
-        level: h.level,
-        ritual: h.ritualLevel,
-        xp: h.ritualXp,
-        integration: h.integrationWins,
-        progress: g.state.progress,
-        stage: g.state.selectedStage,
-        era: g.state.era,
-        proofs: h.mastery.claimed,
-      }),
-    ).toBe(2);
-    expect(g.state.era).toBeGreaterThanOrEqual(2);
-    expect(g.state.clock).toBe(0);
-    expect(h.mastery.claimed).toContain("first");
-    expect(g.state.progress).toBeGreaterThanOrEqual(3);
+  it('advances era and first awakening with paid drafts and real fights, without advancing the offline clock',()=>{
+    const g=new Game(),h=g.state.heroes[0];g.openDraft();g.recruit(g.state.draft!.offers[0]);g.applyArmyPlan();g.performActiveRitual(h.uid,'rape');let attempt=0;
+for(;attempt<100&&h.stars<2;attempt++){
+ if(g.battle)g.dismissBattle();
+ if(g.state.heroes.length<2+g.state.era&&g.openDraft().ok){g.recruit(g.state.draft!.offers[0]);g.applyArmyPlan();}
+ if(g.advanceEra().ok)g.chooseSpirit('lobo');
+ if(attempt%3===0&&h.level>=2&&h.ritualLevel<3)g.performActiveRitual(h.uid,'sananga');
+ if(attempt%4===0)g.prepareBuild(h.uid,'front-hold');
+ g.selectStage(Math.min(4,Math.max(1,g.state.progress+(attempt%3===0?0:1))));
+ expect(g.startBattle().ok).toBe(true);for(let n=0;n<1500&&g.battle!.status==='fighting';n++)g.advanceBattle(.1);
+ if(g.battle!.status==='victory')for(const proof of HERO_PROOFS)if(proof.progress(h.mastery)>=proof.goal)g.claimHeroProof(h.uid,proof.id);
+}
+expect(h.stars,JSON.stringify({attempt,level:h.level,ritual:h.ritualLevel,era:g.state.era,progress:g.state.progress,amber:g.state.amber})).toBe(2);expect(g.state.era).toBeGreaterThanOrEqual(2);expect(g.state.clock).toBe(0);expect(h.mastery.claimed).toContain('first');expect(g.state.progress).toBeGreaterThanOrEqual(3);
   });
   it("credits only participants, on victory, once for a completed battle", () => {
     const g = new Game(),
@@ -200,7 +93,7 @@ describe("personal guardian proofs", () => {
   it("records items and this hero’s active traits, without crediting an unrelated trait", () => {
     const g = new Game(),
       h = g.state.heroes[0];
-    g.recruit(8);
+    g.state.heroes.push(newHero("fixture-8",8));
     g.deploy(g.state.heroes[1].uid, 10);
     h.items = ["presa"];
     win(g);
@@ -290,7 +183,7 @@ describe("personal guardian proofs", () => {
     delete old.state.heroes[0].integrationWins;
     const loaded = new Game(old, 1000),
       h = loaded.state.heroes[0];
-    expect(h).toMatchObject({ level: 8, stars: 2, integrationWins: 2 });
+    expect(h).toMatchObject({ level: 8, stars: 2, integrationWins: 0 });
     expect(h.mastery).toEqual(freshMastery());
     expect(JSON.parse(loaded.serialize()).version).toBe(SAVE_VERSION);
     expect(new Game(loaded.serialize(1000), 1000).state).toEqual(loaded.state);

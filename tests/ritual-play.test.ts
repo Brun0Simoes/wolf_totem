@@ -46,29 +46,18 @@ describe('participation and lasting progression',()=>{
   it('caps invalid and out-of-range scores',()=>{
     expect(participationBonus(90,NaN)).toBe(0);expect(participationBonus(90,Infinity)).toBe(0);expect(participationBonus(90,-1)).toBe(0);expect(participationBonus(90,10)).toBe(18);
   });
-  it('persists the bonus and awards it once at completion, with full integration',()=>{
-    const game=prepared(),h=game.state.heroes[0];expect(game.performRitual(h.uid,'rape',1).ok).toBe(true);
-    expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBe(0);expect(game.performRitual(h.uid,'rape',1).ok).toBe(false);
-    const loaded=new Game(game.serialize(1000),1000),hero=loaded.state.heroes[0],until=hero.away!.until;
-    expect(hero.away!.participationXp).toBe(18);loaded.catchUp(until+1);
-    expect(ritualTotalXp(hero.ritualLevel,hero.ritualXp)).toBe(108);expect(hero.ritualReadyAt).toBe(until+RITUAL_COOLDOWN);
-    loaded.catchUp(30);expect(ritualTotalXp(hero.ritualLevel,hero.ritualXp)).toBe(108);
+  it('persists immediate participation XP with no extra reward after reload',()=>{
+    const game=prepared(),h=game.state.heroes[0];expect(game.performRitual(h.uid,'rape',1).ok).toBe(true);expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBe(108);const loaded=new Game(game.serialize(1000),1e9);expect(loaded.state.heroes[0].away).toBeNull();expect(loaded.state.heroes[0].ritualReadyAt).toBe(0);expect(ritualTotalXp(loaded.state.heroes[0].ritualLevel,loaded.state.heroes[0].ritualXp)).toBe(108);expect(loaded.state.amber).toBe(game.state.amber);
   });
   it('keeps automatic ceremonies at base XP and rejects unmet requirements without spending',()=>{
     const game=prepared(),h=game.state.heroes[0];h.level=1;const before=game.state.era;
     expect(game.performRitual(h.uid,'ayahuasca',1).ok).toBe(false);expect(game.state.era).toEqual(before);
     expect(game.performRitual(h.uid,'rape').ok).toBe(true);game.catchUp(1201);expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBe(RITUAL_XP.rape);
   });
-  it('caps a forged persisted bonus without damaging an older save',()=>{
-    const game=prepared(),h=game.state.heroes[0];game.performRitual(h.uid,'rape',1);h.away!.participationXp=999999;
-    const loaded=new Game(game.serialize(1000),1000);expect(loaded.state.heroes[0].away!.participationXp).toBe(18);
-    delete h.away!.participationXp;expect(new Game(game.serialize(1000),1000).state.heroes[0].away!.participationXp).toBe(0);
+  it('caps a forged v8 pending participation bonus during one-time migration',()=>{
+    const g=prepared(),save=JSON.parse(g.serialize(1000));save.version=8;save.state.heroes[0].away={kind:'ritual',id:'rape',until:200,participationXp:999999};const loaded=new Game(save,1000);expect(ritualTotalXp(loaded.state.heroes[0].ritualLevel,loaded.state.heroes[0].ritualXp)).toBe(108);expect(new Game(loaded.serialize(1000),1e9).state).toEqual(loaded.state);
   });
-  it('shares cacao learning only with eligible members and never reapplies the same circle',()=>{
-    const game=prepared(),h=game.state.heroes[0],busy=newHero('busy',2),resting=newHero('resting',3);
-    busy.away={kind:'hunt',id:'igarape',until:600};resting.ritualReadyAt=500;game.state.heroes.push(busy,resting);
-    expect(game.holdCacaoCircle(1).ok).toBe(true);expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBe(72);
-    expect(busy.ritualXp).toBe(0);expect(resting.ritualXp).toBe(0);const resources=game.state.era;
-    expect(game.holdCacaoCircle(1).ok).toBe(false);expect(game.state.era).toEqual(resources);expect(h.ritualXp).toBe(72);
+  it('shares purchased cacao learning with all guardians without timer prerequisites',()=>{
+    const game=prepared();game.state.heroes.push(newHero('b',2),newHero('c',3));expect(game.holdCacaoCircle(1).ok).toBe(true);expect(game.state.heroes.every(h=>ritualTotalXp(h.ritualLevel,h.ritualXp)===72)).toBe(true);const before=game.serialize(1000);expect(game.holdCacaoCircle(1).ok).toBe(false);expect(game.serialize(1000)).toBe(before);
   });
 });

@@ -1,31 +1,218 @@
-import type { GameState } from '../game/simulation';
-import { activeArmy,armyWarnings,armySuggestions,nearTraits,enemyAdvice,enemyThreats,recommendedParty,positionPlan,equipmentPlan,craftingPlan,planSignature,synergyChanges,buffAdvice,spiritAdvice,itemReason,itemAdvice,ROLE_GUIDE,roleOf } from '../game/armyAdvisor';
-import { TRAIT_RULES,traitStatus,countTraits } from '../game/synergies';
-import { blessingLock,PREPARATIONS,LEGACIES,type PreparationId } from '../game/ancestralJourney';
-import { itemById } from '../game/items';
-import { RITUAL_EFFECT } from '../game/tribe';
-import { characters } from '../data/characters';
-import { portraitHTML } from '../render/portrait';
-import { glyphSVG,type AnimalId } from '../render/spiritGlyphs';
-import { uiEsc as esc,uiIcon as icon } from './AncestralJourney';
+import type { GameState } from "../game/simulation";
+import {
+  compositionPlans,
+  activeArmy,
+  armyWarnings,
+  armySuggestions,
+  nearTraits,
+  enemyAdvice,
+  enemyThreats,
+  recommendedParty,
+  positionPlan,
+  equipmentPlan,
+  craftingPlan,
+  planSignature,
+  synergyChanges,
+  buffAdvice,
+  spiritAdvice,
+  itemReason,
+  itemAdvice,
+  ROLE_GUIDE,
+  roleOf,
+} from "../game/armyAdvisor";
+import { TRAIT_RULES, traitStatus, countTraits } from "../game/synergies";
+import {
+  blessingLock,
+  PREPARATIONS,
+  LEGACIES,
+  type PreparationId,
+} from "../game/ancestralJourney";
+import { itemById } from "../game/items";
+import { RITUAL_EFFECT } from "../game/tribe";
+import { characters } from "../data/characters";
+import { portraitHTML } from "../render/portrait";
+import { glyphSVG, type AnimalId } from "../render/spiritGlyphs";
+import { uiEsc as esc, uiIcon as icon } from "./AncestralJourney";
 
-export type CoachTab='plan'|'equipment'|'buffs'|'synergies';
-export function armyCoach(s:GameState,heroUid:string|null,trait:string,fighting=false,tab:CoachTab='plan',activePreparations:PreparationId[]=[]):string {
-  const current=activeArmy(s),plan=recommendedParty(s),positions=positionPlan(s,plan),enemy=enemyAdvice(s),threat=enemyThreats(s),signature=esc(planSignature(s));
-  const hero=s.heroes.find(h=>h.uid===heroUid)??current[0]??s.heroes[0],c=characters.find(c=>c.id===hero.characterId)!,guide=ROLE_GUIDE[roleOf(c)],lock=s.paused||fighting;
-  const heading=`<div class="army-coach"><header class="coach-heading"><div><p class="eyebrow">CONSELHO DE GUERRA · ${esc(enemy.name)}</p><h2>Um plano para esta batalha.</h2><p>Compare a formação, confira cada posição e escolha equipamentos e bênçãos.</p></div><span class="coach-method">Análise por regras<br>Sem garantia de vitória</span></header><nav class="coach-tabs" aria-label="Áreas do conselheiro">${([['plan','Formação','layout-grid'],['equipment','Equipamentos','anvil'],['buffs','Buffs e poderes','sparkles'],['synergies','Classes e laços','network']] as const).map(([id,label,i])=>`<button data-coach-tab="${id}" aria-pressed="${id===tab}">${icon(i)}${label}</button>`).join('')}</nav>`;
-  const threats=`<section class="coach-enemy"><p class="eyebrow">LEITURA DO ADVERSÁRIO</p><h3>${esc(enemy.name)}</h3><div class="threat-chips"><span>${threat.physical} funções físicas</span><span>${threat.magic} conjuradores/invocadores</span><span>${threat.flank} flanqueadores</span><span>${threat.area} habilidades de área</span></div>${enemy.tips.map(t=>`<p>${esc(t)}</p>`).join('')}<small>As ameaças são estimadas pelas funções e descrições. Habilidades mistas podem causar tipos de dano diferentes.</small></section>`;
-  if(tab==='plan'){
-    const changes=synergyChanges(s,plan),warnings=armyWarnings(s),suggestions=armySuggestions(s);
-    return heading+`<div class="coach-plan-layout"><section><div class="coach-plan-title"><div><p class="eyebrow">${plan.length}/${2+s.era} COMPANHEIROS SUGERIDOS</p><h3>Seu campo, casa por casa.</h3></div><button class="primary" data-apply-army="${signature}" ${lock||!plan.length?'disabled':''}>Aplicar esta formação</button></div><div class="coach-board" role="group" aria-label="Prévia das 28 casas sugeridas">${Array.from({length:28},(_,slot)=>{const p=positions.find(p=>p.slot===slot);return `<button class="${slot<7?'front-line':''} ${p?'occupied':''}" ${p?`data-coach-hero="${p.hero.uid}"`:''} aria-label="Casa ${slot+1}${p?`, ${characters.find(c=>c.id===p.hero.characterId)!.name}`:', vazia'}"><small>${slot+1}</small>${p?portraitHTML(characters.find(c=>c.id===p.hero.characterId)!,p.hero.stars):'<span>·</span>'}</button>`;}).join('')}</div><div class="coach-board-labels"><span>Frente · inimigos acima</span><span>Retaguarda · aliados abaixo</span></div><div class="position-reasons">${positions.map(p=>{const ch=characters.find(c=>c.id===p.hero.characterId)!;return `<article><button data-coach-hero="${p.hero.uid}">${portraitHTML(ch,p.hero.stars)}<span><b>${ch.name}</b><small>${ROLE_GUIDE[roleOf(ch)].name}</small></span></button><div><strong>${p.hero.slot===null?'Reserva':'Casa '+(p.hero.slot+1)} → Casa ${p.slot+1} · fileira ${p.row}</strong><p>${p.reason}</p>${p.hero.items.some(id=>(itemById(id)?.perks?.teamShield??0)>0)?`<small>Aliados no raio do escudo: ${p.adjacent.join(', ')||'nenhum; ajuste os vizinhos se quiser espalhar o escudo'}.</small>`:''}</div></article>`;}).join('')}</div><button class="outline-button" data-action="formation">Ajustar posições manualmente</button></section><aside>${threats}<section class="coach-differences"><h3>O que muda nos laços</h3>${changes.filter(v=>v.delta!==0).map(v=>`<p class="${v.delta>0?'gain':'loss'}">${icon(v.delta>0?'arrow-up-right':'arrow-down-right')}<b>${esc(v.name)}</b> · ${v.before.count} → ${v.after.count}<small>${v.after.description}</small></p>`).join('')||'<p>O plano preserva os níveis atuais dos laços.</p>'}<details><summary>Ver todos os laços do plano</summary>${changes.map(v=>`<p>${esc(v.name)} · ${v.after.count} membro(s) · nível ${v.after.tier}<small>${v.after.description}</small></p>`).join('')}</details></section><section class="coach-warnings"><h3>Antes de partir</h3>${warnings.map(w=>`<p>${icon('circle-help')}${esc(w)}</p>`).join('')||'<p>Funções básicas cobertas. Confira os itens e os poderes.</p>'}</section><details><summary>Alternativas do seu elenco</summary>${suggestions.map(v=>`<p><b>${characters.find(c=>c.id===v.hero.characterId)!.name}</b> ${v.replace?`no lugar de ${characters.find(c=>c.id===v.replace!.characterId)!.name}`:'preenche uma vaga'}<small>Ganha: ${v.gained.join(', ')||'atributos/função'}. Perde: ${v.lost.join(', ')||'nenhum nível de laço'}.</small></p>`).join('')||'<p>Nenhum companheiro livre na reserva.</p>'}</details></aside></div></div>`;
+export type CoachTab = "plan" | "equipment" | "buffs" | "synergies";
+export function armyCoach(
+  s: GameState,
+  heroUid: string | null,
+  trait: string,
+  fighting = false,
+  tab: CoachTab = "plan",
+  activePreparations: PreparationId[] = [],
+  composition = "auto",
+): string {
+  const current = activeArmy(s),
+    plan = recommendedParty(s, composition),
+    positions = positionPlan(s, plan),
+    enemy = enemyAdvice(s),
+    threat = enemyThreats(s),
+    signature = esc(planSignature(s));
+  const hero =
+      s.heroes.find((h) => h.uid === heroUid) ?? current[0] ?? s.heroes[0],
+    c = characters.find((c) => c.id === hero.characterId)!,
+    guide = ROLE_GUIDE[roleOf(c)],
+    lock = s.paused || fighting;
+  const heading = `<div class="army-coach"><header class="coach-heading"><div><p class="eyebrow">CONSELHO DE GUERRA · ${esc(enemy.name)}</p><h2>Um plano para esta batalha.</h2><p>Compare a formação, confira cada posição e escolha equipamentos e bênçãos.</p></div><span class="coach-method">Análise por regras<br>Sem garantia de vitória</span></header><nav class="coach-tabs" aria-label="Áreas do conselheiro">${(
+    [
+      ["plan", "Formação", "layout-grid"],
+      ["equipment", "Equipamentos", "anvil"],
+      ["buffs", "Buffs e poderes", "sparkles"],
+      ["synergies", "Classes e laços", "network"],
+    ] as const
+  )
+    .map(
+      ([id, label, i]) =>
+        `<button data-coach-tab="${id}" aria-pressed="${id === tab}">${icon(i)}${label}</button>`,
+    )
+    .join("")}</nav>`;
+  const threats = `<section class="coach-enemy"><p class="eyebrow">LEITURA DO ADVERSÁRIO</p><h3>${esc(enemy.name)}</h3><div class="threat-chips"><span>${threat.physical} funções físicas</span><span>${threat.magic} conjuradores/invocadores</span><span>${threat.flank} flanqueadores</span><span>${threat.area} habilidades de área</span></div>${enemy.tips.map((t) => `<p>${esc(t)}</p>`).join("")}<small>As ameaças são estimadas pelas funções e descrições. Habilidades mistas podem causar tipos de dano diferentes.</small></section>`;
+  if (tab === "plan") {
+    const options = compositionPlans(s);
+    const optionCards = `<section class="composition-browser"><div class="composition-browser-title"><div><p class="eyebrow">${options.length} FORMAÇÕES DISTINTAS DO SEU ELENCO</p><h3>Escolha um plano de batalha.</h3></div><button data-composition="auto" aria-pressed="${composition === "auto"}">Melhor leitura do encontro</button></div><div class="composition-options">${options
+      .map((p) => {
+        const counts = countTraits(p.party.map((h) => h.characterId)),
+          core = [...counts]
+            .map(([name, n]) => traitStatus(name, n))
+            .filter((t) => t.kind !== "espírito" && t.tier)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3);
+        return `<button data-composition="${esc(p.id)}" aria-pressed="${composition === p.id}"><b>${esc(p.name)}</b><span>${p.party.map((h) => portraitHTML(characters.find((c) => c.id === h.characterId)!, h.stars)).join("")}</span><small>${core.map((t) => t.count + " " + t.name).join(" · ") || "Funções complementares"}</small><em>${p.description}</em></button>`;
+      })
+      .join(
+        "",
+      )}</div><p class="ancestral-note">Conjuntos de 6 recebem bônus maiores; uma formação também precisa de níveis, equipamentos e uma frente que proteja seu dano. Planos iguais são agrupados.</p></section>`;
+    const changes = synergyChanges(s, plan),
+      warnings = armyWarnings(s),
+      suggestions = armySuggestions(s);
+    return (
+      heading +
+      optionCards +
+      `<div class="coach-plan-layout"><section><div class="coach-plan-title"><div><p class="eyebrow">${plan.length}/${2 + s.era} COMPANHEIROS SUGERIDOS</p><h3>Seu campo, casa por casa.</h3></div><button class="primary" data-apply-army="${signature}" ${lock || !plan.length ? "disabled" : ""}>Aplicar esta formação</button></div><div class="coach-board" role="group" aria-label="Prévia das 28 casas sugeridas">${Array.from(
+        { length: 28 },
+        (_, slot) => {
+          const p = positions.find((p) => p.slot === slot);
+          return `<button class="${slot < 7 ? "front-line" : ""} ${p ? "occupied" : ""}" ${p ? `data-coach-hero="${p.hero.uid}"` : ""} aria-label="Casa ${slot + 1}${p ? `, ${characters.find((c) => c.id === p.hero.characterId)!.name}` : ", vazia"}"><small>${slot + 1}</small>${p ? portraitHTML(characters.find((c) => c.id === p.hero.characterId)!, p.hero.stars) : "<span>·</span>"}</button>`;
+        },
+      ).join(
+        "",
+      )}</div><div class="coach-board-labels"><span>Frente · inimigos acima</span><span>Retaguarda · aliados abaixo</span></div><div class="position-reasons">${positions
+        .map((p) => {
+          const ch = characters.find((c) => c.id === p.hero.characterId)!;
+          return `<article><button data-coach-hero="${p.hero.uid}">${portraitHTML(ch, p.hero.stars)}<span><b>${ch.name}</b><small>${ROLE_GUIDE[roleOf(ch)].name}</small></span></button><div><strong>${p.hero.slot === null ? "Reserva" : "Casa " + (p.hero.slot + 1)} → Casa ${p.slot + 1} · fileira ${p.row}</strong><p>${p.reason}</p>${p.hero.items.some((id) => (itemById(id)?.perks?.teamShield ?? 0) > 0) ? `<small>Aliados no raio do escudo: ${p.adjacent.join(", ") || "nenhum; ajuste os vizinhos se quiser espalhar o escudo"}.</small>` : ""}</div></article>`;
+        })
+        .join(
+          "",
+        )}</div><button class="outline-button" data-action="formation">Ajustar posições manualmente</button></section><aside>${threats}<section class="coach-differences"><h3>O que muda nos laços</h3>${
+        changes
+          .filter((v) => v.delta !== 0)
+          .map(
+            (v) =>
+              `<p class="${v.delta > 0 ? "gain" : "loss"}">${icon(v.delta > 0 ? "arrow-up-right" : "arrow-down-right")}<b>${esc(v.name)}</b> · ${v.before.count} → ${v.after.count}<small>${v.after.description}</small></p>`,
+          )
+          .join("") || "<p>O plano preserva os níveis atuais dos laços.</p>"
+      }<details><summary>Ver todos os laços do plano</summary>${changes.map((v) => `<p>${esc(v.name)} · ${v.after.count} membro(s) · nível ${v.after.tier}<small>${v.after.description}</small></p>`).join("")}</details></section><section class="coach-warnings"><h3>Antes de partir</h3>${warnings.map((w) => `<p>${icon("circle-help")}${esc(w)}</p>`).join("") || "<p>Funções básicas cobertas. Confira os itens e os poderes.</p>"}</section><details><summary>Alternativas do seu elenco</summary>${suggestions.map((v) => `<p><b>${characters.find((c) => c.id === v.hero.characterId)!.name}</b> ${v.replace ? `no lugar de ${characters.find((c) => c.id === v.replace!.characterId)!.name}` : "preenche uma vaga"}<small>Ganha: ${v.gained.join(", ") || "atributos/função"}. Perde: ${v.lost.join(", ") || "nenhum nível de laço"}.</small></p>`).join("") || "<p>Nenhum companheiro livre na reserva.</p>"}</details></aside></div></div>`
+    );
   }
-  if(tab==='equipment'){
-    const distribution=equipmentPlan(s),crafting=craftingPlan(s),items=itemAdvice(s,hero);
-    return heading+`<div class="coach-equipment-layout"><section><div class="coach-plan-title"><div><p class="eyebrow">ITENS PRONTOS DA BOLSA</p><h3>Distribuição sem disputar o mesmo item.</h3></div><button class="primary" data-distribute-items="${signature}" ${lock||!distribution.length?'disabled':''}>Distribuir ${distribution.length} item(ns)</button></div><p class="ancestral-note">Usa somente itens completos e vagas livres na formação atual. Preserva equipamentos já usados; componentes ficam para decisões de forja.</p>${distribution.map(p=>`<article class="gear-allocation"><div>${portraitHTML(characters.find(c=>c.id===p.hero.characterId)!,p.hero.stars)}<span><b>${p.item.name} → ${characters.find(c=>c.id===p.hero.characterId)!.name}</b><small>${p.reason}</small><small>${p.item.text}</small></span></div><button class="outline-button" data-advisor-equip="${p.hero.uid}:${p.index}" ${lock?'disabled':''}>Equipar</button></article>`).join('')||'<p class="coach-empty">Não há itens completos livres e vagas na formação. Confira as receitas e o equipamento de cada herói.</p>'}<h3>Receitas com seus componentes</h3><p class="ancestral-note">O plano reserva componentes sem repetir entradas da bolsa. Forje uma receita e confira o plano atualizado antes da seguinte.</p>${crafting.map(p=>`<article class="gear-allocation"><div><span class="gear-symbol" style="--item:${p.item.color}">${icon('anvil')}</span><span><b>${p.item.name}</b><small>${itemById(s.inventory[p.a])!.name} + ${itemById(s.inventory[p.b])!.name}</small><small>Sugestão: ${characters.find(c=>c.id===p.hero.characterId)!.name}. ${p.reason}</small><small>${p.item.text}</small></span></div><button class="outline-button" data-advisor-recipe="${p.a}:${p.b}" ${lock?'disabled':''}>Combinar</button></article>`).join('')||'<p>Não há pares de componentes disponíveis para esta formação.</p>'}</section><aside class="individual-coaching"><p class="eyebrow">INSPEÇÃO INDIVIDUAL</p><select id="coach-hero" aria-label="Herói para analisar">${s.heroes.map(h=>`<option value="${h.uid}" ${h===hero?'selected':''}>${characters.find(c=>c.id===h.characterId)!.name}</option>`).join('')}</select><div class="coached-hero">${portraitHTML(c,hero.stars)}<div><h3>${c.name}</h3><p>${guide.name}</p><span>${hero.items.length}/3 equipamentos</span></div></div><p>${guide.description}</p><p><b>${c.ability.name}.</b> ${esc(c.ability.description)}</p><h4>Equipados</h4>${hero.items.map((id,i)=>`<div class="equipped-advice"><b>${itemById(id)!.name}</b><small>${itemById(id)!.text}</small><button class="text-button" data-unequip="${hero.uid}:${i}" ${lock?'disabled':''}>Devolver à bolsa</button></div>`).join('')||'<p>Nenhum equipamento.</p>'}<h4>Componentes e itens da bolsa</h4>${items.owned.map(p=>`<button class="advisor-item" data-advisor-equip="${hero.uid}:${p.index}" ${lock||hero.items.length>=3?'disabled':''}><span><b>${p.item.name}</b><small>${itemReason(c,p.item,s)}</small><small>${p.item.text}</small></span>${icon('plus')}</button>`).join('')||'<p>Bolsa vazia. Expedições e caçadas trazem componentes.</p>'}<p class="ancestral-note">Componentes no mesmo herói podem se combinar automaticamente pelas regras de equipamentos. Confira a receita antes de entregar o segundo.</p><h4>Objetivos para esta função</h4><p>${items.ideal.map(i=>i.name).join(' · ')}</p></aside></div></div>`;
+  if (tab === "equipment") {
+    const distribution = equipmentPlan(s),
+      crafting = craftingPlan(s),
+      items = itemAdvice(s, hero);
+    return (
+      heading +
+      `<div class="coach-equipment-layout"><section><div class="coach-plan-title"><div><p class="eyebrow">ITENS PRONTOS DA BOLSA</p><h3>Distribuição sem disputar o mesmo item.</h3></div><button class="primary" data-distribute-items="${signature}" ${lock || !distribution.length ? "disabled" : ""}>Distribuir ${distribution.length} item(ns)</button></div><p class="ancestral-note">Usa somente itens completos e vagas livres na formação atual. Preserva equipamentos já usados; componentes ficam para decisões de forja.</p>${distribution.map((p) => `<article class="gear-allocation"><div>${portraitHTML(characters.find((c) => c.id === p.hero.characterId)!, p.hero.stars)}<span><b>${p.item.name} → ${characters.find((c) => c.id === p.hero.characterId)!.name}</b><small>${p.reason}</small><small>${p.item.text}</small></span></div><button class="outline-button" data-advisor-equip="${p.hero.uid}:${p.index}" ${lock ? "disabled" : ""}>Equipar</button></article>`).join("") || '<p class="coach-empty">Não há itens completos livres e vagas na formação. Confira as receitas e o equipamento de cada herói.</p>'}<h3>Receitas com seus componentes</h3><p class="ancestral-note">O plano reserva componentes sem repetir entradas da bolsa. Forje uma receita e confira o plano atualizado antes da seguinte.</p>${crafting.map((p) => `<article class="gear-allocation"><div><span class="gear-symbol" style="--item:${p.item.color}">${icon("anvil")}</span><span><b>${p.item.name}</b><small>${itemById(s.inventory[p.a])!.name} + ${itemById(s.inventory[p.b])!.name}</small><small>Sugestão: ${characters.find((c) => c.id === p.hero.characterId)!.name}. ${p.reason}</small><small>${p.item.text}</small></span></div><button class="outline-button" data-advisor-recipe="${p.a}:${p.b}" ${lock ? "disabled" : ""}>Combinar</button></article>`).join("") || "<p>Não há pares de componentes disponíveis para esta formação.</p>"}</section><aside class="individual-coaching"><p class="eyebrow">INSPEÇÃO INDIVIDUAL</p><select id="coach-hero" aria-label="Herói para analisar">${s.heroes.map((h) => `<option value="${h.uid}" ${h === hero ? "selected" : ""}>${characters.find((c) => c.id === h.characterId)!.name}</option>`).join("")}</select><div class="coached-hero">${portraitHTML(c, hero.stars)}<div><h3>${c.name}</h3><p>${guide.name}</p><span>${hero.items.length}/3 equipamentos</span></div></div><p>${guide.description}</p><p><b>${c.ability.name}.</b> ${esc(c.ability.description)}</p><h4>Equipados</h4>${hero.items.map((id, i) => `<div class="equipped-advice"><b>${itemById(id)!.name}</b><small>${itemById(id)!.text}</small><button class="text-button" data-unequip="${hero.uid}:${i}" ${lock ? "disabled" : ""}>Devolver à bolsa</button></div>`).join("") || "<p>Nenhum equipamento.</p>"}<h4>Componentes e itens da bolsa</h4>${items.owned.map((p) => `<button class="advisor-item" data-advisor-equip="${hero.uid}:${p.index}" ${lock || hero.items.length >= 3 ? "disabled" : ""}><span><b>${p.item.name}</b><small>${itemReason(c, p.item, s)}</small><small>${p.item.text}</small></span>${icon("plus")}</button>`).join("") || "<p>Bolsa vazia. Expedições e o Arsenal trazem componentes.</p>"}<p class="ancestral-note">Componentes no mesmo herói podem se combinar automaticamente pelas regras de equipamentos. Confira a receita antes de entregar o segundo.</p><h4>Objetivos para esta função</h4><p>${items.ideal.map((i) => i.name).join(" · ")}</p></aside></div></div>`
+    );
   }
-  if(tab==='buffs'){
-    return heading+`<div class="coach-buff-layout"><section><h3>Bênçãos recomendadas</h3>${fighting&&activePreparations.length?`<p class="active-preparations">Ativos nesta batalha: <b>${activePreparations.map(id=>PREPARATIONS.find(p=>p.id===id)!.name).join(', ')}</b>. Estas bênçãos acompanham a formação.</p>`:''}<p>Selecione até duas afinidades aprendidas nos rituais. Os efeitos são reutilizáveis.</p><div class="coach-buff-grid">${buffAdvice(s).map(p=>{const blessing=blessingLock(s,p.id),selected=s.journey.selected.includes(p.id);return `<article class="${selected?'selected':''}"><h4>${icon(p.icon)}${p.name}</h4><p>${p.text}</p><small>${p.reason}</small><span>${blessing??(selected?'Ativa na formação':'Aprendida')}</span><div class="preparation-actions"><button class="outline-button" data-select-preparation="${p.id}" aria-pressed="${selected}" ${lock||!!blessing||(!selected&&s.journey.selected.length>=2)?'disabled':''}>${selected?'Retirar bênção':'Ativar bênção'}</button></div></article>`;}).join('')}</div><h3>Rituais e crescimento da formação</h3>${current.map(h=>{const ch=characters.find(c=>c.id===h.characterId)!;return `<article class="ritual-coach"><b>${ch.name} · XP ${h.level} / rito ${h.ritualLevel} · ${h.stars}★</b><p>Rapé: +${Math.round((h.rituals.rape??0)*RITUAL_EFFECT.rapeAttackSpeed*100)}% velocidade · Sananga: +${Math.round((h.rituals.sananga??0)*RITUAL_EFFECT.sanangaDamage*100)}% ataque · Kambô: +${Math.round((h.rituals.kambo??0)*RITUAL_EFFECT.kamboHp*100)}% vida.</p>${h.rituals.ayahuasca?`<small>Ayahuasca: +${Math.round(RITUAL_EFFECT.ayahuascaSpell*100)}% poder e +${RITUAL_EFFECT.ayahuascaMana} mana.</small>`:'<small>Ayahuasca ainda não concluída neste companheiro.</small>'}</article>`;}).join('')||'<p>Coloque companheiros na formação para analisar seus rituais.</p>'}<button class="outline-button" data-action="cura">Preparar cerimônias</button></section><aside><h3>Espíritos e momento dos poderes</h3>${spiritAdvice(s).map(({spirit,timing})=>`<article class="power-advice">${glyphSVG(spirit.animal as AnimalId,spirit.color)}<h4>${spirit.name} · ${spirit.power.name}</h4><p>${spirit.passiveText}</p><p>${spirit.power.text}</p><strong>${timing}</strong></article>`).join('')||'<p>Escolha o primeiro protetor ao alcançar a Era II.</p>'}<h3>Legados ativos</h3>${LEGACIES.filter(d=>(s.journey.legacies[d.id]??0)>0).map(d=>`<p><b>${d.name} · ${s.journey.legacies[d.id]}/3</b><small>${d.text}</small></p>`).join('')||'<p>Conhecimento dos desafios abre legados nos Caminhos Ancestrais.</p>'}<p class="ancestral-note">Bênçãos, legados, rituais e passivas dos espíritos acumulam seus efeitos. Você pode ajustar as bênçãos entre as batalhas.</p></aside></div></div>`;
+  if (tab === "buffs") {
+    return (
+      heading +
+      `<div class="coach-buff-layout"><section><h3>Bênçãos recomendadas</h3>${fighting && activePreparations.length ? `<p class="active-preparations">Ativos nesta batalha: <b>${activePreparations.map((id) => PREPARATIONS.find((p) => p.id === id)!.name).join(", ")}</b>. Estas bênçãos acompanham a formação.</p>` : ""}<p>Selecione até duas afinidades aprendidas nos rituais. Os efeitos são reutilizáveis.</p><div class="coach-buff-grid">${buffAdvice(
+        s,
+      )
+        .map((p) => {
+          const blessing = blessingLock(s, p.id),
+            selected = s.journey.selected.includes(p.id);
+          return `<article class="${selected ? "selected" : ""}"><h4>${icon(p.icon)}${p.name}</h4><p>${p.text}</p><small>${p.reason}</small><span>${blessing ?? (selected ? "Ativa na formação" : "Aprendida")}</span><div class="preparation-actions"><button class="outline-button" data-select-preparation="${p.id}" aria-pressed="${selected}" ${lock || !!blessing || (!selected && s.journey.selected.length >= 2) ? "disabled" : ""}>${selected ? "Retirar bênção" : "Ativar bênção"}</button></div></article>`;
+        })
+        .join("")}</div><h3>Rituais e crescimento da formação</h3>${
+        current
+          .map((h) => {
+            const ch = characters.find((c) => c.id === h.characterId)!;
+            return `<article class="ritual-coach"><b>${ch.name} · XP ${h.level} / rito ${h.ritualLevel} · ${h.stars}★</b><p>Rapé: +${Math.round((h.rituals.rape ?? 0) * RITUAL_EFFECT.rapeAttackSpeed * 100)}% velocidade · Sananga: +${Math.round((h.rituals.sananga ?? 0) * RITUAL_EFFECT.sanangaDamage * 100)}% ataque · Kambô: +${Math.round((h.rituals.kambo ?? 0) * RITUAL_EFFECT.kamboHp * 100)}% vida.</p>${h.rituals.ayahuasca ? `<small>Ayahuasca: +${Math.round(RITUAL_EFFECT.ayahuascaSpell * 100)}% poder e +${RITUAL_EFFECT.ayahuascaMana} mana.</small>` : "<small>Ayahuasca ainda não concluída neste companheiro.</small>"}</article>`;
+          })
+          .join("") ||
+        "<p>Coloque companheiros na formação para analisar seus rituais.</p>"
+      }<button class="outline-button" data-action="cura">Preparar cerimônias</button></section><aside><h3>Espíritos e momento dos poderes</h3>${
+        spiritAdvice(s)
+          .map(
+            ({ spirit, timing }) =>
+              `<article class="power-advice">${glyphSVG(spirit.animal as AnimalId, spirit.color)}<h4>${spirit.name} · ${spirit.power.name}</h4><p>${spirit.passiveText}</p><p>${spirit.power.text}</p><strong>${timing}</strong></article>`,
+          )
+          .join("") ||
+        "<p>Escolha o primeiro protetor ao alcançar a Era II.</p>"
+      }<h3>Legados ativos</h3>${
+        LEGACIES.filter((d) => (s.journey.legacies[d.id] ?? 0) > 0)
+          .map(
+            (d) =>
+              `<p><b>${d.name} · ${s.journey.legacies[d.id]}/3</b><small>${d.text}</small></p>`,
+          )
+          .join("") ||
+        "<p>Conhecimento dos desafios abre legados nos Caminhos Ancestrais.</p>"
+      }<p class="ancestral-note">Bênçãos, legados, rituais e passivas dos espíritos acumulam seus efeitos. Você pode ajustar as bênçãos entre as batalhas.</p></aside></div></div>`
+    );
   }
-  const counts=countTraits(current.map(h=>h.characterId)),selected=Object.hasOwn(TRAIT_RULES,trait)?trait:'Caçador',rule=TRAIT_RULES[selected],status=traitStatus(selected,counts.get(selected)??0),focus=s.journey.focusTraits;
-  return heading+`<div class="coach-synergy-layout"><section><h3>Duas prioridades para o plano</h3><p>Priorizar um laço favorece seus membros na seleção de companheiros. Isso não cria um buff nem garante que o próximo nível seja alcançado.</p><div class="army-presets">${[['Presas','Caçador'],['Manada','Guardião'],['Enxame','Invocador']].map(p=>`<button data-army-preset="${p.join(',')}">${p.join(' + ')}</button>`).join('')}</div><select id="coach-trait" aria-label="Laço para analisar">${Object.keys(TRAIT_RULES).map(n=>`<option value="${esc(n)}" ${n===selected?'selected':''}>${esc(n)}</option>`).join('')}</select><article class="selected-trait"><h3>${esc(selected)} · ${status.count} membro(s)</h3><p>${status.description}</p><button class="outline-button" data-army-focus="${esc(selected)}" aria-pressed="${focus.includes(selected)}">${focus.includes(selected)?'Retirar prioridade':'Priorizar este laço'}</button><div class="trait-thresholds">${rule.thresholds.map((threshold,i)=>`<p><b>${threshold} membros · nível ${i+1}</b><span>${traitStatus(selected,threshold).description}</span></p>`).join('')}</div><h4>Quem pertence a este laço</h4><div class="trait-roster">${characters.filter(c=>c.traits.includes(selected)).map(c=>{const h=s.heroes.find(h=>h.characterId===c.id);return `<button data-character="${c.id}" data-stars="${h?.stars??1}">${portraitHTML(c,h?.stars??1)}<span>${c.name}<small>${h?h.away?'Em atividade':h.slot!==null?'No campo':'Na reserva':'Ainda não acolhido'}</small></span></button>`;}).join('')}</div></article><h3>Funções no combate</h3><div class="role-guide">${Object.entries(ROLE_GUIDE).map(([id,d])=>`<details><summary>${d.name} · ${current.filter(h=>roleOf(characters.find(c=>c.id===h.characterId)!)===id).length} no campo</summary><p>${d.description}</p><strong>${d.position}</strong></details>`).join('')}</div></section><aside><h3>Laços perto de crescer</h3>${nearTraits(s).map(t=>`<article><h4>${esc(t.name)} · ${t.count} membro(s)</h4><p>${t.description}</p><small>${t.complete?'Todos os níveis ativos':`Faltam ${t.missing} para ${t.next} membros`}</small><p>Disponíveis para acolher: ${t.recruits.map(c=>c.name).join(', ')||'nenhum; confira era e ritual do catálogo'}.</p></article>`).join('')}<p class="ancestral-note">Um personagem conta uma vez por laço. Estrelas melhoram os atributos, não a quantidade de membros.</p></aside></div></div>`;
+  const counts = countTraits(current.map((h) => h.characterId)),
+    selected = Object.hasOwn(TRAIT_RULES, trait) ? trait : "Caçador",
+    rule = TRAIT_RULES[selected],
+    status = traitStatus(selected, counts.get(selected) ?? 0),
+    focus = s.journey.focusTraits;
+  return (
+    heading +
+    `<div class="coach-synergy-layout"><section><h3>Duas prioridades para o plano</h3><p>Priorizar um laço favorece seus membros na seleção de companheiros. Isso não cria um buff nem garante que o próximo nível seja alcançado.</p><div class="army-presets">${Object.entries(
+      TRAIT_RULES,
+    )
+      .filter(([, r]) => r.kind !== "espírito")
+      .map(
+        ([name]) =>
+          `<button data-army-preset="${esc(name)}">${esc(name)} · ${TRAIT_RULES[name].thresholds.at(-1)}</button>`,
+      )
+      .join(
+        "",
+      )}</div><select id="coach-trait" aria-label="Laço para analisar">${Object.keys(
+      TRAIT_RULES,
+    )
+      .map(
+        (n) =>
+          `<option value="${esc(n)}" ${n === selected ? "selected" : ""}>${esc(n)}</option>`,
+      )
+      .join(
+        "",
+      )}</select><article class="selected-trait"><h3>${esc(selected)} · ${status.count} membro(s)</h3><p>${status.description}</p><button class="outline-button" data-army-focus="${esc(selected)}" aria-pressed="${focus.includes(selected)}">${focus.includes(selected) ? "Retirar prioridade" : "Priorizar este laço"}</button><div class="trait-thresholds">${rule.thresholds.map((threshold, i) => `<p><b>${threshold} membros · nível ${i + 1}</b><span>${traitStatus(selected, threshold).description}</span></p>`).join("")}</div><h4>Quem pertence a este laço</h4><div class="trait-roster">${characters
+      .filter((c) => c.traits.includes(selected))
+      .map((c) => {
+        const h = s.heroes.find((h) => h.characterId === c.id);
+        return `<button data-character="${c.id}" data-stars="${h?.stars ?? 1}">${portraitHTML(c, h?.stars ?? 1)}<span>${c.name}<small>${h ? (h.away ? "Em atividade" : h.slot !== null ? "No campo" : "Na reserva") : "Ainda não acolhido"}</small></span></button>`;
+      })
+      .join(
+        "",
+      )}</div></article><h3>Funções no combate</h3><div class="role-guide">${Object.entries(
+      ROLE_GUIDE,
+    )
+      .map(
+        ([id, d]) =>
+          `<details><summary>${d.name} · ${current.filter((h) => roleOf(characters.find((c) => c.id === h.characterId)!) === id).length} no campo</summary><p>${d.description}</p><strong>${d.position}</strong></details>`,
+      )
+      .join(
+        "",
+      )}</div></section><aside><h3>Laços perto de crescer</h3>${nearTraits(s)
+      .map(
+        (t) =>
+          `<article><h4>${esc(t.name)} · ${t.count} membro(s)</h4><p>${t.description}</p><small>${t.complete ? "Todos os níveis ativos" : `Faltam ${t.missing} para ${t.next} membros`}</small><p>Possíveis no draft: ${t.recruits.map((c) => c.name).join(", ") || "nenhum; avance de era ou abra um draft"}.</p></article>`,
+      )
+      .join(
+        "",
+      )}<p class="ancestral-note">Um personagem conta uma vez por laço. Estrelas melhoram os atributos, não a quantidade de membros.</p></aside></div></div>`
+  );
 }

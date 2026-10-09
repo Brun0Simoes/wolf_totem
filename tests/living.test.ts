@@ -53,7 +53,7 @@ describe('journal', () => {
   it('counts recruits and spirit powers for the journal', () => {
     const game = new Game();
 
-    game.recruit(2);
+    game.state.heroes.push(newHero('fixture-2',2));game.state.stats.recruits++;
     expect(game.state.stats.recruits).toBe(1);
     game.state.era = 2; game.state.spirits = ['lobo'];
     game.startBattle(); game.tick(1);
@@ -71,7 +71,8 @@ describe('boss phases', () => {
       game.startBattle();
       const boss = game.battle!.entities.find(e => e.boss)!;
       game.tick(0.05);
-      (game as unknown as { damage: (a: unknown, b: unknown, n: number, m: boolean, t: boolean) => void }).damage(game.battle!.entities[0], boss, boss.hp - boss.maxHp * 0.45, false, true);
+      const mitigation=Math.max(.2,1+boss.mods.filter(m=>m.stat==='damageTaken').reduce((n,m)=>n+m.value,0));
+      (game as unknown as { damage: (a: unknown, b: unknown, n: number, m: boolean, t: boolean) => void }).damage(game.battle!.entities[0], boss, (boss.hp + boss.shield - boss.maxHp * 0.45)/mitigation, false, true);
       expect(boss.phased, `stage ${stage}`).toBe(true);
       expect(game.events.filter(e => e.type === 'phase')).toHaveLength(1);
       game.tick(3);

@@ -95,31 +95,31 @@ export const PRACTICES: Practice[] = [
   {
     id: 'rape', name: 'Rapé', native: 'rume', peoples: 'Huni Kuin, Yawanawá, Noke Koî e outros povos do Acre',
     text: 'Tabaco moído com cinzas de árvores, soprado pelo tepi por quem conduz ou pelo kuripe, em si mesmo. Para os povos que o guardam, limpa o pensamento, protege e firma a presença; também prepara para outras cerimônias.',
-    effect: '+5% de velocidade de ataque por cerimônia (até 3) e foco na próxima caçada: +50% de experiência.',
+    effect: '+5% de velocidade de ataque por cerimônia, até três bônus. Repetir continua concedendo experiência ritual.',
     max: 3, era: 1, minLevel: 1, rest: 1200,
   },
   {
     id: 'sananga', name: 'Sananga', native: 'colírio da floresta', peoples: 'Matsés, Huni Kuin e Tikuna',
     text: 'Gotas da raiz da sananga (gênero Tabernaemontana) nos olhos. Arde forte e, para os caçadores, devolve a nitidez da mata e afasta a panema.',
-    effect: 'Tira 1 de panema; +6% de dano por cerimônia (até 3) e +4% de sucesso nas caçadas por cerimônia.',
+    effect: '+6% de ataque por cerimônia, até três bônus. Repetir continua concedendo experiência ritual.',
     max: 3, era: 1, minLevel: 2, rest: 2700,
   },
   {
     id: 'kambo', name: 'Kambô', native: 'kampô', peoples: 'Noke Koî (Katukina), Matsés, Yawanawá e Huni Kuin',
     text: 'A secreção do sapo Phyllomedusa bicolor, aplicada por quem conhece o rito. É uma prova física dura, feita para afastar a panema e devolver o vigor ao caçador.',
-    effect: 'Tira toda a panema; +8% de vida máxima por cerimônia (até 3). A cerimônia dura 2 horas.',
+    effect: '+8% de vida máxima por cerimônia, até três bônus. XP ritual recebido ao confirmar.',
     max: 3, era: 2, minLevel: 8, rest: 7200,
   },
   {
     id: 'ayahuasca', name: 'Ayahuasca', native: 'nixi pae', peoples: 'Huni Kuin; também Yawanawá, Asháninka e outros povos da Amazônia',
     text: 'O cipó e a folha, bebidos à noite em roda, guiados pelos cantos huni meka: a abertura (pae txanima), as mirações (dautibuya) e o fechamento (kayatibu). Para os Huni Kuin, nixi pae é o encanto do cipó, caminho de cura e conhecimento.',
-    effect: '+20% de poder de habilidade e +25 de mana inicial, uma vez por herói. Exige um rapé antes. A cerimônia e a dieta duram 6 horas.',
+    effect: '+20% de poder de habilidade e +25 de mana inicial, uma vez por herói. Exige um rapé antes. Bônus permanente após a participação.',
     max: 1, era: 3, minLevel: 14, rest: 21600, requires: 'rape',
   },
   {
     id: 'cacau', name: 'Roda de cacau', native: 'Theobroma, alimento dos deuses', peoples: 'Mayo-Chinchipe da Alta Amazônia, que o cultivavam há mais de 5 mil anos; depois maias e outros povos',
     text: 'O cacau nasceu domesticado na Alta Amazônia e virou bebida de festa e aliança entre os maias. Em roda, a tribo bebe, canta e celebra junta.',
-    effect: 'Toda a tribo por 10 minutos: +25% de experiência de caçadas e batalhas e +10% de cura e escudos.',
+    effect: 'Toda a tribo por 3 batalhas: +25% de experiência e +10% de cura e escudos.',
     max: Infinity, era: 2, minLevel: 1, rest: 0, tribe: true,
   },
 ];

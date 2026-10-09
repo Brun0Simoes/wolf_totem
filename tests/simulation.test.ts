@@ -16,12 +16,12 @@ describe('tribe and recruitment', () => {
   it('swaps a reserve hero into a full formation and counts unique characters for traits', () => {
     const game = new Game();
 
-    game.recruit(3); game.recruit(8);
+    game.state.heroes.push(newHero('fixture-3',3));game.state.stats.recruits++; game.state.heroes.push(newHero('fixture-8',8));game.state.stats.recruits++;
     const boru = game.state.heroes.find(hero => hero.characterId === 3)!, ena = game.state.heroes.find(hero => hero.characterId === 8)!;
     expect(game.deploy(boru.uid, 4).ok).toBe(true);
     expect(game.deploy(ena.uid, 10).ok).toBe(true);
 
-    game.recruit(6);
+    game.state.heroes.push(newHero('fixture-6',6));game.state.stats.recruits++;
     const reserve = game.state.heroes.find(hero => hero.slot === null)!;
     expect(game.deploy(reserve.uid, 0).ok).toBe(false);
     expect(game.deploy(reserve.uid, 4).ok).toBe(true);
@@ -115,8 +115,8 @@ describe('automatic combat', () => {
     const game = new Game();
     game.state.era = 5; game.state.progress = 29; game.state.selectedStage = 30;
     game.state.spirits = ['lobo', 'coruja', 'elefante', 'urso'];
-    const items = [['garra', 'presa', 'talisma'], ['muralha', 'pele-urso'], ['espinhos'], ['obsidiana', 'garra'], ['cajado-vida'], ['tempestade', 'lanca'], ['carvalho']];
-    game.state.heroes = [[39, 3], [28, 3], [40, 2], [8, 3], [25, 2], [33, 2], [49, 2]].map(([characterId, stars], index) => ({
+    const items = [['garra','obsidiana','talisma'], ['muralha','pele-urso','carvalho'], ['escudo-totem','pele-urso','carvalho'], ['tempestade','garra','talisma'], ['coroa','colar-lua','cajado-vida'], ['coroa','lanca','colar-lua'], ['muralha','carvalho','pele-urso']];
+    game.state.heroes = [[39, 3], [28, 3], [40, 3], [8, 3], [25, 3], [33, 3], [49, 3]].map(([characterId, stars], index) => ({
       ...newHero(`final-${index}`, characterId, stars, migrateSlot([1, 2, 0, 9, 10, 5, 3][index])), items: items[index], level: 30, ritualLevel: 10, rituals: { rape: 3, sananga: 3, kambo: 3, ayahuasca: 1 },
     }));
     expect(stageUnlocked(game.state, 0)).toBe(false);

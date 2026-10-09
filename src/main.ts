@@ -1,4 +1,10 @@
 import "./game-shell.css";
+import "./tactical-ui.css";
+import { draftHall } from "./ui/DraftHall";
+import { ritualHall } from "./ui/RitualHall";
+import { arsenal } from "./ui/Arsenal";
+import { itemGlyph } from "./ui/itemGlyph";
+import { ritualCost } from "./game/economy";
 import { armyCoach, type CoachTab } from "./ui/ArmyCoach";
 import { journeyPage } from "./ui/AncestralJourney";
 import {
@@ -6,7 +12,12 @@ import {
   TRIALS,
   trialProgress,
 } from "./game/ancestralJourney";
-import { armyWarnings, ROLE_GUIDE, roleOf } from "./game/armyAdvisor";
+import {
+  armyWarnings,
+  ROLE_GUIDE,
+  roleOf,
+  compositionPlans,
+} from "./game/armyAdvisor";
 import {
   RitualExperience,
   ritualExperienceMarkup,
@@ -59,14 +70,10 @@ import {
   RITUAL_XP,
   ritualXpToNext,
   CURA_NOTE,
-  huntChance,
-  huntSlots,
   MAX_HERO_LEVEL,
   MAX_PANEMA,
   PRACTICES,
   practiceById,
-  TRAILS,
-  trailById,
   xpToNext,
   type Practice,
 } from "./game/tribe";
@@ -77,12 +84,10 @@ import {
   MAX_INVENTORY,
   SKILL_NOTES,
   WONDER_STAGES,
-  heroHuntChance,
   capacity,
   embersFor,
   getSynergies,
   pendingEra,
-  ritualSpeed,
   stageUnlocked,
   totemLock,
   type ActionResult,
@@ -143,12 +148,17 @@ const reducedMotion = () => motionReduced(prefs, systemMotion.matches);
 sound.setVolumes(prefs.sfx, prefs.music);
 document.documentElement.classList.toggle("reduce-motion", reducedMotion());
 
-let view: "village" | "battle" | "heroes" | "ritual" = "battle";
+let view: "village" | "battle" | "heroes" | "ritual" | "arsenal" = "battle";
 let selectedHero: string | null = null;
 let villageMode: "paths" | "preparations" = "paths";
 let journeyBranch: JourneyBranch = "war";
 let journeyKey = "";
 let coachTab: CoachTab = "plan";
+let coachComposition = "auto";
+let arsenalHero: string | null = null;
+let arsenalTab = "builds";
+let arsenalBuildRole = "";
+let draftFilters: string[] = [];
 
 let coachHero: string | null = null;
 let coachTrait = "Caçador";
@@ -163,7 +173,7 @@ let repeatTimer = 0;
 let confirmAscend = false;
 let confirmWipe = false;
 let curaHero: string | null = null;
-let chosenPractice = "rape";
+let chosenPractice: PracticeId = "rape";
 let tribeTab = "owned";
 let heroDetailTab = "growth";
 let guardianRenderKey = "";
@@ -199,22 +209,13 @@ const roman = (n: number) => ["I", "II", "III", "IV", "V"][n - 1] ?? String(n);
 const refreshIcons = () =>
   createIcons({ icons, attrs: { "stroke-width": 1.6, "aria-hidden": "true" } });
 const characterOf = (id: number) => characters.find((c) => c.id === id)!;
-/** m:ss until a village time; refreshed in place by renderMetrics through data-until. */
-const timeLeft = (until: number) => {
-  const left = Math.max(0, Math.ceil(until - game.state.clock));
-  return left >= 3600
-    ? `${Math.floor(left / 3600)}h ${Math.floor((left % 3600) / 60)}min`
-    : `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
-};
-const countdown = (until: number) =>
-  `<span class="countdown" data-until="${until}">${timeLeft(until)}</span>`;
 const inFight = (h: Hero) =>
   game.battle?.status === "fighting" && game.battle.party.includes(h.uid);
 const heroLabel = (h: Hero) =>
   `${characterOf(h.characterId).name} ${"★".repeat(h.stars)} · Nv ${h.level}${h.panema ? ` · panema ${h.panema}` : ""}`;
 const itemChip = (id: string, attrs = "", extra = "") => {
   const item = itemById(id)!;
-  return `<button class="item-chip ${item.kind}${extra}" style="--item:${item.color}" title="${esc(`${item.name}: ${item.text}`)}" ${attrs}><span class="item-gem"></span><span class="item-name">${esc(item.name)}</span></button>`;
+  return `<button class="item-chip ${item.kind}${extra}" style="--item:${item.color}" title="${esc(`${item.name}: ${item.text}`)}" ${attrs}>${itemGlyph(id)}<span class="item-name">${esc(item.name)}</span></button>`;
 };
 const spiritGlyph = (id: SpiritId, label = true) => {
   const spirit = spiritById(id)!;
@@ -233,13 +234,14 @@ $("#app").innerHTML = `
     <button class="nav-button" data-view="battle">${icon("swords")}<span>Campo</span></button>
     <button class="nav-button" data-view="heroes">${icon("users")}<span>Guardiões</span><i id="proof-notice" hidden></i></button>
     <button class="nav-button" data-view="ritual">${icon("flame")}<span>Rituais</span></button>
+    <button class="nav-button" data-view="arsenal">${icon("anvil")}<span>Arsenal</span></button>
     <button class="nav-button" data-view="village">${icon("compass")}<span>Jornada</span></button>
    </div>
    <div class="rail-bottom"><button class="icon-button" data-action="codex" aria-label="Códice dos espíritos">${icon("book-open")}</button><button class="icon-button" data-action="help" aria-label="Como jogar">${icon("circle-help")}</button><span id="rail-era">I</span></div>
   </nav>
   <div class="app-body">
    <header class="topbar"><div class="chapter"><span class="live-dot"></span><span>O DESPERTAR DA TRIBO</span><button data-action="map">Campanha <b id="metric-campaign">0 / 30</b>${icon("chevron-down")}</button></div>
-    <div class="journey-metrics"><button id="era-action" class="era-action" data-action="village-upgrade" title="Avançar era">Era <strong id="metric-era">I</strong>${icon("sparkles")}</button><span id="embers-chip" hidden>Brasas <strong id="res-embers">0</strong></span><span id="metric-army" hidden></span></div>
+    <div class="journey-metrics"><button id="era-action" class="era-action" data-action="village-upgrade" title="Avançar era">Era <strong id="metric-era">I</strong>${icon("sparkles")}</button><span class="amber-purse compact" title="Recurso de combate para drafts, rituais e itens">${icon("gem")}<strong id="res-amber">80</strong></span><span id="embers-chip" hidden>Brasas <strong id="res-embers">0</strong></span><span id="metric-army" hidden></span></div>
     <div class="header-actions"><button class="icon-button" data-action="audio" aria-label="Ativar sons">${icon("volume-x")}</button><button class="icon-button" data-action="pause" aria-label="Pausar jogo">${icon("pause")}</button><button class="icon-button" data-action="settings" aria-label="Configurações e salvamento">${icon("settings-2")}</button></div>
    </header>
    <main class="main-area">
@@ -257,9 +259,10 @@ $("#app").innerHTML = `
     </section>
     <section id="guardian-hall" hidden aria-label="Guardiões"></section>
     <section id="ritual-hall" hidden aria-label="Rituais"></section>
-    <section class="journey-page" hidden><nav id="journey-toolbar" class="ancestral-toolbar" aria-label="Atividades da jornada"><div><button data-journey-tab="paths">${icon("route")}Legados</button><button data-journey-tab="preparations">${icon("sparkles")}Bênçãos</button><button data-action="hunts">${icon("trees")}Atividades offline</button><button data-action="ancestors">${icon("landmark")}Grande Totem</button></div></nav><div id="journey-objective" class="journey-objective"></div><section id="ancestral-hall"></section></section>
+    <section id="arsenal-hall" hidden aria-label="Arsenal"></section>
+    <section class="journey-page" hidden><nav id="journey-toolbar" class="ancestral-toolbar" aria-label="Atividades da jornada"><div><button data-journey-tab="paths">${icon("route")}Legados</button><button data-journey-tab="preparations">${icon("sparkles")}Bênçãos</button><button data-view="arsenal">${icon("anvil")}Arsenal</button><button data-action="ancestors">${icon("landmark")}Grande Totem</button></div></nav><div id="journey-objective" class="journey-objective"></div><section id="ancestral-hall"></section></section>
    </main>
-   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Diário da tribo</button><span>WOLF TOTEM · 3.0</span></footer>
+   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Diário da tribo</button><span>WOLF TOTEM · 3.1</span></footer>
   </div>
  </div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -335,6 +338,7 @@ function setView(next: typeof view) {
 }
 
 function renderMetrics() {
+  $("#res-amber").textContent = fmt(game.state.amber);
   const journeyState = JSON.stringify([
     game.state.journey,
     game.state.stats,
@@ -401,10 +405,7 @@ function renderMetrics() {
     refreshIcons();
   }
   updateCostButtons();
-  document.querySelectorAll<HTMLElement>("[data-until]").forEach((el) => {
-    el.textContent = timeLeft(Number(el.dataset.until));
-  });
-  // Hunters coming home and ceremonies ending refresh the cards and any open panel.
+  // Changes to hero progression refresh cards and open panels.
   const away =
     game.state.heroes
       .map(
@@ -505,6 +506,17 @@ function showJournal() {
   );
 }
 
+function renderArsenal() {
+  $("#arsenal-hall").innerHTML = arsenal(
+    game.state,
+    arsenalHero,
+    arsenalTab,
+    game.battle?.status === "fighting",
+    arsenalBuildRole,
+  );
+  refreshIcons();
+}
+
 function renderSide() {
   document.body.dataset.view = view;
   document.querySelector<HTMLElement>(".battle-page")!.hidden =
@@ -513,9 +525,11 @@ function renderSide() {
     view !== "village";
   $("#guardian-hall").hidden = view !== "heroes";
   $("#ritual-hall").hidden = view !== "ritual";
+  $("#arsenal-hall").hidden = view !== "arsenal";
   $("#journey-objective").innerHTML = journeyObjective();
   if (view === "village") renderVillageSide();
   if (view === "heroes") renderGuardians();
+  if (view === "arsenal") renderArsenal();
   if (view === "ritual" && !activeModal) showCura();
   if (view === "battle") renderBattleSide();
   refreshIcons();
@@ -622,10 +636,6 @@ function renderPowers() {
 }
 
 function heroStatus(h: Hero): string {
-  if (h.away?.kind === "hunt")
-    return `${icon("footprints")}Caçando · ${countdown(h.away.until)}`;
-  if (h.away?.kind === "ritual")
-    return `${icon("leaf")}${esc(practiceById(h.away.id)!.name)} · ${countdown(h.away.until)}`;
   if (h.slot !== null) return `Posição ${h.slot + 1}`;
   return "Reserva";
 }
@@ -662,6 +672,8 @@ function renderGuardians(force = false) {
     s.heroes,
     s.era,
     s.inventory,
+    s.amber,
+    s.draft,
     s.paused,
     game.battle?.status,
     tribeTab,
@@ -671,6 +683,16 @@ function renderGuardians(force = false) {
   ]);
   if (!force && key === guardianRenderKey) return;
   guardianRenderKey = key;
+  if (tribeTab !== "owned") {
+    preview.clear();
+    $("#guardian-hall").innerHTML = draftHall(
+      s,
+      game.battle?.status === "fighting",
+      draftFilters,
+    );
+    refreshIcons();
+    return;
+  }
   const c = characterOf(h.characterId),
     guide = ROLE_GUIDE[roleOf(c)];
   const list = characters
@@ -690,17 +712,17 @@ function renderGuardians(force = false) {
     ).length;
   $("#guardian-hall").innerHTML =
     `<header class="page-heading"><div><p class="eyebrow">CADA ESPÍRITO TEM UM CAMINHO</p><h1>Seus guardiões.</h1><p>Aprenda lutando. Aprofunde o vínculo. Desperte uma nova forma.</p></div><span class="collection-count"><b>${owned}</b> / 55 acolhidos</span></header>
-  <div class="guardian-workspace"><section class="guardian-library"><div class="segmented"><button data-tribe-tab="owned" aria-pressed="${tribeTab === "owned"}">Sua tribo</button><button data-tribe-tab="catalog" aria-pressed="${tribeTab === "catalog"}">Descobrir</button></div><label class="search">${icon("search")}<input id="tribe-search" aria-label="Buscar companheiro" placeholder="Nome ou laço" value="${esc(tribeQuery)}"></label><div class="guardian-grid">${
+  <div class="guardian-workspace"><section class="guardian-library"><div class="segmented"><button data-tribe-tab="owned" aria-pressed="${tribeTab === "owned"}">Sua tribo</button><button data-tribe-tab="catalog" aria-pressed="${false}">Draft de guardiões</button></div><label class="search">${icon("search")}<input id="tribe-search" aria-label="Buscar companheiro" placeholder="Nome ou laço" value="${esc(tribeQuery)}"></label><div class="guardian-grid">${
     list
       .map((ch) => {
         const member = s.heroes.find((h) => h.characterId === ch.id),
           req = [1, 2, 3, 5, 7][ch.cost - 1],
           open = ch.cost <= s.era && s.heroes.some((h) => h.ritualLevel >= req);
-        return `<article class="guardian-card ${member?.uid === h.uid ? "selected" : ""} ${!member && !open ? "locked" : ""}"><button class="guardian-art" ${member ? `data-inspect="${member.uid}"` : `data-character="${ch.id}"`} aria-label="Ver ${ch.name}">${portraitHTML(ch, member?.stars ?? 1)}<span>${member ? "★".repeat(member.stars) : `ERA ${roman(ch.cost)}`}</span></button><div><h3>${ch.name}</h3><small>${member ? `Nv ${member.level} · Rito ${member.ritualLevel}` : `Ritual ${req} · Era ${roman(ch.cost)}`}</small>${!member ? `<button class="${open ? "primary" : "text-button"}" data-recruit="${ch.id}" ${open && !s.paused && game.battle?.status !== "fighting" ? "" : "disabled"}>${open ? "Acolher" : "A descobrir"}</button>` : ""}</div></article>`;
+        return `<article class="guardian-card ${member?.uid === h.uid ? "selected" : ""}"><button class="guardian-art" data-inspect="${member!.uid}" aria-label="Ver ${ch.name}">${portraitHTML(ch, member!.stars)}<span>${"★".repeat(member!.stars)}</span></button><div><h3>${ch.name}</h3><small>Nv ${member!.level} · Rito ${member!.ritualLevel}</small></div></article>`;
       })
       .join("") || '<p class="empty-state">Nenhum guardião encontrado.</p>'
   }</div></section>
-  <section class="guardian-detail"><div class="guardian-showcase"><span class="hero-role">${icon("shield")}${guide.name}</span><div class="spirit-orbit" aria-hidden="true"></div><canvas id="guardian-preview" width="640" height="560" role="img" aria-label="${c.name}, animação de ${h.stars} estrelas"></canvas><div class="guardian-identity"><p class="eyebrow">${"★".repeat(h.stars)} · ${esc(c.title)}</p><h2>${c.name}</h2><div class="trait-chips">${c.traits.map((t) => `<button data-coach-trait="${esc(t)}">${esc(t)}</button>`).join("")}</div><p>${heroStatus(h)}</p><div class="preview-actions"><button data-motion="idle" aria-pressed="true">Repouso</button><button data-motion="cast" aria-pressed="false">Habilidade</button><button data-character="${c.id}" data-stars="${h.stars}" aria-label="Todos os movimentos de ${c.name}">${icon("expand")}</button></div></div></div>
+  <section class="guardian-detail"><div class="guardian-showcase"><span class="hero-role">${icon("shield")}${guide.name}</span><div class="spirit-orbit" aria-hidden="true"></div><canvas id="guardian-preview" width="640" height="560" role="img" aria-label="${c.name}, animação de ${h.stars} ${h.stars === 1 ? "estrela" : "estrelas"}"></canvas><div class="guardian-identity"><p class="eyebrow">${"★".repeat(h.stars)} · ${esc(c.title)}</p><h2>${c.name}</h2><div class="trait-chips">${c.traits.map((t) => `<button data-coach-trait="${esc(t)}">${esc(t)}</button>`).join("")}</div><p>${heroStatus(h)}</p><div class="preview-actions"><button data-motion="idle" aria-pressed="true">Repouso</button><button data-motion="cast" aria-pressed="false">Habilidade</button><button data-character="${c.id}" data-stars="${h.stars}" aria-label="Todos os movimentos de ${c.name}">${icon("expand")}</button></div></div></div>
   <div class="guardian-growth"><nav class="detail-tabs" aria-label="Caminho do guardião">${[
     ["growth", "Evolução"],
     ["proofs", `Provas${ready ? " · " + ready : ""}`],
@@ -713,7 +735,7 @@ function renderGuardians(force = false) {
     .join("")}</nav>
    ${
      heroDetailTab === "growth"
-       ? `<p class="eyebrow">DOIS CAMINHOS, UM DESPERTAR</p>${growthBars(h)}${awakeningMarkup(h)}<div class="next-action"><span>${icon("swords")}</span><div><h3>Seu próximo passo</h3><p>${s.clock < h.ritualReadyAt ? `Integre o ritual: faltam ${h.integrationWins} vitórias na expedição mais avançada alcançada, ou contra inimigos de nível ${Math.max(1, h.level - 3)}+. Também termina em ${timeLeft(h.ritualReadyAt)} offline.` : "Ganhe XP com expedições e provas. Participe de um ritual para fortalecer a segunda barra."}</p></div></div><div class="hero-action-row"><button class="primary" data-hero-tab="proofs">${icon("target")}Ver provas pessoais</button><button class="outline-button" data-ritual-hero="${h.uid}" ${h.away || inFight(h) ? "disabled" : ""}>${icon("flame")}Conduzir ritual</button><button class="text-button" data-view="battle">${icon("swords")}Ir para o campo</button></div>`
+       ? `<p class="eyebrow">DOIS CAMINHOS, UM DESPERTAR</p>${growthBars(h)}${awakeningMarkup(h)}<div class="next-action"><span>${icon("swords")}</span><div><h3>Seu próximo passo</h3><p>Ganhe XP com expedições e provas. Invista âmbar em rituais para fortalecer a segunda barra.</p></div></div><div class="hero-action-row"><button class="primary" data-hero-tab="proofs">${icon("target")}Ver provas pessoais</button><button class="outline-button" data-ritual-hero="${h.uid}" ${h.away || inFight(h) ? "disabled" : ""}>${icon("flame")}Conduzir ritual</button><button class="text-button" data-view="battle">${icon("swords")}Ir para o campo</button></div>`
        : heroDetailTab === "proofs"
          ? `<div class="proof-heading"><h3>Aprenda fazendo.</h3><p>Oito provas por guardião. Recompensas únicas, recebidas por ele.</p></div><div class="proof-list">${HERO_PROOFS.map(
              (p) => {
@@ -723,7 +745,7 @@ function renderGuardians(force = false) {
                return `<article class="hero-proof ${claimed ? "claimed" : done ? "ready" : ""}"><span class="proof-icon">${icon(claimed ? "check" : p.icon)}</span><div><h4>${p.name}</h4><p>${p.text}</p><progress max="${p.goal}" value="${progress}" aria-label="${p.name} de ${c.name}"></progress><small>${progress}/${p.goal} · +${fmt(p.xp)} XP</small></div><button class="${done && !claimed ? "primary" : "outline-button"}" data-proof="${h.uid}:${p.id}" ${done && !claimed && !s.paused && game.battle?.status !== "fighting" ? "" : "disabled"}>${claimed ? "Recebida" : done ? "Receber" : "Em curso"}</button></article>`;
              },
            ).join("")}</div>`
-         : `<h3>Preparado para a batalha.</h3><p>${guide.description}</p><div class="equipment-slots">${h.items.map((id, i) => itemChip(id, `data-unequip="${h.uid}:${i}"`)).join("")}${Array.from({ length: 3 - h.items.length }, () => '<span class="empty-slot">+</span>').join("")}</div><h4>Sua bolsa · ${s.inventory.length}/${MAX_INVENTORY}</h4><div class="bag-items">${s.inventory.map((id, i) => itemChip(id, `data-equip-direct="${h.uid}:${i}"`)).join("") || '<p class="empty-state">Expedições e provas da jornada trazem equipamentos.</p>'}</div><button class="outline-button" data-coach-hero="${h.uid}">${icon("wand-sparkles")}Ver itens e receitas recomendados</button><button class="text-button" data-formation-hero="${h.uid}">Ajustar posição no campo ${icon("arrow-right")}</button>`
+         : `<h3>Preparado para a batalha.</h3><p>${guide.description}</p><div class="equipment-slots">${h.items.map((id, i) => itemChip(id, `data-unequip="${h.uid}:${i}"`)).join("")}${Array.from({ length: 3 - h.items.length }, () => '<span class="empty-slot">+</span>').join("")}</div><h4>Sua bolsa · ${s.inventory.length}/${MAX_INVENTORY}</h4><div class="bag-items">${s.inventory.map((id, i) => itemChip(id, `data-equip-direct="${h.uid}:${i}"`)).join("") || '<p class="empty-state">Expedições e provas da jornada trazem equipamentos.</p>'}</div><button class="primary" data-arsenal-hero="${h.uid}">${icon("anvil")}Abrir builds no Arsenal</button><button class="text-button" data-formation-hero="${h.uid}">Ajustar posição no campo ${icon("arrow-right")}</button>`
    }
   </div></section></div>`;
   preview.clear();
@@ -811,6 +833,7 @@ function renderResult() {
   el.innerHTML = `<span class="result-icon">${icon(victory ? "crown" : "shield")}</span><p class="eyebrow">${victory ? (b.firstClear ? "PRIMEIRA VITÓRIA" : "A TRIBO PERMANECE") : "OS ESPÍRITOS ENSINAM"}</p><h2>${victory ? (b.stage < 0 ? "A aldeia está a salvo." : b.stage === 0 ? `Profundidade ${b.depth} vencida.` : "Uma nova conquista.") : b.stage < 0 ? "Os saqueadores escaparam." : "É hora de reagrupar."}</h2>
    <p>${victory ? `${esc(b.name)} concluída. Sua tribo recebe XP e equipamentos da jornada.` : "Evolua heróis, troque itens, busque sinergias ou use os poderes espirituais."}</p>
    ${b.loot.length ? `<div class="loot">${b.loot.map((id) => itemChip(id)).join("")}</div>` : ""}
+   <p class="amber-reward">${icon("gem")}+${b.amber} âmbar</p>
    ${b.xp ? `<p class="xp-line">${icon("sparkles")}+${b.xp} XP para cada herói${b.levelUps.length ? ` · <b>${b.levelUps.map(esc).join(", ")}</b>` : ""}</p>` : ""}
    ${victory ? `<button class="text-button" data-action="tribe">${icon("target")}Conferir provas dos guardiões ${icon("arrow-right")}</button>` : ""}${summaryHTML(b)}
    ${repeating ? `<p class="small muted">${icon("repeat")} Repetindo automaticamente…</p>` : ""}
@@ -886,6 +909,7 @@ function showRitualExperience(id: PracticeId) {
         : hero
           ? `${portraitHTML(characterOf(hero.characterId), hero.stars)}<span>${esc(characterOf(hero.characterId).name)}</span>`
           : "Toda a tribo",
+      ritualCost(id, id === "cacau" ? 0 : (hero?.rituals[id] ?? 0)),
     ),
   );
   ritualExperience = new RitualExperience(
@@ -928,6 +952,11 @@ function armyContextKey() {
   ]);
 }
 function showArmyCoach() {
+  if (
+    coachComposition !== "auto" &&
+    !compositionPlans(game.state).some((p) => p.id === coachComposition)
+  )
+    coachComposition = "auto";
   const alreadyOpen = activeModal === "army-coach",
     scroll = alreadyOpen ? $("#modal").scrollTop : 0;
   const focused = alreadyOpen
@@ -945,6 +974,7 @@ function showArmyCoach() {
       game.battle?.status === "fighting",
       coachTab,
       game.battle?.preparations ?? [],
+      coachComposition,
     ),
   );
   if (enemyOpen)
@@ -990,9 +1020,9 @@ function showItemsCodex() {
   showModal(
     "codex",
     `<p class="eyebrow">O MUNDO DE WOLF TOTEM</p><h2>Itens da tribo</h2>${codexTabs("items")}
-   <p class="modal-intro">Seis componentes surgem das expedições e caçadas. Dois componentes no mesmo herói ou combinados na bolsa formam um dos 21 itens. Cada herói carrega até três.</p>
+   <p class="modal-intro">Seis componentes surgem das expedições ou são comprados no Arsenal. Dois componentes no mesmo herói ou combinados na bolsa formam um dos 21 itens. Cada herói carrega até três.</p>
    <h3 class="codex-section">Componentes</h3><div class="item-grid">${COMPONENTS.map((c) => `<div class="item-card" style="--item:${c.color}"><span class="item-gem big"></span><div><b>${c.name}</b><p>${c.text}</p></div></div>`).join("")}</div>
-   <h3 class="codex-section">Receitas</h3><div class="recipe-table">${ITEMS.map((it) => `<div class="recipe" style="--item:${it.color}"><span class="item-gem"></span><div><b>${it.name}</b><small>${itemById(it.recipe![0])!.name} + ${itemById(it.recipe![1])!.name}</small><p>${it.text}</p></div></div>`).join("")}</div>`,
+   <h3 class="codex-section">Receitas</h3><div class="recipe-table">${ITEMS.map((it) => `<div class="recipe" style="--item:${it.color}">${itemGlyph(it.id)}<div><b>${it.name}</b><small>${itemById(it.recipe![0])!.name} + ${itemById(it.recipe![1])!.name}</small><p>${it.text}</p></div></div>`).join("")}</div>`,
   );
 }
 
@@ -1140,68 +1170,27 @@ function showAncestors() {
   );
 }
 
-function showHunts(focus?: string) {
-  const s = game.state,
-    out = s.heroes.filter((h) => h.away?.kind === "hunt"),
-    slots = huntSlots(s.era);
-  const home = s.heroes.filter((h) => !h.away && !inFight(h));
-  showModal(
-    "hunts",
-    `<p class="eyebrow">CAÇADAS · ${out.length}/${slots} NA MATA</p><h2>As trilhas da floresta</h2>
-   <p class="modal-intro">Os heróis caçam mesmo com o jogo fechado e voltam com experiência e às vezes um componente. Quem está na mata guarda o lugar na formação, mas só luta quando volta. Caçadas sem sucesso trazem <b>panema</b>, o azar do caçador: menos chance e menos experiência nas próximas, até ser limpa com sananga ou kambô na Casa de Cura.</p>
-   ${out.length ? `<div class="away-list">${out.map((h) => `<div class="away-row">${portraitHTML(characterOf(h.characterId), h.stars)}<span><b>${characterOf(h.characterId).name}</b> · ${esc(trailById(h.away!.id)!.name)} · volta em ${countdown(h.away!.until)}</span><button class="text-button" data-recall="${h.uid}">Chamar de volta</button></div>`).join("")}</div>` : ""}
-   <div class="trail-grid">${TRAILS.map((t) => {
-     const locked = s.era < t.era,
-       eligible = home.filter((h) => h.level >= t.minLevel);
-     return `<article class="trail-card ${locked ? "locked" : ""}"><header><h3>${t.name}</h3><span>${icon("hourglass")}${t.minutes} min</span></header><p>${t.text}</p>
-      <div class="trail-gains"><span title="Experiência">${icon("sparkles")}${t.xp} XP</span><span title="Chance de componente">${icon("gem")}${Math.round((t.component + (s.journey.legacies.forge ?? 0) * 0.02) * 100)}%</span></div>
-      <p class="trail-req">${locked ? `${icon("lock")}Abre na Era ${roman(t.era)}` : `Herói de nível ${t.minLevel} ou mais`}</p>
-      ${locked ? "" : eligible.length ? `<div class="assign-row"><select id="trail-${t.id}" aria-label="Herói para ${t.name}">${eligible.map((h) => `<option value="${h.uid}" ${h.uid === focus ? "selected" : ""}>${esc(heroLabel(h))}${h.focus ? " · foco" : ""} · ${Math.round(heroHuntChance(game.state, h) * 100)}%</option>`).join("")}</select><button class="primary compact" data-start-hunt="${t.id}" ${out.length >= slots ? 'disabled title="Todos os caçadores estão na mata"' : ""}>Enviar</button></div>` : '<p class="muted small">Nenhum herói disponível com esse nível.</p>'}</article>`;
-   }).join("")}</div>
-   ${
-     s.reports.length
-       ? `<h3 class="codex-section">Notícias da mata e da maloca</h3><ul class="report-list">${[
-           ...s.reports,
-         ]
-           .reverse()
-           .map(
-             (r) =>
-               `<li class="${r.ok ? "ok" : "miss"}"><b>${esc(r.name)}</b> ${esc(r.text)}</li>`,
-           )
-           .join("")}</ul>`
-       : ""
-   }`,
-  );
+function showHunts() {
+  setView("battle");
+  toast("Caçadas foram retiradas. Lute por experiência e âmbar.");
 }
-
 function showCura() {
-  const entering = view !== "ritual";
-  const s = game.state;
+  const entering = view !== "ritual",
+    s = game.state;
   if (!curaHero || !s.heroes.some((h) => h.uid === curaHero))
-    curaHero = s.heroes[0]?.uid ?? null;
-  const hero = s.heroes.find((h) => h.uid === curaHero),
-    p = practiceById(chosenPractice)!;
-  const locks: string[] = [];
-  if (s.era < p.era) locks.push(`Era ${roman(p.era)}`);
-  if (!p.tribe && hero) {
-    if (hero.level < p.minLevel) locks.push(`Experiência nível ${p.minLevel}`);
-    if (p.requires && !hero.rituals[p.requires])
-      locks.push(`${practiceById(p.requires)!.name} antes`);
-    if (hero.away) locks.push("Herói em atividade");
-    if (inFight(hero)) locks.push("Herói em combate");
-    if (s.clock < hero.ritualReadyAt)
-      locks.push(
-        `${hero.integrationWins} vitórias na expedição mais avançada ou de nível ${Math.max(1, hero.level - 3)}+; alternativa offline: ${timeLeft(hero.ritualReadyAt)}`,
-      );
-  }
-  if (s.paused) locks.push("Jornada pausada");
-  if (p.tribe && game.battle?.status === "fighting")
-    locks.push("Combate em andamento");
-  if (p.tribe && s.clock < s.cacaoReadyAt)
-    locks.push(
-      `${s.cacaoIntegrationWins} vitórias para integrar a roda ou ${timeLeft(s.cacaoReadyAt)} offline`,
-    );
-  const done = hero?.rituals[p.id] ?? 0;
+    curaHero = s.heroes[0].uid;
+  const p = practiceById(chosenPractice)!;
+  let lock: string | null = p.tribe
+    ? s.era < 2
+      ? "Exige Era II."
+      : s.paused || game.battle?.status === "fighting"
+        ? "Conduza a roda entre os combates."
+        : s.cacaoBattles > 0
+          ? `Cacau ativo por ${s.cacaoBattles} batalhas.`
+          : s.amber < ritualCost("cacau")
+            ? "Âmbar insuficiente."
+            : null
+    : game.ritualLock(curaHero, p.id);
   if (activeModal) closeModal();
   if (entering) {
     preview.clear();
@@ -1213,14 +1202,12 @@ function showCura() {
   document.querySelector<HTMLElement>(".battle-page")!.hidden = true;
   document.querySelector<HTMLElement>(".journey-page")!.hidden = true;
   $("#guardian-hall").hidden = true;
+  $("#arsenal-hall").hidden = true;
   $("#ritual-hall").hidden = false;
   document
     .querySelectorAll<HTMLElement>(".nav-button[data-view]")
     .forEach((n) => n.classList.toggle("active", n.dataset.view === view));
-  $("#ritual-hall").innerHTML =
-    `<header class="page-heading"><div><p class="eyebrow">A CHAMA QUE TRANSFORMA</p><h1>Rituais do espírito.</h1><p>Participe, receba XP agora e leve o aprendizado para o campo.</p></div><button class="outline-button" data-action="tribe">Ver guardiões</button></header><div class="ritual-layout"><aside class="ritual-roster"><h3>Sua tribo</h3>${s.heroes.map((h) => `<button data-cura-hero="${h.uid}" class="${h.uid === curaHero ? "selected" : ""}" aria-label="Rituais de ${characterOf(h.characterId).name}">${portraitHTML(characterOf(h.characterId), h.stars)}<span>${characterOf(h.characterId).name}</span></button>`).join("")}</aside><section class="ritual-path"><h2>O caminho do despertar</h2><p>Atividades fortalecem o corpo. Cerimônias aprofundam o vínculo.</p>${hero ? `<div class="ritual-growth"><div><h3>${characterOf(hero.characterId).name} ${"★".repeat(hero.stars)}</h3>${growthBars(hero)}</div>${awakeningMarkup(hero)}</div>` : ""}
-    <div class="ritual-heading"><h3>Cerimônias do espírito</h3><span class="ritual-free">Desbloqueadas pela experiência e pela era</span></div>
-    <div class="ritual-selection"><nav aria-label="Cerimônias">${PRACTICES.map((practice) => `<button data-practice-select="${practice.id}" aria-pressed="${p.id === practice.id}">${icon(({ rape: "feather", sananga: "eye", kambo: "heart", ayahuasca: "leaf", cacau: "cup-soda" } as Record<string, string>)[practice.id])}<span>${practice.name}<small>+${RITUAL_XP[practice.id]} XP ritual</small></span>${icon("chevron-right")}</button>`).join("")}</nav><article class="ritual-detail"><div class="ritual-symbol">${icon("flame")}</div><h3>${p.name}</h3><p>${p.effect}</p><div class="ritual-values"><span>Duração <b>${p.tribe ? "2 vitórias ou 10 min de bênção" : "Participação curta"}</b></span><span>Vínculo <b>+${RITUAL_XP[p.id]} XP ritual</b></span></div><p class="ritual-mastery">${p.tribe ? "XP ritual para quem concluiu a integração." : `Bônus aprendido: ${done}/${p.max}. Repetir continua concedendo XP ritual.`}</p><p class="ritual-participation">${RITUAL_PLAY[p.id].instruction} Até 20% de XP ritual extra pela sintonia. O auxílio concede o XP base. Integre com duas vitórias na expedição mais avançada, ou contra inimigos até três níveis abaixo do herói. A integração também termina offline.</p>${locks.length ? `<p class="ritual-lock">${icon("lock")}${esc(locks.join(" · "))}</p>` : ""}<button class="primary" ${p.tribe ? 'data-action="cacao"' : `data-ritual="${p.id}"`} ${locks.length || (!p.tribe && !hero) || (p.tribe && s.clock < s.cacao) ? "disabled" : ""}>${p.tribe ? "Participar da roda" : "Participar da cerimônia"}</button>${hero && !p.tribe ? `<button class="text-button" data-offline-ritual="${p.id}" ${locks.length ? "disabled" : ""}>Meditar offline · ${Math.round(p.rest / 60)} min ${icon("arrow-up-right")}</button>` : ""}<details><summary>Tradição e contexto</summary><p>${esc(p.text)}</p><p>${esc(p.peoples)}</p><p>${esc(CURA_NOTE)}</p></details></article></div>${hero?.away ? `<div class="integration-note">${hero.away.kind === "ritual" ? "Cerimônia" : "Caçada"} em andamento · ${countdown(hero.away.until)}${hero.away.participationXp ? ` · +${hero.away.participationXp} XP extra pela participação.` : ""}</div>` : hero && s.clock < hero.ritualReadyAt ? `<div class="integration-note">Integração · ${hero.integrationWins} vitórias adequadas ou ${countdown(hero.ritualReadyAt)} offline</div>` : ""}</section></div>`;
+  $("#ritual-hall").innerHTML = ritualHall(s, curaHero, chosenPractice, lock);
   refreshIcons();
 }
 
@@ -1239,10 +1226,10 @@ function help() {
   showModal(
     "help",
     `<p class="eyebrow">BEM-VINDO À PRIMEIRA CHAMA</p><h2>Uma tribo começa com você.</h2><div class="guide-steps">
-   <div><span>01</span><h3>Reúna a formação</h3><p>Abra Guardiões → Descobrir para acolher companheiros. No Campo, use Organizar ou o Conselho de Guerra para posicioná-los e conferir laços, itens e buffs.</p></div>
+   <div><span>01</span><h3>Reúna a formação</h3><p>Em Guardiões → Draft, pague âmbar para escolher um entre até três companheiros inéditos. Você pode renovar cada oferta por função ou laço. No Campo, o Conselho de Guerra compara composições e organiza as posições.</p></div>
    <div><span>02</span><h3>Aprenda fazendo</h3><p>Vitórias rendem XP. Na aba Provas de cada guardião, receba recompensas por explorar expedições, usar habilidades, equipamentos e laços. As duas barras precisam alcançar os requisitos para despertar estrelas.</p></div>
-   <div><span>03</span><h3>Aprofunde o vínculo</h3><p>Participe dos rituais e confirme para receber XP ritual imediatamente. Integre a experiência com duas vitórias na expedição mais avançada ou contra inimigos de nível adequado. Jornadas offline, legados e bênçãos apoiam a progressão.</p></div></div>
-   <p class="development-note">Atalhos: J caminhos · R bênçãos · A conselheiro · 1 jornada · 2 expedição · 3 códice · 4 totem · C caçadas · M campanha · P pausar · Esc fechar.</p><button class="primary" data-action="close">Seguir o chamado ${icon("arrow-right")}</button>`,
+   <div><span>03</span><h3>Aprofunde o vínculo</h3><p>Combates rendem âmbar para rituais, drafts e equipamentos. Participe de uma cerimônia e confirme para pagar e receber XP ritual. No Arsenal, escolha builds, compre componentes e combine receitas. As novas eras ampliam o elenco e liberam relíquias.</p></div></div>
+   <p class="development-note">Atalhos: J caminhos · R bênçãos · A conselheiro · 1 jornada · 2 expedição · 3 códice · 4 totem · C Arsenal · M campanha · P pausar · Esc fechar.</p><button class="primary" data-action="close">Seguir o chamado ${icon("arrow-right")}</button>`,
   );
 }
 
@@ -1267,7 +1254,7 @@ function settings() {
      ${toggle("numbers", "Números de dano e cura", "Desligue para um campo mais limpo em lutas cheias")}
     </section>
     <section class="wide"><h3>${icon("book-marked")}Jornada</h3>
-     <p class="modal-intro">O progresso é salvo automaticamente neste navegador. Ao voltar, caçadas e cerimônias avançam por até 12 horas. Uma jornada pausada mantém as atividades no mesmo ponto.</p>
+     <p class="modal-intro">O progresso é salvo automaticamente. Âmbar e experiência são conquistados em combates. Rituais concedem XP ao confirmar, sem espera ou atividades offline.</p>
      <div class="settings-buttons"><button class="outline-button" data-action="export">${icon("download")}Exportar progresso</button><button class="outline-button" data-action="import">${icon("upload")}Importar progresso</button><button class="outline-button" data-action="help">${icon("book-open")}Como jogar</button><button class="outline-button" data-action="title-show">${icon("flame")}Tela inicial</button></div>
      <p class="development-note">Importar substitui o progresso deste navegador. Saves anteriores são convertidos automaticamente para a nova jornada.</p>
      <div class="danger-zone">${
@@ -1329,7 +1316,7 @@ function renderTitle() {
   $<HTMLElement>(".app-frame").inert = true;
   const s = game.state;
   $("#title-screen").innerHTML =
-    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(characterOf(1), 3)}<span class="title-landscape-label">AKRU · PRESA CINZENTA</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}55 guardiões</span></div>${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} guardiões</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 3.0 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
+    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(characterOf(1), 3)}<span class="title-landscape-label">AKRU · PRESA CINZENTA</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}55 guardiões</span></div>${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} ${s.heroes.length === 1 ? "guardião" : "guardiões"}</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 3.1 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
   refreshIcons();
 }
 
@@ -1366,10 +1353,6 @@ let welcomed = false;
 function welcomeBack() {
   if (welcomed) return;
   welcomed = true;
-  if (game.offlineSeconds > 60)
-    toast(
-      `Suas atividades avançaram por ${Math.round(game.offlineSeconds / 60)} min enquanto você esteve fora.`,
-    );
   // The objective strip keeps pending spirit choices available without interrupting another action.
 }
 
@@ -1397,9 +1380,58 @@ document.addEventListener("click", (event) => {
     act(game.claimHeroProof(uid, id), "recruit");
     return;
   }
-  if (d.offlineRitual && curaHero) {
-    act(game.performRitual(curaHero, d.offlineRitual), "heal");
-    showCura();
+  if (d.draftOpen !== undefined) {
+    draftFilters = [];
+    act(game.openDraft(), "recruit");
+    renderGuardians(true);
+    return;
+  }
+  if (d.draftRoll !== undefined) {
+    const index = Number(d.draftRoll),
+      target =
+        document.querySelector<HTMLSelectElement>(
+          `[data-draft-filter="${index}"]`,
+        )?.value ?? "";
+    draftFilters[index] = target;
+    act(game.rerollDraft(index, target), "click");
+    renderGuardians(true);
+    return;
+  }
+  if (d.arsenalHero) {
+    arsenalBuildRole = "";
+    arsenalHero = d.arsenalHero;
+    setView("arsenal");
+    return;
+  }
+  if (d.arsenalTab) {
+    arsenalTab = d.arsenalTab;
+    renderArsenal();
+    return;
+  }
+  if (d.buyComponent) {
+    act(game.buyComponent(d.buyComponent), "item");
+    return;
+  }
+  if (d.buyRelic) {
+    act(game.buyRelic(d.buyRelic), "item");
+    return;
+  }
+  if (d.prepareBuild) {
+    const [uid, id] = d.prepareBuild.split(":");
+    act(game.prepareBuild(uid, id), "item");
+    return;
+  }
+  if (d.itemDetail) {
+    const item = itemById(d.itemDetail)!;
+    showModal(
+      "item-detail",
+      `<div class="item-inspection">${itemGlyph(item.id)}<p class="eyebrow">${item.era ? "RELÍQUIA · ERA " + item.era : "EQUIPAMENTO"}</p><h2>${item.name}</h2><p>${item.text}</p>${item.recipe ? `<div class="recipe-formula">${item.recipe.map((id) => itemGlyph(id)).join("<b>+</b>")}</div>` : ""}<button class="outline-button" data-action="close">Voltar ao Arsenal</button></div>`,
+    );
+    return;
+  }
+  if (d.composition) {
+    coachComposition = d.composition;
+    showArmyCoach();
     return;
   }
   if (d.view) {
@@ -1441,7 +1473,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (d.applyArmy) {
-    act(game.applyArmyPlan(d.applyArmy), "click");
+    act(game.applyArmyPlan(d.applyArmy, coachComposition), "click");
     showArmyCoach();
     return;
   }
@@ -1463,11 +1495,13 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (d.armyFocus) {
+    coachComposition = "auto";
     act(game.setArmyFocus(d.armyFocus), "click");
     showArmyCoach();
     return;
   }
   if (d.armyPreset) {
+    coachComposition = "auto";
     for (const trait of [...game.state.journey.focusTraits])
       game.setArmyFocus(trait);
     for (const trait of d.armyPreset.split(",")) game.setArmyFocus(trait);
@@ -1496,12 +1530,19 @@ document.addEventListener("click", (event) => {
   if (d.advisorRecipe) {
     const [a, b] = d.advisorRecipe.split(":");
     act(game.combineItems(Number(a), Number(b)), "item");
-    showArmyCoach();
+    if (view === "arsenal") renderArsenal();
+    else showArmyCoach();
     return;
   }
   if (d.recruit) {
     act(game.recruit(Number(d.recruit)), "recruit");
-    if (activeModal === "tribe") showTribe();
+    if (!game.state.draft) {
+      tribeTab = "owned";
+      inspectedHero =
+        game.state.heroes.find((h) => h.characterId === Number(d.recruit))
+          ?.uid ?? inspectedHero;
+      renderGuardians(true);
+    }
     return;
   }
   if (d.curaHero) {
@@ -1523,7 +1564,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (d.practiceSelect) {
-    chosenPractice = d.practiceSelect;
+    chosenPractice = d.practiceSelect as PracticeId;
     showCura();
     return;
   }
@@ -1637,25 +1678,6 @@ document.addEventListener("click", (event) => {
     toast(r.message);
     if (r.ok) sound.play("power");
     renderPowers();
-    return;
-  }
-  if (d.startHunt) {
-    const select = document.querySelector<HTMLSelectElement>(
-      `#trail-${d.startHunt}`,
-    );
-    if (select) {
-      act(game.startHunt(select.value, d.startHunt), "click");
-      showHunts();
-    }
-    return;
-  }
-  if (d.recall) {
-    act(game.recallHunt(d.recall), "click");
-    showHunts();
-    return;
-  }
-  if (d.huntHero) {
-    showHunts(d.huntHero);
     return;
   }
   if (d.ritual) {
@@ -1869,6 +1891,24 @@ document.addEventListener("input", (event) => {
   if (output) output.textContent = `${input.value}%`;
 });
 document.addEventListener("change", (event) => {
+  const changed = event.target as HTMLSelectElement;
+  if (changed.id === "ritual-hero-picker") {
+    curaHero = changed.value;
+    showCura();
+    return;
+  }
+  if (changed.id === "arsenal-hero") {
+    arsenalHero = changed.value;
+    arsenalBuildRole = "";
+    renderArsenal();
+    return;
+  }
+  if (changed.id === "arsenal-build-role") {
+    arsenalBuildRole = changed.value;
+    renderArsenal();
+    return;
+  }
+
   const input = event.target as HTMLInputElement | HTMLSelectElement;
   if (input.id === "coach-trait") {
     coachTrait = input.value;
@@ -1917,7 +1957,7 @@ $<HTMLInputElement>("#save-file").addEventListener("change", async (event) => {
     const root = data as { version?: number; state?: { heroes?: unknown } };
     if (
       !root ||
-      ![1, 2, 3, 4, 5, 6, 7, 8].includes(root.version as number) ||
+      ![1, 2, 3, 4, 5, 6, 7, 8, 9].includes(root.version as number) ||
       !root.state ||
       !Array.isArray(root.state.heroes)
     )
@@ -1956,7 +1996,7 @@ document.addEventListener("keydown", (event) => {
     showAncestors();
   }
   if (key === "m" && game.battle?.status !== "fighting") showMap();
-  if (key === "c") showHunts();
+  if (key === "c") setView("arsenal");
   if (key === "p") {
     game.togglePause();
     save();

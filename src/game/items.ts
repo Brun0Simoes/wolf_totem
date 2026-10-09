@@ -27,7 +27,7 @@ export interface ItemPerks {
   /** Heals the most wounded ally by this fraction of their life after each cast. */
   healAllyOnCast?: number;
 }
-export interface ItemDef { id: string; name: string; kind: 'component' | 'item'; recipe?: [ComponentId, ComponentId]; text: string; stats: ItemStats; perks?: ItemPerks; color: string }
+export interface ItemDef { id: string; name: string; kind: 'component' | 'item'; recipe?: [ComponentId, ComponentId]; text: string; stats: ItemStats; perks?: ItemPerks; color: string; era?:number; price?:number }
 
 export const COMPONENTS: ItemDef[] = [
   { id: 'presa', name: 'Presa de Osso', kind: 'component', text: '+12% de ataque.', stats: { attackPct: 0.12 }, color: '#e7d6b0' },
@@ -65,7 +65,15 @@ export const ITEMS: ItemDef[] = [
   item('carvalho', 'Coração do Carvalho', ['raiz', 'raiz'], '+400 de vida e +15% de vida máxima.', { hp: 400, hpPct: 0.15 }, {}, '#5f8a3f'),
 ];
 
-export const ALL_ITEMS: ItemDef[] = [...COMPONENTS, ...ITEMS];
+export const RELICS:ItemDef[]=[
+  {id:'dente-eclipse',name:'Dente do Eclipse',kind:'item',era:3,price:100,color:'#db8776',text:'+25% de ataque, 20% de roubo de vida e +75% de dano no terceiro golpe.',stats:{attackPct:.25,lifesteal:.2},perks:{crit3:.75}},
+  {id:'orbe-aurora',name:'Orbe da Aurora',kind:'item',era:3,price:100,color:'#b5a9ed',text:'+35% de poder e +25 de mana. Recupera 15 de mana após conjurar.',stats:{spellPower:.35,mana:25},perks:{manaAfterCast:15}},
+  {id:'egide-tronco',name:'Égide do Tronco',kind:'item',era:3,price:100,color:'#9ab98b',text:'+18% de vida e 1% de regeneração. Provoca por 3 s e escuda aliados vizinhos com 12% da vida.',stats:{hpPct:.18,regen:.01},perks:{startTaunt:3,teamShield:.12}},
+  {id:'asa-tempestade',name:'Asa da Tempestade',kind:'item',era:4,price:130,color:'#84c7dc',text:'+30% de velocidade. Ignora o primeiro atordoamento e começa inalvejável por 1,5 s.',stats:{attackSpeedPct:.3},perks:{ccShield:1,startStealth:1.5}},
+  {id:'raiz-luz',name:'Raiz de Luz',kind:'item',era:4,price:130,color:'#c5daa0',text:'+3 de mana por segundo. Cada conjuração cura o aliado mais ferido em 24% da vida.',stats:{manaRegen:3},perks:{healAllyOnCast:.24}},
+  {id:'coroa-inverno',name:'Coroa do Primeiro Inverno',kind:'item',era:5,price:165,color:'#e0e6ef',text:'+25% de vida e +45 de resistência. Ignora três atordoamentos e recebe escudo de 35% ao cair abaixo de 40% da vida.',stats:{hpPct:.25,magicResist:45},perks:{ccShield:3,lowHpShield:.35}},
+];
+export const ALL_ITEMS: ItemDef[] = [...COMPONENTS, ...ITEMS, ...RELICS];
 export const itemById = (id: string): ItemDef | undefined => ALL_ITEMS.find(entry => entry.id === id);
 export const isComponent = (id: string): id is ComponentId => COMPONENTS.some(component => component.id === id);
 export function recipeFor(a: string, b: string): ItemDef | undefined {

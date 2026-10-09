@@ -11,18 +11,17 @@ describe('game without a material economy',()=>{
     const g=new Game(),heroes=structuredClone(g.state.heroes);g.catchUp(12*3600);
     expect(g.state.heroes).toEqual(heroes);expect(g.state.inventory).toEqual([]);
     for(const key of ['resources','buildings','shop','shopSeed','forgeProgress','settlement','event','omen','nextEventAt'])expect(g.state).not.toHaveProperty(key);
-    expect(g.state.heroes[0]).not.toHaveProperty('work');expect(g.state.journey).not.toHaveProperty('preparations');expect(JSON.parse(g.serialize()).version).toBe(8);
+    expect(g.state.heroes[0]).not.toHaveProperty('work');expect(g.state.journey).not.toHaveProperty('preparations');expect(JSON.parse(g.serialize()).version).toBe(9);
   });
-  it('welcomes every era-one identity freely, once, and keeps earned stars',()=>{
-    const g=new Game();for(const id of [2,3,8,13])expect(g.recruit(id).ok).toBe(true);
-    const before=g.serialize(1000);expect(g.recruit(2).ok).toBe(false);expect(g.serialize(1000)).toBe(before);expect(g.state.heroes.every(h=>h.stars===1)).toBe(true);
+  it('preserves the single starter and bills each additional guardian draft',()=>{
+    const g=new Game();expect(g.state.heroes).toHaveLength(1);expect(g.recruit(2).ok).toBe(false);g.openDraft();const id=g.state.draft!.offers[0];expect(g.recruit(id).ok).toBe(true);expect(g.state.amber).toBe(44);expect(g.state.heroes.every(h=>h.stars===1)).toBe(true);
   });
-  it('requires era and ritual affinity for the higher roster',()=>{
-    const g=new Game();expect(g.recruit(49).ok).toBe(false);g.state.era=5;expect(g.recruit(49).ok).toBe(false);g.state.heroes[0].ritualLevel=7;expect(g.recruit(49).ok).toBe(true);
+  it('opens each cost tier by era and keeps unknown direct recruitment blocked',()=>{
+    const g=new Game();expect(g.recruit(49).ok).toBe(false);g.state.era=5;g.state.amber=1000;expect(g.openDraft().ok).toBe(true);expect(g.state.draft!.offers.every(id=>id!==1)).toBe(true);expect(g.recruit(g.state.draft!.offers[0]).ok).toBe(true);
   });
   it('advances only when the same hero meets both XP and ritual milestones',()=>{
     const g=new Game(),h=g.state.heroes[0];h.level=4;g.state.heroes.push({...newHero('ritual',2),ritualLevel:2});expect(g.advanceEra().ok).toBe(false);
-    h.ritualLevel=2;expect(g.advanceEra().ok).toBe(true);expect(g.state.era).toBe(2);expect(g.recruit(15).ok).toBe(true);
+    h.ritualLevel=2;expect(g.advanceEra().ok).toBe(true);expect(g.state.era).toBe(2);expect(g.openDraft().ok).toBe(true);expect(g.recruit(g.state.draft!.offers[0]).ok).toBe(true);
   });
   it('keeps pause and combat guards for recruitment, era, hunts and blessings',()=>{
     const g=learned();g.state.paused=true;const before=g.serialize(1000);
@@ -31,31 +30,24 @@ describe('game without a material economy',()=>{
   });
   it('offers ceremonies immediately and requires XP, era and earlier rites for ayahuasca',()=>{
     const g=new Game();expect(g.performRitual('hero-1','rape').ok).toBe(true);finish(g);expect(g.state.heroes[0].rituals.rape).toBe(1);
-    g.catchUp(RITUAL_COOLDOWN);expect(g.performRitual('hero-1','ayahuasca').ok).toBe(false);g.state.era=3;g.state.heroes[0].level=14;expect(g.performRitual('hero-1','ayahuasca').ok).toBe(true);
+    g.catchUp(RITUAL_COOLDOWN);expect(g.performRitual('hero-1','ayahuasca').ok).toBe(false);g.state.era=3;g.state.amber=200;g.state.heroes[0].level=14;expect(g.performRitual('hero-1','ayahuasca').ok).toBe(true);
     expect(PRACTICES.every(p=>!('cost' in p)&&!('curaLevel' in p))).toBe(true);
   });
-  it('caps activity time at twelve offline hours and credits completion exactly once',()=>{
-    const g=new Game();g.startHunt('hero-1','igarape');const save=g.serialize(1000),loaded=new Game(save,1000+24*3600*1000);
-    expect(loaded.offlineSeconds).toBe(OFFLINE_CAP_SECONDS);expect(loaded.state.stats.hunts).toBe(1);expect(loaded.state.heroes[0].away).toBeNull();expect(totalXp(loaded.state.heroes[0].level,loaded.state.heroes[0].xp)).toBeGreaterThan(0);
-    expect(new Game(loaded.serialize(1000),1000).state.stats.hunts).toBe(1);
-    g.state.paused=true;expect(new Game(g.serialize(1000),1000+24*3600*1000).state.heroes[0].away).not.toBeNull();
+  it('elapsed offline hours do not award XP or resources in the active economy',()=>{
+    const g=new Game(),before=g.state.heroes[0].xp;g.startHunt('hero-1','igarape');const loaded=new Game(g.serialize(1000),1e9);expect(loaded.offlineSeconds).toBe(0);expect(loaded.state.stats.hunts).toBe(0);expect(loaded.state.heroes[0].away).toBeNull();expect(loaded.state.heroes[0].xp).toBe(before);expect(loaded.state.amber).toBe(g.state.amber);
   });
-  it('grows hunting slots with eras and forbids a fifth simultaneous hunter',()=>{
-    const g=new Game();g.recruit(2);expect(g.startHunt('hero-1','igarape').ok).toBe(true);expect(g.startHunt(g.state.heroes[1].uid,'igarape').ok).toBe(false);
-    g.state.era=5;for(const id of [3,4,5])g.recruit(id);for(const h of g.state.heroes.slice(1,4))expect(g.startHunt(h.uid,'igarape').ok).toBe(true);expect(g.startHunt(g.state.heroes[4].uid,'igarape').ok).toBe(false);
+  it('retired hunts cannot bypass the resource economy in later eras',()=>{
+    const g=new Game();g.state.era=5;expect(g.startHunt('hero-1','cabeceira').ok).toBe(false);g.catchUp(1e9);expect(g.state.heroes[0].level).toBe(1);expect(g.state.amber).toBe(80);
   });
   it('combines components from the first era without a building and respects item guards',()=>{
     const g=new Game();g.state.inventory=['presa','arco'];expect(g.combineItems(0,1).ok).toBe(true);expect(g.state.inventory).toEqual(['garra']);
     g.state.inventory=['presa','arco'];g.startBattle();expect(g.combineItems(0,1).ok).toBe(false);expect(g.state.inventory).toEqual(['presa','arco']);
   });
-  it('uses roots and memories for real activity XP rather than idle production',()=>{
-    const a=new Game(),b=new Game();a.state.journey.legacies.roots=1;a.state.memories.raizes=1;
-    for(const g of [a,b]){g.state.lootSeed=1;g.startHunt('hero-1','igarape');finish(g);}
-    expect(totalXp(a.state.heroes[0].level,a.state.heroes[0].xp)).toBeCloseTo(totalXp(b.state.heroes[0].level,b.state.heroes[0].xp)*1.08*1.1,0);
+  it('roots increases battle income and memories increase battle learning',()=>{
+    const a=new Game(),b=new Game();a.state.journey.legacies.roots=1;a.state.memories.raizes=1;for(const g of [a,b]){g.startBattle();g.battle!.entities.filter(e=>e.team==='enemy').forEach(e=>{e.hp=0;e.action='dead';});g.advanceBattle(.1);}expect(a.battle!.amber).toBe(Math.round(b.battle!.amber*1.04));expect(totalXp(a.state.heroes[0].level,a.state.heroes[0].xp)).toBeCloseTo(totalXp(b.state.heroes[0].level,b.state.heroes[0].xp)*1.1,0);
   });
-  it('requires integration between cacao circles to prevent free challenge farming',()=>{
-    const g=new Game();g.state.era=2;expect(g.holdCacaoCircle().ok).toBe(true);g.catchUp(601);expect(g.holdCacaoCircle().ok).toBe(false);expect(g.state.stats.rituals).toBe(1);
-    g.catchUp(RITUAL_COOLDOWN);expect(g.holdCacaoCircle().ok).toBe(true);expect(g.state.stats.rituals).toBe(2);
+  it('cacao costs resources and cannot be repurchased while its three battles remain',()=>{
+    const g=new Game();g.state.era=2;expect(g.holdCacaoCircle().ok).toBe(true);g.catchUp(1e9);expect(g.holdCacaoCircle().ok).toBe(false);expect(g.state.amber).toBe(36);expect(g.state.stats.rituals).toBe(1);
   });
 });
 describe('ritual blessings',()=>{
@@ -98,16 +90,7 @@ describe('progress preservation and ancestral goal',()=>{
     const g=learned();const html=journeyPage(g.state,'paths','wild')+journeyPage(g.state,'preparations','war')+armyCoach(g.state,null,'Caçador',false,'buffs');
     expect(html).not.toMatch(/data-cost|data-upgrade-workshop|data-prepare-expedition|data-workshop-hero/);expect(html).toContain('Ativar bênção');
   });
-  it('reaches the first 3-star hero over multiple days with two short visits per day',()=>{
-    const g=new Game(),h=g.state.heroes[0];let visits=0;
-    // Alternate a hunting visit and a ritual visit, choosing the strongest unlocked activity.
-    for(;visits<60&&h.stars<3;visits++){
-      g.catchUp(12*3600);while(g.state.era<5&&g.advanceEra().ok){}
-      if(visits%2===0){const t=[...TRAILS].reverse().find(t=>t.era<=g.state.era&&t.minLevel<=h.level)!;g.startHunt(h.uid,t.id);}
-      else {const id=!h.rituals.rape?'rape':g.state.era>=3&&h.level>=14&&!h.rituals.ayahuasca?'ayahuasca':g.state.era>=2&&h.level>=8?'kambo':'sananga';g.performRitual(h.uid,id,1);}
-    }
-    expect(h.stars).toBe(3);expect(visits/2).toBeGreaterThan(3);expect(visits/2).toBeLessThanOrEqual(15);
-    expect(h.level).toBeGreaterThanOrEqual(24);expect(h.ritualLevel).toBeGreaterThanOrEqual(8);expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBeGreaterThan(0);
-    console.info(`First 3-star hero: ${visits/2} days, two visits/day, XP ${h.level}, ritual ${h.ritualLevel}.`);
+  it('waiting alone cannot unlock stars or advance eras',()=>{
+    const g=new Game(),h=g.state.heroes[0];for(let visit=0;visit<60;visit++){g.catchUp(12*3600);g.advanceEra();}expect(h.stars).toBe(1);expect(h.level).toBe(1);expect(h.ritualLevel).toBe(1);expect(g.state.era).toBe(1);expect(g.state.amber).toBe(80);
   });
 });

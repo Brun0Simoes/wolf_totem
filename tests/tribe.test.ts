@@ -48,54 +48,24 @@ describe('levels', () => {
 });
 
 describe('hunting', () => {
-  it('sends a hero along an open trail, who returns with experience and game, offline too', () => {
-    const game = new Game();
-    expect(game.startHunt('hero-1', 'varzea').ok).toBe(false);
-    expect(game.startHunt('hero-1', 'terra-firme').ok).toBe(false);
-    game.state.lootSeed = seedRolling(0.5, false);
-    expect(game.startHunt('hero-1', 'igarape').ok).toBe(true);
-    expect(game.startHunt('hero-1', 'igarape').ok).toBe(false);
-    expect(game.startBattle().ok).toBe(false);
-    const xp = totalXp(game.state.heroes[0].level,game.state.heroes[0].xp);
-    const loaded = new Game(game.serialize(1_000_000), 1_000_000 + (TRAILS[0].minutes+1) * 60 * 1000);
-    const hero = loaded.state.heroes[0];
-    expect(hero.away).toBeNull();
-    expect(totalXp(hero.level,hero.xp)).toBe(TRAILS[0].xp);
-    expect(loaded.state.reports.at(-1)?.ok).toBe(true);
-    expect(loaded.state.stats.hunts).toBe(1);
+  it('refuses removed hunting routes and leaves the hero available',()=>{
+    const game=new Game(),before=game.serialize(1000);for(const t of TRAILS)expect(game.startHunt('hero-1',t.id).ok).toBe(false);expect(game.serialize(1000)).toBe(before);expect(game.startBattle().ok).toBe(true);
   });
 
-  it('brings panema home from failed hunts, which weighs on the next ones', () => {
-    const game = new Game();
-    akru(game).panema = 2;
-    game.state.lootSeed = seedRolling(huntChance(1, 2, 0), true);
-    game.startHunt('hero-1', 'igarape');
-    wait(game, TRAILS[0].minutes*60+10);
-    expect(akru(game).panema).toBe(3);
-    expect(game.state.reports.at(-1)?.ok).toBe(false);
-    expect(huntChance(1, 3, 0)).toBeLessThan(huntChance(1, 0, 0));
-    expect(huntChance(3, 0, 3)).toBeLessThanOrEqual(0.98);
+  it('migrates legacy panema and pending hunts into available guardians',()=>{
+    const game=new Game(),old=JSON.parse(game.serialize(1000));old.version=8;old.state.heroes[0].panema=3;old.state.heroes[0].away={kind:'hunt',id:'igarape',until:600};const loaded=new Game(old,1e9);expect(loaded.state.heroes[0].panema).toBe(0);expect(loaded.state.heroes[0].away).toBeNull();expect(loaded.state.heroes[0].xp).toBe(0);expect(loaded.state.stats.hunts).toBe(0);
   });
 
-  it('limits hunters by the camp and lets one be called home early', () => {
-    const game = new Game();
-
-    game.state.heroes.push(newHero('b', 3), newHero('c', 8));
-    expect(huntSlots(1)).toBe(1);
-    expect(game.startHunt('hero-1', 'igarape').ok).toBe(true);
-    expect(game.startHunt('b', 'igarape').ok).toBe(false);
-    game.state.era = 2;
-    expect(game.startHunt('b', 'igarape').ok).toBe(true);
-    expect(game.recallHunt('b').ok).toBe(true);
-    expect(game.state.heroes.find(hero => hero.uid === 'b')!.away).toBeNull();
+  it('keeps no available hunt action after any era advancement',()=>{
+    const game=new Game();game.state.era=5;game.state.heroes.push(newHero('b',3),newHero('c',8));for(const h of game.state.heroes){expect(game.startHunt(h.uid,'igarape').ok).toBe(false);expect(game.recallHunt(h.uid).ok).toBe(false);}expect(game.state.heroes.every(h=>h.away===null)).toBe(true);
   });
 });
 
 describe('the Casa de Cura', () => {
   it('completes the four personal rites with integration, lifts panema and preserves their combat effects', () => {
-    const game = new Game(), hero = akru(game);
+    const game = new Game(), hero = akru(game);game.state.amber=1000;
     expect(game.performRitual(hero.uid, 'rape').ok).toBe(true);
-    expect(game.performRitual(hero.uid, 'rape').ok).toBe(false);
+    expect(hero.ritualReadyAt).toBe(0);
     wait(game, PRACTICES[0].rest + 10);
     expect(hero.rituals.rape).toBe(1);
     expect(hero.focus).toBe(true);
@@ -111,7 +81,7 @@ describe('the Casa de Cura', () => {
     expect(game.performRitual(hero.uid, 'ayahuasca').ok).toBe(true);
     wait(game, PRACTICES[3].rest + 10);
     expect(hero.rituals).toEqual({ rape: 1, sananga: 1, kambo: 1, ayahuasca: 1 });
-    expect(game.performRitual(hero.uid, 'ayahuasca').ok).toBe(false);
+    game.state.amber=0;expect(game.performRitual(hero.uid, 'ayahuasca').ok).toBe(false);
     game.startBattle();
     const entity = game.battle!.entities.find(e => e.uid === hero.uid)!;
     const plain = new Game(); akru(plain).level = hero.level; akru(plain).stars = hero.stars; plain.startBattle();
@@ -126,23 +96,12 @@ describe('the Casa de Cura', () => {
     for (const practice of PRACTICES) { expect(practice.peoples.length).toBeGreaterThan(5); expect(practice.text.length).toBeGreaterThan(40); }
   });
 
-  it('gives rapé focus to the next hunt', () => {
-    const plain = new Game(), focused = new Game();
-    for (const game of [plain, focused]) game.state.lootSeed = seedRolling(0.5, false);
-    akru(focused).focus = true;
-    for (const game of [plain, focused]) { game.startHunt('hero-1', 'igarape'); wait(game, TRAILS[0].minutes*60+10); }
-    expect(totalXp(akru(focused).level, akru(focused).xp)).toBe(totalXp(akru(plain).level, akru(plain).xp) * 1.5);
-    expect(akru(focused).focus).toBe(false);
+  it('repeated paid rape strengthens attack speed only to its learned cap',()=>{
+    const g=new Game();g.state.amber=1000;for(let n=0;n<5;n++)expect(g.performRitual('hero-1','rape').ok).toBe(true);expect(g.state.heroes[0].rituals.rape).toBe(3);g.startBattle();const e=g.battle!.entities[0];const base=new Game();base.startBattle();expect(e.attackSpeed).toBeCloseTo(base.battle!.entities[0].attackSpeed*1.15);
   });
 
-  it('gathers the whole tribe in the cacao circle for a while', () => {
-    const game = new Game();
-
-     game.state.era = 2;
-    expect(game.holdCacaoCircle().ok).toBe(true);
-    expect(game.xpBonus()).toBeCloseTo(1.25);
-    wait(game, CACAO_DURATION + 10);
-    expect(game.xpBonus()).toBe(1);
+  it('cacao learning stays active through elapsed time and is paid once',()=>{
+    const game=new Game();game.state.era=2;expect(game.holdCacaoCircle().ok).toBe(true);expect(game.xpBonus()).toBe(1.25);wait(game,1000);expect(game.xpBonus()).toBe(1.25);expect(game.state.cacaoBattles).toBe(3);expect(game.holdCacaoCircle().ok).toBe(false);
   });
 });
 
