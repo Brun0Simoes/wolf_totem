@@ -1,7 +1,8 @@
 import { characters, type Character } from '../data/characters';
 import { attackTiming, castWindup } from './combatTiming';
 import { participationBonus } from './ritualPlay';
-import { STARTING_AMBER, draftCost, rerollCost, ritualCost, componentCost, battleAmber, drawCandidates, draftPool, sanitizeDraft, type Draft } from './economy';
+import { STARTING_AMBER, draftCost, ritualCost, componentCost, battleAmber, drawCandidates, draftPool, sanitizeDraft, type Draft } from './economy';
+import { formationItemPlan } from './formationItems';
 import { BUILDS, buildTransaction } from './builds';
 import { freshMastery, sanitizeMastery, HERO_PROOFS, type HeroMastery } from './heroMastery';
 import { recommendedParty, positionPlan, equipmentPlan, planSignature, roleOf, compositionPlans } from './armyAdvisor';
@@ -236,7 +237,7 @@ export interface CombatApi {
 
 export const PLAYABLE_IDS = ALL_CHARACTER_IDS;
 export const MAX_ERA = 5;
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 export const OFFLINE_CAP_SECONDS = 12 * 3600;
 export const MAX_ROSTER_SIZE = 55;
 export const MAX_INVENTORY = 180;
@@ -309,18 +310,21 @@ export const clampToBoard = (entity: CombatEntity): void => {
 
 export const newHero = (uid: string, characterId: number, stars = 1, slot: number | null = null): Hero =>
   ({ uid, characterId, stars, slot, items: [], level: 1, xp: 0, ritualLevel: 1, ritualXp: 0, ritualReadyAt: 0, integrationWins: 0, mastery: freshMastery(), panema: 0, rituals: {}, away: null, focus: false });
-/** The journey begins with Akru alone at the front centre; the tribe grows from there. */
-const starterHeroes = (): Hero[] => [newHero('hero-1', 1, 1, 3)];
+/** Only era-I heroes can begin a new journey. Explicit seeds keep simulations reproducible. */
+const starterHeroes = (seed = 7): Hero[] => {
+  const pool = characters.filter(c => c.cost === 1);
+  return [newHero('hero-1', pool[Math.floor(nextRandom(seed).value * pool.length)].id, 1, 3)];
+};
 /** Kept for formation checks; migrated heroes are always available. */
 export const available = (hero: Hero) => !hero.away;
 
-function initialState(): GameState {
+function initialState(seed = 7): GameState {
   return {
     journey: initialJourney(), amber: STARTING_AMBER, draft: null, cacaoBattles: 0, cacaoCircles: 0,
     era: 1,
-    heroes: starterHeroes(),
+    heroes: starterHeroes(seed),
     progress: 0, selectedStage: 1, endlessBest: 0, endlessRecord: 0,
-    inventory: [], lootSeed: 11,
+    inventory: [], lootSeed: nextRandom(seed).seed,
     spirits: [], wonder: 0, embers: 0, memories: {}, rebirths: 0,
     settings: { speed: 1, autoRepeat: false },
     quests: [], stats: { recruits: 0, powers: 0, victories: 0, hunts: 0, rituals: 0 }, clock: 0, cacao: 0, cacaoReadyAt: 0, cacaoIntegrationWins: 0, reports: [],
@@ -438,7 +442,7 @@ function sanitizeState(value: unknown, version: number): GameState {
     for (const item of hero.items) { if (keeper.items.length < MAX_ITEMS_PER_HERO) keeper.items.push(item); else state.inventory.push(item); }
   }
   state.heroes = [...unique.values()];
-  state.draft = sanitizeDraft(input.draft, state.era, state.heroes.map(h=>h.characterId));
+  state.draft = sanitizeDraft(input.draft, state.era, state.heroes.map(h=>h.characterId), version < 10);
   // Convert the old hunt challenge to recruitment without comparing unrelated counters.
   if(version<9&&state.journey.trial?.id==='hunt'){
     if(state.stats.hunts>state.journey.trial.start){
@@ -484,11 +488,11 @@ export class Game {
   private projectiles:{source:CombatEntity;target:CombatEntity;remaining:number;power:number;third:boolean}[]=[];
 
   /** A save can be the serialized JSON string or the parsed versioned save object. */
-  constructor(save?: unknown, now = Date.now()) {
-    this.state = initialState();
+  constructor(save?: unknown, now = Date.now(), seed = 7) {
+    this.state = initialState(seed);
     if (typeof save === 'string') { try { save = JSON.parse(save); } catch { return; } }
     const root = record(save);
-    if (typeof root.version !== 'number' || ![1,2,3,4,5,6,7,8,SAVE_VERSION].includes(root.version)) return;
+    if (typeof root.version !== 'number' || ![1,2,3,4,5,6,7,8,9,SAVE_VERSION].includes(root.version)) return;
     this.state = sanitizeState(root.state, root.version as number);
     this.offlineSeconds = 0;
   }
@@ -576,19 +580,18 @@ export class Game {
     if(this.state.amber<cost)return fail(`São necessários ${cost} de âmbar. Lute para receber recursos.`);
     const draw=drawCandidates(this.state.era,this.state.heroes.map(h=>h.characterId),[],this.state.lootSeed,3);
     this.state.amber-=cost;this.state.lootSeed=draw.seed;
-    this.state.draft={era:this.state.era,offers:draw.offers,rolls:0};
+    this.state.draft={era:this.state.era,offers:draw.offers,rolls:0,rerolled:draw.offers.map(()=>false)};
     return success('Escolha um guardião. A escolha já está paga e pode ser concluída depois.');
   }
-  rerollDraft(index:number,target=''):ActionResult {
+  rerollDraft(index:number):ActionResult {
     if(this.fighting()||this.state.paused)return fail('Troque cartas entre os combates.');
     const d=this.state.draft;
     if(!d||!Number.isInteger(index)||index<0||index>=d.offers.length)return fail('Carta de draft inválida.');
-    const draw=drawCandidates(d.era,this.state.heroes.map(h=>h.characterId),d.offers,this.state.lootSeed,1,target);
-    if(!draw.offers.length)return fail('Nenhuma alternativa inédita corresponde ao filtro. Seu âmbar foi preservado.');
-    const cost=rerollCost(d.era);
-    if(this.state.amber<cost)return fail(`São necessários ${cost} de âmbar para trocar esta carta.`);
-    this.state.amber-=cost;this.state.lootSeed=draw.seed;d.offers[index]=draw.offers[0];d.rolls++;
-    return success('Carta substituída. As outras duas ofertas foram preservadas.');
+    if(d.rerolled[index])return fail('Esta carta já usou sua única troca gratuita.');
+    const draw=drawCandidates(d.era,this.state.heroes.map(h=>h.characterId),d.offers,this.state.lootSeed,1);
+    if(!draw.offers.length)return fail('Nenhum guardião inédito está disponível para trocar. Sua troca continua disponível.');
+    this.state.lootSeed=draw.seed;d.offers[index]=draw.offers[0];d.rolls++;d.rerolled[index]=true;
+    return success('Troca gratuita usada nesta carta. Um novo guardião foi sorteado.');
   }
   recruit(characterId:number):ActionResult {
     if(this.fighting()||this.state.paused)return fail('Escolha seu guardião entre os combates.');
@@ -655,6 +658,36 @@ export class Game {
     const plan=equipmentPlan(this.state);if(!plan.length)return fail('Não há itens prontos e vagas na formação para distribuir.');
     for(const p of [...plan].sort((a,b)=>b.index-a.index)){p.hero.items.push(this.state.inventory[p.index]);this.state.inventory.splice(p.index,1);}
     return success(`${plan.length} item(ns) distribuído(s). Os equipamentos anteriores foram preservados.`);
+  }
+
+  applyFormationItems(expected:string, index?:number):ActionResult {
+    if(this.fighting()||this.state.paused)return fail('Prepare a formação entre os combates, com a jornada em atividade.');
+    if(expected!==planSignature(this.state))return fail('A formação ou bolsa mudou. Confira as recomendações atualizadas.');
+    const plan=formationItemPlan(this.state);
+    if(index!==undefined&&(!Number.isInteger(index)||index<0||index>=plan.length))return fail('Recomendação de item inválida.');
+    const steps=index===undefined?plan:[plan[index]];
+    if(!steps.length)return fail('Não há combinações ou itens disponíveis para esta formação.');
+    const used=new Set<number>(), loadouts=new Map(this.state.heroes.map(h=>[h.uid,[...h.items]]));
+    // Preflight on copies: a stale or invalid action cannot consume even one piece.
+    for(const step of steps){
+      const items=loadouts.get(step.heroUid), hero=this.state.heroes.find(h=>h.uid===step.heroUid);
+      if(!items||!hero||hero.slot===null||hero.away)return fail('Este guardião deixou a formação.');
+      if(step.bagIndices.some(i=>used.has(i)||!this.state.inventory[i]))return fail('Os componentes disponíveis mudaram.');
+      if(step.equippedIndex!==undefined){
+        const result=recipeFor(items[step.equippedIndex],this.state.inventory[step.bagIndices[0]]);
+        if(result?.id!==step.itemId)return fail('A receita equipada mudou.');
+        items[step.equippedIndex]=step.itemId;
+      }else{
+        if(items.length>=MAX_ITEMS_PER_HERO)return fail('Este guardião já carrega três itens.');
+        const result=step.kind==='equip'?this.state.inventory[step.bagIndices[0]]:recipeFor(this.state.inventory[step.bagIndices[0]],this.state.inventory[step.bagIndices[1]])?.id;
+        if(result!==step.itemId)return fail('A receita da bolsa mudou.');
+        items.push(step.itemId);
+      }
+      step.bagIndices.forEach(i=>used.add(i));
+    }
+    this.state.inventory=this.state.inventory.filter((_,i)=>!used.has(i));
+    for(const h of this.state.heroes)h.items=loadouts.get(h.uid)!;
+    return success(`${steps.length} equipamento(s) preparado(s) e entregue(s). Nenhum âmbar foi gasto.`);
   }
 
   deploy(uid: string, slot: number | null): ActionResult {
@@ -735,8 +768,8 @@ export class Game {
     if (this.fighting()) return fail('Conclua a expedição antes do ritual.');
     if (this.state.wonder < WONDER_STAGES || this.state.progress < FINAL_STAGE) return fail('O renascimento exige o Grande Totem completo e a vitória no Primeiro Inverno.');
     const gained = embersFor(this.state);
-    const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, lootSeed: this.state.lootSeed, quests: [...this.state.quests], stats: { ...this.state.stats }, journey:{...this.state.journey,selected:[]}, clock: this.state.clock };
-    this.state = { ...initialState(), ...keep };
+    const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, quests: [...this.state.quests], stats: { ...this.state.stats }, journey:{...this.state.journey,selected:[]}, clock: this.state.clock };
+    this.state = { ...initialState(this.state.lootSeed), ...keep };
     this.gainXp(this.state.heroes[0],1500*memory(this.state,'heranca'),false);
     for (let i = 0; i < memory(this.state, 'forja'); i++) this.addItem(this.randomComponent());
     this.battle = null; this.events = [];

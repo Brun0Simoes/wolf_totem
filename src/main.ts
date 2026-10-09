@@ -125,7 +125,8 @@ try {
 } catch {
   saved = undefined;
 }
-const game = new Game(saved);
+const journeySeed = crypto.getRandomValues(new Uint32Array(1))[0];
+const game = new Game(saved, Date.now(), journeySeed);
 const hasJourney = !!saved && typeof saved === "object";
 let freshStart = false;
 try {
@@ -156,9 +157,8 @@ let journeyKey = "";
 let coachTab: CoachTab = "plan";
 let coachComposition = "auto";
 let arsenalHero: string | null = null;
-let arsenalTab = "builds";
+let arsenalTab = "formation";
 let arsenalBuildRole = "";
-let draftFilters: string[] = [];
 
 let coachHero: string | null = null;
 let coachTrait = "Caçador";
@@ -262,7 +262,7 @@ $("#app").innerHTML = `
     <section id="arsenal-hall" hidden aria-label="Arsenal"></section>
     <section class="journey-page" hidden><nav id="journey-toolbar" class="ancestral-toolbar" aria-label="Atividades da jornada"><div><button data-journey-tab="paths">${icon("route")}Legados</button><button data-journey-tab="preparations">${icon("sparkles")}Bênçãos</button><button data-view="arsenal">${icon("anvil")}Arsenal</button><button data-action="ancestors">${icon("landmark")}Grande Totem</button></div></nav><div id="journey-objective" class="journey-objective"></div><section id="ancestral-hall"></section></section>
    </main>
-   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Diário da tribo</button><span>WOLF TOTEM · 3.1</span></footer>
+   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Diário da tribo</button><span>WOLF TOTEM · 3.2</span></footer>
   </div>
  </div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -688,7 +688,6 @@ function renderGuardians(force = false) {
     $("#guardian-hall").innerHTML = draftHall(
       s,
       game.battle?.status === "fighting",
-      draftFilters,
     );
     refreshIcons();
     return;
@@ -1226,7 +1225,7 @@ function help() {
   showModal(
     "help",
     `<p class="eyebrow">BEM-VINDO À PRIMEIRA CHAMA</p><h2>Uma tribo começa com você.</h2><div class="guide-steps">
-   <div><span>01</span><h3>Reúna a formação</h3><p>Em Guardiões → Draft, pague âmbar para escolher um entre até três companheiros inéditos. Você pode renovar cada oferta por função ou laço. No Campo, o Conselho de Guerra compara composições e organiza as posições.</p></div>
+   <div><span>01</span><h3>Reúna a formação</h3><p>Em Guardiões → Draft, pague âmbar para escolher um entre até três companheiros inéditos. Cada carta tem uma troca gratuita, com resultado aleatório. O herói inicial também é sorteado entre os guardiões da Era I. No Campo, o Conselho de Guerra compara composições e organiza as posições.</p></div>
    <div><span>02</span><h3>Aprenda fazendo</h3><p>Vitórias rendem XP. Na aba Provas de cada guardião, receba recompensas por explorar expedições, usar habilidades, equipamentos e laços. As duas barras precisam alcançar os requisitos para despertar estrelas.</p></div>
    <div><span>03</span><h3>Aprofunde o vínculo</h3><p>Combates rendem âmbar para rituais, drafts e equipamentos. Participe de uma cerimônia e confirme para pagar e receber XP ritual. No Arsenal, escolha builds, compre componentes e combine receitas. As novas eras ampliam o elenco e liberam relíquias.</p></div></div>
    <p class="development-note">Atalhos: J caminhos · R bênçãos · A conselheiro · 1 jornada · 2 expedição · 3 códice · 4 totem · C Arsenal · M campanha · P pausar · Esc fechar.</p><button class="primary" data-action="close">Seguir o chamado ${icon("arrow-right")}</button>`,
@@ -1314,9 +1313,9 @@ function renderAudioButton() {
 function renderTitle() {
   document.body.classList.add("title-open");
   $<HTMLElement>(".app-frame").inert = true;
-  const s = game.state;
+  const s = game.state, first = s.heroes[0], starter = characterOf(first.characterId);
   $("#title-screen").innerHTML =
-    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(characterOf(1), 3)}<span class="title-landscape-label">AKRU · PRESA CINZENTA</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}55 guardiões</span></div>${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} ${s.heroes.length === 1 ? "guardião" : "guardiões"}</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 3.1 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
+    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(starter, first.stars)}<span class="title-landscape-label">${esc(starter.name)} · ${esc(starter.title)}</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}55 guardiões</span></div>${!hasJourney ? `<div class="title-journey">${esc(starter.name)} inicia sua tribo · guardião sorteado da Era I</div>` : ""}${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} ${s.heroes.length === 1 ? "guardião" : "guardiões"}</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 3.2 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
   refreshIcons();
 }
 
@@ -1381,19 +1380,12 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (d.draftOpen !== undefined) {
-    draftFilters = [];
     act(game.openDraft(), "recruit");
     renderGuardians(true);
     return;
   }
   if (d.draftRoll !== undefined) {
-    const index = Number(d.draftRoll),
-      target =
-        document.querySelector<HTMLSelectElement>(
-          `[data-draft-filter="${index}"]`,
-        )?.value ?? "";
-    draftFilters[index] = target;
-    act(game.rerollDraft(index, target), "click");
+    act(game.rerollDraft(Number(d.draftRoll)), "click");
     renderGuardians(true);
     return;
   }
@@ -1410,6 +1402,7 @@ document.addEventListener("click", (event) => {
   }
   if (d.buyComponent) {
     act(game.buyComponent(d.buyComponent), "item");
+    if (activeModal === "army-coach") showArmyCoach();
     return;
   }
   if (d.buyRelic) {
@@ -1475,6 +1468,12 @@ document.addEventListener("click", (event) => {
   if (d.applyArmy) {
     act(game.applyArmyPlan(d.applyArmy, coachComposition), "click");
     showArmyCoach();
+    return;
+  }
+  if (d.formationItems || d.formationItem !== undefined) {
+    act(game.applyFormationItems(d.formationItems ?? d.itemSignature ?? "", d.formationItem !== undefined ? Number(d.formationItem) : undefined), "item");
+    if (activeModal === "army-coach") showArmyCoach();
+    else renderArsenal();
     return;
   }
   if (d.distributeItems) {
@@ -1957,7 +1956,7 @@ $<HTMLInputElement>("#save-file").addEventListener("change", async (event) => {
     const root = data as { version?: number; state?: { heroes?: unknown } };
     if (
       !root ||
-      ![1, 2, 3, 4, 5, 6, 7, 8, 9].includes(root.version as number) ||
+      ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(root.version as number) ||
       !root.state ||
       !Array.isArray(root.state.heroes)
     )

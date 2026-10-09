@@ -9,8 +9,6 @@ import {
   enemyThreats,
   recommendedParty,
   positionPlan,
-  equipmentPlan,
-  craftingPlan,
   planSignature,
   synergyChanges,
   buffAdvice,
@@ -27,6 +25,7 @@ import {
   LEGACIES,
   type PreparationId,
 } from "../game/ancestralJourney";
+import { formationItemsPanel } from "./FormationItems";
 import { itemById } from "../game/items";
 import { RITUAL_EFFECT } from "../game/tribe";
 import { characters } from "../data/characters";
@@ -117,12 +116,10 @@ export function armyCoach(
     );
   }
   if (tab === "equipment") {
-    const distribution = equipmentPlan(s),
-      crafting = craftingPlan(s),
-      items = itemAdvice(s, hero);
+    const items = itemAdvice(s, hero);
     return (
       heading +
-      `<div class="coach-equipment-layout"><section><div class="coach-plan-title"><div><p class="eyebrow">ITENS PRONTOS DA BOLSA</p><h3>Distribuição sem disputar o mesmo item.</h3></div><button class="primary" data-distribute-items="${signature}" ${lock || !distribution.length ? "disabled" : ""}>Distribuir ${distribution.length} item(ns)</button></div><p class="ancestral-note">Usa somente itens completos e vagas livres na formação atual. Preserva equipamentos já usados; componentes ficam para decisões de forja.</p>${distribution.map((p) => `<article class="gear-allocation"><div>${portraitHTML(characters.find((c) => c.id === p.hero.characterId)!, p.hero.stars)}<span><b>${p.item.name} → ${characters.find((c) => c.id === p.hero.characterId)!.name}</b><small>${p.reason}</small><small>${p.item.text}</small></span></div><button class="outline-button" data-advisor-equip="${p.hero.uid}:${p.index}" ${lock ? "disabled" : ""}>Equipar</button></article>`).join("") || '<p class="coach-empty">Não há itens completos livres e vagas na formação. Confira as receitas e o equipamento de cada herói.</p>'}<h3>Receitas com seus componentes</h3><p class="ancestral-note">O plano reserva componentes sem repetir entradas da bolsa. Forje uma receita e confira o plano atualizado antes da seguinte.</p>${crafting.map((p) => `<article class="gear-allocation"><div><span class="gear-symbol" style="--item:${p.item.color}">${icon("anvil")}</span><span><b>${p.item.name}</b><small>${itemById(s.inventory[p.a])!.name} + ${itemById(s.inventory[p.b])!.name}</small><small>Sugestão: ${characters.find((c) => c.id === p.hero.characterId)!.name}. ${p.reason}</small><small>${p.item.text}</small></span></div><button class="outline-button" data-advisor-recipe="${p.a}:${p.b}" ${lock ? "disabled" : ""}>Combinar</button></article>`).join("") || "<p>Não há pares de componentes disponíveis para esta formação.</p>"}</section><aside class="individual-coaching"><p class="eyebrow">INSPEÇÃO INDIVIDUAL</p><select id="coach-hero" aria-label="Herói para analisar">${s.heroes.map((h) => `<option value="${h.uid}" ${h === hero ? "selected" : ""}>${characters.find((c) => c.id === h.characterId)!.name}</option>`).join("")}</select><div class="coached-hero">${portraitHTML(c, hero.stars)}<div><h3>${c.name}</h3><p>${guide.name}</p><span>${hero.items.length}/3 equipamentos</span></div></div><p>${guide.description}</p><p><b>${c.ability.name}.</b> ${esc(c.ability.description)}</p><h4>Equipados</h4>${hero.items.map((id, i) => `<div class="equipped-advice"><b>${itemById(id)!.name}</b><small>${itemById(id)!.text}</small><button class="text-button" data-unequip="${hero.uid}:${i}" ${lock ? "disabled" : ""}>Devolver à bolsa</button></div>`).join("") || "<p>Nenhum equipamento.</p>"}<h4>Componentes e itens da bolsa</h4>${items.owned.map((p) => `<button class="advisor-item" data-advisor-equip="${hero.uid}:${p.index}" ${lock || hero.items.length >= 3 ? "disabled" : ""}><span><b>${p.item.name}</b><small>${itemReason(c, p.item, s)}</small><small>${p.item.text}</small></span>${icon("plus")}</button>`).join("") || "<p>Bolsa vazia. Expedições e o Arsenal trazem componentes.</p>"}<p class="ancestral-note">Componentes no mesmo herói podem se combinar automaticamente pelas regras de equipamentos. Confira a receita antes de entregar o segundo.</p><h4>Objetivos para esta função</h4><p>${items.ideal.map((i) => i.name).join(" · ")}</p></aside></div></div>`
+      `<div class="coach-equipment-layout"><section>${formationItemsPanel(s, lock)}</section><aside class="individual-coaching"><p class="eyebrow">INSPEÇÃO INDIVIDUAL</p><select id="coach-hero" aria-label="Herói para analisar">${s.heroes.map((h) => `<option value="${h.uid}" ${h === hero ? "selected" : ""}>${characters.find((c) => c.id === h.characterId)!.name}</option>`).join("")}</select><div class="coached-hero">${portraitHTML(c, hero.stars)}<div><h3>${c.name}</h3><p>${guide.name}</p><span>${hero.items.length}/3 equipamentos</span></div></div><p>${guide.description}</p><p><b>${c.ability.name}.</b> ${esc(c.ability.description)}</p><h4>Equipados</h4>${hero.items.map((id, i) => `<div class="equipped-advice"><b>${itemById(id)!.name}</b><small>${itemById(id)!.text}</small><button class="text-button" data-unequip="${hero.uid}:${i}" ${lock ? "disabled" : ""}>Devolver à bolsa</button></div>`).join("") || "<p>Nenhum equipamento.</p>"}<h4>Componentes e itens da bolsa</h4>${items.owned.map((p) => `<button class="advisor-item" data-advisor-equip="${hero.uid}:${p.index}" ${lock || hero.items.length >= 3 ? "disabled" : ""}><span><b>${p.item.name}</b><small>${itemReason(c, p.item, s)}</small><small>${p.item.text}</small></span>${icon("plus")}</button>`).join("") || "<p>Bolsa vazia. Expedições e o Arsenal trazem componentes.</p>"}<p class="ancestral-note">Componentes no mesmo herói podem se combinar automaticamente pelas regras de equipamentos. Confira a receita antes de entregar o segundo.</p><h4>Objetivos para esta função</h4><p>${items.ideal.map((i) => i.name).join(" · ")}</p></aside></div></div>`
     );
   }
   if (tab === "buffs") {

@@ -1,11 +1,12 @@
 import type { GameState } from "../game/simulation";
 import { characters } from "../data/characters";
-import { COMPONENTS, ITEMS, RELICS, itemById } from "../game/items";
+import { COMPONENTS, ITEMS, RELICS, itemById, isComponent } from "../game/items";
 import { BUILDS, buildTransaction } from "../game/builds";
 import { componentCost } from "../game/economy";
 import { ROLE_GUIDE, roleOf, itemFit, itemReason } from "../game/armyAdvisor";
 import { portraitHTML } from "../render/portrait";
 import { itemGlyph } from "./itemGlyph";
+import { formationItemsPanel } from "./FormationItems";
 import { uiIcon as icon, uiEsc as esc } from "./AncestralJourney";
 
 export function arsenal(
@@ -38,7 +39,9 @@ export function arsenal(
     });
   const marketplace = `<section class="component-market"><div><h3>Escolha seu componente.</h3><p>Compra garantida · ${componentCost(s.era)} âmbar cada.</p></div><div>${COMPONENTS.map((d) => `<button data-buy-component="${d.id}" ${locked || s.amber < componentCost(s.era) ? "disabled" : ""}>${itemGlyph(d.id)}<b>${d.name}</b><small>${d.text}</small></button>`).join("")}</div></section>`;
   const content =
-    tab === "components"
+    tab === "formation"
+      ? formationItemsPanel(s, locked)
+      : tab === "components"
       ? marketplace
       : tab === "builds"
         ? `<div class="build-role-picker"><label for="arsenal-build-role">Função da build</label><select id="arsenal-build-role">${Object.entries(
@@ -81,7 +84,8 @@ export function arsenal(
               })
               .join("")}</div>`
           : `<div class="relic-gallery">${RELICS.map((d) => `<article class="relic-card ${s.era < d.era! ? "locked" : ""}"><span class="eyebrow">RELÍQUIA · ERA ${d.era}</span>${itemGlyph(d.id)}<h3>${d.name}</h3><p>${d.text}</p><small>${itemReason(c, d, s)}</small><button class="primary" data-buy-relic="${d.id}" ${locked || s.era < d.era! || s.amber < d.price! ? "disabled" : ""}>${s.era < d.era! ? "Abre na Era " + d.era : "Adquirir · " + d.price + " âmbar"}</button></article>`).join("")}</div>`;
-  return `<header class="page-heading"><div><p class="eyebrow">FORJA DO ENCANTO</p><h1>Arsenal da tribo.</h1><p>Uma build muda o papel de um guardião. Escolha sua resposta ao adversário.</p></div><span class="amber-purse">${icon("gem")}<b>${s.amber}</b> âmbar</span></header><div class="arsenal-layout"><aside class="arsenal-loadout"><label for="arsenal-hero">Preparar guardião</label><select id="arsenal-hero">${s.heroes.map((v) => `<option value="${v.uid}" ${v.uid === h.uid ? "selected" : ""}>${characters.find((c) => c.id === v.characterId)!.name} · Nv ${v.level}</option>`).join("")}</select><div class="arsenal-hero-art">${portraitHTML(c, h.stars)}</div><h2>${c.name}<small>${ROLE_GUIDE[role].name}</small></h2><div class="arsenal-slots">${Array.from({ length: 3 }, (_, i) => (h.items[i] ? `<button data-unequip="${h.uid}:${i}" title="Devolver ${itemById(h.items[i])!.name}">${itemGlyph(h.items[i])}<small>${itemById(h.items[i])!.name}</small></button>` : '<span class="empty-slot">+</span>')).join("")}</div><h3>Bolsa · ${s.inventory.length}</h3><div class="arsenal-bag">${bag.map((v) => `<button data-equip-direct="${h.uid}:${v.index}" ${locked || h.items.length >= 3 ? "disabled" : ""} title="${itemById(v.id)!.name}: ${esc(itemById(v.id)!.text)}">${itemGlyph(v.id)}<b>×${v.count}</b></button>`).join("") || "<p>Receba itens em expedições ou compre componentes abaixo.</p>"}</div></aside><section class="arsenal-workbench"><nav class="detail-tabs">${[
+  return `<header class="page-heading"><div><p class="eyebrow">FORJA DO ENCANTO</p><h1>Arsenal da tribo.</h1><p>Uma build muda o papel de um guardião. Escolha sua resposta ao adversário.</p></div><span class="amber-purse">${icon("gem")}<b>${s.amber}</b> âmbar</span></header><div class="arsenal-layout"><aside class="arsenal-loadout"><label for="arsenal-hero">Preparar guardião</label><select id="arsenal-hero">${s.heroes.map((v) => `<option value="${v.uid}" ${v.uid === h.uid ? "selected" : ""}>${characters.find((c) => c.id === v.characterId)!.name} · Nv ${v.level}</option>`).join("")}</select><div class="arsenal-hero-art">${portraitHTML(c, h.stars)}</div><h2>${c.name}<small>${ROLE_GUIDE[role].name}</small></h2><div class="arsenal-slots">${Array.from({ length: 3 }, (_, i) => (h.items[i] ? `<button data-unequip="${h.uid}:${i}" title="Devolver ${itemById(h.items[i])!.name}">${itemGlyph(h.items[i])}<small>${itemById(h.items[i])!.name}</small></button>` : '<span class="empty-slot">+</span>')).join("")}</div><h3>Bolsa · ${s.inventory.length}</h3><div class="arsenal-bag">${bag.map((v) => `<button data-equip-direct="${h.uid}:${v.index}" ${locked || (h.items.length >= 3 && !(isComponent(v.id) && h.items.some(isComponent))) ? "disabled" : ""} title="${itemById(v.id)!.name}: ${esc(itemById(v.id)!.text)}">${itemGlyph(v.id)}<b>×${v.count}</b></button>`).join("") || "<p>Receba itens em expedições ou compre componentes abaixo.</p>"}</div></aside><section class="arsenal-workbench"><nav class="detail-tabs">${[
+    ["formation", "Para a formação"],
     ["builds", "Builds por função"],
     ["recipes", "21 receitas"],
     ["relics", "Relíquias"],

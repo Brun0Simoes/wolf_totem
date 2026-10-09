@@ -11,7 +11,7 @@ describe('game without a material economy',()=>{
     const g=new Game(),heroes=structuredClone(g.state.heroes);g.catchUp(12*3600);
     expect(g.state.heroes).toEqual(heroes);expect(g.state.inventory).toEqual([]);
     for(const key of ['resources','buildings','shop','shopSeed','forgeProgress','settlement','event','omen','nextEventAt'])expect(g.state).not.toHaveProperty(key);
-    expect(g.state.heroes[0]).not.toHaveProperty('work');expect(g.state.journey).not.toHaveProperty('preparations');expect(JSON.parse(g.serialize()).version).toBe(9);
+    expect(g.state.heroes[0]).not.toHaveProperty('work');expect(g.state.journey).not.toHaveProperty('preparations');expect(JSON.parse(g.serialize()).version).toBe(10);
   });
   it('preserves the single starter and bills each additional guardian draft',()=>{
     const g=new Game();expect(g.state.heroes).toHaveLength(1);expect(g.recruit(2).ok).toBe(false);g.openDraft();const id=g.state.draft!.offers[0];expect(g.recruit(id).ok).toBe(true);expect(g.state.amber).toBe(44);expect(g.state.heroes.every(h=>h.stars===1)).toBe(true);

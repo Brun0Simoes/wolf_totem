@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { Game, newHero, SAVE_VERSION } from "../src/game/simulation";
 import {
   draftCost,
-  rerollCost,
   ritualCost,
   battleAmber,
   drawCandidates,
@@ -85,34 +84,41 @@ describe("paid three-card draft", () => {
     expect(g.recruit(b).ok).toBe(false);
     expect(g.recruit(a).ok).toBe(false);
   });
-  it("rerolls one slot into the requested role, preserving the other slots", () => {
+  it("rerolls each slot once for free, preserving other cards even without amber", () => {
     const g = rich();
     g.openDraft();
     const before = [...g.state.draft!.offers],
-      amber = g.state.amber;
-    expect(g.rerollDraft(1, "role:caster").ok).toBe(true);
+      amber = 0;
+    g.state.amber = amber;
+    expect(g.rerollDraft(1).ok).toBe(true);
     const after = g.state.draft!.offers;
     expect(after[0]).toBe(before[0]);
     expect(after[2]).toBe(before[2]);
     expect(before).not.toContain(after[1]);
-    expect(roleOf(characters.find((c) => c.id === after[1])!)).toBe("caster");
-    expect(g.state.amber).toBe(amber - rerollCost(1));
+    expect(g.state.amber).toBe(amber);
+    expect(g.state.draft!.rerolled).toEqual([false,true,false]);
+    expect(g.rerollDraft(0).ok).toBe(true);
+    expect(g.rerollDraft(2).ok).toBe(true);
+    expect(g.state.draft!.rerolled).toEqual([true,true,true]);
+    expect(g.state.draft!.rolls).toBe(3);
+    const exhausted = g.serialize(1000);
+    for (const i of [0,1,2]) expect(g.rerollDraft(i).ok).toBe(false);
+    expect(g.serialize(1000)).toBe(exhausted);
+    expect(new Set(g.state.draft!.offers).size).toBe(3);
+    expect(g.state.draft!.offers).not.toContain(g.state.heroes[0].characterId);
   });
-  it("filters by a trait and refuses impossible or invalid replacements without charging", () => {
+  it("persists spent replacements and gives a new allowance only to a new paid draft", () => {
     const g = rich();
     g.openDraft();
-    expect(g.rerollDraft(0, "trait:Manada").ok).toBe(true);
-    expect(
-      characters.find((c) => c.id === g.state.draft!.offers[0])!.traits,
-    ).toContain("Manada");
-    const before = g.serialize(1000);
-    for (const [index, target] of [
-      [5, ""],
-      [0, "trait:unavailable"],
-      [0, "role:invalid"],
-    ] as const)
-      expect(g.rerollDraft(index, target).ok).toBe(false);
-    expect(g.serialize(1000)).toBe(before);
+    expect(g.rerollDraft(0).ok).toBe(true);
+    const loaded = new Game(g.serialize(1000)), before = loaded.serialize(1000);
+    for (const index of [0,5,-1,NaN,1.1]) expect(loaded.rerollDraft(index).ok).toBe(false);
+    expect(loaded.serialize(1000)).toBe(before);
+    expect(loaded.rerollDraft(1).ok).toBe(true);
+    loaded.recruit(loaded.state.draft!.offers[0]);
+    expect(loaded.openDraft().ok).toBe(true);
+    expect(loaded.state.draft!.rerolled).toEqual([false,false,false]);
+    expect(loaded.rerollDraft(0).ok).toBe(true);
   });
   it("does not spend on an exhausted roster or slot with no alternative", () => {
     const g = rich();
@@ -128,6 +134,7 @@ describe("paid three-card draft", () => {
     const price = g.state.amber;
     expect(g.rerollDraft(0).ok).toBe(false);
     expect(g.state.amber).toBe(price);
+    expect(g.state.draft!.rerolled).toEqual([false]);
   });
   it("keeps a paid era-I draft in its original pool after era advancement and reload", () => {
     const g = rich();
@@ -178,7 +185,7 @@ describe("paid three-card draft", () => {
       save = JSON.parse(g.serialize(1000));
     save.state.draft = { era: 99, offers: [1, 2, 2, 55, "bad"], rolls: -99 };
     const loaded = new Game(save, 1000);
-    expect(loaded.state.draft).toEqual({ era: 1, offers: [2], rolls: 0 });
+    expect(loaded.state.draft).toEqual({ era: 1, offers: [2], rolls: 0, rerolled:[true] });
   });
 });
 describe("resources instead of waiting", () => {
@@ -444,7 +451,8 @@ describe("build transactions and deep compositions", () => {
     g.openDraft();
     const html = draftHall(g.state, false);
     expect(html.match(/data-recruit=/g)).toHaveLength(3);
-    expect(html).toContain("Filtro da carta 3");
+    expect(html).not.toContain("data-draft-filter");
+    expect(html.match(/Trocar · grátis/g)).toHaveLength(3);
     expect(html).toContain("draft-base-stats");
     expect(arsenal(g.state, null, "builds", false)).toContain(
       "data-prepare-build",

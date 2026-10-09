@@ -389,7 +389,16 @@ export function itemFit(c: Character, item: ItemDef): number {
     (p.healAllyOnCast ?? 0) * (spell ? 120 : 30) +
     (p.manaAfterCast ?? 0) * (spell ? 0.8 : 0.2) +
     (p.chain3 ?? 0) * 30 +
-    (p.asStack ?? 0) * 200
+    (p.asStack ?? 0) * 200 +
+    (p.crit3 ?? 0) * (spell ? 5 : 22) +
+    (p.thorns ?? 0) * (front ? 60 : 8) +
+    (p.healOnHit ?? 0) * (front || r === "flank" ? 450 : 150) +
+    (p.healOnKill ?? 0) * (spell ? 12 : 30) +
+    (p.startStealth ?? 0) * (r === "flank" ? 7 : 2) +
+    (p.startTaunt ?? 0) * (front ? 4 : -3) +
+    (p.lowHpShield ?? 0) * (front ? 45 : 25) +
+    (p.manaOnHit ?? 0) * (spell ? 3 : 1) +
+    (s.regen ?? 0) * (front ? 650 : 200)
   );
 }
 export function itemAdvice(s: GameState, h: Hero) {
@@ -687,7 +696,7 @@ export function itemReason(c: Character, item: ItemDef, s: GameState): string {
     return `${role}: mais vida para permanecer em combate.`;
   return `${role}: ${item.text}`;
 }
-function contextualItemFit(s: GameState, h: Hero, item: ItemDef): number {
+export function contextualItemFit(s: GameState, h: Hero, item: ItemDef): number {
   const t = enemyThreats(s),
     r = roleOf(char(h));
   return (

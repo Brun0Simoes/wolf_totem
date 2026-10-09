@@ -343,13 +343,10 @@
   gap: 8px;
   margin-top: 12px;
 }
-.draft-reroll select {
-  width: 100%;
-  font-size: 11px;
-  padding: 10px;
-  background: #0b1a1d;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+.draft-reroll small {
+  text-align: center;
+  color: var(--muted);
+  font-size: 10px;
 }
 .draft-reroll button {
   min-height: 38px;
@@ -1711,6 +1708,75 @@
 }
 .reduce-motion .draft-portrait > :is(img, .atlas-portrait) {
   transition: none;
+}
+/* Shared formation advice: the recipient and recipe remain visible together. */
+.formation-items { min-width: 0; }
+.formation-item-heading { display:flex; align-items:center; justify-content:space-between; gap:18px; margin:8px 0 16px; }
+.formation-item-heading h2 { font-size:30px; margin:5px 0 8px; }
+.formation-item-heading p { font-size:12px; color:var(--muted); }
+.formation-item-heading .primary { flex:none; min-height:46px; }
+.formation-item-note { font-size:12px; line-height:1.65; color:var(--muted); margin-bottom:20px; max-width:780px; }
+.formation-item-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.formation-item-card { display:flex; flex-direction:column; gap:15px; background:linear-gradient(145deg,#203638,#14242a); border:1px solid #a9c4aa30; border-radius:14px; padding:20px; min-width:0; }
+.formation-item-identity { display:flex; gap:12px; align-items:center; }
+.formation-item-identity > button { padding:0; flex:none; }
+.formation-item-identity .item-art { width:64px; height:64px; }
+.formation-item-identity h3 { font-size:25px; margin:5px 0; }
+.formation-item-identity .eyebrow { font-size:8px; color:var(--gold); line-height:1.5; }
+.formation-item-identity span { color:var(--muted); font-size:10px; }
+.formation-item-recipient { display:flex; align-items:center; gap:10px; background:#0c1c2255; padding:9px 12px; border:1px solid var(--line); border-radius:9px; }
+.formation-item-recipient > img { width:36px; height:44px; object-fit:contain; }
+.formation-item-recipient > .atlas-portrait { height:44px; width:calc(44px * var(--portrait-ratio)); max-width:46px; flex:none; }
+.formation-item-recipient > div { flex:1; }
+.formation-item-recipient b { font-size:13px; }
+.formation-item-recipient small { display:block; color:var(--muted); font-size:10px; margin-top:4px; }
+.formation-item-recipient > svg { color:var(--green); width:16px; }
+.formation-item-reason { font-size:12px; line-height:1.65; color:#bfd0c6; margin:0; }
+.formation-item-formula { display:flex; align-items:center; gap:8px; border-top:1px solid var(--line); padding-top:12px; }
+.formation-item-formula > span { display:flex; gap:6px; align-items:center; flex:1; min-width:0; }
+.formation-item-formula .item-art { width:32px; height:32px; }
+.formation-item-formula small { font-size:9px; color:var(--muted); line-height:1.5; }
+.formation-item-formula em { display:block; font-style:normal; color:var(--green); }
+.formation-item-formula > b { font-size:12px; color:var(--gold); }
+.formation-item-card details { font-size:10px; color:var(--muted); }
+.formation-item-card details summary { cursor:pointer; padding:4px 0; }
+.formation-item-card details p { font-size:11px; line-height:1.6; margin:8px 0; }
+.formation-item-card > .outline-button { margin-top:auto; min-height:44px; font-size:12px; border-color:#c6a46a60; color:var(--gold); }
+.formation-item-more { margin-top:16px; color:var(--muted); font-size:12px; }
+.formation-item-more > summary { cursor:pointer; padding:14px; background:#16282c; border:1px solid var(--line); border-radius:9px; margin-bottom:14px; }
+.formation-item-empty { border:1px dashed var(--line); border-radius:12px; padding:26px; color:var(--muted); font-size:12px; line-height:1.7; }
+.formation-item-empty button { display:block; margin-top:16px; }
+.formation-item-goal-heading { margin:32px 0 16px; }
+.formation-item-goal-heading h3 { font-size:25px; margin:8px 0; }
+.formation-item-goal-heading > p:last-child { font-size:11px; color:var(--muted); }
+.formation-item-goals { display:grid; gap:12px; }
+.formation-item-goals > article { border:1px solid var(--line); border-radius:12px; background:#122329; padding:16px; }
+.formation-item-goals > article > div:first-child { display:flex; gap:10px; align-items:center; }
+.formation-item-goals > article > div:first-child button { padding:0; }
+.formation-item-goals .item-art { width:40px; height:40px; }
+.formation-item-goals b { font-size:13px; }
+.formation-item-goals small { display:block; color:var(--muted); font-size:10px; margin-top:4px; }
+.formation-item-goals p { font-size:11px; color:var(--muted); line-height:1.6; margin:12px 0; }
+.formation-item-missing { display:flex; flex-wrap:wrap; gap:8px; }
+.formation-item-missing > button { display:flex; gap:7px; align-items:center; text-align:left; padding:9px; border:1px solid var(--line); border-radius:7px; font-size:10px; flex:1; }
+.formation-item-missing > button .item-art { width:28px; height:28px; }
+.formation-item-missing > button svg:last-child { width:14px; color:var(--gold); margin-left:auto; flex:none; }
+.formation-item-missing small { font-size:9px; }
+.coach-equipment-layout .formation-item-grid { grid-template-columns:1fr; }
+.coach-equipment-layout .formation-item-heading { align-items:flex-start; flex-direction:column; }
+.title-landscape > .atlas-portrait { position:absolute; left:12%; bottom:-3%; height:87%; width:auto; aspect-ratio:var(--portrait-ratio); filter:drop-shadow(0 25px 25px #0007); }
+@media (max-width:1100px) {
+  .formation-item-heading { align-items:flex-start; flex-direction:column; }
+  .formation-item-grid { grid-template-columns:1fr; }
+}
+@media (max-width:620px) {
+  .formation-item-heading h2 { font-size:27px; }
+  .formation-item-heading .primary { width:100%; }
+  .formation-item-note { font-size:11px; }
+  .formation-item-card { padding:16px; gap:12px; }
+  .formation-item-identity h3 { font-size:24px; }
+  .formation-item-identity .item-art { width:52px; height:52px; }
+  .formation-item-reason { font-size:11px; }
 }
 .ritual-companion {
   position: sticky;

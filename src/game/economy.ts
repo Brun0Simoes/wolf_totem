@@ -1,16 +1,16 @@
 import { characters, type Character } from "../data/characters";
 import { nextRandom } from "./roster";
-import { roleOf } from "./armyAdvisor";
 import type { PracticeId } from "./tribe";
 
 export interface Draft {
   era: number;
   offers: number[];
   rolls: number;
+  /** One free, random replacement per card, persisted across reloads. */
+  rerolled: boolean[];
 }
 export const STARTING_AMBER = 80;
 export const draftCost = (era: number) => 24 + era * 12;
-export const rerollCost = (era: number) => 5 + era * 3;
 export const componentCost = (era: number) => 26 + era * 4;
 export const RITUAL_PRICES: Record<PracticeId, number> = {
   rape: 16,
@@ -37,16 +37,8 @@ export function draftPool(
   era: number,
   owned: number[],
   excluded: number[] = [],
-  target = "",
 ): Character[] {
-  return characters.filter((c) => {
-    if (c.cost > era || owned.includes(c.id) || excluded.includes(c.id))
-      return false;
-    if (!target) return true;
-    if (target.startsWith("role:")) return roleOf(c) === target.slice(5);
-    if (target.startsWith("trait:")) return c.traits.includes(target.slice(6));
-    return false;
-  });
+  return characters.filter((c) => c.cost <= era && !owned.includes(c.id) && !excluded.includes(c.id));
 }
 /** Cost tiers use equal weights. Exhausted tiers disappear; candidates are sampled without replacement. */
 export function drawCandidates(
@@ -55,11 +47,10 @@ export function drawCandidates(
   excluded: number[],
   seed: number,
   count: number,
-  target = "",
 ) {
   const offers: number[] = [];
   for (let i = 0; i < count; i++) {
-    const pool = draftPool(era, owned, [...excluded, ...offers], target);
+    const pool = draftPool(era, owned, [...excluded, ...offers]);
     if (!pool.length) break;
     const tiers = [...new Set(pool.map((c) => c.cost))];
     const a = nextRandom(seed);
@@ -76,6 +67,7 @@ export function sanitizeDraft(
   value: unknown,
   era: number,
   owned: number[],
+  legacy = false,
 ): Draft | null {
   if (!value || typeof value !== "object") return null;
   const d = value as Record<string, unknown>;
@@ -84,17 +76,20 @@ export function sanitizeDraft(
     typeof d.era === "number" && Number.isInteger(d.era)
       ? Math.max(1, Math.min(era, d.era))
       : era;
-  const offers = [...new Set(d.offers)]
-    .filter(
-      (id) =>
-        typeof id === "number" &&
-        draftPool(paidEra, owned).some((c) => c.id === id),
-    )
-    .slice(0, 3) as number[];
+  const offers: number[] = [], rerolled: boolean[] = [];
+  const allowed = new Set(draftPool(paidEra, owned).map(c => c.id));
+  d.offers.forEach((id, index) => {
+    if (typeof id !== "number" || !allowed.has(id) || offers.includes(id) || offers.length >= 3) return;
+    offers.push(id);
+    // v9 did not record card history. Its existing offers receive the new allowance once.
+    // Missing or corrupt v10 flags cannot restore a spent replacement.
+    rerolled.push(legacy ? false : !Array.isArray(d.rerolled) || d.rerolled[index] !== false);
+  });
   return offers.length
     ? {
         era: paidEra,
         offers,
+        rerolled,
         rolls:
           typeof d.rolls === "number" && Number.isFinite(d.rolls)
             ? Math.max(0, Math.min(1e6, Math.floor(d.rolls)))
