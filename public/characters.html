@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Os 55 guardiões · Wolf Totem</title>
+  <link rel="stylesheet" href="assets/lpc-gallery.css">
+</head>
+<body>
+  <main>
+    <header><a href="./">← Voltar à tribo</a><span>WOLF TOTEM · ATELIÊ DOS ESPÍRITOS</span>
+      <h1>Os 55 guardiões.</h1><p>Explore as três formas de cada guardião, seus movimentos e os quatro lados da sua animação.</p>
+      <a href="credits/lpc-credits.html">Conheça os artistas e as fontes da arte LPC ↗</a>
+    </header>
+    <section class="controls" aria-label="Controles da galeria">
+      <label>Era<select id="era"><option value="0">Todas as eras</option><option value="1">I · O despertar</option><option value="2">II · Os vínculos</option><option value="3">III · Os espíritos</option><option value="4">IV · Os avatares</option><option value="5">V · Os ancestrais</option></select></label>
+      <label>Forma<select id="stars"><option value="1">1★ · Iniciado</option><option value="2">2★ · Vinculado</option><option value="3" selected>3★ · Avatar</option></select></label>
+      <label>Movimento<select id="motion"><option value="idle">Repouso</option><option value="walk">Caminhada</option><option value="attack">Ataque</option><option value="cast">Conjuração</option><option value="hurt">Impacto</option><option value="death">Queda</option><option value="victory">Celebração</option></select></label>
+      <label>Direção<select id="direction"><option value="south">Frente</option><option value="west">Esquerda</option><option value="north">Costas</option><option value="east">Direita</option></select></label>
+      <label>Buscar<input id="search" type="search" placeholder="Nome do guardião"></label>
+      <button id="pause" aria-pressed="false">Pausar</button>
+    </section>
+    <p id="status" role="status">Carregando guardiões…</p>
+    <section id="gallery" aria-label="Galeria dos guardiões"></section>
+  </main>
+  <script type="module" src="assets/lpc-gallery.js"></script>
+</body>
+</html>

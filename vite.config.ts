@@ -9,7 +9,10 @@ export default defineConfig({
   plugins: [{name:'wolf-asset-metadata',enforce:'pre',resolveId(id){if(id==='virtual:wolf-animations'||id==='virtual:wolf-environment')return '\0'+id;},load(id){
     if(id==='\0virtual:wolf-animations'){
       const read=(dirs:string[])=>dirs.flatMap(dir=>readdirSync(dir).filter(name=>name.endsWith('.json')).sort().map(name=>{const path=resolve(dir,name);this.addWatchFile(path);return JSON.parse(readFileSync(path,'utf8'));}));
-      return `export const heroes=${JSON.stringify(read(['public/assets/animations/v2','public/assets/animations/v3']))};export const summons=${JSON.stringify(read(['public/assets/animations/summons']))};`;
+      // Tuples keep the startup bundle small; the runtime expands them into the public atlas contract.
+      const compact=(sheets:ReturnType<typeof read>)=>sheets.map(s=>({...s,frameRects:s.frameRects?.map((r:{x:number;y:number;width:number;height:number})=>[r.x,r.y,r.width,r.height]),frameAnchors:s.frameAnchors?.map((a:{x:number;y:number})=>[a.x,a.y])}));
+      const expand=`const expand=sheets=>sheets.map(({frameRects,frameAnchors,...sheet})=>({...sheet,frameRects:frameRects?.map(([x,y,width,height])=>({x,y,width,height})),frameAnchors:frameAnchors?.map(([x,y])=>({x,y}))}));`;
+      return `${expand}export const heroes=expand(${JSON.stringify(compact(read(['public/assets/animations/v2','public/assets/animations/v3'])))});export const lpcHeroes=expand(${JSON.stringify(compact(read(['public/assets/animations/lpc'])))});export const summons=expand(${JSON.stringify(compact(read(['public/assets/animations/summons'])))});`;
     }
     if(id==='\0virtual:wolf-environment'){
       const read=(name:string)=>{const path=resolve('public/assets/environment',name+'.json');this.addWatchFile(path);return readFileSync(path,'utf8');};
@@ -27,5 +30,5 @@ export default defineConfig({
     mkdirSync('dist/chars', { recursive: true });
     for (const name of readdirSync('chars')) if (name.endsWith('.png')) copyFileSync(resolve('chars', name), resolve('dist/chars', name));
   }}],
-  build: { chunkSizeWarningLimit: 1600, rollupOptions: { output: { manualChunks: { phaser: ['phaser'] } } } },
+  build: { chunkSizeWarningLimit: 1600, rollupOptions: { output: { manualChunks: { phaser: ['phaser'], 'character-atlases': ['virtual:wolf-animations'] } } } },
 });

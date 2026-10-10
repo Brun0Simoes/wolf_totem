@@ -6,7 +6,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const source = readFileSync(resolve(root, 'src/data/characters.ts'), 'utf8');
 const start = source.indexOf('export const characters: Character[] = ') + 'export const characters: Character[] = '.length;
 const characters = JSON.parse(source.slice(start, source.lastIndexOf('];') + 1));
-const manifests = ['v2', 'v3'].flatMap(version => {
+const manifests = ['lpc'].flatMap(version => {
   const dir = resolve(root, 'public/assets/animations', version);
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter(n => n.endsWith('.json')).map(name => JSON.parse(readFileSync(resolve(dir, name), 'utf8')));
@@ -24,11 +24,13 @@ const summons = summonKinds.map(kind => {
   return {kind, ready:!!sheet && sheet.summonId === kind && existsSync(resolve(root, 'public', sheet.image.slice(1)))};
 });
 const missingSummons = summons.filter(s => !s.ready).map(s => s.kind);
-const summary = {characters:55, charactersWithAnimation:rows.filter(r=>r.stages.some(Boolean)).length, animatedStages:keys.size, targetStages:165, completeCharacters:finished, sequences:keys.size*3, poses:keys.size*12, missing:absent, animatedSummons:summons.length-missingSummons.length, targetSummons:summons.length, missingSummons};
+const sequences=manifests.reduce((n,s)=>n+Object.values(s.directions??{south:s.clips}).reduce((sum,clips)=>sum+Object.keys(clips).length,0),0);
+const poses=manifests.reduce((n,s)=>n+(s.frameRects?.length??0),0);
+const summary = {characters:55, style:'lpc', charactersWithAnimation:rows.filter(r=>r.stages.some(Boolean)).length, animatedStages:keys.size, targetStages:165, completeCharacters:finished, directions:4, sequences, poses, missing:absent, animatedSummons:summons.length-missingSummons.length, targetSummons:summons.length, missingSummons};
 console.log(JSON.stringify(process.argv.includes('--complete') ? summary : {...summary,missing:absent.length},null,2));
 if(process.argv.includes('--write')) {
   mkdirSync(resolve(root,'docs/production'),{recursive:true});
-  const lines=['# Estado da produção de arte','',`Formas animadas: **${keys.size}/165**. Personagens com as três formas: **${finished}/55**.`, '', 'Cada forma tem repouso, caminhada e ataque/conjuração, com quatro poses por sequência. Impacto, queda e vitória usam movimentos programados.','','| ID | Personagem | Custo | 1★ | 2★ | 3★ |','| --- | --- | --- | --- | --- | --- |',...rows.map(r=>`| ${r.id} | ${r.name} | ${r.cost} | ${r.stages.map(s=>s?'Pronto':'Pendente').join(' | ')} |`),'','Gerado por `npm run roster:status -- --write`. Os arquivos prontos são entregas de protótipo e continuam sujeitos a refinamento artístico.',''];
+  const lines=['# Estado da produção de arte','',`Formas LPC animadas: **${keys.size}/165**. Personagens com as três formas: **${finished}/55**.`, '', `Cada forma tem repouso, caminhada, ataque, conjuração, impacto, queda e celebração. São **${sequences} sequências direcionais** e **${poses} quadros no atlas**. A queda original LPC tem uma orientação, repetida nas quatro direções; a celebração usa os braços erguidos da conjuração. Quadros repetidos de repouso e sequências compartilhadas estão incluídos na contagem.`, '', 'Os retratos e as folhas pintadas anteriores foram preservados. [Produção LPC, créditos e reprodução](LPC.md).','','| ID | Personagem | Custo | 1★ | 2★ | 3★ |','| --- | --- | --- | --- | --- | --- |',...rows.map(r=>`| ${r.id} | ${r.name} | ${r.cost} | ${r.stages.map(s=>s?'Pronto':'Pendente').join(' | ')} |`),'','Gerado por `npm run roster:status -- --write`.',''];
   lines.splice(lines.length-2,0,'## Criaturas invocadas','', '| Criatura | Atlas animado |','| --- | --- |',...summons.map(s => `| ${summonNames[s.kind]} | ${s.ready ? 'Pronto' : 'Pendente'} |`),'');
   writeFileSync(resolve(root,'docs/production/STATUS.md'),lines.join('\n'));
 }

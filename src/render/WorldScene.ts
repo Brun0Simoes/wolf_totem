@@ -3,7 +3,7 @@ import { fx,props,spellAtlas } from 'virtual:wolf-environment';
 import { OVERTIME_START, type Game } from '../game/simulation';
 import { characters } from '../data/characters';
 import { animationSheets, assetUrl, bestAnimation, getAnimation, getSummonAnimation, frameRect, sheetKey, summonSheetKey } from './animationAssets';
-import { advanceMotion, createMotion, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState, type SheetDefinition } from './animationModel';
+import { advanceMotion, createMotion, directionFor, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState, type SheetDefinition } from './animationModel';
 import { CombatEffects, SKILL_COLORS } from './CombatEffects';
 import { combatProfile } from './combatProfiles';
 import { separateBodies } from '../game/combatTiming';
@@ -261,7 +261,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
 
     private registerAtlas(sheet: SheetDefinition, key = sheetKey(sheet.characterId, sheet.stars)): void {
       const texture = this.textures.get(key);
-      for (let i = 0; i < sheet.columns * sheet.rows; i++) {
+      if (sheet.style === 'lpc') texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+      for (let i = 0; i < (sheet.frameRects?.length ?? sheet.columns * sheet.rows); i++) {
         if (texture.has(String(i))) continue;
         const rect = frameRect(sheet, i);
         texture.add(i, 0, rect.x, rect.y, rect.width, rect.height);
@@ -355,6 +356,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       layer.add([shadow,ring, sprite, bars, name,conditions]);
       const motion = createMotion(characterId * .173 + this.units.size * .11);
       motion.facing = enemy ? -1 : 1;
+      motion.direction = enemy ? 'south' : 'north';
       const profile=combatProfile(characterId);Object.assign(motion,{weight:profile.weight,stride:profile.stride,reach:profile.reach});
       if (summon) { ring.setScale(.6); name.setFontSize(8).setAlpha(.8); }
       return { summon, transform: false,morph:0,stealth:false,shadow,conditions,hpTrail:-1,step:-1,trailAt:0,layer, sprite, bars, name, ring, baseTexture: key, desiredHeight: height, characterId, stars, motion, x: 0, y: 0, lastHp: -1, enemy, lastHit: 0, flashUntil: 0, flashReady: 0 };
@@ -385,9 +387,10 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       return view;
     }
 
-    private presentUnit(view: UnitView, desired: MotionClip, dt: number, x: number, y: number, direction = 0): void {
+    private presentUnit(view: UnitView, desired: MotionClip, dt: number, x: number, y: number, direction = 0, verticalDirection = 0): void {
       if(view.dragging)return;
       advanceMotion(view.motion, desired, dt, direction);
+      if (dt > 0 && view.motion.locked === 0 && desired !== 'death') view.motion.direction = directionFor(direction, verticalDirection, view.motion.direction);
       const creature = !!view.summon && view.summon !== 'echo';
       const character = characters.find(h => h.id === view.characterId);
       // Painted sheet of this star, original illustration, closest painted star with an aura, or the drawn figure.
@@ -398,14 +401,15 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       else if (art?.kind === 'procedural') { sheet = this.ensureProcedural(view.characterId, view.stars); key = procKey(view.characterId, view.stars); }
       const hasSheet = !!sheet && this.textures.exists(key);
       this.updateAura(view, art?.kind === 'standin' && view.stars >= 2 && desired !== 'death', x, y);
-      const pose = poseForMotion(view.motion, hasSheet, this.reducedMotion);
+      const directional = !!sheet?.directions;
+      const pose = poseForMotion(view.motion, hasSheet, this.reducedMotion, sheet?.style === 'lpc');
       if (!creature) view.baseTexture = this.resolveArt(view.characterId, view.stars);
       let scale: number;
       if (sheet && hasSheet) {
         const frame = frameForMotion(view.motion, sheet, this.reducedMotion);
         view.sprite.setTexture(key, frame);
         const anchor = sheet.frameAnchors?.[frame] ?? { x: sheet.anchorX, y: sheet.anchorY };
-        const footX = view.motion.facing < 0 ? view.sprite.width - anchor.x : anchor.x;
+        const footX = !directional && view.motion.facing < 0 ? view.sprite.width - anchor.x : anchor.x;
         view.sprite.setOrigin(footX / view.sprite.width, anchor.y / view.sprite.height);
         scale = view.desiredHeight / sheet.bodyHeight;
       } else {
@@ -418,7 +422,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       // On the arena, the back rows stand a little smaller.
       const depth = view.layer === this.battlefield ? perspectiveScale(y) : 1;
       scale *= depth;
-      view.sprite.setFlipX(view.motion.facing < 0).setScale(scale * pose.scaleX, scale * pose.scaleY);
+      view.sprite.setFlipX(!directional && view.motion.facing < 0).setScale(scale * pose.scaleX, scale * pose.scaleY);
       view.sprite.setPosition(x + pose.x, y + 5 + pose.y).setAngle(pose.angle).setAlpha(pose.alpha * (view.summon ? .82 : 1)*(view.stealth?.34:1)).setDepth(y + 10);
       view.shadow.setPosition(x,y+8).setDepth(y-2).setScale(depth*(1+view.morph*.2)).setAlpha(desired==='death'?pose.alpha*.3:.36);
       // A short flash per hit, at most a few times per second, so crowded fights keep their colours.
@@ -471,7 +475,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         this.removeUnitsExcept(keep); this.zoneLayer.clear(); return;
       }
       const keep = new Set<string>();
-      const positions = new Map<string, { x: number; y: number; dx: number; moving: boolean }>();
+      const positions = new Map<string, { x: number; y: number; dx: number; dy: number; moving: boolean }>();
       const bodies=battle.entities.map(e=>({id:e.id,x:e.x,y:e.y,hp:e.hp,summon:e.summon}));
       for(let pass=0;pass<4;pass++)separateBodies(bodies,.04,p=>{p.x=Math.max(0,Math.min(6.5,p.x));p.y=Math.max(0,Math.min(7,p.y));});
       for (const entity of battle.entities) {
@@ -484,7 +488,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         const fresh = view.lastHp < 0;
         const blend = fresh ? 1 : motionDt > 0 ? 1 - Math.exp(-motionDt * 18) : 0;
         const sx = Phaser.Math.Linear(view.x, x, blend), sy = Phaser.Math.Linear(view.y, y, blend);
-        positions.set(id, { x: sx, y: sy, dx: fresh ? 0 : sx - view.x, moving: !fresh && Math.hypot(x - view.x, y - view.y) > 1 });
+        positions.set(id, { x: sx, y: sy, dx: fresh ? 0 : sx - view.x, dy: fresh ? 0 : sy - view.y, moving: !fresh && Math.hypot(x - view.x, y - view.y) > 1 });
         view.lastHp = entity.hp;
         view.hpTrail=view.hpTrail<0?entity.hp:Phaser.Math.Linear(view.hpTrail,entity.hp,1-Math.exp(-motionDt*3));
       }
@@ -501,9 +505,11 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         const b = positions.get(String(event.targetId ?? event.sourceId));
         if (!target || !b) continue;
         if(event.type==='prepare'&&source&&a){
+          source.motion.direction = directionFor(b.x-a.x, b.y-a.y, source.motion.direction);
           source.motion.preparingCast=event.text==='cast';triggerMotion(source.motion,'windup',b.x-a.x,event.duration??.2);
           if(event.text==='cast')this.effects.prepare(a,source.characterId,event.duration??.3);
         }else if ((event.type === 'attack' || event.type === 'skill') && source && a) {
+          source.motion.direction = directionFor(b.x-a.x, b.y-a.y, source.motion.direction);
           triggerMotion(source.motion, event.type === 'skill' ? 'cast' : 'attack', b.x - a.x);
           const entity = battle.entities.find(e => String(e.id) === String(event.sourceId));
           if (event.type === 'attack') this.effects.attack(source.characterId, a, b, (entity?.range ?? 1) > 1,event.duration??.2,()=>{const v=this.units.get(String(event.targetId));return v?{x:v.x,y:v.y}:b;});
@@ -548,6 +554,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         }
         else if (event.type === 'revive') {
           target.motion = createMotion(target.motion.seed); target.motion.facing = target.enemy ? -1 : 1;
+          target.motion.direction = target.enemy ? 'south' : 'north';
           const profile=combatProfile(target.characterId);Object.assign(target.motion,{weight:profile.weight,stride:profile.stride,reach:profile.reach});
           this.effects.revive(b); if (event.text) this.floatText(event.text, b.x, b.y - 122, '#f4d79b', true);
         }
@@ -559,7 +566,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         const view = this.units.get(String(entity.id))!, p = positions.get(String(entity.id))!;
         const winner = battle.status === 'victory' ? 'ally' : battle.status === 'defeat' ? 'enemy' : null;
         const desired = entity.hp <= 0 ? 'death' : entity.team === winner ? 'victory' : p.moving || entity.action === 'walk' ? 'walk' : 'idle';
-        this.presentUnit(view, desired, motionDt, p.x, p.y, p.dx);
+        this.presentUnit(view, desired, motionDt, p.x, p.y, p.dx, p.dy);
         this.drawBars(view, entity, p.x, p.y + 14);
         this.drawConditions(view,entity,p.x,p.y);
       }

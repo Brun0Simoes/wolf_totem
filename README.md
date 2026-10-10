@@ -71,16 +71,16 @@ Detalhes e limites artísticos: [Combate e animações](docs/COMBATE-ANIMACOES.m
 
 ## Arte
 
-Os **55 personagens têm as formas 1★, 2★ e 3★ animadas: 165 atlas, 495 sequências e 1.980 poses desenhadas**. Cada forma tem repouso, caminhada e ataque/conjuração. Impacto, queda e vitória usam movimento programado; ataque e habilidade compartilham as poses do atlas.
+Os **55 personagens têm sprites LPC em 1★, 2★ e 3★: 165 atlas com quatro direções e sete movimentos** — repouso, caminhada, ataque, conjuração, impacto, queda e celebração. Os retratos ilustrados foram preservados. Consulte a **Galeria dos 55 guardiões**, nas configurações, para ver todas as formas em movimento. [Produção LPC e créditos](docs/production/LPC.md).
 
 O jogo escolhe automaticamente, nesta ordem:
 
-1. a folha pintada da estrela;
+1. a folha LPC da estrela, seguida pela folha pintada quando LPC não estiver disponível;
 2. a ilustração original (personagens de custo 1);
 3. a folha pintada mais próxima, com o animal espiritual em aura atrás (2★ e 3★);
 4. uma **figura desenhada pelo código**, com poses de repouso, caminhada e ataque e com a progressão 1★ humano, 2★ vínculo e 3★ avatar.
 
-Quando uma folha pintada entra em `public/assets/animations/v3`, ela é registrada por personagem e estrela. O [inventário de arte](docs/production/STATUS.md) mostra a cobertura completa e o estado das criaturas invocadas. Detalhes em [Arte e animação](docs/ARTE-E-ANIMACAO.md).
+As folhas LPC em `public/assets/animations/lpc` são registradas por personagem e estrela. O [inventário de arte](docs/production/STATUS.md) mostra a cobertura completa e o estado das criaturas invocadas. Detalhes em [Arte e animação](docs/ARTE-E-ANIMACAO.md).
 
 As cinco criaturas invocadas (aranha, corvo, escaravelho, lobo e elefante) também têm folhas pintadas de repouso, caminhada e ataque, carregadas sob demanda no campo. O eco de Amaru usa a arte do próprio herói. Os espíritos, estandartes e o Grande Totem usam glifos de máscara de totem (27 animais) desenhados em SVG/Canvas. A arena de cada região e as figuras provisórias, com sombreado, rosto e roupas detalhadas, também são pintadas pelo código. Som e música são sintetizados com WebAudio: ative-os no ícone de volume ou nas configurações.
 
