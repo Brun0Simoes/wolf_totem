@@ -2,7 +2,6 @@
 
 declare module 'virtual:wolf-animations' {
   export const heroes: import('./render/animationModel').SheetDefinition[];
-  export const lpcHeroes: import('./render/animationModel').SheetDefinition[];
   export const summons: import('./render/animationModel').SheetDefinition[];
 }
 declare module 'virtual:wolf-environment' {

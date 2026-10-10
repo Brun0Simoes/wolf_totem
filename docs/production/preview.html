@@ -8,7 +8,7 @@
 </style>
 <main>
 <h1>Wolf Totem — revisão de animações</h1>
-<p>165 formas LPC e cinco criaturas. Prévia de produção no servidor de desenvolvimento. Sete movimentos e quatro direções para os heróis. <a href="/characters.html">Abrir a galeria completa dos 55 guardiões</a>.</p>
+<p>165 formas de heróis e cinco criaturas. Prévia de produção disponível no servidor de desenvolvimento; não altera a jornada. Cada folha tem quatro poses por ciclo. Impacto, queda e vitória usam movimento programado.</p>
 <div class="controls"><label>Personagem <select id="character"></select></label><label>Estrelas <select id="stars"><option value="1">1★</option><option value="2">2★</option><option value="3" selected>3★</option></select></label></div>
 <div class="controls" id="motions"><button data-clip="idle" aria-pressed="true">Repouso</button><button data-clip="walk" aria-pressed="false">Caminhada</button><button data-clip="attack" aria-pressed="false">Ataque</button><button data-clip="cast" aria-pressed="false">Habilidade</button><button data-clip="hurt" aria-pressed="false">Impacto</button><button data-clip="death" aria-pressed="false">Queda</button><button data-clip="victory" aria-pressed="false">Vitória</button><button id="flip" aria-pressed="false">Espelhar</button><button id="pause" aria-pressed="false">Pausar</button></div>
 <figure id="hero"><canvas width="440" height="260" aria-label="Animação do personagem selecionado"></canvas><figcaption></figcaption></figure>
@@ -21,7 +21,7 @@ import { createMotion, advanceMotion, frameForMotion, poseForMotion, CLIP_DURATI
 const character=document.querySelector('#character'),stars=document.querySelector('#stars'),status=document.querySelector('#status');
 const heroes=[...animationSheets.values()].filter(s=>(s.stars??1)===1).sort((a,b)=>a.characterId-b.characterId);
 for(const sheet of heroes){const option=document.createElement('option');option.value=sheet.characterId;option.textContent=`${sheet.characterId}. ${sheet.name}`;character.append(option);}
-let clip='idle',paused=false,facing=1,direction='south',hero,token=0;
+let clip='idle',paused=false,facing=1,hero,token=0;
 const creatures=[],images=new Map();
 async function load(sheet,figure){let image=images.get(sheet.image);if(!image){image=new Image();image.src=sheet.image;await image.decode();images.set(sheet.image,image);}figure.querySelector('figcaption').textContent=sheet.name;return{sheet,image,canvas:figure.querySelector('canvas'),motion:createMotion(0)};}
 async function selectHero(){const current=++token;try{const next=await load(getAnimation(Number(character.value),Number(stars.value)),document.querySelector('#hero'));if(current===token){hero=next;status.textContent=`${animationSheets.size} formas · ${summonSheets.size} criaturas · carregamento concluído`;}}catch(error){status.textContent=`Falha no carregamento: ${error.message}`;console.error(error);}}
@@ -29,12 +29,11 @@ character.addEventListener('change',selectHero);stars.addEventListener('change',
 for(const sheet of summonSheets.values()){const figure=document.createElement('figure');const canvas=document.createElement('canvas');canvas.width=440;canvas.height=260;canvas.setAttribute('aria-label',sheet.name);figure.append(canvas,document.createElement('figcaption'));document.querySelector('#summons').append(figure);try{creatures.push(await load(sheet,figure));}catch(error){status.textContent=`Falha: ${error.message}`;console.error(error);}}
 function restart(){for(const item of [hero,...creatures].filter(Boolean)){item.motion=createMotion(0);}}
 for(const button of document.querySelectorAll('[data-clip]'))button.addEventListener('click',()=>{clip=button.dataset.clip;for(const other of document.querySelectorAll('[data-clip]'))other.setAttribute('aria-pressed',String(other===button));restart();});
-document.querySelector('#flip').textContent='Virar';
-document.querySelector('#flip').addEventListener('click',event=>{facing*=-1;const dirs=['south','west','north','east'];direction=dirs[(dirs.indexOf(direction)+1)%4];event.currentTarget.setAttribute('aria-pressed',String(facing<0));});
+document.querySelector('#flip').addEventListener('click',event=>{facing*=-1;event.currentTarget.setAttribute('aria-pressed',String(facing<0));});
 document.querySelector('#pause').addEventListener('click',event=>{paused=!paused;event.currentTarget.textContent=paused?'Retomar':'Pausar';event.currentTarget.setAttribute('aria-pressed',String(paused));});
 function draw(item,dt){const{sheet,image,canvas,motion}=item;const ctx=canvas.getContext('2d');if(!paused){if(clip==='death'&&motion.elapsed>CLIP_DURATION.death+1){item.motion=createMotion(0);}advanceMotion(item.motion,clip==='hurt'?'idle':clip,dt,facing);if(clip==='hurt'&&item.motion.hit===0)item.motion.hit=CLIP_DURATION.hurt;}
-const current=item.motion;current.facing=facing;current.direction=direction;const index=frameForMotion(current,sheet);const rect=frameRect(sheet,index),anchor=sheet.frameAnchors?.[index]??{x:sheet.anchorX,y:sheet.anchorY},pose=poseForMotion(current,true,false,sheet.style==='lpc');const scale=130/sheet.bodyHeight;
-ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=sheet.style!=='lpc';ctx.fillStyle='#203b30';ctx.beginPath();ctx.ellipse(220,224,65,12,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#6d805a';ctx.beginPath();ctx.moveTo(80,224);ctx.lineTo(360,224);ctx.stroke();ctx.save();ctx.translate(220+pose.x,224+pose.y);ctx.rotate(pose.angle*Math.PI/180);ctx.scale(scale*(sheet.directions?1:facing)*pose.scaleX,scale*pose.scaleY);ctx.globalAlpha=pose.alpha;ctx.drawImage(image,rect.x,rect.y,rect.width,rect.height,-anchor.x,-anchor.y,rect.width,rect.height);ctx.restore();}
+const current=item.motion;current.facing=facing;const index=frameForMotion(current,sheet);const rect=frameRect(sheet,index),anchor=sheet.frameAnchors?.[index]??{x:sheet.anchorX,y:sheet.anchorY},pose=poseForMotion(current,true);const scale=130/sheet.bodyHeight;
+ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#203b30';ctx.beginPath();ctx.ellipse(220,224,65,12,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#6d805a';ctx.beginPath();ctx.moveTo(80,224);ctx.lineTo(360,224);ctx.stroke();ctx.save();ctx.translate(220+pose.x,224+pose.y);ctx.rotate(pose.angle*Math.PI/180);ctx.scale(scale*facing*pose.scaleX,scale*pose.scaleY);ctx.globalAlpha=pose.alpha;ctx.drawImage(image,rect.x,rect.y,rect.width,rect.height,-anchor.x,-anchor.y,rect.width,rect.height);ctx.restore();}
 await selectHero();let last=performance.now();function tick(now){const dt=Math.min(.1,(now-last)/1000);last=now;for(const item of [hero,...creatures].filter(Boolean))draw(item,dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 </script>
 </html>

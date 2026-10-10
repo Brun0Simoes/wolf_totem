@@ -1,12 +1,6 @@
 # Wolf Totem — arte e animação
 
-## Produção atual — LPC, 9 de outubro de 2026
-
-Os 55 guardiões usam **165 formas LPC, sete movimentos e quatro direções**, com evolução de roupas, adornos e traços animais. Caminhada, ataque e conjuração têm quadros próprios; o campo seleciona a direção real e mantém os pontos de apoio estáveis. Os retratos ilustrados e as cinco invocações foram preservados.
-
-Consulte a [produção LPC](production/LPC.md) para fontes, licenças, reprodução e limites das adaptações. A galeria publicada `characters.html`, acessível pelas configurações, permite comparar todos os personagens. Os créditos dos 607 arquivos utilizados também ficam disponíveis no jogo.
-
-## Arquivo de produção pintada — 7 de outubro de 2026
+## Produção atual — 7 de outubro de 2026
 
 Os 55 personagens têm **165 formas animadas (1★, 2★ e 3★)**. São 495 sequências e 1.980 poses desenhadas: repouso, caminhada e ataque/conjuração, quatro poses por sequência. Impacto, queda e vitória usam movimento programado; ataque e habilidade compartilham poses.
 

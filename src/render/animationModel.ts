@@ -1,14 +1,11 @@
 /** Rendering clock only. Combat damage, mana and timings stay in the simulation. */
 export type MotionClip = 'idle' | 'walk' | 'windup' | 'attack' | 'cast' | 'hurt' | 'death' | 'victory';
-export type FacingDirection = 'north' | 'west' | 'south' | 'east';
-export type AnimationClips = { idle: number[]; walk: number[]; attack: number[] } & Partial<Record<MotionClip, number[]>>;
 export interface MotionState {
   clip: MotionClip;
   elapsed: number;
   locked: number;
   hit: number;
   facing: number;
-  direction?: FacingDirection;
   seed: number;
   duration?:number;
   weight?:number;
@@ -35,20 +32,13 @@ export interface SheetDefinition {
   imageWidth?: number;
   imageHeight?: number;
   portrait?: { x: number; y: number; width: number; height: number };
-  clips: AnimationClips;
-  directions?: Record<FacingDirection, AnimationClips>;
-  style?: 'lpc' | 'painted';
+  clips: { idle: number[]; walk: number[]; attack: number[] };
   notes?: string;
 }
 export const CLIP_DURATION: Record<MotionClip, number> = {
   idle: 1.35, walk: .64, windup:.2, attack: .34, cast: .48, hurt: .23, death: .95, victory: 1.2,
 };
 export function createMotion(seed = 0): MotionState { return { clip: 'idle', elapsed: seed % 1, locked: 0, hit: 0, facing: 1, seed }; }
-/** Pick the actual sprite row, keeping the last direction when a unit stops. */
-export function directionFor(dx: number, dy: number, fallback: FacingDirection = 'south'): FacingDirection {
-  if (!Number.isFinite(dx) || !Number.isFinite(dy) || Math.hypot(dx, dy) < .01) return fallback;
-  return Math.abs(dx) > Math.abs(dy) ? dx < 0 ? 'west' : 'east' : dy < 0 ? 'north' : 'south';
-}
 export function triggerMotion(state: MotionState, clip: MotionClip, direction = state.facing,duration=CLIP_DURATION[clip]): void {
   if (state.clip === 'death') return;
   // A new hit only restarts the recoil once the previous one is mostly over, so crowded fights still read.
@@ -73,19 +63,6 @@ export function advanceMotion(state: MotionState, desired: MotionClip, seconds: 
   if (Math.abs(direction) > .8) state.facing = Math.sign(direction);
 }
 export function frameForMotion(state: MotionState, sheet: SheetDefinition, reducedMotion = false): number {
-  if (sheet.directions) {
-    const clips = sheet.directions[state.direction ?? 'south'] ?? sheet.clips;
-    if (reducedMotion && state.clip === 'idle') return clips.idle[0];
-    const reacting = state.hit > 0 && (state.clip === 'idle' || state.clip === 'walk');
-    const motion = reacting ? 'hurt' : state.clip === 'windup' ? 'attack' : state.clip;
-    const frames = clips[motion] ?? clips.idle;
-    const duration = reacting ? CLIP_DURATION.hurt : state.duration ?? CLIP_DURATION[state.clip];
-    const elapsed = reacting ? CLIP_DURATION.hurt - state.hit : state.elapsed;
-    if (state.clip === 'windup') return frames[Math.min(1, Math.floor(Math.min(.999, elapsed / duration) * 2))];
-    const looping = motion === 'idle' || motion === 'walk' || motion === 'victory';
-    const phase = looping ? elapsed % duration / duration : Math.min(.999, elapsed / duration);
-    return frames[Math.min(frames.length - 1, Math.max(0, Math.floor(phase * frames.length)))];
-  }
   const clip = state.clip === 'walk' ? 'walk' : state.clip === 'windup'||state.clip === 'attack' || state.clip === 'cast' ? 'attack' : 'idle';
   const frames = sheet.clips[clip];
   if (state.clip === 'death' || (reducedMotion && state.clip === 'idle')) return sheet.clips.idle[0];
@@ -96,7 +73,7 @@ export function frameForMotion(state: MotionState, sheet: SheetDefinition, reduc
     : (state.elapsed % duration) / duration;
   return frames[Math.min(frames.length - 1, Math.floor(phase * frames.length))];
 }
-export function poseForMotion(state: MotionState, hasSheet: boolean, reducedMotion = false, nativeMotion = false) {
+export function poseForMotion(state: MotionState, hasSheet: boolean, reducedMotion = false) {
   const t = state.elapsed, phase = Math.min(1, t / (state.duration??CLIP_DURATION[state.clip]));
   const weight=state.weight??1,stride=state.stride??1;
   let x = 0, y = 0, angle = 0, scaleX = 1, scaleY = 1, alpha = 1;
@@ -128,13 +105,6 @@ export function poseForMotion(state: MotionState, hasSheet: boolean, reducedMoti
   if (state.hit > 0 && state.clip !== 'death') {
     const recoil = Math.sin(state.hit / CLIP_DURATION.hurt * Math.PI);
     x -= state.facing * recoil * 5; angle -= state.facing * recoil * 5;
-  }
-  // LPC already animates the limbs and fall. Keep its pixels square and its foot pivot fixed.
-  if (nativeMotion) {
-    angle = 0; scaleX = 1; scaleY = 1;
-    y = 0;
-    if (state.clip === 'death') x = 0;
-    else x *= .45;
   }
   return { x, y, angle, scaleX, scaleY, alpha };
 }

@@ -1,8 +1,0 @@
-Wolf Totem LPC adapted artwork
-License: Creative Commons Attribution-ShareAlike 4.0 International
-https://creativecommons.org/licenses/by-sa/4.0/legalcode
-
-Original artists, source links and original license choices are listed in lpc-credits.csv and lpc-credits.json.
-Changes: palette replacement; layer composition; frame cropping and packing; tribal face masks, markings, antlers, trunks, spirit appendages and totems; animation metadata.
-These adapted sheets are freely available in the public GitHub repository.
-No endorsement by the upstream artists or LPC project is implied.

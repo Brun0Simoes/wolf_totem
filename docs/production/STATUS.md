@@ -1,10 +1,8 @@
 # Estado da produção de arte
 
-Formas LPC animadas: **165/165**. Personagens com as três formas: **55/55**.
+Formas animadas: **165/165**. Personagens com as três formas: **55/55**.
 
-Cada forma tem repouso, caminhada, ataque, conjuração, impacto, queda e celebração. São **4620 sequências direcionais** e **26568 quadros no atlas**. A queda original LPC tem uma orientação, repetida nas quatro direções; a celebração usa os braços erguidos da conjuração. Quadros repetidos de repouso e sequências compartilhadas estão incluídos na contagem.
-
-Os retratos e as folhas pintadas anteriores foram preservados. [Produção LPC, créditos e reprodução](LPC.md).
+Cada forma tem repouso, caminhada e ataque/conjuração, com quatro poses por sequência. Impacto, queda e vitória usam movimentos programados.
 
 | ID | Personagem | Custo | 1★ | 2★ | 3★ |
 | --- | --- | --- | --- | --- | --- |
@@ -74,4 +72,4 @@ Os retratos e as folhas pintadas anteriores foram preservados. [Produção LPC, 
 | Lobo | Pronto |
 | Elefante | Pronto |
 
-Gerado por `npm run roster:status -- --write`.
+Gerado por `npm run roster:status -- --write`. Os arquivos prontos são entregas de protótipo e continuam sujeitos a refinamento artístico.

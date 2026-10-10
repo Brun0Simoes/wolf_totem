@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { SheetDefinition } from '../src/render/animationModel';
-import { getAnimation, getIllustratedAnimation, getSummonAnimation, summonSheets, frameRect } from '../src/render/animationAssets';
+import { getAnimation, getSummonAnimation, summonSheets, frameRect } from '../src/render/animationAssets';
 
 const publicDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '../public');
 const manifests = ['v2', 'v3', 'summons'].flatMap(version => {
@@ -60,7 +60,7 @@ describe('shipped character animation atlases', () => {
   });
 
   it.each(manifests)('$file contains complete clips and valid PNG rectangles and anchors', ({ file, version, sheet }) => {
-    const registered = version === 'summons' ? getSummonAnimation(sheet.summonId!) : getIllustratedAnimation(sheet.characterId, sheet.stars ?? 1);
+    const registered = version === 'summons' ? getSummonAnimation(sheet.summonId!) : getAnimation(sheet.characterId, sheet.stars ?? 1);
     expect(registered?.image).toBe(sheet.image);
     expect(sheet.image).toBe(`/assets/animations/${version}/${file.replace(/\.json$/, '.png')}`);
     const imagePath = resolve(publicDirectory, sheet.image.slice(1));

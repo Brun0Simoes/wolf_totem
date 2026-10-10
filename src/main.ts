@@ -95,7 +95,6 @@ import {
 } from "./game/simulation";
 import type { MotionClip } from "./render/animationModel";
 import { CharacterPreview } from "./render/CharacterPreview";
-import { assetUrl } from "./render/animationAssets";
 import { artFor } from "./render/artSource";
 import { portraitHTML } from "./render/portrait";
 import { proceduralImage } from "./render/proceduralArt";
@@ -263,7 +262,7 @@ $("#app").innerHTML = `
     <section id="arsenal-hall" hidden aria-label="Arsenal"></section>
     <section class="journey-page" hidden><nav id="journey-toolbar" class="ancestral-toolbar" aria-label="Atividades da jornada"><div><button data-journey-tab="paths">${icon("route")}Legados</button><button data-journey-tab="preparations">${icon("sparkles")}Bênçãos</button><button data-view="arsenal">${icon("anvil")}Arsenal</button><button data-action="ancestors">${icon("landmark")}Grande Totem</button></div></nav><div id="journey-objective" class="journey-objective"></div><section id="ancestral-hall"></section></section>
    </main>
-   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Diário da tribo</button><span>WOLF TOTEM · 3.3</span></footer>
+   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Diário da tribo</button><span>WOLF TOTEM · 3.2</span></footer>
   </div>
  </div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -1106,7 +1105,7 @@ function showCharacter(id: number, stars = 1) {
    <div class="evolution"><span class="eyebrow">O DESPERTAR · ${stars} ESTRELA${stars > 1 ? "S" : ""}</span><p>${c.evolution[stars - 1]}</p></div>
    <div class="prototype-skill"><span class="eyebrow">EFEITO EM COMBATE</span><p>${SKILL_NOTES[c.id]}</p></div>
    <div class="animality"><span class="eyebrow">VÍNCULO PRIMAL · ${animality.category.toUpperCase()}${animality.source === "proposta" ? " · PROPOSTA" : ""}</span><p>${ANIMALITY_RULES[animality.category]}</p></div>
-   <p class="development-note">${c.cost <= unlockedCost(game.state.era) ? "Companheiro disponível nesta era." : `Chega à fogueira na Era ${roman(c.cost)}.`} ${sheet?.style === 'lpc' ? 'Sete movimentos em pixel art e quatro direções. Use Virar personagem para ver cada lado.' : { painted: "Esta forma tem animação pintada.", illustration: "Esta forma usa a ilustração original com movimentos programados.", standin: `A forma ${stars}★ ainda não tem folha pintada: o jogo mostra a forma ${art.sheet?.stars ?? 1}★ com a aura do espírito.`, procedural: "Figura desenhada pelo próprio jogo enquanto a arte pintada não chega; ela é substituída automaticamente." }[art.kind]}</p></div></div>`,
+   <p class="development-note">${c.cost <= unlockedCost(game.state.era) ? "Companheiro disponível nesta era." : `Chega à fogueira na Era ${roman(c.cost)}.`} ${{ painted: "Esta forma tem animação pintada.", illustration: "Esta forma usa a ilustração original com movimentos programados.", standin: `A forma ${stars}★ ainda não tem folha pintada: o jogo mostra a forma ${art.sheet?.stars ?? 1}★ com a aura do espírito.`, procedural: "Figura desenhada pelo próprio jogo enquanto a arte pintada não chega; ela é substituída automaticamente." }[art.kind]}</p></div></div>`,
   );
   if (sheet)
     preview.mount($<HTMLCanvasElement>("#character-preview"), id, stars, sheet);
@@ -1252,7 +1251,6 @@ function settings() {
     <section><h3>${icon("eye")}Visual</h3>
      <label class="pref-row"><span>Movimento<small>Reduzido acalma tremores, ondas e animações da interface</small></span><select data-pref="motion">${motion("system", "Seguir o sistema")}${motion("full", "Completo")}${motion("reduced", "Reduzido")}</select></label>
      ${toggle("numbers", "Números de dano e cura", "Desligue para um campo mais limpo em lutas cheias")}
-     <p class="modal-intro"><a class="text-button" href="${assetUrl('characters.html')}" target="_blank" rel="noopener">Galeria dos 55 guardiões ${icon("external-link")}</a><br><a class="text-button" href="${assetUrl('credits/lpc-credits.html')}" target="_blank" rel="noopener">Créditos dos personagens LPC ${icon("external-link")}</a></p>
     </section>
     <section class="wide"><h3>${icon("book-marked")}Jornada</h3>
      <p class="modal-intro">O progresso é salvo automaticamente. Âmbar e experiência são conquistados em combates. Rituais concedem XP ao confirmar, sem espera ou atividades offline.</p>
@@ -1317,7 +1315,7 @@ function renderTitle() {
   $<HTMLElement>(".app-frame").inert = true;
   const s = game.state, first = s.heroes[0], starter = characterOf(first.characterId);
   $("#title-screen").innerHTML =
-    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(starter, first.stars)}<span class="title-landscape-label">${esc(starter.name)} · ${esc(starter.title)}</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}55 guardiões</span></div>${!hasJourney ? `<div class="title-journey">${esc(starter.name)} inicia sua tribo · guardião sorteado da Era I</div>` : ""}${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} ${s.heroes.length === 1 ? "guardião" : "guardiões"}</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 3.3 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
+    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(starter, first.stars)}<span class="title-landscape-label">${esc(starter.name)} · ${esc(starter.title)}</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}55 guardiões</span></div>${!hasJourney ? `<div class="title-journey">${esc(starter.name)} inicia sua tribo · guardião sorteado da Era I</div>` : ""}${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} ${s.heroes.length === 1 ? "guardião" : "guardiões"}</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 3.2 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
   refreshIcons();
 }
 
