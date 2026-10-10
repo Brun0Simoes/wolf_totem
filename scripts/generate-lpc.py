@@ -62,10 +62,10 @@ def layers(profile,stars):
     if profile['id'] in [29,49,54]: result.append(('beards_beard','hair'))
     if stars>=2: result += [('arms_bracers','accent'),('neck_necklace_beaded_large','brown')]
     if stars==3:
-        if theme in ['crow','eagle','owl','feather-serpent']: result += [('wings_feathered','white' if theme=='owl' else 'black' if theme=='crow' else 'gold')]
+        if theme in ['crow','eagle','owl','feather-serpent']: result += [('wings_feathered','black' if theme=='crow' or profile['id']==52 else 'white' if theme=='owl' else 'gold')]
         if theme=='bat': result += [('wings_bat','navy')]
         if theme in ['wolf','hyena','jackal','bear']: result += [('tail_wolf_fluffy','fur_grey' if theme in ['wolf','bear'] else 'fur_brown')]
-        if theme in ['jaguar','tiger','puma','monkey','otter']: result += [('tail_cat','fur_gold' if theme in ['jaguar','tiger'] else 'fur_brown')]
+        if theme in ['jaguar','tiger','puma','monkey','otter']: result += [('tail_cat','fur_black' if profile['id']==42 else 'fur_grey' if profile['id']==27 else 'fur_gold' if theme in ['jaguar','tiger'] else 'fur_brown')]
         if theme in ['croc','serpent','feather-serpent']: result += [('tail_lizard_alt','green')]
         if theme=='mantis': result += [('wings_dragonfly','green')]
     weapon=WEAPONS[profile['weapon']][0]
@@ -227,6 +227,8 @@ def details(canvas,profile,stars,motion,column,direction,head_box):
     if theme in ['jaguar','tiger','puma','otter','bear']:
         # Distinct primal face masks; the human head remains the animation reference.
         fur=(212,161,64,255) if theme in ['tiger','jaguar'] else (117,83,57,255) if theme in ['puma','otter'] else (187,210,219,255)
+        if profile['id']==42: fur=(49,45,67,255)
+        elif profile['id']==27: fur=(133,143,162,255)
         d.ellipse((cx-9,top+1,cx+9,top+17),fill=fur,outline=(46,47,44,255))
         for x in [cx-7,cx+7]: d.ellipse((x-3,top-1,x+3,top+5),fill=fur,outline=(46,47,44,255))
         shade=tuple(int(v*.7) for v in fur[:3])+(255,)
@@ -235,7 +237,7 @@ def details(canvas,profile,stars,motion,column,direction,head_box):
         d.line((cx-4,top+3,cx+4,top+3),fill=tuple(min(255,v+25) for v in fur[:3])+(255,),width=1)
         if front or side:
             muzzle=cx if front else cx+sign*7
-            d.ellipse((muzzle-5,top+10,muzzle+5,top+16),fill=(222,204,165,255),outline=shade)
+            d.ellipse((muzzle-5,top+10,muzzle+5,top+16),fill=(126,119,143,255) if profile['id']==42 else (208,219,225,255) if profile['id']==27 else (222,204,165,255),outline=shade)
             d.polygon([(muzzle-2,top+11),(muzzle+2,top+11),(muzzle,top+13)],fill=(42,42,37,255))
             d.line((muzzle,top+13,muzzle,top+15),fill=shade,width=1)
             for x in [cx-4,cx+4] if front else [cx+sign*4]:
@@ -466,6 +468,11 @@ if __name__=='__main__':
     for p in PROFILES:
         if p['id'] in wanted:
             for stars in [1,2,3]: build(p,stars)
-    (REPORT/'profiles.json').write_text(json.dumps(SELECTED,ensure_ascii=False,indent=2),encoding='utf-8')
+    report_file=REPORT/'profiles.json'
+    previous=json.loads(report_file.read_text(encoding='utf-8')) if opts.ids and report_file.exists() else []
+    profiles={(p['id'],p['stars']):p for p in previous}
+    profiles.update({(p['id'],p['stars']):p for p in SELECTED})
+    report_file.write_text(json.dumps([profiles[key] for key in sorted(profiles)],ensure_ascii=False,indent=2),encoding='utf-8')
     write_credits(required)
-    if not opts.ids: previews();write_roster();check_outputs()
+    if all((OUTPUT/f'{p["id"]:02}-s{stars}.json').exists() for p in PROFILES for stars in [1,2,3]):
+        previews();write_roster();check_outputs()

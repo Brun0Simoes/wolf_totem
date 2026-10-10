@@ -66,7 +66,7 @@ describe('complete LPC roster', () => {
   it('credits every selected source and provides readable credits in the deployed game', () => {
     const config = JSON.parse(readFileSync(resolve('scripts/lpc-profiles.json'), 'utf8'));
     expect(credits.revision).toBe(config.revision);
-    expect(credits.assets).toHaveLength(587);
+    expect(credits.assets).toHaveLength(607);
     expect(new Set(credits.assets.map((asset: {filename:string}) => asset.filename)).size).toBe(credits.assets.length);
     for (const asset of credits.assets) {
       expect(asset.authors.trim().length).toBeGreaterThan(0);

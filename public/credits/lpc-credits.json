@@ -356,6 +356,14 @@
       "selectedLicense": "CC-BY-SA 3.0"
     },
     {
+      "filename": "body/tail/cat/adult/bg/hurt/fur_black.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
       "filename": "body/tail/cat/adult/bg/hurt/fur_brown.png",
       "notes": "",
       "authors": "JaidynReiman",
@@ -365,6 +373,22 @@
     },
     {
       "filename": "body/tail/cat/adult/bg/hurt/fur_gold.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/bg/hurt/fur_grey.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/bg/idle/fur_black.png",
       "notes": "",
       "authors": "JaidynReiman",
       "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
@@ -388,7 +412,23 @@
       "selectedLicense": "OGA-BY 3.0+"
     },
     {
+      "filename": "body/tail/cat/adult/bg/idle/fur_grey.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
       "filename": "body/tail/cat/adult/bg/shoot/fur_brown.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/bg/slash/fur_black.png",
       "notes": "",
       "authors": "JaidynReiman",
       "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
@@ -412,6 +452,22 @@
       "selectedLicense": "OGA-BY 3.0+"
     },
     {
+      "filename": "body/tail/cat/adult/bg/slash/fur_grey.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/bg/spellcast/fur_black.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
       "filename": "body/tail/cat/adult/bg/spellcast/fur_brown.png",
       "notes": "",
       "authors": "JaidynReiman",
@@ -428,7 +484,23 @@
       "selectedLicense": "OGA-BY 3.0+"
     },
     {
+      "filename": "body/tail/cat/adult/bg/spellcast/fur_grey.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
       "filename": "body/tail/cat/adult/bg/thrust/fur_brown.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/bg/walk/fur_black.png",
       "notes": "",
       "authors": "JaidynReiman",
       "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
@@ -452,6 +524,22 @@
       "selectedLicense": "OGA-BY 3.0+"
     },
     {
+      "filename": "body/tail/cat/adult/bg/walk/fur_grey.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/fg/hurt/fur_black.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
       "filename": "body/tail/cat/adult/fg/hurt/fur_brown.png",
       "notes": "",
       "authors": "JaidynReiman",
@@ -461,6 +549,22 @@
     },
     {
       "filename": "body/tail/cat/adult/fg/hurt/fur_gold.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/fg/hurt/fur_grey.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/fg/idle/fur_black.png",
       "notes": "",
       "authors": "JaidynReiman",
       "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
@@ -484,7 +588,23 @@
       "selectedLicense": "OGA-BY 3.0+"
     },
     {
+      "filename": "body/tail/cat/adult/fg/idle/fur_grey.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
       "filename": "body/tail/cat/adult/fg/shoot/fur_brown.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/fg/slash/fur_black.png",
       "notes": "",
       "authors": "JaidynReiman",
       "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
@@ -508,6 +628,22 @@
       "selectedLicense": "OGA-BY 3.0+"
     },
     {
+      "filename": "body/tail/cat/adult/fg/slash/fur_grey.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/fg/spellcast/fur_black.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
       "filename": "body/tail/cat/adult/fg/spellcast/fur_brown.png",
       "notes": "",
       "authors": "JaidynReiman",
@@ -524,7 +660,23 @@
       "selectedLicense": "OGA-BY 3.0+"
     },
     {
+      "filename": "body/tail/cat/adult/fg/spellcast/fur_grey.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
       "filename": "body/tail/cat/adult/fg/thrust/fur_brown.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/fg/walk/fur_black.png",
       "notes": "",
       "authors": "JaidynReiman",
       "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
@@ -541,6 +693,14 @@
     },
     {
       "filename": "body/tail/cat/adult/fg/walk/fur_gold.png",
+      "notes": "",
+      "authors": "JaidynReiman",
+      "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",
+      "urls": "https://opengameart.org/content/lpc-furry-ears-tails-for-rpg-sprites",
+      "selectedLicense": "OGA-BY 3.0+"
+    },
+    {
+      "filename": "body/tail/cat/adult/fg/walk/fur_grey.png",
       "notes": "",
       "authors": "JaidynReiman",
       "licenses": "OGA-BY 3.0+,CC-BY 3.0+,GPL 3.0",

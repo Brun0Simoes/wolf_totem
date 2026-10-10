@@ -19,7 +19,7 @@ As ilustrações de `chars` e os atlas pintados `v2`/`v3` continuam disponíveis
 
 Fonte: [Universal LPC Spritesheet Character Generator](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator), revisão **58ce1aa479e4df32845a73a5d0afc221c3a893c2**.
 
-Foram utilizados **587 arquivos de origem**, com créditos por peça. [`public/credits/lpc-credits.html`](../../public/credits/lpc-credits.html), CSV e JSON contêm os arquivos exatos, autores, referências e a licença escolhida entre as alternativas da origem. Variantes de paleta herdam os créditos do arquivo original; quando necessário, o gerador consulta os créditos da definição da peça. As folhas adaptadas são distribuídas sob **CC BY-SA 4.0**, com as alterações descritas em `lpc-license.txt`. Os créditos são acessíveis nas configurações e na galeria publicada.
+Foram utilizados **607 arquivos de origem**, com créditos por peça. [`public/credits/lpc-credits.html`](../../public/credits/lpc-credits.html), CSV e JSON contêm os arquivos exatos, autores, referências e a licença escolhida entre as alternativas da origem. Variantes de paleta herdam os créditos do arquivo original; quando necessário, o gerador consulta os créditos da definição da peça. As folhas adaptadas são distribuídas sob **CC BY-SA 4.0**, com as alterações descritas em `lpc-license.txt`. Os créditos são acessíveis nas configurações e na galeria publicada.
 
 ## Reproduzir os assets
 
@@ -35,7 +35,7 @@ rtk proxy python scripts/generate-lpc.py --check
 rtk proxy npm run roster:status -- --write --complete
 ```
 
-`--fetch` baixa somente as peças selecionadas. `--ids 1,3,8` permite iterar em um lote; execute novamente sem `--ids` para renovar o relatório completo. O gerador valida cores, compatibilidade dos movimentos, transparência, margens, pivôs, ausência de quadros vazios e identidade das 165 folhas. Não substitui ataques ausentes por repouso.
+`--fetch` baixa somente as peças selecionadas. `--ids 1,3,8` permite iterar em um lote, preservando os registros dos demais personagens no relatório. Quando as 165 formas existem, o gerador atualiza as folhas de revisão e valida o conjunto completo. Ele verifica cores, compatibilidade dos movimentos, transparência, margens, pivôs, ausência de quadros vazios e identidade das folhas. Não substitui ataques ausentes por repouso.
 
 As cinco folhas de revisão por era e os perfis com os hashes das imagens estão em [`lpc`](lpc). A galeria carrega folhas à medida que entram na tela. O combate carrega e descarta texturas sob demanda; os PNGs das 165 formas totalizam aproximadamente **15,7 MB**, sem serem carregados todos no início.
 
