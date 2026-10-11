@@ -1,0 +1,26 @@
+{
+  "characterId": 145,
+  "stars": 3,
+  "name": "Emrys",
+  "image": "/assets/animations/night/145.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 352,
+  "frameHeight": 353,
+  "bodyHeight": 329,
+  "anchorX": 176.0,
+  "anchorY": 341,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

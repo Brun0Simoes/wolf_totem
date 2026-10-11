@@ -89,7 +89,7 @@ export function armyCoach(
     return (
       heading +
       optionCards +
-      `<div class="coach-plan-layout"><section><div class="coach-plan-title"><div><p class="eyebrow">${plan.length}/${2 + s.era} COMPANHEIROS SUGERIDOS</p><h3>Seu campo, casa por casa.</h3></div><button class="primary" data-apply-army="${signature}" ${lock || !plan.length ? "disabled" : ""}>Aplicar esta formação</button></div><div class="coach-board" role="group" aria-label="Prévia das 28 casas sugeridas">${Array.from(
+      `<div class="coach-plan-layout"><section><div class="coach-plan-title"><div><p class="eyebrow">${plan.length}/${s.commanderLevel} COMPANHEIROS SUGERIDOS</p><h3>Seu campo, casa por casa.</h3></div><button class="primary" data-apply-army="${signature}" ${lock || !plan.length ? "disabled" : ""}>Aplicar esta formação</button></div><div class="coach-board" role="group" aria-label="Prévia das 28 casas sugeridas">${Array.from(
         { length: 28 },
         (_, slot) => {
           const p = positions.find((p) => p.slot === slot);
@@ -156,7 +156,7 @@ export function armyCoach(
               `<p><b>${d.name} · ${s.journey.legacies[d.id]}/3</b><small>${d.text}</small></p>`,
           )
           .join("") ||
-        "<p>Conhecimento dos desafios abre legados nos Caminhos Ancestrais.</p>"
+        "<p>Conhecimento das vitórias abre legados nos Caminhos Ancestrais.</p>"
       }<p class="ancestral-note">Bênçãos, legados, rituais e passivas dos espíritos acumulam seus efeitos. Você pode ajustar as bênçãos entre as batalhas.</p></aside></div></div>`
     );
   }

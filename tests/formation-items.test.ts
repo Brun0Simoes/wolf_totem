@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { Game, newHero, SAVE_VERSION, WONDER_STAGES } from "../src/game/simulation";
-import { characters } from "../src/data/characters";
+import { characters as allCharacters } from "../src/data/characters";
+const characters=allCharacters.filter(c=>c.id<101);
 import { nextRandom } from "../src/game/roster";
 import { formationItemPlan, formationItemGoals, formationItemScore, formationItemReason } from "../src/game/formationItems";
 import { planSignature } from "../src/game/armyAdvisor";
@@ -10,8 +11,8 @@ import { formationItemsPanel } from "../src/ui/FormationItems";
 import { draftHall } from "../src/ui/DraftHall";
 
 const tribe = () => {
-  const g = new Game();
-  g.state.era = 3;
+  const g=new Game();g.state.commanderLevel=3;
+  g.state.era = 3;g.state.commanderLevel=2+g.state.era;
   g.state.amber = 180;
   g.state.heroes = [newHero("boru",3,2,3),newHero("ena",8,2,17),newHero("nima",2,2,10)];
   g.state.heroes.forEach(h => h.level=12);
@@ -53,13 +54,13 @@ describe("random journey starters", () => {
       expect(g.startBattle().ok).toBe(true);
       for(let t=0;t<2400&&g.battle!.status==='fighting';t++) g.advanceBattle(.1);
       expect(g.battle!.status, c.name).not.toBe('fighting');
-      expect(g.state.amber,c.name).toBeGreaterThan(80);
+      expect(g.battle!.status,c.name).toBe("victory");expect(g.state.amber,c.name).toBeGreaterThan(80);
       expect(h.level>1||h.xp>0,c.name).toBe(true);
     }
   });
   it("also draws a new era-I starter on rebirth and consumes the seed", () => {
-    const g=new Game();
-    g.state.wonder=WONDER_STAGES;g.state.progress=30;g.state.lootSeed=11;
+    const g=new Game();g.state.commanderLevel=3;
+    g.state.wonder=WONDER_STAGES;g.state.progress=30;g.state.lootSeed=11;g.state.commanderLevel=28;g.state.endlessBest=10;g.state.amber=5000;g.state.heroes=[1,2,3].map((id,i)=>({...newHero("ready-"+i,id,3),level:24,ritualLevel:8}));
     const expected=new Game(undefined,1000,11).state;
     expect(g.ascend().ok).toBe(true);
     expect(g.state.heroes[0].characterId).toBe(expected.heroes[0].characterId);
@@ -68,7 +69,7 @@ describe("random journey starters", () => {
 });
 describe("free draft migration", () => {
   it("migrates v9 offers once without rerandomizing heroes or granting amber", () => {
-    const g=new Game();g.openDraft();g.state.amber=0;
+    const g=new Game();g.state.commanderLevel=3;g.openDraft();g.state.amber=0;
     const old=JSON.parse(g.serialize(1000));old.version=9;delete old.state.draft.rerolled;old.state.draft.rolls=12;
     const loaded=new Game(old,1000,11);
     expect(loaded.state.heroes).toEqual(g.state.heroes);

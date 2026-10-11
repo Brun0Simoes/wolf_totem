@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [{name:'wolf-asset-metadata',enforce:'pre',resolveId(id){if(id==='virtual:wolf-animations'||id==='virtual:wolf-environment')return '\0'+id;},load(id){
     if(id==='\0virtual:wolf-animations'){
       const read=(dirs:string[])=>dirs.flatMap(dir=>readdirSync(dir).filter(name=>name.endsWith('.json')).sort().map(name=>{const path=resolve(dir,name);this.addWatchFile(path);return JSON.parse(readFileSync(path,'utf8'));}));
-      return `export const heroes=${JSON.stringify(read(['public/assets/animations/v2','public/assets/animations/v3']))};export const summons=${JSON.stringify(read(['public/assets/animations/summons']))};`;
+      return `export const heroes=${JSON.stringify(read(['public/assets/animations/v2','public/assets/animations/v3','public/assets/animations/night']))};export const summons=${JSON.stringify(read(['public/assets/animations/summons']))};`;
     }
     if(id==='\0virtual:wolf-environment'){
       const read=(name:string)=>{const path=resolve('public/assets/environment',name+'.json');this.addWatchFile(path);return readFileSync(path,'utf8');};

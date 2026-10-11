@@ -1,0 +1,26 @@
+{
+  "characterId": 120,
+  "stars": 3,
+  "name": "Hrold",
+  "image": "/assets/animations/night/120.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 382,
+  "frameHeight": 301,
+  "bodyHeight": 277,
+  "anchorX": 191.0,
+  "anchorY": 289,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

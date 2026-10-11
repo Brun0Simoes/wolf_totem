@@ -1,3 +1,4 @@
+import { nocturneCharacters } from './nocturne';
 /**
  * Visual rule of the Set 1 plan: 1★ tribal human, 2★ evident spirit bond, 3★ Primal Avatar.
  * The four categories say how far each person gives in to the spirit at 3★.
@@ -35,3 +36,5 @@ export const ANIMALITY: Record<number, AnimalityEntry> = {
   49: plan('Metamorfo'), 50: plan('Metamorfo'), 51: proposed('Manifestador'), 52: proposed('Marcado'),
   53: plan('Metamorfo'), 54: plan('Manifestador'), 55: plan('Metamorfo'),
 };
+
+for(const c of nocturneCharacters)ANIMALITY[c.id]={category:'Manifestador',source:'proposta'};

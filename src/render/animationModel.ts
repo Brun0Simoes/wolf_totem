@@ -34,6 +34,7 @@ export interface SheetDefinition {
   portrait?: { x: number; y: number; width: number; height: number };
   clips: { idle: number[]; walk: number[]; attack: number[] };
   notes?: string;
+  rigged?: boolean;
 }
 export const CLIP_DURATION: Record<MotionClip, number> = {
   idle: 1.35, walk: .64, windup:.2, attack: .34, cast: .48, hurt: .23, death: .95, victory: 1.2,

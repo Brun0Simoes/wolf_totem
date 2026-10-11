@@ -1,3 +1,4 @@
+import { ritualMode } from "../game/nightRituals";
 import {
   RitualPlay,
   RITUAL_PLAY,
@@ -14,10 +15,10 @@ export function ritualExperienceMarkup(
   const p = practiceById(id)!,
     design = RITUAL_PLAY[id];
   return `<section class="ritual-experience" style="--rite-color:${design.color}" aria-label="Participação em ${p.name}">
-    <header class="rite-header"><div><p class="eyebrow">CASA DE CURA · ${p.name.toUpperCase()}</p><h2>${design.title}</h2>${cost ? `<p class="rite-price">${cost} âmbar · cobrado ao confirmar</p>` : ""}</div><div class="rite-companion">${companion}</div></header>
-    <div class="rite-stage"><canvas width="900" height="440" aria-label="Campo interativo de ${p.name}"></canvas><div class="rite-stage-caption"><span data-rite-stage>PREPARAÇÃO</span><strong data-rite-feedback role="status">Um instante de presença.</strong></div><div class="rite-intro"><span class="rite-glyph">✧</span><h3>Entre no ritmo da cerimônia</h3><p>${design.instruction}</p><button class="primary" data-rite-start>Começar participação</button><label><input type="checkbox" data-rite-gentle> Modo tranquilo · mais margem para acertar</label>${id === "rape" ? '<label><input type="checkbox" data-rite-tap> Sopro por dois toques · iniciar e soltar</label>' : ""}</div></div>
+    <header class="rite-header"><div><p class="eyebrow">${id==='rape'||id==='sananga'||id==='kambo'||id==='ayahuasca'||id==='cacau'?'CASA DE CURA':'CÂMARA DO VÉU'} · ${p.name.toUpperCase()}</p><h2>${design.title}</h2>${cost ? `<p class="rite-price">${cost} âmbar · cobrado ao confirmar</p>` : ""}</div><div class="rite-companion">${companion}</div></header>
+    <div class="rite-stage"><canvas width="900" height="440" aria-label="Campo interativo de ${p.name}"></canvas><div class="rite-stage-caption"><span data-rite-stage>PREPARAÇÃO</span><strong data-rite-feedback role="status">Um instante de presença.</strong></div><div class="rite-intro"><span class="rite-glyph">✧</span><h3>Entre no ritmo da cerimônia</h3><p>${design.instruction}</p><button class="primary" data-rite-start>Começar participação</button><label><input type="checkbox" data-rite-gentle> Modo tranquilo · mais margem para acertar</label>${ritualMode(id) === "rape" ? '<label><input type="checkbox" data-rite-tap> Sopro por dois toques · iniciar e soltar</label>' : ""}</div></div>
     <div class="rite-hud"><span data-rite-round>Preparação interativa</span><progress max="1" value="0" aria-label="Progresso da participação"></progress><span data-rite-bonus>Até +${participationBonus(RITUAL_XP[id], 1)} XP ritual</span></div>
-    <div class="rite-controls" hidden>${id === "kambo" ? [0, 1, 2, 3].map((n) => `<button class="rite-stone" data-rite-stone="${n}" aria-label="Pedra ${n + 1}"><span>${["◇", "△", "◉", "✧"][n]}</span><small>${n + 1}</small></button>`).join("") : id === "ayahuasca" ? '<button data-rite-steer="-1" aria-label="Conduzir para a esquerda">←</button><span>Dentro do rio<br><small>Arraste a luz ou use as setas</small></span><button data-rite-steer="1" aria-label="Conduzir para a direita">→</button>' : `<button class="rite-touch" data-rite-touch>${design.verb}<small>${id === "rape" ? "Segure e solte · Espaço" : "Toque · Espaço"}</small></button>`}</div>
+    <div class="rite-controls" hidden>${ritualMode(id) === "kambo" ? [0, 1, 2, 3].map((n) => `<button class="rite-stone" data-rite-stone="${n}" aria-label="Pedra ${n + 1}"><span>${["◇", "△", "◉", "✧"][n]}</span><small>${n + 1}</small></button>`).join("") : ritualMode(id) === "ayahuasca" ? '<button data-rite-steer="-1" aria-label="Conduzir para a esquerda">←</button><span>Dentro do rio<br><small>Arraste a luz ou use as setas</small></span><button data-rite-steer="1" aria-label="Conduzir para a direita">→</button>' : `<button class="rite-touch" data-rite-touch>${design.verb}<small>${ritualMode(id) === "rape" ? "Segure e solte · Espaço" : "Toque · Espaço"}</small></button>`}</div>
     <div class="rite-result" hidden aria-live="polite"></div><p class="rite-instruction">${design.instruction}</p>
     <footer class="rite-footer"><button class="text-button" data-rite-audio>Ativar som</button><button class="text-button" data-rite-pause hidden>Pausar participação</button><button class="outline-button" data-rite-auto>Concluir com auxílio</button></footer>
     <p class="rite-note">${design.sound}. Sonoridade original do jogo. Confirme para receber XP ritual agora. Fechar antes disso mantém o herói disponível. O custo em âmbar é cobrado somente ao confirmar. O guardião volta ao campo imediatamente.</p>
@@ -112,7 +113,7 @@ export class RitualExperience {
     touch?.addEventListener(
       "pointerdown",
       (event) => {
-        if (id !== "rape" || this.tapBreath || !this.canPlay()) return;
+        if (ritualMode(id) !== "rape" || this.tapBreath || !this.canPlay()) return;
         touch.setPointerCapture(event.pointerId);
         this.play.press();
       },
@@ -137,7 +138,7 @@ export class RitualExperience {
       "click",
       () => {
         if (!this.canPlay()) return;
-        if (id !== "rape") this.play.press();
+        if (ritualMode(id) !== "rape") this.play.press();
         else if (this.tapBreath) {
           if (this.play.holding) this.play.release();
           else this.play.press();
@@ -172,7 +173,7 @@ export class RitualExperience {
         );
     }
     const guide = (e: PointerEvent) => {
-      if (id !== "ayahuasca" || !this.canPlay() || !(e.buttons & 1)) return;
+      if (ritualMode(id) !== "ayahuasca" || !this.canPlay() || !(e.buttons & 1)) return;
       const rect = this.canvas.getBoundingClientRect();
       this.play.light = Math.max(
         0.06,
@@ -198,18 +199,18 @@ export class RitualExperience {
           )
         )
           return;
-        if (e.code === "Space" && id !== "kambo" && id !== "ayahuasca") {
+        if (e.code === "Space" && ritualMode(id) !== "kambo" && ritualMode(id) !== "ayahuasca") {
           e.preventDefault();
           if (!e.repeat) this.play.press();
         }
-        if (id === "kambo" && /^[1-4]$/.test(e.key)) {
+        if (ritualMode(id) === "kambo" && /^[1-4]$/.test(e.key)) {
           e.preventDefault();
           if (!e.repeat) {
             this.play.press(Number(e.key) - 1);
             this.sound.ritualCue(id, Number(e.key) - 1);
           }
         }
-        if (id === "ayahuasca" && ["ArrowLeft", "ArrowRight"].includes(e.key)) {
+        if (ritualMode(id) === "ayahuasca" && ["ArrowLeft", "ArrowRight"].includes(e.key)) {
           e.preventDefault();
           this.play.steering = e.key === "ArrowLeft" ? -1 : 1;
           if (!e.repeat)
@@ -224,7 +225,7 @@ export class RitualExperience {
     document.addEventListener(
       "keyup",
       (e) => {
-        if (e.code === "Space" && id === "rape") {
+        if (e.code === "Space" && ritualMode(id) === "rape") {
           e.preventDefault();
           if (this.canPlay()) this.play.release();
         }
@@ -315,7 +316,7 @@ export class RitualExperience {
       ? "Sua preparação está pronta."
       : this.paused
         ? "Participação pausada. Retome quando quiser."
-        : p.id === "kambo"
+        : ritualMode(p.id) === "kambo"
           ? p.observing
             ? "Observe a sequência das pedras."
             : `Sua vez · gesto ${p.memoryIndex + 1}/${p.pattern.length}`
@@ -332,7 +333,7 @@ export class RitualExperience {
           ? "PAUSADO"
           : "EM PRESENÇA";
     this.get("[data-rite-round]").textContent =
-      p.id === "ayahuasca"
+      ritualMode(p.id) === "ayahuasca"
         ? `${Math.min(18, Math.floor(p.elapsed))} / 18 segundos`
         : `Gesto ${Math.min(p.round + 1, p.rounds)} de ${p.rounds}`;
     if (this.tapBreath) {
@@ -343,11 +344,11 @@ export class RitualExperience {
     }
     if (this.canPlay()) {
       const cue =
-        this.id === "rape" && p.holding
+        ritualMode(this.id) === "rape" && p.holding
           ? Math.floor(p.elapsed * 8)
-          : this.id === "ayahuasca"
+          : ritualMode(this.id) === "ayahuasca"
             ? Math.floor(p.elapsed)
-            : this.id === "cacau" && p.position >= p.target
+            : ritualMode(this.id) === "cacau" && p.position >= p.target
               ? p.round
               : -1;
       if (cue >= 0 && cue !== this.lastCue) {
@@ -414,7 +415,7 @@ export class RitualExperience {
     c.lineWidth = 2;
     c.shadowColor = accent;
     c.shadowBlur = 16;
-    if (this.id === "ayahuasca") {
+    if (ritualMode(this.id) === "ayahuasca") {
       const bank = p.gentle ? 180 : 117;
       c.fillStyle = "#bba5ed18";
       c.beginPath();
@@ -441,7 +442,7 @@ export class RitualExperience {
       c.beginPath();
       c.arc(p.light * 900, 270, 14, 0, Math.PI * 2);
       c.fill();
-    } else if (this.id === "kambo") {
+    } else if (ritualMode(this.id) === "kambo") {
       const pattern = p.pattern;
       for (let i = 0; i < pattern.length; i++) {
         const x = 450 + (i - (pattern.length - 1) / 2) * 70;
@@ -464,7 +465,7 @@ export class RitualExperience {
         );
       }
       c.globalAlpha = 1;
-    } else if (this.id === "rape") {
+    } else if (ritualMode(this.id) === "rape") {
       const x = 170,
         y = 240,
         w = 560;
@@ -511,7 +512,7 @@ export class RitualExperience {
       c.font = "40px serif";
       c.fillStyle = accent;
       c.textAlign = "center";
-      c.fillText(this.id === "cacau" ? "♡" : "◉", 450, 254);
+      c.fillText(ritualMode(this.id) === "cacau" ? "♡" : "◉", 450, 254);
     }
     c.shadowBlur = 0;
     c.globalAlpha = 1;

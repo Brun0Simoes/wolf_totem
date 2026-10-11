@@ -1,3 +1,5 @@
+import { deepRiteForHero } from '../game/nightRituals';
+import { practiceById } from '../game/tribe';
 import { characters } from '../data/characters';
 import type { Hero } from '../game/simulation';
 import { AWAKENING, MAX_HERO_LEVEL, MAX_RITUAL_LEVEL, ritualXpToNext, xpToNext } from '../game/tribe';
@@ -15,7 +17,7 @@ export function awakeningMarkup(hero: Hero): string {
   const requirements = [
     { text: `Experiência nível ${need.level}`, ready: hero.level >= need.level },
     { text: `Ritualística nível ${need.ritualLevel}`, ready: hero.ritualLevel >= need.ritualLevel },
-    ...(need.ayahuasca ? [{ text: 'Ayahuasca concluída', ready: !!hero.rituals.ayahuasca }] : []),
+    ...(need.ayahuasca ? [{ text: practiceById(deepRiteForHero(hero.characterId))!.name+' concluído', ready: !!hero.rituals[deepRiteForHero(hero.characterId)] }] : []),
   ];
   return `<section class="awakening"><h3>Próximo despertar · ${need.stars}★</h3><ul>${requirements.map(req => `<li class="${req.ready ? 'ready' : ''}"><span aria-hidden="true">${req.ready ? '✓' : '○'}</span>${req.text}</li>`).join('')}</ul><p>A forma desperta automaticamente quando todos os requisitos forem alcançados.</p></section>`;
 }

@@ -1,3 +1,6 @@
+import { formationLevelCost, eraForLevel, MAX_FORMATION_LEVEL, consecrationCost, resetLock, frontierReward, expansionUnlocked } from './formationProgression';
+import { isNightCharacter, NIGHT_PROFILES } from '../data/nocturne';
+import { ritesForHero, deepRiteForHero } from './nightRituals';
 import { characters, type Character } from '../data/characters';
 import { attackTiming, castWindup } from './combatTiming';
 import { participationBonus } from './ritualPlay';
@@ -45,6 +48,7 @@ export interface GameState {
   cacaoBattles: number;
   cacaoCircles: number;
   era: number;
+  commanderLevel: number;
   heroes: Hero[];
   /** Number of campaign stages cleared, in order (0–30). */
   progress: number;
@@ -237,9 +241,9 @@ export interface CombatApi {
 
 export const PLAYABLE_IDS = ALL_CHARACTER_IDS;
 export const MAX_ERA = 5;
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 export const OFFLINE_CAP_SECONDS = 12 * 3600;
-export const MAX_ROSTER_SIZE = 55;
+export const MAX_ROSTER_SIZE = 108;
 export const MAX_INVENTORY = 180;
 export const WONDER_STAGES = 5;
 const MAX_SUMMONS_PER_OWNER = 6;
@@ -251,7 +255,7 @@ const STAR_POWER = [1, 2.2, 4];
 export function characterById(id: number): Character {
   return characters.find(character => character.id === id) ?? characters[0];
 }
-export const capacity = (state: GameState): number => 2 + state.era;
+export const capacity = (state: GameState): number => state.commanderLevel;
 const memory = (state: GameState, id: MemoryId): number => state.memories[id] ?? 0;
 const chosenSpirits = (state: GameState) => state.spirits.map(spiritById).filter(spirit => !!spirit);
 /** Embers granted by raising the Great Totem now. */
@@ -261,10 +265,13 @@ export const embersFor = (state: GameState): number => 8 + 2 * state.endlessBest
 export function totemLock(s:GameState):string|null {
   if(s.wonder>=WONDER_STAGES)return 'Totem completo';
   if(s.era<5||s.progress<25)return 'Alcance a Era V e vença o Leviatã do Pântano';
-  if(s.wonder===1&&s.progress<27)return 'Vença a expedição 27';
-  if(s.wonder===2&&!s.heroes.some(h=>h.ritualLevel>=8))return 'Alcance vínculo ritual 8 com um herói';
-  if(s.wonder===3&&!(s.progress>=30&&s.heroes.some(h=>h.stars>=3)))return 'Vença o Primeiro Inverno e desperte um herói 3★';
-  if(s.wonder===4&&s.endlessBest<1)return 'Vença a primeira profundidade da Caçada Eterna';
+  const levels=[18,21,24,26,28];
+  if(s.commanderLevel<levels[s.wonder])return `Exige formação nível ${levels[s.wonder]}`;
+  if(s.wonder>=2&&!s.heroes.some(h=>h.ritualLevel>=8))return 'Alcance ritualística 8 com um guardião';
+  if(s.wonder>=3&&(s.progress<30||!s.heroes.some(h=>h.stars===3)))return 'Vença o Primeiro Inverno e desperte um guardião 3★';
+  if(s.wonder===4&&s.endlessBest<10)return 'Vença a profundidade 10 do Abismo';
+  const cost=consecrationCost(s.wonder);
+  if(s.amber<cost)return `Consagração exige ${cost} de âmbar`;
   return null;
 }
 
@@ -312,7 +319,7 @@ export const newHero = (uid: string, characterId: number, stars = 1, slot: numbe
   ({ uid, characterId, stars, slot, items: [], level: 1, xp: 0, ritualLevel: 1, ritualXp: 0, ritualReadyAt: 0, integrationWins: 0, mastery: freshMastery(), panema: 0, rituals: {}, away: null, focus: false });
 /** Only era-I heroes can begin a new journey. Explicit seeds keep simulations reproducible. */
 const starterHeroes = (seed = 7): Hero[] => {
-  const pool = characters.filter(c => c.cost === 1);
+  const pool = characters.filter(c => c.cost === 1 && !isNightCharacter(c.id));
   return [newHero('hero-1', pool[Math.floor(nextRandom(seed).value * pool.length)].id, 1, 3)];
 };
 /** Kept for formation checks; migrated heroes are always available. */
@@ -321,7 +328,7 @@ export const available = (hero: Hero) => !hero.away;
 function initialState(seed = 7): GameState {
   return {
     journey: initialJourney(), amber: STARTING_AMBER, draft: null, cacaoBattles: 0, cacaoCircles: 0,
-    era: 1,
+    era: 1, commanderLevel: 1,
     heroes: starterHeroes(seed),
     progress: 0, selectedStage: 1, endlessBest: 0, endlessRecord: 0,
     inventory: [], lootSeed: nextRandom(seed).seed,
@@ -346,6 +353,7 @@ function sanitizeState(value: unknown, version: number): GameState {
     cacaoBattles: version < 9 ? (finite(input.cacao,0,0,1e12) > finite(input.clock,0,0,1e12) ? 3 : 0) : integer(input.cacaoBattles, 0, 0, 3),
     cacaoCircles:version<9?(finite(input.cacao,0,0,1e12)>0?1:0):integer(input.cacaoCircles,0,0,1e9),
     era: integer(input.era ?? input.villageLevel, 1, 1, MAX_ERA),
+    commanderLevel: version < 11 ? Math.min(MAX_FORMATION_LEVEL, 2 + integer(input.era ?? input.villageLevel, 1, 1, 5)) : integer(input.commanderLevel, 1, 1, MAX_FORMATION_LEVEL),
     paused: input.paused === true,
     // Saves from 0.3 stored a rotation index; it is a valid starting seed.
     lootSeed: integer(input.lootSeed, 11, 0, 4294967295),
@@ -385,7 +393,7 @@ function sanitizeState(value: unknown, version: number): GameState {
   if (Array.isArray(input.heroes)) {
     state.heroes = input.heroes.slice(0, MAX_ROSTER_SIZE).flatMap((value, index) => {
       const hero = record(value);
-      if (!PLAYABLE_IDS.includes(hero.characterId as number)) return [];
+      if (!PLAYABLE_IDS.includes(hero.characterId as number) || (isNightCharacter(hero.characterId as number) && !expansionUnlocked(state))) return [];
       let uid = typeof hero.uid === 'string' && /^[a-z0-9-]{1,40}$/.test(hero.uid) ? hero.uid : `restored-${index}`;
       let suffix = 0;
       while (uids.has(uid)) uid = `restored-${index}-${suffix++}`;
@@ -442,7 +450,7 @@ function sanitizeState(value: unknown, version: number): GameState {
     for (const item of hero.items) { if (keeper.items.length < MAX_ITEMS_PER_HERO) keeper.items.push(item); else state.inventory.push(item); }
   }
   state.heroes = [...unique.values()];
-  state.draft = sanitizeDraft(input.draft, state.era, state.heroes.map(h=>h.characterId), version < 10);
+  state.draft = sanitizeDraft(input.draft, state.era, state.heroes.map(h=>h.characterId), version < 10, state.rebirths);
   // Convert the old hunt challenge to recruitment without comparing unrelated counters.
   if(version<9&&state.journey.trial?.id==='hunt'){
     if(state.stats.hunts>state.journey.trial.start){
@@ -465,6 +473,8 @@ function sanitizeState(value: unknown, version: number): GameState {
   const selected = integer(input.selectedStage, Math.min(FINAL_STAGE, state.progress + 1), 0, FINAL_STAGE);
   state.selectedStage = stageUnlocked(state, selected) ? selected : Math.max(1, Math.min(state.progress + 1, FINAL_STAGE));
   while (state.selectedStage > 1 && !stageUnlocked(state, state.selectedStage)) state.selectedStage--;
+  state.journey.trial=null;
+  state.era=Math.max(state.era,eraForLevel(state.commanderLevel));
   state.journey.selected=state.journey.selected.filter(id=>!blessingLock(state,id));
   return state;
 }
@@ -492,7 +502,7 @@ export class Game {
     this.state = initialState(seed);
     if (typeof save === 'string') { try { save = JSON.parse(save); } catch { return; } }
     const root = record(save);
-    if (typeof root.version !== 'number' || ![1,2,3,4,5,6,7,8,9,SAVE_VERSION].includes(root.version)) return;
+    if (typeof root.version !== 'number' || ![1,2,3,4,5,6,7,8,9,10,SAVE_VERSION].includes(root.version)) return;
     this.state = sanitizeState(root.state, root.version as number);
     this.offlineSeconds = 0;
   }
@@ -523,16 +533,9 @@ export class Game {
     if(!Object.hasOwn(TRAIT_RULES,trait))return fail('Laço desconhecido.');
     const j=this.state.journey;j.focusTraits=j.focusTraits.includes(trait)?j.focusTraits.filter(t=>t!==trait):[...j.focusTraits.slice(-1),trait];return success('Prioridades da formação atualizadas.');
   }
-  acceptTrial(id:string):ActionResult {
-    const def=TRIALS.find(t=>t.id===id);if(!def||this.state.paused)return fail('Escolha um desafio com a jornada em atividade.');
-    if(this.state.journey.trial?.id===id)return fail('Este desafio já está ativo.');
-    this.state.journey.trial={id:def.id,start:this.state.stats[def.stat]};return success(`${def.name}: suas próximas atividades contam para este desafio.`);
-  }
-  claimTrial():ActionResult {
-    const j=this.state.journey,def=TRIALS.find(t=>t.id===j.trial?.id);
-    if(!def||trialProgress(this.state)<def.goal||this.state.paused)return fail('Conclua o desafio ativo antes de receber conhecimento.');
-    j.knowledge+=def.reward;j.completed++;j.trial=null;return success(`Desafio concluído: +${def.reward} de conhecimento ancestral.`);
-  }
+  acceptTrial(_id:string):ActionResult {return fail('Missões foram retiradas. Vitórias concedem conhecimento diretamente.');}
+  claimTrial():ActionResult {return fail('Missões foram retiradas.');}
+
   learnLegacy(id:string):ActionResult {
     const def=LEGACIES.find(d=>d.id===id);if(!def||this.state.paused)return fail('Retome a jornada e escolha um legado.');
     if(this.fighting())return fail('Escolha legados entre os combates.');
@@ -549,11 +552,19 @@ export class Game {
     j.selected.push(def.id);return success(`${def.name} acompanha sua formação em todas as próximas batalhas.`);
   }
 
+  buyFormationLevel():ActionResult {
+    if(this.state.paused||this.fighting())return fail('Compre níveis entre os combates.');
+    if(this.state.commanderLevel>=MAX_FORMATION_LEVEL)return fail('Todas as 28 casas da formação já foram liberadas.');
+    const cost=formationLevelCost(this.state.commanderLevel);
+    if(this.state.amber<cost)return fail(`Faltam ${cost-this.state.amber} de âmbar para o próximo nível.`);
+    this.state.amber-=cost;this.state.commanderLevel++;
+    this.state.era=Math.max(this.state.era,eraForLevel(this.state.commanderLevel));
+    return success(`Formação nível ${this.state.commanderLevel}: mais uma vaga no tabuleiro.`);
+  }
   advanceEra():ActionResult {
     if(this.state.paused||this.fighting())return fail('Avance entre os combates, com a jornada em atividade.');
     if(this.state.era>=MAX_ERA)return fail('A Era V já foi alcançada.');
-    const need=ERA_GROWTH[this.state.era-1];
-    if(!this.state.heroes.some(h=>h.level>=need.level&&h.ritualLevel>=need.ritualLevel))return fail(`A próxima era pede um herói com experiência nível ${need.level} e ritual nível ${need.ritualLevel}.`);
+    if(eraForLevel(this.state.commanderLevel)<=this.state.era)return fail('Compre níveis da formação para abrir a próxima era.');
     this.state.era++;
     return success(`Era ${this.state.era}! Escolha um Espírito Protetor e acolha os novos companheiros.`);
   }
@@ -575,10 +586,10 @@ export class Game {
   openDraft():ActionResult {
     if(this.fighting()||this.state.paused)return fail('O draft se abre entre combates, com a jornada em atividade.');
     if(this.state.draft)return fail('Escolha uma das cartas do draft atual.');
-    if(!draftPool(this.state.era,this.state.heroes.map(h=>h.characterId)).length)return fail('Todos os guardiões disponíveis nesta era já foram acolhidos.');
+    if(!draftPool(this.state.era,this.state.heroes.map(h=>h.characterId),[],this.state.rebirths).length)return fail('Todos os guardiões disponíveis nesta era já foram acolhidos.');
     const cost=draftCost(this.state.era);
     if(this.state.amber<cost)return fail(`São necessários ${cost} de âmbar. Lute para receber recursos.`);
-    const draw=drawCandidates(this.state.era,this.state.heroes.map(h=>h.characterId),[],this.state.lootSeed,3);
+    const draw=drawCandidates(this.state.era,this.state.heroes.map(h=>h.characterId),[],this.state.lootSeed,3,this.state.rebirths);
     this.state.amber-=cost;this.state.lootSeed=draw.seed;
     this.state.draft={era:this.state.era,offers:draw.offers,rolls:0,rerolled:draw.offers.map(()=>false)};
     return success('Escolha um guardião. A escolha já está paga e pode ser concluída depois.');
@@ -588,13 +599,14 @@ export class Game {
     const d=this.state.draft;
     if(!d||!Number.isInteger(index)||index<0||index>=d.offers.length)return fail('Carta de draft inválida.');
     if(d.rerolled[index])return fail('Esta carta já usou sua única troca gratuita.');
-    const draw=drawCandidates(d.era,this.state.heroes.map(h=>h.characterId),d.offers,this.state.lootSeed,1);
+    const draw=drawCandidates(d.era,this.state.heroes.map(h=>h.characterId),d.offers,this.state.lootSeed,1,this.state.rebirths);
     if(!draw.offers.length)return fail('Nenhum guardião inédito está disponível para trocar. Sua troca continua disponível.');
     this.state.lootSeed=draw.seed;d.offers[index]=draw.offers[0];d.rolls++;d.rerolled[index]=true;
     return success('Troca gratuita usada nesta carta. Um novo guardião foi sorteado.');
   }
   recruit(characterId:number):ActionResult {
     if(this.fighting()||this.state.paused)return fail('Escolha seu guardião entre os combates.');
+    if(isNightCharacter(characterId)&&!expansionUnlocked(this.state))return fail('O Véu da Noite abre após o primeiro renascimento.');
     if(this.state.heroes.some(h=>h.characterId===characterId))return fail('Este guardião já pertence à tribo.');
     if(!this.state.draft?.offers.includes(characterId))return fail('Este guardião precisa estar no draft pago atual.');
     const c=characterById(characterId);
@@ -697,7 +709,7 @@ export class Game {
     if (slot !== null && (!Number.isInteger(slot) || slot < 0 || slot >= FORMATION_SLOTS)) return fail('Escolha um lugar válido da formação.');
     const occupant = slot === null ? undefined : this.state.heroes.find(entry => entry.uid !== uid && entry.slot === slot);
     const deployed = this.state.heroes.filter(entry => entry.slot !== null).length;
-    if (slot !== null && hero.slot === null && !occupant && deployed >= capacity(this.state)) return fail('Formação cheia. Avance de era para levar mais heróis.');
+    if (slot !== null && hero.slot === null && !occupant && deployed >= capacity(this.state)) return fail('Formação cheia. Compre um nível para abrir outra vaga.');
     if (occupant) occupant.slot = hero.slot;
     hero.slot = slot;
     if (slot !== null && hero.away) return success(`Formação atualizada. ${characterById(hero.characterId).name} luta quando voltar à aldeia.`);
@@ -760,16 +772,18 @@ export class Game {
   buildWonder():ActionResult {
     if(this.state.paused||this.fighting())return fail('Consagre o Totem entre os combates, com a jornada em atividade.');
     const lock=totemLock(this.state);if(lock)return fail(lock);
+    this.state.amber-=consecrationCost(this.state.wonder);
     this.state.wonder++;
     return success(this.state.wonder===WONDER_STAGES?'O Grande Totem está completo. Os ancestrais aguardam o renascimento.':`Totem consagrado: ${this.state.wonder}/${WONDER_STAGES}.`);
   }
 
   ascend(): ActionResult {
-    if (this.fighting()) return fail('Conclua a expedição antes do ritual.');
-    if (this.state.wonder < WONDER_STAGES || this.state.progress < FINAL_STAGE) return fail('O renascimento exige o Grande Totem completo e a vitória no Primeiro Inverno.');
+    if (this.fighting() || this.state.paused) return fail('Renasça entre combates, com a jornada em atividade.');
+    const lock=resetLock(this.state);if(lock)return fail(lock);
     const gained = embersFor(this.state);
     const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, quests: [...this.state.quests], stats: { ...this.state.stats }, journey:{...this.state.journey,selected:[]}, clock: this.state.clock };
     this.state = { ...initialState(this.state.lootSeed), ...keep };
+    this.state.journey.trial=null;
     this.gainXp(this.state.heroes[0],1500*memory(this.state,'heranca'),false);
     for (let i = 0; i < memory(this.state, 'forja'); i++) this.addItem(this.randomComponent());
     this.battle = null; this.events = [];
@@ -794,7 +808,7 @@ export class Game {
   /** Evolution needs both independent tracks and the deep ceremony for the final form. */
   private awaken(hero: Hero): void {
     for (const need of AWAKENING) {
-      if (hero.stars >= need.stars || hero.level < need.level || hero.ritualLevel < need.ritualLevel || (need.ayahuasca && !hero.rituals.ayahuasca)) continue;
+      if (hero.stars >= need.stars || hero.level < need.level || hero.ritualLevel < need.ritualLevel || (need.ayahuasca && !hero.rituals[deepRiteForHero(hero.characterId)])) continue;
       hero.stars = need.stars;
       this.report(hero, `despertou ${need.stars}★: experiência e vínculo ritual alcançados.`, true);
     }
@@ -827,6 +841,7 @@ export class Game {
     const p=practiceById(id),h=this.state.heroes.find(h=>h.uid===uid);
     if(!p||p.tribe||!h)return 'Escolha uma cerimônia e um guardião.';
     if(this.state.paused||this.fighting())return 'Conduza cerimônias entre os combates, com a jornada em atividade.';
+    if(!ritesForHero(h.characterId).some(r=>r.id===p.id))return 'Esta cerimônia não pertence ao caminho deste guardião.';
     if(this.state.era<p.era)return `Exige Era ${p.era}.`;
     if(h.level<p.minLevel)return `Exige experiência ${p.minLevel}.`;
     if(p.requires&&!h.rituals[p.requires])return `Conclua ${practiceById(p.requires)!.name} antes.`;
@@ -842,16 +857,7 @@ export class Game {
     this.finishRitual(h,p.id,this.state.clock,participationBonus(RITUAL_XP[p.id],quality));
     return success(`${p.name} concluído. XP ritual recebido; guardião disponível agora.`);
   }
-  claimHeroProof(uid: string, id: string): ActionResult {
-    if (this.state.paused || this.fighting()) return fail('Receba a prova entre os combates, com a jornada em atividade.');
-    const hero = this.state.heroes.find(h => h.uid === uid), proof = HERO_PROOFS.find(p => p.id === id);
-    if (!hero || !proof) return fail('Prova desconhecida.');
-    if (hero.mastery.claimed.includes(id)) return fail('Esta prova já foi recebida.');
-    if (proof.progress(hero.mastery) < proof.goal) return fail('Conclua o objetivo da prova primeiro.');
-    hero.mastery.claimed.push(id);
-    this.gainXp(hero, proof.xp);
-    return success(`${proof.name}: +${proof.xp} XP para ${characterById(hero.characterId).name}. Nível ${hero.level}.`);
-  }
+  claimHeroProof(_uid: string, _id: string): ActionResult { return fail('Provas foram retiradas. Evolua lutando e conduzindo rituais.'); }
   /** A purchased blessing lasts for three battles, with no wall-clock timer. */
   holdCacaoCircle(quality=0):ActionResult {
     if(this.state.paused||this.fighting())return fail('Reúna a roda entre os combates.');
@@ -866,18 +872,7 @@ export class Game {
     return success('XP ritual recebido pela tribo. Cacau acompanha três batalhas.');
   }
 
-  claimQuest(id: string): ActionResult {
-    const quest = questById(id);
-    if (!quest) return fail('Objetivo desconhecido.');
-    if (this.state.quests.includes(id)) return fail('Esta recompensa já foi recebida.');
-    if (!quest.done(this.state)) return fail('Este objetivo ainda não foi cumprido.');
-    this.state.quests.push(id);
-    const reward = quest.reward;
-    this.state.journey.knowledge+=reward.knowledge??0;
-    for (let i = 0; i < (reward.components ?? 0); i++) this.addItem(this.randomComponent());
-    this.state.embers += reward.embers ?? 0;
-    return success(`Objetivo cumprido: ${quest.title}.`);
-  }
+  claimQuest(_id: string): ActionResult { return fail('Missões foram retiradas. Compre níveis da formação com âmbar.'); }
 
   buyMemory(id: MemoryId): ActionResult {
     const entry = MEMORIES.find(item => item.id === id);
@@ -919,7 +914,7 @@ export class Game {
     entity.x = cell.x; entity.y = cell.y;
     entity.cooldown = index * 0.08;
     if (team === 'enemy') {
-      const scale = enemyScale(level, character.cost);
+      const scale = enemyScale(level, character.cost) * (1 + Math.min(6,this.state.rebirths)*.16);
       const boss = bossScale(region);
       entity.hp *= scale * (isBoss ? boss.hp : 1); entity.maxHp = entity.hp; entity.attack *= scale * (isBoss ? boss.attack : 1);
       entity.boss = isBoss;
@@ -964,6 +959,12 @@ export class Game {
       }
       entity.level = hero.level;
       entity.maxHp *= growth.hp * (1 + RITUAL_EFFECT.kamboHp * (r.kambo ?? 0));
+      entity.maxHp*=1+.06*(r['blood-pact']??0)+.05*(r['ancestral-song']??0);
+      entity.attack*=1+.06*(r.consecration??0);
+      entity.spellPower*=1+.06*((r['soul-forge']??0)+(r['speaker-seal']??0));
+      entity.mana+=6*(r['soul-forge']??0);entity.manaRegen+=.3*(r['speaker-seal']??0);
+      if(r['blood-pact'])addMod(entity,'lifesteal',.02*r['blood-pact'],Infinity,'pacto');
+      if(r.eclipse){entity.spellPower*=1.2;entity.mana+=20;}
       entity.attack *= growth.attack * (1 + RITUAL_EFFECT.sanangaDamage * (r.sananga ?? 0));
       entity.attackSpeed *= 1 + RITUAL_EFFECT.rapeAttackSpeed * (r.rape ?? 0);
       if (r.ayahuasca) { entity.spellPower *= 1 + RITUAL_EFFECT.ayahuascaSpell; entity.mana += RITUAL_EFFECT.ayahuascaMana; }
@@ -999,6 +1000,18 @@ export class Game {
       const tier = tiers.get(trait) ?? 0;
       if (!tier) continue;
       entity.bonds.push(trait);
+      const nightFaction=['Vigília','Vozes do Véu','Corte Rubra','Artífices da Alma','Nascidos da Noite','Insurgentes','Sol Negro','Bestas Astrais'].includes(trait);
+      if(nightFaction){
+        if(trait==='Vigília')entity.attack*=1+[.12,.28,.52,.75][tier-1];
+        if(trait==='Vozes do Véu')entity.spellPower*=1+[.15,.35,.65,.85][tier-1];
+        if(trait==='Corte Rubra')addMod(entity,'lifesteal',[.05,.12,.2,.28][tier-1],Infinity,'corte');
+        if(trait==='Artífices da Alma')entity.manaRegen+=[1,2,3,4][tier-1];
+        if(trait==='Nascidos da Noite')entity.maxHp*=1+[.15,.32,.55,.8][tier-1];
+        if(trait==='Insurgentes'){entity.armor+=[10,25,45,65][tier-1];entity.magicResist+=[10,25,45,65][tier-1];}
+        if(trait==='Sol Negro'){entity.spellPower*=1+[.1,.25,.45,.7][tier-1];entity.mana+=[10,20,30,45][tier-1];}
+        if(trait==='Bestas Astrais'){entity.maxHp*=1+[.15,.35,.55][tier-1];entity.attack*=1+[.15,.35,.55][tier-1];}
+        continue;
+      }
       const power=traitPower(trait,tier);
       switch (trait) {
         case 'Presas': entity.attack *= 1 + power; break;
@@ -1032,7 +1045,7 @@ export class Game {
   nextStage(): { stage: Stage; level: number; depth: number } {
     if (this.state.selectedStage === 0) {
       const depth = this.state.endlessBest + 1;
-      return { stage: endlessStage(depth), level: endlessLevel(depth), depth };
+      return { stage: endlessStage(depth, this.state.rebirths), level: endlessLevel(depth), depth };
     }
     const stage = stageById(this.state.selectedStage) ?? stageById(1)!;
     return { stage, level: stage.id, depth: 0 };
@@ -1513,8 +1526,9 @@ export class Game {
     battle.zones = [];
     for (const entity of battle.entities) if (entity.summon && entity.hp > 0) { entity.hp = 0; entity.action = 'dead'; }
     // Everyone who marched learns from the fight, a little even in defeat.
+    const farm=frontierReward(battle.stage,this.state.progress);
     const xpLevel = battle.stage < 0 ? Math.max(2, this.state.progress * 0.85) : battle.stage === 0 ? endlessLevel(battle.depth) : battle.stage;
-    battle.xp = Math.round(battleXp(xpLevel, victory, battle.entities.some(entity => entity.boss), battle.firstClear) * this.xpBonus());
+    battle.xp = Math.round(battleXp(xpLevel, victory, battle.entities.some(entity => entity.boss), battle.firstClear) * this.xpBonus() * farm);
     for (const uid of battle.party) {
       const hero = this.state.heroes.find(entry => entry.uid === uid);
       if (hero && victory) {
@@ -1529,11 +1543,12 @@ export class Game {
       }
       if (hero && this.gainXp(hero, battle.xp)) battle.levelUps.push(`${characterById(hero.characterId).name} · nível ${hero.level}`);
     }
-    battle.amber=Math.round(battleAmber(xpLevel,victory,battle.firstClear,battle.entities.some(e=>e.boss))*(1+legacyLevel(this.state,'roots')*.04));
+    battle.amber=victory?Math.round(battleAmber(xpLevel,true,battle.firstClear,battle.entities.some(e=>e.boss))*(1+legacyLevel(this.state,'roots')*.04)*farm):0;
     this.state.amber=Math.min(1e9,this.state.amber+battle.amber);
     if(this.state.cacaoBattles>0)this.state.cacaoBattles--;
     if (!victory) return;
     this.state.stats.victories++;
+    this.state.journey.knowledge+=battle.firstClear?3:1;
     const endless = battle.stage === 0;
     const drops = endless ? (battle.depth % 5 === 0 ? 2 : 1) : battle.firstClear ? (stageById(battle.stage)!.index === 5 ? 2 : 1) : this.random() < 0.35+memory(this.state,'botim')*.05+legacyLevel(this.state,'forge')*.02 ? 1 : 0;
     for (let i = 0; i < drops; i++) { const id = this.randomComponent(); if (this.addItem(id)) battle.loot.push(id); }

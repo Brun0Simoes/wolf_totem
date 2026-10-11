@@ -71,7 +71,7 @@ export class CharacterPreview {
     // Spirit silhouettes can be taller than the physical body used on the battlefield.
     const widestFrame = Math.max(...(sheet.frameRects?.map(frame => frame.width) ?? [sheet.frameWidth]));
     const scale = Math.min(330 / sheet.bodyHeight, 430 / (sheet.portrait?.height ?? sheet.bodyHeight), 570 / widestFrame);
-    const pose = poseForMotion(state, true, this.reduced);
+    const pose = poseForMotion(state, !sheet.rigged, this.reduced);
     c.fillStyle = '#0b15184a'; c.beginPath(); c.ellipse(320, 483, 86, 17, 0, 0, Math.PI * 2); c.fill();
     c.save(); c.translate(320 + pose.x * 2, 480 + pose.y * 2);
     c.rotate(pose.angle * Math.PI / 180);

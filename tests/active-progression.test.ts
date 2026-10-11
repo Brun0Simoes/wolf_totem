@@ -1,3 +1,4 @@
+import {characters} from '../src/data/characters';
 import { describe, expect, it } from "vitest";
 import { Game, newHero, SAVE_VERSION } from "../src/game/simulation";
 import {
@@ -38,7 +39,7 @@ describe("active ritual progression", () => {
     const g=new Game(),h=g.state.heroes[0];g.state.heroes.push(newHero('reserve',3));g.performActiveRitual(h.uid,'rape');g.performActiveRitual('reserve','rape');expect(g.state.heroes.every(h=>!h.away&&!h.integrationWins&&!h.ritualReadyAt)).toBe(true);win(g);g.dismissBattle();h.level=2;expect(g.performActiveRitual(h.uid,'sananga').ok).toBe(true);
   });
   it('awards fewer resources for early repeats and defeats than advanced victories',()=>{
-    const g=new Game();g.state.era=5;g.state.progress=30;win(g,1);const earned=g.battle!.amber;g.dismissBattle();g.selectStage(20);g.startBattle();finish(g,false);expect(g.battle!.amber).toBeLessThan(earned*5);g.dismissBattle();win(g,20);expect(g.battle!.amber).toBeGreaterThan(earned*4);
+    const g=new Game();g.state.commanderLevel=3;g.state.era=5;g.state.commanderLevel=2+g.state.era;g.state.progress=30;win(g,1);const earned=g.battle!.amber;g.dismissBattle();g.selectStage(20);g.startBattle();finish(g,false);expect(g.battle!.amber).toBeLessThan(earned*5);g.dismissBattle();win(g,20);expect(g.battle!.amber).toBeGreaterThan(earned*4);
   });
   it('retains era, prior ritual, level, funds, pause and combat checks',()=>{
     const g=new Game(),h=g.state.heroes[0];expect(g.performActiveRitual(h.uid,'ayahuasca',1).ok).toBe(false);g.state.paused=true;expect(g.performActiveRitual(h.uid,'rape').ok).toBe(false);g.state.paused=false;g.startBattle();expect(g.performActiveRitual(h.uid,'rape').ok).toBe(false);finish(g);g.dismissBattle();g.state.amber=0;expect(g.performActiveRitual(h.uid,'rape').ok).toBe(false);expect(g.state.stats.rituals).toBe(0);
@@ -47,25 +48,12 @@ describe("active ritual progression", () => {
     const g=new Game(),h=g.state.heroes[0];h.level=2;g.performActiveRitual(h.uid,'rape');expect(g.performRitual(h.uid,'sananga').ok).toBe(true);expect(h.away).toBeNull();expect(h.ritualReadyAt).toBe(0);const xp=ritualTotalXp(h.ritualLevel,h.ritualXp);g.catchUp(1e9);expect(ritualTotalXp(h.ritualLevel,h.ritualXp)).toBe(xp);
   });
   it('cacao expires after three battles and requires another paid circle',()=>{
-    const g=new Game();g.state.era=2;expect(g.holdCacaoCircle().ok).toBe(true);for(let remaining=2;remaining>=0;remaining--){win(g,1);expect(g.state.cacaoBattles).toBe(remaining);}g.dismissBattle();expect(g.holdCacaoCircle().ok).toBe(true);
+    const g=new Game();g.state.commanderLevel=3;g.state.era=2;g.state.commanderLevel=2+g.state.era;expect(g.holdCacaoCircle().ok).toBe(true);for(let remaining=2;remaining>=0;remaining--){win(g,1);expect(g.state.cacaoBattles).toBe(remaining);}g.dismissBattle();expect(g.holdCacaoCircle().ok).toBe(true);
   });
 });
 
 describe("personal guardian proofs", () => {
-  it('advances era and first awakening with paid drafts and real fights, without advancing the offline clock',()=>{
-    const g=new Game(),h=g.state.heroes[0];g.openDraft();g.recruit(g.state.draft!.offers[0]);g.applyArmyPlan();g.performActiveRitual(h.uid,'rape');let attempt=0;
-for(;attempt<100&&h.stars<2;attempt++){
- if(g.battle)g.dismissBattle();
- if(g.state.heroes.length<2+g.state.era&&g.openDraft().ok){g.recruit(g.state.draft!.offers[0]);g.applyArmyPlan();}
- if(g.advanceEra().ok)g.chooseSpirit('lobo');
- if(attempt%3===0&&h.level>=2&&h.ritualLevel<3)g.performActiveRitual(h.uid,'sananga');
- if(attempt%4===0)g.prepareBuild(h.uid,'front-hold');
- g.selectStage(Math.min(4,Math.max(1,g.state.progress+(attempt%3===0?0:1))));
- expect(g.startBattle().ok).toBe(true);for(let n=0;n<1500&&g.battle!.status==='fighting';n++)g.advanceBattle(.1);
- if(g.battle!.status==='victory')for(const proof of HERO_PROOFS)if(proof.progress(h.mastery)>=proof.goal)g.claimHeroProof(h.uid,proof.id);
-}
-expect(h.stars,JSON.stringify({attempt,level:h.level,ritual:h.ritualLevel,era:g.state.era,progress:g.state.progress,amber:g.state.amber})).toBe(2);expect(g.state.era).toBeGreaterThanOrEqual(2);expect(g.state.clock).toBe(0);expect(h.mastery.claimed).toContain('first');expect(g.state.progress).toBeGreaterThanOrEqual(3);
-  });
+  it('opens eras by paid formation levels independently from hero XP',()=>{const g=new Game();g.state.amber=10000;const clock=g.state.clock;for(let n=1;n<4;n++)expect(g.buyFormationLevel().ok).toBe(true);expect(g.state.era).toBe(2);expect(g.state.heroes[0].level).toBe(1);expect(g.state.clock).toBe(clock);expect(g.state.commanderLevel).toBe(4);});
   it("credits only participants, on victory, once for a completed battle", () => {
     const g = new Game(),
       h = g.state.heroes[0];
@@ -93,6 +81,7 @@ expect(h.stars,JSON.stringify({attempt,level:h.level,ritual:h.ritualLevel,era:g.
   it("records items and this hero’s active traits, without crediting an unrelated trait", () => {
     const g = new Game(),
       h = g.state.heroes[0];
+    g.state.commanderLevel=3;
     g.state.heroes.push(newHero("fixture-8",8));
     g.deploy(g.state.heroes[1].uid, 10);
     h.items = ["presa"];
@@ -127,19 +116,7 @@ expect(h.stars,JSON.stringify({attempt,level:h.level,ritual:h.ritualLevel,era:g.
     win(g, 1);
     expect(h.mastery.skillWins).toBe(1);
   });
-  it("claims each reward for its hero once, including across saves", () => {
-    const g = new Game(),
-      h = g.state.heroes[0];
-    expect(g.claimHeroProof(h.uid, "first").ok).toBe(false);
-    win(g);
-    const xp = totalXp(h.level, h.xp);
-    expect(g.claimHeroProof(h.uid, "first").ok).toBe(true);
-    expect(totalXp(h.level, h.xp)).toBe(xp + 400);
-    const loaded = new Game(g.serialize(1000), 1000);
-    const before = loaded.serialize(1000);
-    expect(loaded.claimHeroProof(h.uid, "first").ok).toBe(false);
-    expect(loaded.serialize(1000)).toBe(before);
-  });
+  it('refuses removed personal proofs, including after reload',()=>{const g=new Game();g.state.heroes[0].mastery.wins=10;const before=g.serialize(1000);expect(g.claimHeroProof(g.state.heroes[0].uid,'first').ok).toBe(false);expect(g.serialize(1000)).toBe(before);const loaded=new Game(before);expect(loaded.claimHeroProof(loaded.state.heroes[0].uid,'first').ok).toBe(false);});
   it("does not grant rewards from abandoned battles or timer-only activity", () => {
     const g = new Game(),
       h = g.state.heroes[0];
@@ -160,18 +137,7 @@ expect(h.stars,JSON.stringify({attempt,level:h.level,ritual:h.ritualLevel,era:g.
     g.startBattle();
     expect(g.claimHeroProof(h.uid, "first").ok).toBe(false);
   });
-  it("supports all 55 identities with bounded, unique rewards", () => {
-    expect(HERO_PROOFS).toHaveLength(8);
-    expect(new Set(HERO_PROOFS.map((p) => p.id)).size).toBe(8);
-    expect(HERO_PROOFS.reduce((sum, p) => sum + p.xp, 0)).toBe(69000);
-    for (let id = 1; id <= 55; id++) {
-      const g = new Game();
-      g.state.heroes = [newHero("test", id)];
-      g.state.heroes[0].mastery.wins = 1;
-      expect(g.claimHeroProof("test", "first").ok).toBe(true);
-      expect(g.state.heroes[0].mastery.claimed).toEqual(["first"]);
-    }
-  });
+  it('all guardians progress through battle and rituals instead of proof claims',()=>{for(const id of characters.map(c=>c.id)){const g=new Game();g.state.heroes=[newHero('test',id)];g.state.heroes[0].mastery.wins=1;expect(g.claimHeroProof('test','first').ok).toBe(false);expect(g.state.heroes[0].mastery.claimed).toEqual([]);}});
   it("preserves v7 progress and makes its pending integration playable", () => {
     const g = new Game(),
       old = JSON.parse(g.serialize(1000));

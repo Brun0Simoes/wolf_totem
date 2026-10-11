@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { ARENA_CENTER as C, ARENA_SPAN as S } from './battleArena';
 import { CombatParticles } from './CombatParticles';
 import { combatProfile } from './combatProfiles';
+import { NIGHT_PROFILES } from '../data/nocturne';
 
 export interface FxPoint { x: number; y: number }
 export const SKILL_COLORS:Record<number,number>={1:0xb7dfff,2:0xaadcca,3:0xd2ac78,4:0xa4df72,5:0xe5bd74,6:0x84d9d0,7:0xe6a189,8:0xd5cdf6,9:0xb3d6aa,10:0xc4e984,11:0xf2d486,12:0xf4dfa0,13:0xc7a3ec,
@@ -19,6 +20,10 @@ const RECIPES:Record<number,Recipe[]>={
  42:['flurry','aura'],43:['allies','nova'],44:['web','call'],45:['call','volley'],46:['aura','volley'],47:['leap','mark'],48:['stampede'],49:['aura','nova'],
  50:['leap','flurry','aura'],51:['allies','call'],52:['night'],53:['nova','heal'],54:['totems','allies','volley'],55:['leap','nova'],
 };
+for(const [id,profile] of NIGHT_PROFILES){
+ SKILL_COLORS[id]=profile.color;
+ RECIPES[id]=({whip:['line','mark'],elements:['nova','aura'],blade:['leap','flurry'],blood:['flurry','aura'],heal:['heal','allies'],forge:['call'],guard:['shield','allies'],curse:['mark','night'],volley:['volley'],portal:['aura','nova'],serpent:['aura','line'],beast:['stampede','flurry'],eclipse:['night','nova']} as Record<string,Recipe[]>)[profile.ability];
+}
 
 /** Scene-only effects. They never apply damage or change simulation positions. */
 export class CombatEffects {

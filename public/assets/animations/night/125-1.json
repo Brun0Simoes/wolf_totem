@@ -1,0 +1,26 @@
+{
+  "characterId": 125,
+  "stars": 1,
+  "name": "Varkul",
+  "image": "/assets/animations/night/125.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 402,
+  "frameHeight": 286,
+  "bodyHeight": 262,
+  "anchorX": 201.0,
+  "anchorY": 274,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

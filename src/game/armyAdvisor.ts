@@ -130,7 +130,7 @@ function selectParty(
   style = "balanced",
 ): Hero[] {
   const eligible = s.heroes.filter((h) => !h.away),
-    limit = 2 + s.era,
+    limit = s.commanderLevel,
     party: Hero[] = [];
   const value = (p: Hero[]) =>
     strategicScore(p, s, focus) +
@@ -158,18 +158,17 @@ function selectParty(
   while (party.length < limit && party.length < eligible.length) {
     const best = eligible
       .filter((h) => !party.includes(h))
-      .sort(
-        (a, b) =>
-          value([...party, b]) - value([...party, a]) ||
-          a.characterId - b.characterId,
-      )[0];
+      .map(hero=>({hero,score:value([...party,hero])}))
+      .sort((a,b)=>b.score-a.score||a.hero.characterId-b.hero.characterId)[0].hero;
     party.push(best);
   }
-  for (let pass = 0; pass < 2; pass++)
+  let currentValue=value(party);
+  for (let pass = 0; pass < (eligible.length>40&&limit>12?1:2); pass++)
     for (let i = 0; i < party.length; i++)
       for (const h of eligible.filter((h) => !party.includes(h))) {
         const swap = party.map((p, j) => (j === i ? h : p));
-        if (value(swap) > value(party) + 0.01) party[i] = h;
+        const swapValue=value(swap);
+        if (swapValue > currentValue + 0.01) {party[i] = h;currentValue=swapValue;}
       }
   return party.sort(
     (a, b) =>
@@ -294,7 +293,7 @@ export function recommendedParty(s: GameState, composition = "auto"): Hero[] {
 export function armySuggestions(s: GameState) {
   const current = activeArmy(s),
     score = armyScore(current, s.journey.focusTraits),
-    limit = 2 + s.era;
+    limit = s.commanderLevel;
   return s.heroes
     .filter((h) => h.slot === null && !h.away)
     .map((hero) => {
@@ -349,7 +348,7 @@ export function nearTraits(s: GameState) {
       const recruits = members.filter(
         (c) =>
           !s.heroes.some((h) => h.characterId === c.id) &&
-          c.cost <= unlockedCost(s.era),
+          c.cost <= unlockedCost(s.era) && (c.id < 101 || s.rebirths > 0),
       );
       return {
         ...status,
@@ -426,9 +425,9 @@ export function armyWarnings(s: GameState, stage = s.selectedStage): string[] {
     warnings: string[] = [];
   if (!party.length)
     return ["Sua formação está vazia. Posicione guardiões no campo."];
-  if (party.length < 2 + s.era)
+  if (party.length < s.commanderLevel)
     warnings.push(
-      `${2 + s.era - party.length} vaga(s) livres: mais companheiros aumentam as opções de laços.`,
+      `${s.commanderLevel - party.length} vaga(s) livres: mais companheiros aumentam as opções de laços.`,
     );
   if (!party.some((h) => roleOf(char(h)) === "front"))
     warnings.push(
@@ -456,7 +455,7 @@ export function enemyAdvice(s: GameState): {
   roles: { role: ArmyRole; count: number }[];
   tips: string[];
 } {
-  const stage = stageById(s.selectedStage) ?? endlessStage(s.endlessBest + 1);
+  const stage = stageById(s.selectedStage) ?? endlessStage(s.endlessBest + 1,s.rebirths);
   const roster = stage.units
       .map((u) => characters.find((c) => c.id === u.id)!)
       .filter(Boolean),
@@ -507,7 +506,7 @@ export function enemyThreats(s: GameState): Threats {
     cached = threatCache.get(s);
   if (cached?.key === key) return cached.value;
   const roster = (
-    stageById(s.selectedStage) ?? endlessStage(s.endlessBest + 1)
+    stageById(s.selectedStage) ?? endlessStage(s.endlessBest + 1,s.rebirths)
   ).units.map((u) => char({ characterId: u.id } as Hero));
   const magic = roster.filter((c) =>
     ["caster", "support", "summon"].includes(roleOf(c)),
@@ -665,7 +664,7 @@ export function positionPlan(
 export function planSignature(s: GameState): string {
   return JSON.stringify([
     s.selectedStage,
-    s.era,
+    s.era, s.commanderLevel, s.rebirths,
     s.journey.focusTraits,
     s.inventory,
     s.heroes.map((h) => [

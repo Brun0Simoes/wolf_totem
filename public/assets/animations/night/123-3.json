@@ -1,0 +1,26 @@
+{
+  "characterId": 123,
+  "stars": 3,
+  "name": "Kavira",
+  "image": "/assets/animations/night/123.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 387,
+  "frameHeight": 298,
+  "bodyHeight": 274,
+  "anchorX": 193.5,
+  "anchorY": 286,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

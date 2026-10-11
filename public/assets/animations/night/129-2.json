@@ -1,0 +1,26 @@
+{
+  "characterId": 129,
+  "stars": 2,
+  "name": "Azrael",
+  "image": "/assets/animations/night/129.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 232,
+  "frameHeight": 321,
+  "bodyHeight": 297,
+  "anchorX": 116.0,
+  "anchorY": 309,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

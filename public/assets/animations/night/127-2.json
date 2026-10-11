@@ -1,0 +1,26 @@
+{
+  "characterId": 127,
+  "stars": 2,
+  "name": "Eresh",
+  "image": "/assets/animations/night/127.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 260,
+  "frameHeight": 332,
+  "bodyHeight": 308,
+  "anchorX": 130.0,
+  "anchorY": 320,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

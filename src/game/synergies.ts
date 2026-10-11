@@ -167,6 +167,17 @@ export const TRAIT_RULES: Record<string, TraitRule> = {
     ],
   },
 };
+const nightFactions:Record<string,string[]>={
+ 'Vigília':['+12% de ataque.','+28% de ataque.','+52% de ataque.','+75% de ataque.'],
+ 'Vozes do Véu':['+15% de poder de habilidade.','+35% de poder de habilidade.'],
+ 'Corte Rubra':['5% de roubo de vida.','12% de roubo de vida.','20% de roubo de vida.','28% de roubo de vida.'],
+ 'Artífices da Alma':['+1 de mana por segundo.','+2 de mana por segundo.'],
+ 'Nascidos da Noite':['+15% de vida.','+32% de vida.','+55% de vida.','+80% de vida.'],
+ 'Insurgentes':['+10 de armadura e RM.','+25 de armadura e RM.','+45 de armadura e RM.','+65 de armadura e RM.'],
+ 'Sol Negro':['+10% de poder e +10 de mana.','+25% de poder e +20 de mana.','+45% de poder e +30 de mana.'],
+ 'Bestas Astrais':['+15% de vida e ataque.','+35% de vida e ataque.'],
+};
+for(const [name,effects] of Object.entries(nightFactions)){const members=characters.filter(c=>c.traits.includes(name)).length;const thresholds=[2,4,6,8].filter(n=>n<=members);TRAIT_RULES[name]={kind:'povo',thresholds,effects:effects.slice(0,thresholds.length)};}
 for (const character of characters)
   for (const trait of character.traits) {
     if (TRAIT_RULES[trait]) continue;

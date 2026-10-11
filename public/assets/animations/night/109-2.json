@@ -1,0 +1,26 @@
+{
+  "characterId": 109,
+  "stars": 2,
+  "name": "Isolde",
+  "image": "/assets/animations/night/109.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 375,
+  "frameHeight": 325,
+  "bodyHeight": 301,
+  "anchorX": 187.5,
+  "anchorY": 313,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

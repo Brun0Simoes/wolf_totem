@@ -7,7 +7,8 @@ import {
   drawCandidates,
   draftPool,
 } from "../src/game/economy";
-import { characters } from "../src/data/characters";
+import { characters as allCharacters } from "../src/data/characters";
+const characters=allCharacters.filter(c=>c.id<101);
 import {
   countTraits,
   traitStatus,
@@ -34,7 +35,7 @@ const complete = (g: Game, victory = true) => {
   g.advanceBattle(0.1);
 };
 const rich = () => {
-  const g = new Game();
+  const g=new Game();g.state.commanderLevel=3;
   g.state.amber = 10000;
   return g;
 };
@@ -139,7 +140,7 @@ describe("paid three-card draft", () => {
   it("keeps a paid era-I draft in its original pool after era advancement and reload", () => {
     const g = rich();
     g.openDraft();
-    g.state.era = 5;
+    g.state.era = 5;g.state.commanderLevel=2+g.state.era;
     const loaded = new Game(g.serialize(1000), 1000);
     expect(loaded.state.draft!.era).toBe(1);
     loaded.rerollDraft(0);
@@ -150,7 +151,7 @@ describe("paid three-card draft", () => {
     ).toBe(true);
   });
   it("guards insufficient funds, pause and fighting with no state change", () => {
-    const g = new Game();
+    const g=new Game();g.state.commanderLevel=3;
     g.state.amber = 0;
     let before = g.serialize(1000);
     expect(g.openDraft().ok).toBe(false);
@@ -171,7 +172,7 @@ describe("paid three-card draft", () => {
   it("can finish the entire roster with no duplicate hero or empty paid drafts", () => {
     const g = rich();
     g.state.amber = 1e6;
-    g.state.era = 5;
+    g.state.era = 5;g.state.commanderLevel=2+g.state.era;
     while (g.state.heroes.length < 55) {
       expect(g.openDraft().ok).toBe(true);
       expect(g.state.draft!.offers.length).toBeGreaterThan(0);
@@ -231,7 +232,7 @@ describe("resources instead of waiting", () => {
   });
   it("cacao lasts three actual combats, persists offline and consumes defeats too", () => {
     const g = rich();
-    g.state.era = 2;
+    g.state.era = 2;g.state.commanderLevel=2+g.state.era;
     g.holdCacaoCircle();
     g.catchUp(1e9);
     expect(g.state.cacaoBattles).toBe(3);
@@ -244,31 +245,7 @@ describe("resources instead of waiting", () => {
     }
     expect(g.holdCacaoCircle().ok).toBe(true);
   });
-  it("migrates old hunt challenges without mixing hunt and recruitment counts or paying twice", () => {
-    const old = JSON.parse(new Game().serialize(1000));
-    old.version = 8;
-    old.state.stats.hunts = 23;
-    old.state.stats.recruits = 0;
-    old.state.journey.trial = { id: "hunt", start: 23 };
-    const pending = new Game(old);
-    expect(pending.state.journey.trial!.start).toBe(0);
-    expect(pending.claimTrial().ok).toBe(false);
-    pending.openDraft();
-    pending.recruit(pending.state.draft!.offers[0]);
-    expect(pending.claimTrial().ok).toBe(true);
-    old.state.journey.trial.start = 22;
-    const complete = new Game(old);
-    expect(complete.state.journey.trial).toBeNull();
-    expect(complete.state.journey.knowledge).toBe(
-      old.state.journey.knowledge + 4,
-    );
-    expect(complete.state.journey.completed).toBe(
-      old.state.journey.completed + 1,
-    );
-    expect(new Game(complete.serialize()).state.journey).toEqual(
-      complete.state.journey,
-    );
-  });
+  it('retires old pending missions while preserving learned knowledge',()=>{const old=JSON.parse(new Game().serialize());old.version=8;old.state.journey.knowledge=12;old.state.journey.trial={id:'combat',start:0};const loaded=new Game(old);expect(loaded.state.journey.knowledge).toBe(12);expect(loaded.state.journey.trial).toBeNull();expect(loaded.claimTrial().ok).toBe(false);expect(new Game(loaded.serialize()).state.journey.knowledge).toBe(12);});
   it("migrates a v8 pending ceremony once, recalls hunts and removes all integration clocks", () => {
     const g = rich(),
       old = JSON.parse(g.serialize(1000));
@@ -302,7 +279,7 @@ describe("resources instead of waiting", () => {
 describe("build transactions and deep compositions", () => {
   it("calculates Guardian shields from the final life after levels and equipment", () => {
     const g = rich();
-    g.state.era = 5;
+    g.state.era = 5;g.state.commanderLevel=2+g.state.era;
     g.state.heroes = characters
       .filter((c) => c.traits.includes("Guardião"))
       .slice(0, 6)
@@ -335,7 +312,7 @@ describe("build transactions and deep compositions", () => {
   });
   it("does not duplicate repeated components and rejects unaffordable builds without moving items", () => {
     expect(buildTransaction(1, ["presa"], [], ["obsidiana"])!.cost).toBe(30);
-    const g = new Game();
+    const g=new Game();g.state.commanderLevel=3;
     g.state.amber = 0;
     g.state.heroes[0].items = ["arco"];
     const before = g.serialize(1000);
@@ -345,7 +322,7 @@ describe("build transactions and deep compositions", () => {
   it("blocks purchases and build changes during battle and respects relic era gates", () => {
     const g = rich();
     expect(g.buyRelic("orbe-aurora").ok).toBe(false);
-    g.state.era = 3;
+    g.state.era = 3;g.state.commanderLevel=2+g.state.era;
     expect(g.buyRelic("orbe-aurora").ok).toBe(true);
     g.startBattle();
     const before = g.serialize(1000);
@@ -369,7 +346,7 @@ describe("build transactions and deep compositions", () => {
   });
   it("exposes many distinct legal plans, all roles have three meaningful builds", () => {
     const g = rich();
-    g.state.era = 5;
+    g.state.era = 5;g.state.commanderLevel=2+g.state.era;
     g.state.heroes = characters.map((c) => ({
       ...newHero("h-" + c.id, c.id, 2),
       level: 20,
@@ -401,7 +378,7 @@ describe("build transactions and deep compositions", () => {
   });
   it("actually recommends and applies a six-member core when equally experienced heroes permit it", () => {
     const g = rich();
-    g.state.era = 5;
+    g.state.era = 5;g.state.commanderLevel=2+g.state.era;
     g.state.heroes = characters.map((c) => ({
       ...newHero("h-" + c.id, c.id, 2),
       level: 20,
@@ -421,7 +398,7 @@ describe("build transactions and deep compositions", () => {
   });
   it("awards the documented third-tier power in combat and only counts distinct heroes", () => {
     const g = rich();
-    g.state.era = 5;
+    g.state.era = 5;g.state.commanderLevel=2+g.state.era;
     const six = characters
       .filter((c) => c.traits.includes("Caçador"))
       .slice(0, 6);

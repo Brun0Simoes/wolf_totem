@@ -5,7 +5,7 @@ import {COMBAT_PROFILES,combatProfile} from '../src/render/combatProfiles';
 import {advanceMotion,createMotion,poseForMotion,triggerMotion} from '../src/render/animationModel';
 
 function duel(ranged=false){
-  const g=new Game();g.state.heroes=[newHero('fighter',ranged?8:1,1,3)];g.startBattle();
+  const g=new Game();g.state.commanderLevel=3;g.state.heroes=[newHero('fighter',ranged?8:1,1,3)];g.startBattle();
   const a=g.battle!.entities.find(e=>e.team==='ally')!,b=g.battle!.entities.find(e=>e.team==='enemy')!;
   Object.assign(a,{x:3,y:4,manaMax:0,cooldown:0});Object.assign(b,{x:3,y:ranged?1.5:3.2,cooldown:100,manaMax:0});
   return{g,a,b};
@@ -43,7 +43,7 @@ describe('combat choreography',()=>{
   });
   it('executes all 55 abilities in all three forms after a bounded anticipation',()=>{
     for(let id=1;id<=55;id++)for(let stars=1;stars<=3;stars++){
-      const g=new Game();g.state.heroes=[newHero('actor',id,stars,3)];g.startBattle();const actor=g.battle!.entities.find(e=>e.team==='ally')!;
+      const g=new Game();g.state.commanderLevel=3;g.state.heroes=[newHero('actor',id,stars,3)];g.startBattle();const actor=g.battle!.entities.find(e=>e.team==='ally')!;
       actor.mana=actor.manaMax;g.tick(.05);expect(g.events.some(e=>e.type==='prepare'&&e.text==='cast')).toBe(true);
       expect(g.events.some(e=>e.type==='skill')).toBe(false);g.tick(.5);expect(g.events.some(e=>e.type==='skill'&&e.sourceId===actor.id)).toBe(true);
       expect(g.battle!.entities.every(e=>[e.hp,e.mana,e.x,e.y].every(Number.isFinite))).toBe(true);
@@ -56,7 +56,7 @@ describe('combat choreography',()=>{
 });
 describe('presentation coverage and clocks',()=>{
   it('defines finite movement and effect profiles for the complete roster',()=>{
-    expect(COMBAT_PROFILES.size).toBe(55);for(let id=1;id<=55;id++){const p=combatProfile(id);expect(p.weapon).toBeTruthy();expect(p.spell).toBeTruthy();expect([p.color,p.weight,p.stride,p.reach,p.arc].every(Number.isFinite)).toBe(true);}
+    expect(COMBAT_PROFILES.size).toBe(108);for(let id=1;id<=55;id++){const p=combatProfile(id);expect(p.weapon).toBeTruthy();expect(p.spell).toBeTruthy();expect([p.color,p.weight,p.stride,p.reach,p.arc].every(Number.isFinite)).toBe(true);}
   });
   it('separates copied positions without moving simulation entities',()=>{
     const original=[{id:'a',x:3,y:3,hp:10},{id:'b',x:3,y:3,hp:10}],snapshot=structuredClone(original);const copied=original.map(e=>({...e}));separateBodies(copied,.05,()=>{});expect(Math.hypot(copied[0].x-copied[1].x,copied[0].y-copied[1].y)).toBeGreaterThan(0);expect(original).toEqual(snapshot);

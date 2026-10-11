@@ -7,7 +7,7 @@
 export const MAX_HERO_LEVEL = 30;
 export const MAX_RITUAL_LEVEL = 10;
 export const RITUAL_COOLDOWN = 3 * 3600;
-export const RITUAL_XP: Record<PracticeId, number> = { rape: 90, sananga: 180, kambo: 450, ayahuasca: 900, cacau: 60 };
+export const RITUAL_XP: Record<PracticeId, number> = { rape: 90, sananga: 180, kambo: 450, ayahuasca: 900, cacau: 60, consecration: 240, "blood-pact": 300, "soul-forge": 450, "speaker-seal": 360, "ancestral-song": 260, eclipse: 900 };
 export const ritualXpToNext = (level: number): number => level >= MAX_RITUAL_LEVEL ? Infinity : Math.round(90 * Math.pow(level, 1.4));
 export function ritualTotalXp(level: number, xp: number): number {
   let total = xp;
@@ -77,7 +77,7 @@ export const FOCUS_BONUS = 0.5;
 
 // ——— Casa de Cura ———
 
-export type PracticeId = 'rape' | 'sananga' | 'kambo' | 'ayahuasca' | 'cacau';
+export type PracticeId = 'rape' | 'sananga' | 'kambo' | 'ayahuasca' | 'cacau' | 'consecration' | 'blood-pact' | 'soul-forge' | 'speaker-seal' | 'ancestral-song' | 'eclipse';
 export interface Practice {
   id: PracticeId; name: string; native: string; peoples: string;
   /** What the practice is for the peoples who keep it. */
@@ -123,6 +123,14 @@ export const PRACTICES: Practice[] = [
     max: Infinity, era: 2, minLevel: 1, rest: 0, tribe: true,
   },
 ];
+PRACTICES.push(...[
+ {id:'consecration',name:'Consagração da Vigília',native:'selo da caça',peoples:'Vigília · rito fictício',text:'Consagre a arma e alinhe o selo luminoso. Inspiração nos caçadores de vampiros, adaptada para o jogo.',effect:'+6% de ataque por consagração, até três bônus. XP ritual em toda participação.',max:3,era:1,minLevel:2,rest:0},
+ {id:'blood-pact',name:'Pacto de Sangue',native:'pulso rubro',peoples:'Corte Rubra · rito fictício',text:'Sincronize o pulso de um relicário de sangue sobrenatural. A ligação vampírica desperta o poder da corte.',effect:'+6% de vida e +2% de roubo de vida por pacto, até três bônus.',max:3,era:1,minLevel:2,rest:0},
+ {id:'soul-forge',name:'Forja de Almas',native:'sigilos da criação',peoples:'Artífices e Nascidos da Noite · rito fictício',text:'Memorize os sigilos e ordene as almas na forja, inspirada nos mestres que criam criaturas da noite.',effect:'+6% de poder de habilidade e +6 de mana inicial por rito, até três bônus.',max:3,era:2,minLevel:8,rest:0},
+ {id:'speaker-seal',name:'Selo dos Elementos',native:'palavras do véu',peoples:'Vozes do Véu e Bestas Astrais · rito fictício',text:'Reproduza as runas de fogo, gelo, vento e terra na ordem correta.',effect:'+6% de poder de habilidade e +0,3 de mana por segundo por selo, até três bônus.',max:3,era:1,minLevel:2,rest:0},
+ {id:'ancestral-song',name:'Canto dos Ancestrais',native:'memória da alma',peoples:'Insurgentes · rito fictício',text:'Acompanhe as notas de uma canção de lembrança. A memória dos que vieram antes protege a formação.',effect:'+5% de vida por canto, até três bônus. XP ritual em toda participação.',max:3,era:1,minLevel:2,rest:0},
+ {id:'eclipse',name:'Comunhão do Eclipse',native:'sol negro',peoples:'Sol Negro · rito fictício',text:'Conduza a centelha através do eclipse para vincular a energia sobrenatural ao guardião.',effect:'+20% de poder de habilidade e +20 de mana inicial, uma vez por herói.',max:1,era:3,minLevel:14,rest:0},
+] as Practice[]);
 export const practiceById = (id: string) => PRACTICES.find(practice => practice.id === id);
 export const CACAO_DURATION = 600;
 export const CACAO_XP = 0.25;

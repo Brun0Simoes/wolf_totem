@@ -1,0 +1,26 @@
+{
+  "characterId": 119,
+  "stars": 1,
+  "name": "Nharos",
+  "image": "/assets/animations/night/119.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 394,
+  "frameHeight": 306,
+  "bodyHeight": 282,
+  "anchorX": 197.0,
+  "anchorY": 294,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

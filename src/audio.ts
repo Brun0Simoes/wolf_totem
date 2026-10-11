@@ -101,6 +101,12 @@ export class SoundSystem {
     const context = this.context, bus = this.ritualGain;
     if (!context || !bus) return;
     const t = context.currentTime, f = [220, 294, 330, 392][Math.abs(step) % 4];
+    if (id === 'consecration') {this.tone(440,t,.5,'sine',.05,880,bus);this.noise(t,.04,.04,3200,bus);}
+    if (id === 'blood-pact') {this.tone(65,t,.25,'sine',.13,40,bus);this.tone(130,t+.15,.3,'triangle',.04,90,bus);}
+    if (id === 'soul-forge') {this.tone(110+step*45,t,.4,'triangle',.07,60,bus);this.noise(t,.09,.07,950,bus);}
+    if (id === 'speaker-seal') {this.tone(330*Math.pow(2,step/5),t,.6,'sine',.07,undefined,bus);}
+    if (id === 'ancestral-song') {this.tone(220*Math.pow(2,step/12),t,.65,'triangle',.06,undefined,bus);}
+    if (id === 'eclipse') {this.tone(55,t,.7,'sine',.06,40,bus);this.tone(165,t+.1,.6,'triangle',.025,110,bus);}
     if (id === 'rape') { this.noise(t, .19, .07 * strength, 700 + strength * 1100, bus); if (step % 6 === 0) this.noise(t, .045, .02, 2800, bus); }
     if (id === 'sananga') { this.tone(880, t, .24, 'sine', .06, 440, bus); this.tone(1320, t + .06, .4, 'sine', .025, undefined, bus); }
     if (id === 'kambo') { this.tone(80 + step * 22, t, .25, 'sine', .16, 45 + step * 10, bus); this.noise(t, .065, .045, 400 + step * 250, bus); }

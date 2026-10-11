@@ -1,0 +1,26 @@
+{
+  "characterId": 130,
+  "stars": 2,
+  "name": "Dorian",
+  "image": "/assets/animations/night/130.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 273,
+  "frameHeight": 331,
+  "bodyHeight": 307,
+  "anchorX": 136.5,
+  "anchorY": 319,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

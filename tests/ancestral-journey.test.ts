@@ -1,45 +1,34 @@
-import {describe,expect,it} from 'vitest';
+﻿import {describe,expect,it} from 'vitest';
 import {Game,newHero,SAVE_VERSION} from '../src/game/simulation';
 import {LEGACIES,PREPARATIONS,trialProgress} from '../src/game/ancestralJourney';
 import {activeArmy,positionPlan,recommendedParty,planSignature,equipmentPlan,craftingPlan,buffAdvice,synergyChanges,roleOf,enemyThreats} from '../src/game/armyAdvisor';
 import {endlessStage} from '../src/game/campaign';
 import {characters} from '../src/data/characters';
 import {allySlotCenter} from '../src/game/board';
-const rich=()=>{const g=new Game();return g;};
+const rich=()=>{const g=new Game();g.state.commanderLevel=3;return g;};
 describe('ancestral progression',()=>{
   it('begins with a meaningful legacy choice and no RTS state',()=>{
-    const g=new Game();expect(g.state.journey.knowledge).toBe(3);expect('settlement' in g.state).toBe(false);
+    const g=new Game();g.state.commanderLevel=3;expect(g.state.journey.knowledge).toBe(3);expect('settlement' in g.state).toBe(false);
     expect(g.learnLegacy('vigor').ok).toBe(true);expect(g.state.journey.knowledge).toBe(0);expect(g.state.heroes[0].stars).toBe(1);
-    const save=JSON.parse(g.serialize(1000));expect(save.version).toBe(10);expect(save.state.settlement).toBeUndefined();
+    const save=JSON.parse(g.serialize(1000));expect(save.version).toBe(11);expect(save.state.settlement).toBeUndefined();
   });
-  it('counts only activities after accepting and pays each challenge once',()=>{
-    const g=rich();g.state.stats.victories=10;g.acceptTrial('combat');expect(trialProgress(g.state)).toBe(0);expect(g.claimTrial().ok).toBe(false);
-    g.state.stats.victories++;expect(trialProgress(g.state)).toBe(1);g.state.stats.victories++;expect(g.claimTrial().ok).toBe(true);
-    expect(g.state.journey.knowledge).toBe(6);expect(g.claimTrial().ok).toBe(false);g.acceptTrial('combat');expect(trialProgress(g.state)).toBe(0);
-  });
-  it('resets a changed challenge without spending knowledge or claiming past activities',()=>{
-    const g=rich();g.acceptTrial('combat');g.state.stats.victories++;g.state.stats.hunts=5;expect(g.acceptTrial('hunt').ok).toBe(true);expect(trialProgress(g.state)).toBe(0);expect(g.state.journey.knowledge).toBe(3);expect(g.acceptTrial('hunt').ok).toBe(false);
-  });
-  it('finishes a draft recruitment challenge and preserves the reward through reload',()=>{
-    const g=rich();g.acceptTrial('hunt');g.openDraft();g.recruit(g.state.draft!.offers[0]);const loaded=new Game(g.serialize(1000),1e9);expect(loaded.state.stats.recruits).toBe(1);expect(trialProgress(loaded.state)).toBe(1);expect(loaded.claimTrial().ok).toBe(true);expect(loaded.state.journey.knowledge).toBe(7);
-  });
+  it('retires manual challenges and pays knowledge directly after victory',()=>{const g=new Game();const before=g.state.journey.knowledge;expect(g.acceptTrial('combat').ok).toBe(false);g.startBattle();for(const e of g.battle!.entities.filter(e=>e.team==='enemy'))e.hp=0;g.advanceBattle(.1);expect(g.state.journey.knowledge).toBe(before+3);expect(g.claimTrial().ok).toBe(false);});
+  it('cannot reactivate old missions',()=>{const g=new Game(),before=g.serialize(1000);for(const id of ['combat','hunt','ritual'])expect(g.acceptTrial(id).ok).toBe(false);expect(g.serialize(1000)).toBe(before);});
+  it('recruitment no longer grants mission rewards',()=>{const g=rich(),knowledge=g.state.journey.knowledge;g.openDraft();g.recruit(g.state.draft!.offers[0]);const loaded=new Game(g.serialize(1000));expect(loaded.state.stats.recruits).toBe(1);expect(loaded.state.journey.trial).toBeNull();expect(loaded.state.journey.knowledge).toBe(knowledge);});
   it('requires parents, era and knowledge, and stops at three legacy levels',()=>{
-    const g=rich();g.state.journey.knowledge=1e4;expect(g.learnLegacy('tactics').ok).toBe(false);g.learnLegacy('vigor');g.learnLegacy('tactics');expect(g.learnLegacy('guard').ok).toBe(false);g.state.era=2;
+    const g=rich();g.state.journey.knowledge=1e4;expect(g.learnLegacy('tactics').ok).toBe(false);g.learnLegacy('vigor');g.learnLegacy('tactics');expect(g.learnLegacy('guard').ok).toBe(false);g.state.era=2;g.state.commanderLevel=2+g.state.era;
     expect(g.learnLegacy('guard').ok).toBe(true);for(let i=0;i<2;i++)expect(g.learnLegacy('vigor').ok).toBe(true);expect(g.learnLegacy('vigor').ok).toBe(false);
     g.state.journey.knowledge=0;const before=JSON.stringify(g.state);expect(g.learnLegacy('roots').ok).toBe(false);expect(JSON.stringify(g.state)).toBe(before);
   });
   it('sanitizes knowledge, legacy levels, selections and invalid focused traits',()=>{
     const g=rich(),save=JSON.parse(g.serialize(1000));save.state.journey={knowledge:-4,legacies:{vigor:999,toString:3},preparations:{feast:99},selected:['feast','feast','bad'],focusTraits:['toString','Presas'],trial:{id:'bad',start:-3}};
-    const loaded=new Game(save,1000);expect(loaded.state.journey.knowledge).toBe(0);expect(loaded.state.journey.legacies.vigor).toBe(3);expect(loaded.state.journey.selected).toEqual([]);expect(loaded.state.journey.focusTraits).toEqual(['Presas']);expect(loaded.state.journey.trial).toBeNull();expect(SAVE_VERSION).toBe(10);
+    const loaded=new Game(save,1000);expect(loaded.state.journey.knowledge).toBe(0);expect(loaded.state.journey.legacies.vigor).toBe(3);expect(loaded.state.journey.selected).toEqual([]);expect(loaded.state.journey.focusTraits).toEqual(['Presas']);expect(loaded.state.journey.trial).toBeNull();expect(SAVE_VERSION).toBe(11);
   });
-  it('carries learned legacies and challenge progress through rebirth, clearing consumables',()=>{
-    const g=rich();g.state.journey.knowledge=30;g.learnLegacy('roots');g.learnLegacy('vigor');g.acceptTrial('combat');g.state.stats.victories++;g.state.progress=30;g.state.wonder=5;
-    const knowledge=g.state.journey.knowledge;expect(g.ascend().ok).toBe(true);expect(g.state.journey.knowledge).toBe(knowledge);expect(g.state.journey.legacies.roots).toBe(1);expect(g.state.journey.legacies.vigor).toBe(1);expect(trialProgress(g.state)).toBe(1);expect(g.state.journey.selected).toEqual([]);
-  });
+  it('a trivial completed campaign cannot reset',()=>{const g=rich();g.state.progress=30;g.state.wonder=5;const before=g.serialize(1000);expect(g.ascend().ok).toBe(false);expect(g.serialize(1000)).toBe(before);});
 });
 
 describe('complete war council',()=>{
-  const party=()=>{const g=rich();g.state.era=5;g.state.progress=29;g.state.selectedStage=30;g.state.heroes=[3,6,8,11,13,15,16,20,49].map(id=>newHero(`h-${id}`,id,2));return g;};
+  const party=()=>{const g=rich();g.state.era=5;g.state.commanderLevel=2+g.state.era;g.state.progress=29;g.state.selectedStage=30;g.state.heroes=[3,6,8,11,13,15,16,20,49].map(id=>newHero(`h-${id}`,id,2));return g;};
   it('covers all heroes with a function and valid unique planned board cells',()=>{
     for(let offset=0;offset<55;offset+=7){const g=party();g.state.heroes=characters.slice(offset,offset+7).map(c=>newHero(`h-${c.id}`,c.id));const plan=positionPlan(g.state);expect(new Set(plan.map(p=>p.slot)).size).toBe(plan.length);for(const p of plan){expect(p.slot).toBeGreaterThanOrEqual(0);expect(p.slot).toBeLessThan(28);expect(p.reason.length).toBeGreaterThan(15);expect(ROLE_IDS).toContain(roleOf(characters.find(c=>c.id===p.hero.characterId)!));}}
   });
@@ -67,7 +56,7 @@ describe('complete war council',()=>{
     const expected=plan.filter(p=>p!==owner&&Math.hypot(origin.x-allySlotCenter(p.slot).x,origin.y-allySlotCenter(p.slot).y)<=1.1).map(p=>characters.find(c=>c.id===p.hero.characterId)!.name);expect(owner.adjacent).toEqual(expected);
   });
   it('explains synergy changes and ranks preparations available in the actual era',()=>{
-    const g=party();g.setArmyFocus('Guardião');const changes=synergyChanges(g.state);expect(changes.some(c=>c.delta>0)).toBe(true);const buffs=buffAdvice(g.state);expect(buffs).toHaveLength(6);expect(buffs.every(p=>p.reason.length>15)).toBe(true);g.state.era=1;expect(buffAdvice(g.state).every(p=>p.era===1)).toBe(true);expect(g.setArmyFocus('toString').ok).toBe(false);
+    const g=party();g.setArmyFocus('Guardião');const changes=synergyChanges(g.state);expect(changes.some(c=>c.delta>0)).toBe(true);const buffs=buffAdvice(g.state);expect(buffs).toHaveLength(6);expect(buffs.every(p=>p.reason.length>15)).toBe(true);g.state.era=1;g.state.commanderLevel=2+g.state.era;expect(buffAdvice(g.state).every(p=>p.era===1)).toBe(true);expect(g.setArmyFocus('toString').ok).toBe(false);
   });
 });
 const ROLE_IDS=['front','ranged','caster','support','flank','summon'];

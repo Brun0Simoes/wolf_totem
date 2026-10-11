@@ -1,0 +1,26 @@
+{
+  "characterId": 114,
+  "stars": 3,
+  "name": "Akemi",
+  "image": "/assets/animations/night/114.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 270,
+  "frameHeight": 310,
+  "bodyHeight": 286,
+  "anchorX": 135.0,
+  "anchorY": 298,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

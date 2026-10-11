@@ -1,0 +1,26 @@
+{
+  "characterId": 138,
+  "stars": 1,
+  "name": "Teriel",
+  "image": "/assets/animations/night/138.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 289,
+  "frameHeight": 304,
+  "bodyHeight": 280,
+  "anchorX": 144.5,
+  "anchorY": 292,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

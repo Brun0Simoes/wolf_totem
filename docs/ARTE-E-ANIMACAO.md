@@ -181,3 +181,9 @@ Verificar movimento no tamanho do jogo, contraste contra a arena, cores de sele�
 ## Regras visuais herdadas do plano
 
 As quatro categorias são Manifestador, Marcado, Híbrido e Metamorfo. A atribuição permanece restrita aos exemplos explícitos do texto original; a relação está em `docs/PERSONAGENS.md`. O plano sugere aproximadamente 8 a 12 metamorfos verdadeiros, preservando outras formas de expressão animal para o restante do elenco. Não transformar automaticamente todos os heróis em animais no terceiro estágio.
+
+## Expansão 4.0 — O Véu da Noite
+
+Os 55 primais e seus 165 atlas foram preservados. A expansão acrescenta 53 ilustrações transparentes e 159 registros de estrelas. Estes registros usam a mesma arte de cada personagem, com movimento programado, efeitos e auras nas três estrelas. Repouso, caminhada, ataque, habilidade, impacto, queda e vitória ainda não têm desenhos independentes quadro a quadro.
+
+As folhas de origem, prompts reais e elenco completo estão em [Produção sobrenatural](production/night/roster.json) e [O Véu da Noite](expansions/veu-da-noite.md). Para reempacotar as ilustrações: `python scripts/package-night-art.py`.

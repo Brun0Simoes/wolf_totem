@@ -18,6 +18,7 @@ export const RITUAL_PRICES: Record<PracticeId, number> = {
   kambo: 48,
   ayahuasca: 90,
   cacau: 44,
+  consecration: 36, "blood-pact": 48, "soul-forge": 64, "speaker-seal": 56, "ancestral-song": 44, eclipse: 120,
 };
 /** Learned ritual bonuses raise the price; repeat XP never needs a waiting period. */
 export const ritualCost = (id: PracticeId, count = 0) =>
@@ -30,15 +31,16 @@ export const battleAmber = (
 ) =>
   Math.round(
     (12 + Math.min(60, Math.max(1, stage)) * 3) *
-      (victory ? (first ? 1.8 : 1) : 0.3) *
+      (victory ? (first ? 1.8 : 1) : 0) *
       (boss ? 1.4 : 1),
   );
 export function draftPool(
   era: number,
   owned: number[],
   excluded: number[] = [],
+  rebirths = 0,
 ): Character[] {
-  return characters.filter((c) => c.cost <= era && !owned.includes(c.id) && !excluded.includes(c.id));
+  return characters.filter((c) => c.cost <= era && (c.id < 101 || rebirths > 0) && !owned.includes(c.id) && !excluded.includes(c.id));
 }
 /** Cost tiers use equal weights. Exhausted tiers disappear; candidates are sampled without replacement. */
 export function drawCandidates(
@@ -47,10 +49,11 @@ export function drawCandidates(
   excluded: number[],
   seed: number,
   count: number,
+  rebirths = 0,
 ) {
   const offers: number[] = [];
   for (let i = 0; i < count; i++) {
-    const pool = draftPool(era, owned, [...excluded, ...offers]);
+    const pool = draftPool(era, owned, [...excluded, ...offers], rebirths);
     if (!pool.length) break;
     const tiers = [...new Set(pool.map((c) => c.cost))];
     const a = nextRandom(seed);
@@ -68,6 +71,7 @@ export function sanitizeDraft(
   era: number,
   owned: number[],
   legacy = false,
+  rebirths = 0,
 ): Draft | null {
   if (!value || typeof value !== "object") return null;
   const d = value as Record<string, unknown>;
@@ -77,7 +81,7 @@ export function sanitizeDraft(
       ? Math.max(1, Math.min(era, d.era))
       : era;
   const offers: number[] = [], rerolled: boolean[] = [];
-  const allowed = new Set(draftPool(paidEra, owned).map(c => c.id));
+  const allowed = new Set(draftPool(paidEra, owned, [], rebirths).map(c => c.id));
   d.offers.forEach((id, index) => {
     if (typeof id !== "number" || !allowed.has(id) || offers.includes(id) || offers.length >= 3) return;
     offers.push(id);

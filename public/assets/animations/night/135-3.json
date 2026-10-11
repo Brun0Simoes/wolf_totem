@@ -1,0 +1,26 @@
+{
+  "characterId": 135,
+  "stars": 3,
+  "name": "Mirielle",
+  "image": "/assets/animations/night/135.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 273,
+  "frameHeight": 326,
+  "bodyHeight": 302,
+  "anchorX": 136.5,
+  "anchorY": 314,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

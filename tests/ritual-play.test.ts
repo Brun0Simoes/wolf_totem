@@ -4,7 +4,7 @@ import { Game, newHero } from '../src/game/simulation';
 import { RITUAL_XP, ritualTotalXp, RITUAL_COOLDOWN } from '../src/game/tribe';
 
 const advance = (play: RitualPlay, seconds: number) => { for (let n=0;n<Math.round(seconds*100);n++) play.tick(.01); };
-const prepared = () => { const game=new Game();game.state.era=3;const h=game.state.heroes[0];h.level=24;h.rituals.rape=1;return game; };
+const prepared = () => { const game=new Game();game.state.commanderLevel=3;game.state.era=3;game.state.commanderLevel=2+game.state.era;const h=game.state.heroes[0];h.level=24;h.rituals.rape=1;return game; };
 
 describe('interactive ritual mechanics',()=>{
   it('measures three separate blows and scores release timing',()=>{

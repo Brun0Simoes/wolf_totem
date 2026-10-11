@@ -1,3 +1,4 @@
+import { castNightAbility } from './nightSkills';
 import { characters } from '../data/characters';
 import type { CombatApi, CombatEntity } from './simulation';
 import { clampX, clampY } from './board';
@@ -43,6 +44,7 @@ function mod(entity: CombatEntity, stat: CombatEntity['mods'][number]['stat'], v
 }
 
 export function castAbility(api: CombatApi, abilityId: number, source: CombatEntity, target: CombatEntity, power: number): void {
+  if(castNightAbility(api,abilityId,source,target,power))return;
   const enemies = api.enemiesOf(source);
   const targetable = api.targetableEnemiesOf(source);
   const allies = api.alliesOf(source);
@@ -452,3 +454,5 @@ export const SKILL_NOTES: Record<number, string> = {
   54: 'Totens do Lobo (ataque), do Urso (escudos) e da Águia (dano nos inimigos mais distantes).',
   55: 'Submerge e emerge no maior grupo inimigo; devora alvos abaixo de 18/22/30% da vida.',
 };
+
+for(const c of characters.filter(c=>c.id>=101))SKILL_NOTES[c.id]=c.ability.description;

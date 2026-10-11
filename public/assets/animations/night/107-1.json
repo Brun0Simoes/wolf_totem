@@ -1,0 +1,26 @@
+{
+  "characterId": 107,
+  "stars": 1,
+  "name": "Corven",
+  "image": "/assets/animations/night/107.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 293,
+  "frameHeight": 325,
+  "bodyHeight": 301,
+  "anchorX": 146.5,
+  "anchorY": 313,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

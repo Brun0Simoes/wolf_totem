@@ -10,7 +10,7 @@ const advanceVillage = (game: Game, seconds: number) => { for (let t = 0; t < se
 
 describe('battle summary', () => {
   it('records damage dealt and taken, and credits summons to their summoner', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     game.state.heroes = [hero('nima', 2, 3, 1), hero('akru', 1, 2, 2)];
     game.startBattle();
     const nima = game.battle!.entities.find(e => e.uid === 'nima')!;
@@ -30,32 +30,14 @@ describe('battle summary', () => {
 });
 
 describe('journal', () => {
-  it('pays each objective once, only when done, and keeps claims through rebirth', () => {
-    const game = new Game();
-    expect(game.claimQuest('primeira-cacada').ok).toBe(false);
-    game.startBattle(); fight(game);
-    const knowledge = game.state.journey.knowledge;
-    expect(game.claimQuest('primeira-cacada').ok).toBe(true);
-    expect(game.state.journey.knowledge).toBe(knowledge+2);
-    expect(game.claimQuest('primeira-cacada').ok).toBe(false);
-    expect(game.claimQuest('nope').ok).toBe(false);
-    game.state.inventory = [];
-    game.state.era = 2;
-    expect(game.claimQuest('era-2').ok).toBe(true);
-    expect(game.state.inventory).toHaveLength(1);
-    game.state.era = 5; game.state.progress = 30; game.state.wonder = 5;
-    game.ascend();
-    expect(game.state.quests).toEqual(['primeira-cacada', 'era-2']);
-    expect(game.claimQuest('renascer').ok).toBe(true);
-    expect(new Set(QUESTS.map(q => q.id)).size).toBe(QUESTS.length);
-  });
+  it('refuses removed quest rewards without changing the save',()=>{const g=new Game();g.state.progress=30;g.state.era=5;const before=g.serialize(1000);for(const q of QUESTS)expect(g.claimQuest(q.id).ok).toBe(false);expect(g.serialize(1000)).toBe(before);});
 
   it('counts recruits and spirit powers for the journal', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
 
     game.state.heroes.push(newHero('fixture-2',2));game.state.stats.recruits++;
     expect(game.state.stats.recruits).toBe(1);
-    game.state.era = 2; game.state.spirits = ['lobo'];
+    game.state.era = 2;game.state.commanderLevel=2+game.state.era; game.state.spirits = ['lobo'];
     game.startBattle(); game.tick(1);
     expect(game.usePower('lobo').ok).toBe(true);
     expect(game.state.stats.powers).toBe(1);
@@ -65,8 +47,8 @@ describe('journal', () => {
 describe('boss phases', () => {
   it('triggers each campaign boss mechanic once below half life', () => {
     for (const stage of [5, 10, 15, 20, 25, 30]) {
-      const game = new Game();
-      game.state.era = 5; game.state.progress = stage - 1; game.state.selectedStage = stage;
+      const game=new Game();game.state.commanderLevel=3;
+      game.state.era = 5;game.state.commanderLevel=2+game.state.era; game.state.progress = stage - 1; game.state.selectedStage = stage;
       game.state.heroes = [[39, 3], [28, 3], [40, 3], [8, 3], [25, 3], [33, 3], [49, 3]].map(([id, stars], i) => hero(`b${i}`, id, stars, [1, 2, 0, 9, 10, 5, 6][i], ['garra', 'talisma', 'carvalho']));
       game.startBattle();
       const boss = game.battle!.entities.find(e => e.boss)!;
@@ -102,7 +84,7 @@ describe('hex board and twilight', () => {
     expect(overtimeHealing(OVERTIME_START)).toBe(1);
     expect(overtimeDamage(OVERTIME_START + 50)).toBeGreaterThan(2);
     expect(overtimeHealing(OVERTIME_START + 200)).toBeGreaterThan(0);
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     game.startBattle();
     game.battle!.time = OVERTIME_START - 0.05;
     game.tick(0.1);

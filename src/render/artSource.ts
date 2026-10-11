@@ -11,7 +11,7 @@ import { proceduralSheet } from './proceduralArt';
 export type ArtKind = 'painted' | 'illustration' | 'standin' | 'procedural';
 export function artFor(character: Pick<Character, 'id' | 'art'>, stars: number): { kind: ArtKind; sheet?: SheetDefinition } {
   const exact = getAnimation(character.id, stars);
-  if (exact) return { kind: 'painted', sheet: exact };
+  if (exact) return { kind: exact.rigged ? 'illustration' : 'painted', sheet: exact };
   if (character.art) return { kind: 'illustration' };
   const nearest = bestAnimation(character.id, stars);
   if (nearest) return { kind: 'standin', sheet: nearest };

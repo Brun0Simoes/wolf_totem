@@ -1,0 +1,26 @@
+{
+  "characterId": 105,
+  "stars": 3,
+  "name": "Liora",
+  "image": "/assets/animations/night/105.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 369,
+  "frameHeight": 311,
+  "bodyHeight": 287,
+  "anchorX": 184.5,
+  "anchorY": 299,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

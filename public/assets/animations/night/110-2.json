@@ -1,0 +1,26 @@
+{
+  "characterId": 110,
+  "stars": 2,
+  "name": "Astrid",
+  "image": "/assets/animations/night/110.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 370,
+  "frameHeight": 310,
+  "bodyHeight": 286,
+  "anchorX": 185.0,
+  "anchorY": 298,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

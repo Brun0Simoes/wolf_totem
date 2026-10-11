@@ -1,3 +1,4 @@
+import { isNightCharacter } from '../data/nocturne';
 import { characters } from '../data/characters';
 import { nextRandom } from './roster';
 
@@ -57,6 +58,15 @@ const STAGE_LIST: [string, StageUnit[]][] = [
 ];
 
 export const STAGES: Stage[] = STAGE_LIST.map(([name, units], index) => ({ id: index + 1, region: Math.floor(index / 5) + 1, index: index % 5 + 1, name, units }));
+// Fixed opponent growth, independent of the player's level or wallet.
+for(const stage of STAGES){
+ if(stage.id<=2)continue;
+ const target=Math.min(20,2+Math.ceil(stage.id*.5));
+ const pool=characters.filter(c=>c.id<101&&c.cost<=Math.min(5,Math.ceil(stage.id/6)+1));
+ for(const c of pool.filter(c=>!stage.units.some(u=>u.id===c.id)).sort((a,b)=>Number(b.traits.some(t=>stage.units.some(u=>characters.find(c=>c.id===u.id)!.traits.includes(t))))-Number(a.traits.some(t=>stage.units.some(u=>characters.find(c=>c.id===u.id)!.traits.includes(t))))||a.id-b.id)){
+  if(stage.units.length>=target)break;stage.units.push(u(c.id,stage.id>=24?2:1));
+ }
+}
 export const FINAL_STAGE = STAGES.length;
 export const regionOf = (stageId: number): Region => REGIONS[Math.max(0, Math.min(REGIONS.length - 1, Math.ceil(stageId / 5) - 1))];
 export const stageById = (stageId: number): Stage | undefined => STAGES.find(stage => stage.id === stageId);
@@ -68,18 +78,18 @@ export const difficulty = (level: number): number => Math.max(1.1, 1.25 - 0.005 
 /** Enemy strength grows with the stage level and the levels heroes are expected to have; costlier units start from stronger canonical stats. */
 export function enemyScale(level: number, cost: number): number {
   const base = (0.56 + level * 0.03 + level * level * 0.0009) / (1 + 0.12 * (cost - 1));
-  const tacticalPressure = level <= 2 ? 1 : 1.15 + Math.min(30, level) * .009;
-  return base * difficulty(level) * (1 + 0.05 * (expectedLevel(level) - 1)) * tacticalPressure;
+  const tacticalPressure = level <= 2 ? 1 : 1.25 + Math.min(30, level) * .014;
+  return base * difficulty(level) * (1 + 0.05 * (expectedLevel(level) - 1)) * tacticalPressure * (level===1?.48:1);
 }
 /** Bosses grow with the region: the Alpha is a lesson, the First Winter a wall. */
 export const bossScale = (region: number) => ({ hp: 1.66 + 0.06 * region, attack: 1.12 + 0.02 * region });
 
 /** The endless hunt: seeded lineups that keep growing in size, stars and strength. */
-export function endlessStage(depth: number): Stage {
+export function endlessStage(depth: number, rebirths = 0): Stage {
   let seed = 7919 * depth + 17;
-  const count = Math.min(8, 5 + Math.floor(depth / 4));
+  const count = Math.min(28, 14 + depth);
   const maxCost = Math.min(5, 3 + Math.floor(depth / 3));
-  const pool = characters.filter(character => character.cost <= maxCost && character.cost >= 2).map(character => character.id);
+  const pool = characters.filter(character => character.cost <= maxCost && character.cost >= 2 && (!isNightCharacter(character.id) || rebirths > 0)).map(character => character.id);
   const units: StageUnit[] = [];
   for (let i = 0; i < count; i++) {
     const roll = nextRandom(seed); seed = roll.seed;
@@ -87,6 +97,6 @@ export function endlessStage(depth: number): Stage {
     const stars = depth >= 15 ? (i < 4 ? 3 : 2) : depth >= 8 ? (i < 2 ? 3 : 2) : depth >= 3 ? (i < 3 ? 2 : 1) : (i < 1 ? 2 : 1);
     units.push({ id: options[Math.floor(roll.value * options.length)], stars, boss: depth % 5 === 0 && i === 0 });
   }
-  return { id: 0, region: 6, index: depth, name: depth % 5 === 0 ? `Caçada Eterna ${depth} · Fera alfa` : `Caçada Eterna ${depth}`, units };
+  return { id: 0, region: 6, index: depth, name: depth % 5 === 0 ? `Abismo ${depth} · Senhor da noite` : `Abismo ${depth}`, units };
 }
 export const endlessLevel = (depth: number): number => FINAL_STAGE + depth * 1.6;

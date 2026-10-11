@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { characters } from '../src/data/characters';
+import { characters as allCharacters } from '../src/data/characters';
+const characters=allCharacters.filter(c=>c.id<101);
 import { ANIMALITY } from '../src/data/animality';
 import { Game, getSynergies, newHero,  SKILL_NOTES, type Hero } from '../src/game/simulation';
 import { unlockedCost } from '../src/game/roster';
@@ -34,8 +35,8 @@ describe('abilities, summons and traits', () => {
 
   it('keeps every ability at every star level finite, bounded and on the board', () => {
     for (const character of characters) for (const stars of [1, 2, 3]) {
-      const game = new Game();
-      game.state.era = 5; game.state.progress = 20; game.state.selectedStage = 21;
+      const game=new Game();game.state.commanderLevel=3;
+      game.state.era = 5;game.state.commanderLevel=2+game.state.era; game.state.progress = 20; game.state.selectedStage = 21;
       game.state.heroes = [character.id, character.id === 1 ? 2 : 1, 25].map((characterId, index) => placed(`hero-${index}`, characterId, stars, [1, 2, 9][index], 10));
       game.startBattle();
       const hero = game.battle!.entities.find(entity => entity.uid === 'hero-0')!;
@@ -52,7 +53,7 @@ describe('abilities, summons and traits', () => {
   });
 
   it('summons expire, never decide the battle and are removed at the end', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     game.state.heroes = [placed('nima', 2, 3, 1)];
     game.startBattle();
     const nima = game.battle!.entities.find(entity => entity.uid === 'nima')!;
@@ -69,8 +70,8 @@ describe('abilities, summons and traits', () => {
   });
 
   it("revives Ssar'ka once with her renewed form", () => {
-    const game = new Game();
-    game.state.era = 5;
+    const game=new Game();game.state.commanderLevel=3;
+    game.state.era = 5;game.state.commanderLevel=2+game.state.era;
     game.state.heroes = [placed('ssarka', 53, 2, 1), placed('akru', 1, 3, 2)];
     game.startBattle();
     const ssarka = game.battle!.entities.find(entity => entity.uid === 'ssarka')!;
@@ -84,8 +85,8 @@ describe('abilities, summons and traits', () => {
   });
 
   it('activates tiered traits and lone spirits from distinct deployed characters', () => {
-    const game = new Game();
-    game.state.era = 5;
+    const game=new Game();game.state.commanderLevel=3;
+    game.state.era = 5;game.state.commanderLevel=2+game.state.era;
     game.state.heroes = [9, 15, 19, 24, 49].map((characterId, index) => placed(`g-${index}`, characterId, 1, index));
     const synergies = getSynergies(game.state);
     expect(synergies.find(entry => entry.name === 'Guardião')).toMatchObject({ count: 5, tier: 2, active: true });
@@ -110,7 +111,7 @@ describe('expeditions', () => {
 
   it('starts with Akru alone, who wins the first expedition but needs company for the next', () => {
     const results = [1, 2].map(stage => {
-      const game = new Game();
+      const game=new Game();game.state.commanderLevel=3;
       expect(game.state.heroes).toHaveLength(1);
       game.state.progress = stage - 1; game.state.selectedStage = stage; game.startBattle(); fight(game);
       return game.battle!.status;
@@ -120,8 +121,8 @@ describe('expeditions', () => {
 
   it('asks for evolved heroes before the Alpha', () => {
     const alpha = (team: [number, number, number][]) => {
-      const game = new Game();
-      game.state.era = 2; game.state.progress = 4; game.state.selectedStage = 5;
+      const game=new Game();game.state.commanderLevel=3;
+      game.state.era = 2;game.state.commanderLevel=2+game.state.era; game.state.progress = 4; game.state.selectedStage = 5;
       game.state.heroes = team.map(([id, stars, slot], i) => ({...placed(`a-${i}`, id, stars, slot, 8),items:team.length===4?['muralha','garra','talisma']:[]}));
       game.startBattle(); fight(game);
       return game.battle!.status;
@@ -132,9 +133,11 @@ describe('expeditions', () => {
 
   it('requires a developed build as well as spirits or ceremonies against the King of Buffalo', () => {
     const king = (spirits: SpiritId[], rituals: Hero['rituals'],level=16) => {
-      const game = new Game();
-      game.state.era = 5; game.state.progress = 19; game.state.selectedStage = 20; game.state.spirits = spirits;
+      const game=new Game();game.state.commanderLevel=3;
+      game.state.era = 5;game.state.commanderLevel=2+game.state.era; game.state.progress = 19; game.state.selectedStage = 20; game.state.spirits = spirits;
       game.state.heroes = [39, 40, 28, 8, 25, 33, 1].map((characterId, index) => ({ ...placed(`final-${index}`, characterId, 2, [1, 2, 0, 9, 10, 5, 6][index], level), rituals: { ...rituals },items:['garra','talisma','carvalho'] }));
+      game.state.commanderLevel=13;
+      if(level>=23)game.state.heroes.push(...[3,6,11,13,15,27].map((id,i)=>({...newHero("extra-"+id,id,2),level,rituals:{...rituals}})));
       game.state.amber=10000;
       for(const h of game.state.heroes){const c=characters.find(c=>c.id===h.characterId)!;game.prepareBuild(h.uid,BUILDS.find(b=>b.role===roleOf(c))!.id);}
       game.applyArmyPlan();

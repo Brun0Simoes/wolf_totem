@@ -248,6 +248,17 @@ export function glyphSVG(animal: AnimalId, color: string, label = ''): string {
   return `<svg class="glyph" viewBox="0 0 100 100" ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'}>${parts}</svg>`;
 }
 
+/** Supernatural crest, independent of the primal animal catalogue. */
+export function paintNightSigil(context: CanvasRenderingContext2D, x:number, y:number, size:number, color:string):void {
+  context.save();context.translate(x,y);context.strokeStyle=color;context.lineWidth=size*.018;
+  context.beginPath();context.arc(0,0,size*.39,0,Math.PI*2);context.stroke();
+  context.beginPath();
+  for(let i=0;i<6;i++){const a=i*Math.PI/3,px=Math.cos(a)*size*.35,py=Math.sin(a)*size*.35;if(i===0)context.moveTo(px,py);else context.lineTo(px,py);}
+  context.closePath();context.stroke();
+  context.beginPath();context.moveTo(0,-size*.27);context.lineTo(size*.2,size*.14);context.lineTo(-size*.2,size*.14);context.closePath();context.stroke();
+  context.restore();
+}
+
 /** Paints a glyph onto a 2D canvas centered at (x, y) with the given size. */
 export function paintGlyph(context: CanvasRenderingContext2D, animal: AnimalId, x: number, y: number, size: number, color: string, alpha = 1, outline?: string): void {
   const tones = TONES(color);

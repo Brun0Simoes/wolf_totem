@@ -1,0 +1,26 @@
+{
+  "characterId": 139,
+  "stars": 3,
+  "name": "Jovana",
+  "image": "/assets/animations/night/139.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 256,
+  "frameHeight": 220,
+  "bodyHeight": 196,
+  "anchorX": 128.0,
+  "anchorY": 208,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

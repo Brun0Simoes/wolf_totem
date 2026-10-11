@@ -1,0 +1,26 @@
+{
+  "characterId": 147,
+  "stars": 3,
+  "name": "Vaelor",
+  "image": "/assets/animations/night/147.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 404,
+  "frameHeight": 316,
+  "bodyHeight": 292,
+  "anchorX": 202.0,
+  "anchorY": 304,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

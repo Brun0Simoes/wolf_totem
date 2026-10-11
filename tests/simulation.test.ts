@@ -5,7 +5,7 @@ import { migrateSlot } from '../src/game/board';
 describe('tribe and recruitment', () => {
 
   it('refuses another copy without changing the hero', () => {
-    const game=new Game();
+    const game=new Game();game.state.commanderLevel=3;
     const before=game.serialize(1000);
     expect(game.recruit(1).ok).toBe(false);
     expect(game.serialize(1000)).toBe(before);
@@ -14,7 +14,7 @@ describe('tribe and recruitment', () => {
   });
 
   it('swaps a reserve hero into a full formation and counts unique characters for traits', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
 
     game.state.heroes.push(newHero('fixture-3',3));game.state.stats.recruits++; game.state.heroes.push(newHero('fixture-8',8));game.state.stats.recruits++;
     const boru = game.state.heroes.find(hero => hero.characterId === 3)!, ena = game.state.heroes.find(hero => hero.characterId === 8)!;
@@ -34,11 +34,11 @@ describe('tribe and recruitment', () => {
 describe('versioned saves and offline time', () => {
 
   it('sanitizes malformed saves and never restores combat or credits unfinished rewards', () => {
-    const fresh = new Game();
-    expect(new Game('{broken').state).toEqual(fresh.state);
+    const fresh=new Game();fresh.state.commanderLevel=3;
+    expect(new Game('{broken').state).toEqual(new Game().state);
     const data = JSON.parse(fresh.serialize(1000));
     data.state.resources = {wood:-10,food:'NaN'};
-    data.state.era = 999;
+    data.state.era = 999;data.state.commanderLevel=2+data.state.era;
     data.state.heroes.push({ uid: '<script>', characterId: 99, stars: 999, slot: 99 });
     data.state.heroes.push({ uid: 'twin', characterId: 3, stars: 1, slot: data.state.heroes[0].slot, level: 99, panema: -4, rituals: { kambo: 50, fake: 3 }, away: { kind: 'hunt', id: 'nowhere', until: 5 } });
     data.battle = { status: 'victory', reward: { spirit: 1e9 } };
@@ -57,7 +57,7 @@ describe('versioned saves and offline time', () => {
 
 describe('automatic combat', () => {
   it('lets the starter party win the first expedition and pays the reward once', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     expect(game.startBattle().ok).toBe(true);
     expect(game.deploy(game.state.heroes[0].uid, null).ok).toBe(false);
     expect(game.recruit(1).ok).toBe(false);
@@ -79,7 +79,7 @@ describe('automatic combat', () => {
   });
 
   it('restores the entire roster after defeat and permits retrying the same expedition', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     const roster = () => JSON.stringify(game.state.heroes.map(({ uid, characterId, stars, slot, items }) => ({ uid, characterId, stars, slot, items })));
     const heroes = roster();
     game.startBattle();
@@ -97,7 +97,7 @@ describe('automatic combat', () => {
 
   it('executes each of the 55 prototype skills with finite battle stats', () => {
     for (let characterId = 1; characterId <= 55; characterId++) {
-      const game = new Game();
+      const game=new Game();game.state.commanderLevel=3;
       game.state.heroes = [newHero('test-hero', characterId, 2, 3)];
       game.startBattle();
       const hero = game.battle!.entities.find(entity => entity.team === 'ally')!;
@@ -112,13 +112,16 @@ describe('automatic combat', () => {
   });
 
   it('lets an evolved, equipped tribe, seasoned by hunts and ceremonies, finish the campaign and open the endless hunt', () => {
-    const game = new Game();
-    game.state.era = 5; game.state.progress = 29; game.state.selectedStage = 30;
+    const game=new Game();game.state.commanderLevel=3;
+    game.state.era = 5;game.state.commanderLevel=2+game.state.era; game.state.progress = 29; game.state.selectedStage = 30;
     game.state.spirits = ['lobo', 'coruja', 'elefante', 'urso'];
     const items = [['garra','obsidiana','talisma'], ['muralha','pele-urso','carvalho'], ['escudo-totem','pele-urso','carvalho'], ['tempestade','garra','talisma'], ['coroa','colar-lua','cajado-vida'], ['coroa','lanca','colar-lua'], ['muralha','carvalho','pele-urso']];
     game.state.heroes = [[39, 3], [28, 3], [40, 3], [8, 3], [25, 3], [33, 3], [49, 3]].map(([characterId, stars], index) => ({
       ...newHero(`final-${index}`, characterId, stars, migrateSlot([1, 2, 0, 9, 10, 5, 3][index])), items: items[index], level: 30, ritualLevel: 10, rituals: { rape: 3, sananga: 3, kambo: 3, ayahuasca: 1 },
     }));
+    game.state.commanderLevel=18;
+    game.state.heroes.push(...[6,11,13,15,19,24,27,29,30,43,45].map((id,i)=>({...newHero("more-"+id,id,3,7+i),level:30,ritualLevel:8,rituals:{rape:3,sananga:3,kambo:3,ayahuasca:1},items:["muralha","garra","colar-lua"]})));
+    game.autoFormation();
     expect(stageUnlocked(game.state, 0)).toBe(false);
     game.startBattle();
     for (let i = 0; i < 160 && game.battle?.status === 'fighting'; i++) game.tick(1);

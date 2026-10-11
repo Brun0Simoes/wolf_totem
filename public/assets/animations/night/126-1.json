@@ -1,0 +1,26 @@
+{
+  "characterId": 126,
+  "stars": 1,
+  "name": "Azgorr",
+  "image": "/assets/animations/night/126.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 390,
+  "frameHeight": 302,
+  "bodyHeight": 278,
+  "anchorX": 195.0,
+  "anchorY": 290,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

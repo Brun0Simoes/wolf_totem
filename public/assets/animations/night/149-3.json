@@ -1,0 +1,26 @@
+{
+  "characterId": 149,
+  "stars": 3,
+  "name": "Sahmara",
+  "image": "/assets/animations/night/149.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 375,
+  "frameHeight": 315,
+  "bodyHeight": 291,
+  "anchorX": 187.5,
+  "anchorY": 303,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

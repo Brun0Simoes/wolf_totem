@@ -22,17 +22,17 @@ describe('saves', () => {
     expect(loaded.state.progress).toBe(0);
     expect(loaded.state.selectedStage).toBe(1);
     expect(loaded.state.heroes.map(h => [h.characterId, h.stars, h.items, h.level])).toEqual([[1, 3, [], 24], [3, 2, [], 8], [8, 1, [], 1]]);
-    expect(JSON.parse(loaded.serialize()).version).toBe(10);
+    expect(JSON.parse(loaded.serialize()).version).toBe(11);
     const later = JSON.parse(fixture); later.state.wave = 7;
     expect(new Game(later, 1790800000000).state.progress).toBe(6);
   });
 
   it('drops invalid items, spirits out of era order and workers beyond the open slots', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     const data = JSON.parse(game.serialize(1000));
     data.state.inventory = ['presa', 'not-an-item', 'coroa'];
     data.state.spirits = ['lobo', 'urso'];
-    data.state.era = 3;
+    data.state.era = 3;data.state.commanderLevel=2+data.state.era;
     data.state.heroes = [{ uid: 'a', characterId: 1, stars: 1, slot: null, items: ['garra', 'x', 'presa', 'arco', 'pena'], work: 'hunt' }, { uid: 'b', characterId: 3, stars: 1, slot: null, items: [], work: 'hunt' }];
     const loaded = new Game(data, 1000);
     expect(loaded.state.inventory).toEqual(['presa', 'coroa']);
@@ -51,7 +51,7 @@ describe('equipment and recipes', () => {
   });
 
   it('completes an item when a second component meets the first on a hero, and returns items when selling', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     game.state.inventory = ['presa', 'arco', 'couro', 'manto', 'raiz'];
     const uid = game.state.heroes[0].uid;
     game.state.heroes.push(hero('companion', 3));
@@ -72,7 +72,7 @@ describe('equipment and recipes', () => {
   });
 
   it('applies item stats and perks to the combat entity', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     game.state.heroes = [hero('a', 3, 1, 1, ['carvalho', 'muralha']), hero('b', 1, 1, 2, ['escudo-totem'])];
     game.startBattle();
     const [a, b] = game.battle!.entities.filter(entity => entity.team === 'ally');
@@ -83,7 +83,7 @@ describe('equipment and recipes', () => {
   });
 
   it('consolidates legacy copies and preserves their equipment without creating a star', () => {
-    const game=new Game();
+    const game=new Game();game.state.commanderLevel=3;
     game.state.heroes=[hero('a',1,1,1,['presa','arco']),hero('b',1,1,null,['couro','manto'])];
     const data=JSON.parse(game.serialize(1000));data.version=3;
     const loaded=new Game(data,1000),akru=loaded.state.heroes[0];
@@ -95,10 +95,10 @@ describe('equipment and recipes', () => {
 
 describe('eras, patron spirits and powers', () => {
   it('asks for a patron after each village level and only accepts that era\'s spirits', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
 
     expect(pendingEra(game.state)).toBeNull();
-    game.state.heroes[0].level=4;game.state.heroes[0].ritualLevel=2;game.advanceEra();
+    game.state.amber=1000;game.buyFormationLevel();
     expect(pendingEra(game.state)).toBe(2);
     expect(game.chooseSpirit('urso').ok).toBe(false);
     expect(game.chooseSpirit('lobo').ok).toBe(true);
@@ -109,8 +109,8 @@ describe('eras, patron spirits and powers', () => {
 
   it('calls each power once per expedition and keeps every stat finite', () => {
     for (const spirit of SPIRITS) {
-      const game = new Game();
-      game.state.era = 5;
+      const game=new Game();game.state.commanderLevel=3;
+      game.state.era = 5;game.state.commanderLevel=2+game.state.era;
       const path: SpiritId[] = [spiritsOfEra(2)[0].id, spiritsOfEra(3)[0].id, spiritsOfEra(4)[0].id, spiritsOfEra(5)[0].id];
       path[spirit.era - 2] = spirit.id;
       game.state.spirits = path;
@@ -130,16 +130,17 @@ describe('eras, patron spirits and powers', () => {
 
 describe('campaign', () => {
   it('gates regions by era, gives two components for a first boss victory', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     game.state.progress = 5;
     expect(stageUnlocked(game.state, 6)).toBe(false);
-    game.state.era = 2;
+    game.state.era = 2;game.state.commanderLevel=2+game.state.era;
     expect(stageUnlocked(game.state, 6)).toBe(true);
     expect(stageUnlocked(game.state, 7)).toBe(false);
 
-    const boss = new Game();
+    const boss=new Game();boss.state.commanderLevel=3;
     boss.state.heroes = [hero('a', 1, 3, 1, ['obsidiana']), hero('b', 3, 3, 2), hero('c', 8, 3, 9)];
     boss.state.progress = 4; boss.state.selectedStage = 5;
+    boss.state.commanderLevel=4;boss.state.heroes.push(hero("d",15,3,10));boss.autoFormation();
     boss.startBattle(); fight(boss);
     expect(boss.battle!.status).toBe('victory');
     expect(boss.battle!.loot).toHaveLength(2);
@@ -150,9 +151,10 @@ describe('campaign', () => {
     expect(endlessStage(4)).toEqual(endlessStage(4));
     expect(endlessStage(20).units.length).toBeGreaterThan(endlessStage(1).units.length);
     expect(new Set(endlessStage(12).units.map(unit => unit.id)).size).toBe(endlessStage(12).units.length);
-    const game = new Game();
-    game.state.era = 5; game.state.progress = FINAL_STAGE;
+    const game=new Game();game.state.commanderLevel=3;
+    game.state.era = 5;game.state.commanderLevel=2+game.state.era; game.state.progress = FINAL_STAGE;
     game.state.heroes = [[39, 3], [28, 3], [40, 3], [8, 3], [25, 3], [33, 3], [49, 3]].map(([id, stars], i) => hero(`e${i}`, id, stars, [1, 2, 0, 9, 10, 5, 6][i], ['garra', 'talisma', 'carvalho']));
+    game.state.commanderLevel=20;game.state.heroes.push(...[1,3,6,11,13,15,19,24,27,29,30,43,45].map((id,i)=>({...newHero("extra-"+id,id,3,7+i),level:30,ritualLevel:8,rituals:{rape:3,sananga:3,kambo:3,ayahuasca:1},items:["muralha","garra","colar-lua"]})));game.autoFormation();
     expect(game.selectStage(0).ok).toBe(true);
     game.startBattle(); fight(game);
     expect(game.battle!.status).toBe('victory');
@@ -161,7 +163,7 @@ describe('campaign', () => {
   });
 
   it('advances combat faster without producing extra resources', () => {
-    const game = new Game();
+    const game=new Game();game.state.commanderLevel=3;
     game.startBattle();
     const clock = game.state.clock;
     game.advanceBattle(5);

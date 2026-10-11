@@ -1,0 +1,26 @@
+{
+  "characterId": 141,
+  "stars": 2,
+  "name": "Xolvar",
+  "image": "/assets/animations/night/141.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 316,
+  "frameHeight": 322,
+  "bodyHeight": 298,
+  "anchorX": 158.0,
+  "anchorY": 310,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

@@ -1,0 +1,26 @@
+{
+  "characterId": 153,
+  "stars": 3,
+  "name": "Azurion",
+  "image": "/assets/animations/night/153.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 550,
+  "frameHeight": 214,
+  "bodyHeight": 190,
+  "anchorX": 275.0,
+  "anchorY": 202,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

@@ -1,15 +1,16 @@
 import { it, expect } from "vitest";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { Game, newHero } from "../src/game/simulation";
-import { characters } from "../src/data/characters";
+import { characters as allCharacters } from "../src/data/characters";
+const characters=allCharacters.filter(c=>c.id<101);
 import { roleOf } from "../src/game/armyAdvisor";
 import { BUILDS } from "../src/game/builds";
 it("measures weak and prepared teams across the campaign", () => {
   const rows = [];
   for (const stage of [5, 10, 15, 20, 25, 30])
     for (const mode of ["bare", "prepared", "core"]) {
-      const g = new Game();
-      g.state.era = Math.min(5, Math.ceil(stage / 5) + 1);
+      const g=new Game();g.state.commanderLevel=3;
+      g.state.era = Math.min(5, Math.ceil(stage / 5) + 1);g.state.commanderLevel=2+g.state.era;
       g.state.progress = stage - 1;
       g.state.selectedStage = stage;
       const level =

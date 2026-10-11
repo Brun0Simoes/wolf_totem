@@ -9,7 +9,7 @@ import { combatProfile } from './combatProfiles';
 import { separateBodies } from '../game/combatTiming';
 import { artFor } from './artSource';
 import { proceduralSheet } from './proceduralArt';
-import { CHARACTER_ANIMAL, paintGlyph, type AnimalId } from './spiritGlyphs';
+import { CHARACTER_ANIMAL, paintGlyph, paintNightSigil, type AnimalId } from './spiritGlyphs';
 import { REGIONS } from '../game/campaign';
 import { allySlotCenter, enemyFormation, enemySlotCenter, FORMATION_SLOTS, hexCorners } from '../game/board';
 import { ARENA_CENTER, ARENA_LABELS, depthAt, paintArena, perspectiveScale, project, widthAt } from './battleArena';
@@ -307,8 +307,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       if (!show) { view.aura?.setVisible(false); return; }
       const animal = CHARACTER_ANIMAL[view.characterId] ?? 'wolf', texture = `aura-${animal}-${view.characterId}`;
       if (!this.textures.exists(texture)) {
-        const color = '#' + (SKILL_COLORS[view.characterId] ?? 0xd6c08a).toString(16).padStart(6, '0');
-        this.paint(texture, 160, 160, c => { glow(c, 80, 80, 78, color + '40'); paintGlyph(c, animal, 80, 80, 140, color, 1); });
+        const color = '#' + combatProfile(view.characterId).color.toString(16).padStart(6, '0');
+        this.paint(texture,160,160,c=>{glow(c,80,80,78,color+'40');if(view.characterId>=101)paintNightSigil(c,80,80,140,color);else paintGlyph(c,animal,80,80,140,color,1);});
       }
       if (!view.aura) { view.aura = this.add.image(x, y, texture).setOrigin(.5, .5); view.layer.add(view.aura); }
       const big = view.stars >= 3, pulse = this.reducedMotion ? 0 : Math.sin(this.clock * 2 + view.motion.seed) * .04;
@@ -394,11 +394,11 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       const art = creature || !character ? undefined : artFor(character,view.transform?Math.min(3,view.stars+1):view.stars);
       let sheet: SheetDefinition | undefined, key = '';
       if (creature) { sheet = this.ensureSummonAtlas(view.summon!); key = summonSheetKey(view.summon!); }
-      else if (art?.kind === 'painted' || art?.kind === 'standin') { sheet = this.ensureAtlas(art.sheet!.characterId, art.sheet!.stars ?? 1); key = sheetKey(art.sheet!.characterId, art.sheet!.stars); }
+      else if (art?.kind === 'painted' || art?.kind === 'standin' || art?.sheet?.rigged) { sheet = this.ensureAtlas(art.sheet!.characterId, art.sheet!.stars ?? 1); key = sheetKey(art.sheet!.characterId, art.sheet!.stars); }
       else if (art?.kind === 'procedural') { sheet = this.ensureProcedural(view.characterId, view.stars); key = procKey(view.characterId, view.stars); }
       const hasSheet = !!sheet && this.textures.exists(key);
-      this.updateAura(view, art?.kind === 'standin' && view.stars >= 2 && desired !== 'death', x, y);
-      const pose = poseForMotion(view.motion, hasSheet, this.reducedMotion);
+      this.updateAura(view, (art?.kind === 'standin' || !!art?.sheet?.rigged) && view.stars >= 2 && desired !== 'death', x, y);
+      const pose = poseForMotion(view.motion, hasSheet && !sheet?.rigged, this.reducedMotion);
       if (!creature) view.baseTexture = this.resolveArt(view.characterId, view.stars);
       let scale: number;
       if (sheet && hasSheet) {
@@ -510,8 +510,9 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
           else {
             const team = entity?.team ?? 'ally';
             this.effects.skill(source.characterId, a, b, points(team), points(team === 'ally' ? 'enemy' : 'ally'),source.stars);
-            const animal=CHARACTER_ANIMAL[source.characterId],texture=`combat-spirit-${animal}`;
-            if(!this.textures.exists(texture))this.paint(texture,180,180,c=>paintGlyph(c,animal,90,90,150,'#ffffff',1,'transparent'));
+            const animal=CHARACTER_ANIMAL[source.characterId]??'wolf',night=source.characterId>=101;
+            const texture=night?'combat-night-sigil':`combat-spirit-${animal}`;
+            if(!this.textures.exists(texture))this.paint(texture,180,180,c=>night?paintNightSigil(c,90,90,150,'#ffffff'):paintGlyph(c,animal,90,90,150,'#ffffff',1,'transparent'));
             this.effects.crest(texture,a,combatProfile(source.characterId).color,source.stars);
             if(entity?.boss&&event.text)this.floatText(event.text,a.x,a.y-122,'#f4d79b',true);
           }

@@ -1,0 +1,26 @@
+{
+  "characterId": 136,
+  "stars": 3,
+  "name": "Amaya",
+  "image": "/assets/animations/night/136.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 276,
+  "frameHeight": 311,
+  "bodyHeight": 287,
+  "anchorX": 138.0,
+  "anchorY": 299,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

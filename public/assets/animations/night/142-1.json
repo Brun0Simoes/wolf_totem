@@ -1,0 +1,26 @@
+{
+  "characterId": 142,
+  "stars": 1,
+  "name": "Merek",
+  "image": "/assets/animations/night/142.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 324,
+  "frameHeight": 321,
+  "bodyHeight": 297,
+  "anchorX": 162.0,
+  "anchorY": 309,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

@@ -1,0 +1,26 @@
+{
+  "characterId": 152,
+  "stars": 1,
+  "name": "Chelon",
+  "image": "/assets/animations/night/152.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 525,
+  "frameHeight": 214,
+  "bodyHeight": 190,
+  "anchorX": 262.5,
+  "anchorY": 202,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

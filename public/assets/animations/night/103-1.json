@@ -1,0 +1,26 @@
+{
+  "characterId": 103,
+  "stars": 1,
+  "name": "Aurelian",
+  "image": "/assets/animations/night/103.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 320,
+  "frameHeight": 308,
+  "bodyHeight": 284,
+  "anchorX": 160.0,
+  "anchorY": 296,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}

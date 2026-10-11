@@ -1,0 +1,26 @@
+{
+  "characterId": 144,
+  "stars": 2,
+  "name": "Elysandra",
+  "image": "/assets/animations/night/144.png",
+  "columns": 1,
+  "rows": 1,
+  "frameWidth": 403,
+  "frameHeight": 354,
+  "bodyHeight": 330,
+  "anchorX": 201.5,
+  "anchorY": 342,
+  "clips": {
+    "idle": [
+      0
+    ],
+    "walk": [
+      0
+    ],
+    "attack": [
+      0
+    ]
+  },
+  "rigged": true,
+  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+}
