@@ -2,7 +2,7 @@
 
 Jogo de estratégia e combate automático, em português. A tribo acolhe heróis ligados a espíritos animais, desenvolve experiência e vínculo ritual e desperta as formas 1★, 2★ e 3★. As expedições combinam posicionamento, equipamentos, laços, bênçãos e poderes espirituais.
 
-A versão **4.0 — O Véu da Noite** acrescenta 53 personagens originais sobrenaturais após o primeiro renascimento: 108 guardiões no total. A formação cresce do nível 1 ao 28 com compras em âmbar. As eras abrem pelos níveis da formação; XP individual e ritualística continuam determinando as estrelas. Missões de recompensa foram removidas, e o renascimento exige completar a campanha, avançar no Abismo e preparar a formação inteira.
+A versão **5.0 — Travessias do Encanto** acrescenta exploração do Igarapé, três rotas, escolhas com consequências, afinidades temporárias, histórias e especializações persistentes, receitas descobertas e quatro cenários táticos. O conteúdo começa antes do primeiro reset. Os 55 primais e os 53 sobrenaturais do Véu da Noite continuam com sua progressão por XP e ritualística; a expansão sobrenatural abre após o primeiro renascimento.
 
 ## Jogar
 
@@ -28,8 +28,10 @@ Abra **http://127.0.0.1:5173** enquanto o servidor estiver funcionando.
 7. **Legados:** vitórias concedem conhecimento diretamente: três no primeiro triunfo de uma expedição e um nas repetições. Invista nos caminhos ancestrais; legados e conhecimento atravessam o reset.
 8. **Grande Totem:** pague pelas cinco consagrações e cumpra seus requisitos. O primeiro renascimento pede formação nível 28, Totem 5/5, campanha 30/30, Abismo 10, três heróis 3★ com XP 24 e rito 8 e 2.400 âmbar. O reset reinicia heróis, carteira, itens, formação e avanço atual; libera permanentemente O Véu da Noite. Renascimentos seguintes exigem mais âmbar e profundidade.
 9. **Arsenal:** abra **Para a formação** para combinar e equipar itens recomendados individualmente ou aplicar o plano inteiro. Ele considera os heróis em campo, laços, adversários e itens existentes. Complete também componentes já equipados. Confira os próximos objetivos e compre apenas as peças desejadas.
+10. **Travessias:** escolha um guia, uma rota e uma dificuldade. Caminhe com clique, WASD, setas ou **Ir até o marco**. Investigue pistas e escolha até duas afinidades. Prepare a equipe para proteger um altar ou destruir três selos. Descobertas, capítulos e especializações permanecem após renascimentos; a equipe mantém XP e recompensas ao retornar.
+11. **Descobertas e cenários:** nas Travessias, abra **Descobertas** para selecionar especializações e forjar as três receitas do Igarapé. **Cenários táticos** oferece quatro equipes convidadas de seis guardiões, com atributos padronizados e posições editáveis. Eles não alteram seu elenco ou inventário; a primeira vitória concede um conhecimento.
 
-Atalhos: `J` caminhos, `R` bênçãos, `A` conselheiro, `1` jornada, `2` campo, `3` códice, `4` totem, `C` Arsenal, `M` mapa, `P` pausar e `Esc` fechar.
+Atalhos: `J` caminhos, `R` bênçãos, `A` conselheiro, `1` jornada, `2` campo, `3` códice, `4` totem, `5` travessias, `C` Arsenal, `M` mapa, `P` pausar e `Esc` fechar. Na exploração, WASD/setas caminham e `E` interage.
 
 ## O que existe
 
@@ -49,17 +51,19 @@ Atalhos: `J` caminhos, `R` bênçãos, `A` conselheiro, `1` jornada, `2` campo, 
 
 Regras atuais e elenco completo: [O Véu da Noite 4.0](docs/expansions/veu-da-noite.md). Draft e Arsenal: [Herói inicial, draft e itens 3.2](docs/HEROIS-E-ITENS-3.2.md). Pesquisa anterior: [Draft e combate 3.1](docs/DRAFT-E-COMBATE-3.1.md), [Interface e progressão 3.0](docs/UI-E-PROGRESSAO-3.0.md) e [Reformulação 2.2](docs/REFORMULACAO-2.2.md).
 
-## Próxima atividade pesquisada
+## Travessias do Encanto
 
-**Travessias do Encanto:** exploração 2D com um herói guia, pistas ambientais, escolhas de rota, histórias pessoais e afinidades temporárias que modificam os encontros de autochess. A proposta inclui referências oficiais e uma primeira área compacta para implementação e teste.
+O Igarapé está implementado com três guias, três rotas e dificuldades, seis marcos por percurso, dois desafios de sequência, seis eventos e seis afinidades. Altar e selos são estruturas do combate, com condições de vitória próprias e ondas anunciadas. Três histórias abrem seis especializações com vantagens e concessões; três receitas usam os componentes existentes. A biblioteca tem quatro cenários táticos permanentes.
 
-Esse modo ainda é uma proposta. Leia [Travessias do Encanto](docs/PROPOSTA-TRAVESSIAS.md).
+Regras, arte e validação: [Travessias 5.0](docs/TRAVESSIAS-5.0.md). A [proposta original](docs/PROPOSTA-TRAVESSIAS.md) registra a pesquisa que orientou a implementação.
+
+A [pesquisa sobre variedade e progressão](docs/PESQUISA-VARIEDADE-E-PROGRESSAO.md) analisa caminhos alternativos, objetivos de combate, afinidades temporárias e especializações persistentes, com uma ordem de desenvolvimento para reduzir a dependência dos resets.
 
 ## Salvar e carregar
 
 O progresso é salvo automaticamente no navegador. Use **Configurações → Exportar progresso** para baixar uma cópia e **Importar progresso** ou **Carregar jornada salva** para restaurá-la em outro aparelho. Importar substitui a jornada local; exporte antes para guardar as duas.
 
-O formato atual é **v11**. Saves v10 preservam heróis, saldo, estrelas, itens, legados e as 3–7 vagas anteriores, convertidas em nível da formação sem cobrança. Um renascimento já concluído libera a expansão. Missões pendentes são encerradas. Saves v1–v9 continuam migrando; recursos e atividades de produção antigos permanecem retirados.
+O formato atual é **v12**. Saves v11 recebem as Travessias preservando o progresso existente. O percurso e suas escolhas são salvos; fechar durante um confronto retorna à preparação, sem conceder recompensas de uma luta inacabada. Saves v10 preservam heróis, saldo, estrelas, itens, legados e as 3–7 vagas anteriores, convertidas em nível da formação sem cobrança. Saves v1–v9 continuam migrando; recursos e atividades de produção antigos permanecem retirados.
 
 O progresso pertence ao navegador e ao endereço usado. Exporte antes de limpar dados do site ou trocar de porta, navegador ou domínio.
 
@@ -92,7 +96,10 @@ As cinco criaturas invocadas (aranha, corvo, escaravelho, lobo e elefante) tamb�
 chars/                       Artes originais
 public/assets/animations/    Atlas dos heróis e criaturas
 src/data/                    Elenco e animalidade
-src/game/simulation.ts       Estado, combate, transações e saves v11
+src/game/simulation.ts       Estado, combate, transações e saves v12
+src/game/crossings.ts        Rotas, eventos, afinidades, histórias e descobertas
+src/game/battleObjectives.ts Altar, selos e conselhos conforme o objetivo
+src/render/CrossingScene.ts  Exploração, caminhada, câmera e marcos do Igarapé
 src/game/formationProgression.ts Níveis pagos, eras e requisitos de reset
 src/data/nocturne.ts          53 identidades e perfis sobrenaturais
 src/game/nightSkills.ts       Poderes e efeitos específicos da expansão
@@ -130,7 +137,8 @@ npm run preview
 
 O build gera `dist/` e usa caminhos relativos para funcionar no GitHub Pages. Os envios para `main` executam testes, build e publicação pelo workflow `.github/workflows/pages.yml`.
 
-- [Expansão e regras atuais — versão 4.0](docs/expansions/veu-da-noite.md)
+- [Travessias do Encanto — versão 5.0](docs/TRAVESSIAS-5.0.md)
+- [Expansão sobrenatural — versão 4.0](docs/expansions/veu-da-noite.md)
 - [Draft e Arsenal — versão 3.2](docs/HEROIS-E-ITENS-3.2.md)
 - [Draft e combate — versão 3.1](docs/DRAFT-E-COMBATE-3.1.md)
 - [Pesquisa e proposta de exploração](docs/PROPOSTA-TRAVESSIAS.md)

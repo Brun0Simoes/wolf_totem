@@ -49,6 +49,12 @@ const paths: Record<string, string> = {
   "raiz-luz": "M28 11 V38 M16 19 L28 28 L40 19 M15 44 L28 35 L41 44 M22 12 H34",
   "coroa-inverno":
     "M12 39 L10 17 L21 27 L28 10 L35 27 L46 17 L44 39 Z M13 44 H43 M28 24 V37 M23 28 L33 33 M33 28 L23 33",
+  "presa-igarape":
+    "M16 11 Q37 14 34 27 Q30 38 17 44 Q24 27 16 11 M32 12 Q46 27 32 43 M32 12 V43 M10 29 H44 M39 24 L44 29 L39 34",
+  "eco-igarape":
+    "M19 39 L37 12 Q44 12 41 22 L30 33 L23 33 M24 29 L24 20 M30 22 H38 M12 39 Q20 34 28 39 Q36 44 44 39 M12 46 Q20 41 28 46 Q36 51 44 46",
+  "pedra-igarape":
+    "M15 13 H41 V32 L28 45 L15 32 Z M28 20 L35 28 L28 36 L21 28 Z M22 11 L28 7 L34 11 M10 27 H13 M43 27 H46",
 };
 export function itemGlyph(id: string): string {
   const d = itemById(id);

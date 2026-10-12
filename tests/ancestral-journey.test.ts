@@ -10,7 +10,7 @@ describe('ancestral progression',()=>{
   it('begins with a meaningful legacy choice and no RTS state',()=>{
     const g=new Game();g.state.commanderLevel=3;expect(g.state.journey.knowledge).toBe(3);expect('settlement' in g.state).toBe(false);
     expect(g.learnLegacy('vigor').ok).toBe(true);expect(g.state.journey.knowledge).toBe(0);expect(g.state.heroes[0].stars).toBe(1);
-    const save=JSON.parse(g.serialize(1000));expect(save.version).toBe(11);expect(save.state.settlement).toBeUndefined();
+    const save=JSON.parse(g.serialize(1000));expect(save.version).toBe(12);expect(save.state.settlement).toBeUndefined();
   });
   it('retires manual challenges and pays knowledge directly after victory',()=>{const g=new Game();const before=g.state.journey.knowledge;expect(g.acceptTrial('combat').ok).toBe(false);g.startBattle();for(const e of g.battle!.entities.filter(e=>e.team==='enemy'))e.hp=0;g.advanceBattle(.1);expect(g.state.journey.knowledge).toBe(before+3);expect(g.claimTrial().ok).toBe(false);});
   it('cannot reactivate old missions',()=>{const g=new Game(),before=g.serialize(1000);for(const id of ['combat','hunt','ritual'])expect(g.acceptTrial(id).ok).toBe(false);expect(g.serialize(1000)).toBe(before);});
@@ -22,7 +22,7 @@ describe('ancestral progression',()=>{
   });
   it('sanitizes knowledge, legacy levels, selections and invalid focused traits',()=>{
     const g=rich(),save=JSON.parse(g.serialize(1000));save.state.journey={knowledge:-4,legacies:{vigor:999,toString:3},preparations:{feast:99},selected:['feast','feast','bad'],focusTraits:['toString','Presas'],trial:{id:'bad',start:-3}};
-    const loaded=new Game(save,1000);expect(loaded.state.journey.knowledge).toBe(0);expect(loaded.state.journey.legacies.vigor).toBe(3);expect(loaded.state.journey.selected).toEqual([]);expect(loaded.state.journey.focusTraits).toEqual(['Presas']);expect(loaded.state.journey.trial).toBeNull();expect(SAVE_VERSION).toBe(11);
+    const loaded=new Game(save,1000);expect(loaded.state.journey.knowledge).toBe(0);expect(loaded.state.journey.legacies.vigor).toBe(3);expect(loaded.state.journey.selected).toEqual([]);expect(loaded.state.journey.focusTraits).toEqual(['Presas']);expect(loaded.state.journey.trial).toBeNull();expect(SAVE_VERSION).toBe(12);
   });
   it('a trivial completed campaign cannot reset',()=>{const g=rich();g.state.progress=30;g.state.wonder=5;const before=g.serialize(1000);expect(g.ascend().ok).toBe(false);expect(g.serialize(1000)).toBe(before);});
 });

@@ -11,6 +11,7 @@ import { artFor } from './artSource';
 import { proceduralSheet } from './proceduralArt';
 import { CHARACTER_ANIMAL, paintGlyph, paintNightSigil, type AnimalId } from './spiritGlyphs';
 import { REGIONS } from '../game/campaign';
+import { crossingStage } from '../game/crossings';
 import { allySlotCenter, enemyFormation, enemySlotCenter, FORMATION_SLOTS, hexCorners } from '../game/board';
 import { ARENA_CENTER, ARENA_LABELS, depthAt, paintArena, perspectiveScale, project, widthAt } from './battleArena';
 import { SPIRITS, spiritById } from '../game/spirits';
@@ -74,6 +75,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
     private ambience!: Phaser.GameObjects.Graphics;
     private floorHover!: Phaser.GameObjects.Graphics;
     private zoneLayer!: Phaser.GameObjects.Graphics;
+    private objectiveLayer!: Phaser.GameObjects.Graphics;
+    private objectiveLabels:Phaser.GameObjects.Text[]=[];
     private board!: Phaser.GameObjects.Image;
     private boardRegion = 0;
     private stars: { x: number; y: number; phase: number; speed: number }[] = [];
@@ -172,6 +175,8 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       });
       this.paintSummons();
       this.zoneLayer = this.add.graphics().setDepth(3); this.battlefield.add(this.zoneLayer);
+      this.objectiveLayer=this.add.graphics().setDepth(4);this.battlefield.add(this.objectiveLayer);
+      for(let i=0;i<3;i++){const text=this.add.text(0,0,'',{fontFamily:'Georgia,serif',fontSize:'13px',color:'#f1dfab',stroke:'#142b23',strokeThickness:4}).setOrigin(.5).setDepth(1100);this.objectiveLabels.push(text);this.battlefield.add(text);}
     }
 
     /** Spirit creatures are luminous silhouettes until their own sprites are produced. */
@@ -468,7 +473,16 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
           const [x, y] = project(cell.x, cell.y);
           this.presentUnit(view, 'idle', dt, x, y); view.bars.clear();
         }
-        this.removeUnitsExcept(keep); this.zoneLayer.clear(); return;
+        const run=game.state.crossings.active;
+        if(run?.mode==='prepare'){
+          const {stage}=crossingStage(run),slots=enemyFormation(stage.units.map(u=>characters.find(c=>c.id===u.id)!.range>1));
+          for(const [i,u]of stage.units.entries()){
+            const id=`cross-preview-${i}`,view=this.unitView(id,u.id,true,u.stars,undefined,characters.find(c=>c.id===u.id)!.name);keep.add(id);
+            const p=enemySlotCenter(slots[i]),[x,y]=project(p.x,p.y);this.presentUnit(view,'idle',motionDt,x,y,0);view.bars.clear();view.conditions.clear();
+          }
+          this.paintBoard(stage.region);
+        }
+        this.removeUnitsExcept(keep); this.zoneLayer.clear();this.drawObjectives();return;
       }
       const keep = new Set<string>();
       const positions = new Map<string, { x: number; y: number; dx: number; moving: boolean }>();
@@ -476,6 +490,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       for(let pass=0;pass<4;pass++)separateBodies(bodies,.04,p=>{p.x=Math.max(0,Math.min(6.5,p.x));p.y=Math.max(0,Math.min(7,p.y));});
       for (const entity of battle.entities) {
         const id = String(entity.id); keep.add(id);
+        if(entity.structure){const [x,y]=project(entity.x,entity.y);positions.set(id,{x,y,dx:0,moving:false});continue;}
         const view = this.unitView(id, entity.characterId, entity.team === 'enemy', entity.stars, entity.summon, entity.name);
         view.transform = entity.transform > 0 && entity.hp > 0;
         view.stealth=entity.stealth>0&&entity.hp>0;
@@ -490,6 +505,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       }
       this.removeUnitsExcept(keep);
       this.drawZones(battle.zones);
+      this.drawObjectives();
       const points = (team: 'ally' | 'enemy') => battle.entities.filter(e => e.team === team && e.hp > 0).map(e => positions.get(String(e.id))!);
       for (const event of game.events) {
         if (this.seenEvents.has(event.id)) continue;
@@ -499,6 +515,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         const target = this.units.get(String(event.targetId ?? event.sourceId));
         const a = positions.get(String(event.sourceId));
         const b = positions.get(String(event.targetId ?? event.sourceId));
+        if(!target&&b&&event.type==='damage'){if(options.numbers)this.floatText(String(event.amount??''),b.x,b.y-40,'#efba83');continue;}
         if (!target || !b) continue;
         if(event.type==='prepare'&&source&&a){
           source.motion.preparingCast=event.text==='cast';triggerMotion(source.motion,'windup',b.x-a.x,event.duration??.2);
@@ -557,6 +574,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         }
       }
       for (const entity of battle.entities) {
+        if(entity.structure)continue;
         const view = this.units.get(String(entity.id))!, p = positions.get(String(entity.id))!;
         const winner = battle.status === 'victory' ? 'ally' : battle.status === 'defeat' ? 'enemy' : null;
         const desired = entity.hp <= 0 ? 'death' : entity.team === winner ? 'victory' : p.moving || entity.action === 'walk' ? 'walk' : 'idle';
@@ -579,6 +597,27 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         g.lineStyle(1.5, color, .55 * fade); g.strokeEllipse(x, y, rx * 2, ry * 2);
         if (zone.kind === 'web') for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.lineStyle(1, color, .35 * fade); g.lineBetween(x, y, x + Math.cos(a) * rx, y + Math.sin(a) * ry); }
         else for (let i = 0; i < 3; i++) { const p = (t * .5 + i / 3) % 1; g.lineStyle(1, color, (1 - p) * .5 * fade); g.strokeEllipse(x, y, rx * 2 * p, ry * 2 * p); }
+      }
+    }
+
+    private drawObjectives():void {
+      const g=this.objectiveLayer;g.clear();this.objectiveLabels.forEach(t=>t.setVisible(false));
+      const battle=game.battle,run=game.state.crossings.active,kind=battle?.objective?.kind??(run?.mode==='prepare'?run.objective:undefined);if(!kind)return;
+      const structures=battle?.entities.filter(e=>e.structure)??(kind==='altar'?[{x:3.25,y:5.6,hp:1,maxHp:1,structure:'altar',name:'Altar'}]:[.8,3.25,5.7].map((x,i)=>({x,y:1.5,hp:1,maxHp:1,structure:'seal',name:`Selo ${i+1}`})));
+      for(const [i,e]of structures.entries()){
+        const [x,y]=project(e.x,e.y),alive=e.hp>0,color=e.structure==='altar'?0xaace9e:0xe2bd8c;
+        g.fillStyle(0x07170e,.55).fillEllipse(x,y+6,88,30);
+        g.lineStyle(2,color,alive?.85:.28).strokeEllipse(x,y,86,36);
+        g.fillStyle(alive?0x617665:0x38433a,.95).fillRoundedRect(x-27,y-38,54,33,5);
+        g.lineStyle(2,0xd2c49b,alive?.7:.2).strokeRoundedRect(x-27,y-38,54,33,5);
+        if(alive){g.fillStyle(color,.95).fillCircle(x,y-27,e.structure==='altar'?8:6);g.lineStyle(1,color,.5).strokeCircle(x,y-27,15);}
+        g.fillStyle(0x11241c,1).fillRoundedRect(x-38,y+13,76,6,3);
+        g.fillStyle(color,alive?1:.15).fillRoundedRect(x-38,y+13,76*Math.max(0,e.hp/e.maxHp),6,3);
+        this.objectiveLabels[i]?.setVisible(true).setPosition(x,y+35).setText(`${e.structure==='altar'?'ALTAR':e.name.toUpperCase()}${alive?'':' · ROMPIDO'}`);
+      }
+      if(battle?.objective&&battle.objective.telegraph>0){
+        const o=battle.objective,targets=o.kind==='altar'?structures:battle.entities.filter(e=>e.id===o.sourceId);
+        for(const e of targets){const [x,y]=project(e.x,e.y);g.lineStyle(3,0xf29b68,.85).strokeEllipse(x,y,124+Math.sin(this.clock*8)*9,58);g.fillStyle(0xe98c5f,.12).fillEllipse(x,y,124,58);}
       }
     }
 

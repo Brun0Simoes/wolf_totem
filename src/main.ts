@@ -1,4 +1,7 @@
 import "./nocturne.css";
+import "./crossings.css";
+import { CrossingsUI, crossingBattlePanel } from './ui/Crossings';
+import { crossingStage } from './game/crossings';
 import { NIGHT_PROFILES, nocturneCharacters, isNightCharacter } from './data/nocturne';
 import { formationLevelButton, progressionPage } from './ui/FormationProgress';
 import { formationLevelCost, ERA_LEVELS, MAX_FORMATION_LEVEL, resetLock, resetRequirements, consecrationCost, expansionUnlocked } from './game/formationProgression';
@@ -154,7 +157,7 @@ const reducedMotion = () => motionReduced(prefs, systemMotion.matches);
 sound.setVolumes(prefs.sfx, prefs.music);
 document.documentElement.classList.toggle("reduce-motion", reducedMotion());
 
-let view: "village" | "battle" | "heroes" | "ritual" | "arsenal" = "battle";
+let view: "village" | "battle" | "heroes" | "ritual" | "arsenal" | "crossing" = game.state.crossings.active?(game.state.crossings.active.mode==='prepare'?'battle':'crossing'):'battle';
 let selectedHero: string | null = null;
 let villageMode: "paths" | "preparations" | "legacies" = "paths";
 let journeyBranch: JourneyBranch = "war";
@@ -237,6 +240,7 @@ $("#app").innerHTML = `
    <button class="brand" data-action="title-show" aria-label="Wolf Totem, início">${glyphSVG("wolf", "#e7c28b", "")}<span>WOLF<br><b>TOTEM</b></span></button>
    <div class="nav-group">
     <button class="nav-button" data-view="battle">${icon("swords")}<span>Campo</span></button>
+    <button class="nav-button crossing-nav" data-view="crossing">${icon("map-pinned")}<span>Travessias</span><small>NOVO</small></button>
     <button class="nav-button" data-view="heroes">${icon("users")}<span>Guardiões</span><i id="proof-notice" hidden></i></button>
     <button class="nav-button" data-view="ritual">${icon("flame")}<span>Rituais</span></button>
     <button class="nav-button" data-view="arsenal">${icon("anvil")}<span>Arsenal</span></button>
@@ -255,6 +259,7 @@ $("#app").innerHTML = `
      <div class="play-area"><section class="world-wrap" aria-label="Campo de batalha">
       <div class="arena-top"><span class="world-badge"><span class="live-dot"></span><span id="world-badge-text">Preparação</span></span><button class="text-button" data-action="formation">${icon("move")}Posicionar</button></div>
       <div id="world"></div>
+      <div id="battle-objective" class="crossing-objective-meter" hidden aria-live="polite"></div>
       <div class="world-caption"><span id="world-hint"></span><span class="map-coordinate">CLAREIRA DO LOBO</span></div>
       <div id="power-bar" class="power-bar" hidden></div>
       <div id="pause-overlay" class="pause-overlay" hidden><span>${icon("pause")}Jornada pausada</span><button class="primary" data-action="pause">Retomar</button></div>
@@ -265,9 +270,10 @@ $("#app").innerHTML = `
     <section id="guardian-hall" hidden aria-label="Guardiões"></section>
     <section id="ritual-hall" hidden aria-label="Rituais"></section>
     <section id="arsenal-hall" hidden aria-label="Arsenal"></section>
+    <section id="crossing-hall" hidden aria-label="Travessias do Encanto"></section>
     <section class="journey-page" hidden><nav id="journey-toolbar" class="ancestral-toolbar" aria-label="Atividades da jornada"><div><button data-journey-tab="paths">${icon("trending-up")}Progressão</button><button data-journey-tab="legacies">${icon("route")}Legados</button><button data-journey-tab="preparations">${icon("sparkles")}Bênçãos</button><button data-view="arsenal">${icon("anvil")}Arsenal</button><button data-action="ancestors">${icon("landmark")}Grande Totem</button></div></nav><div id="journey-objective" class="journey-objective"></div><section id="ancestral-hall"></section></section>
    </main>
-   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Progressão da formação</button><span>WOLF TOTEM · 4.0</span></footer>
+   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Progressão da formação</button><span>WOLF TOTEM · 5.0</span></footer>
   </div>
  </div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -297,6 +303,10 @@ const world = createWorld(
   },
   { reducedMotion: reducedMotion(), numbers: prefs.numbers },
 );
+const crossingsUI = new CrossingsUI($('#crossing-hall'), game, {
+  changed:()=>{save();renderAll();}, prepare:()=>setView('battle'), icons:refreshIcons, toast,
+  enabled:()=>!activeModal&&!titleOpen&&!game.battle, reduced:reducedMotion,
+});
 
 let toastTimer = 0;
 function toast(message: string) {
@@ -343,6 +353,7 @@ function setView(next: typeof view) {
 }
 
 function renderMetrics() {
+  renderBattleObjective();
   $("#res-amber").textContent = fmt(game.state.amber);
   const journeyState = JSON.stringify([
     game.state.journey, game.state.commanderLevel, game.state.amber,
@@ -426,6 +437,14 @@ function renderMetrics() {
     showArmyCoach();
 }
 
+function renderBattleObjective(){
+  const el=$('#battle-objective'),b=game.battle,o=b?.objective;
+  el.hidden=!o||view!=='battle'||b?.status!=='fighting';if(el.hidden||!o||!b)return;
+  const structures=b.entities.filter(e=>o.ids.includes(e.id));
+  const altar=structures[0],remaining=Math.max(0,Math.ceil(o.limit-b.time));
+  el.innerHTML=`<strong>${o.title}</strong>${o.kind==='altar'?`<span>Altar ${Math.ceil(altar.hp/altar.maxHp*100)}%</span><span class="objective-track"><span style="width:${Math.max(0,altar.hp/altar.maxHp*100)}%"></span></span>`:`<span>${structures.filter(e=>e.hp<=0).length}/3 selos rompidos</span>`}<span>${remaining}s</span>${o.warning?`<span class="objective-warning">${esc(o.warning)}</span>`:''}`;
+}
+
 function objective(): { title: string; text: string } {
   const s = game.state;
   if (pendingEra(s))
@@ -489,6 +508,8 @@ function renderSide() {
   $("#guardian-hall").hidden = view !== "heroes";
   $("#ritual-hall").hidden = view !== "ritual";
   $("#arsenal-hall").hidden = view !== "arsenal";
+  $('#crossing-hall').hidden = view !== 'crossing';
+  if(view==='crossing')crossingsUI.render();
   $("#journey-objective").innerHTML = journeyObjective();
   if (view === "village") renderVillageSide();
   if (view === "heroes") renderGuardians();
@@ -516,7 +537,7 @@ function encounter() {
   const b = game.battle;
   if (b) {
     const units = b.entities
-      .filter((e) => e.team === "enemy" && !e.summon)
+      .filter((e) => e.team === "enemy" && !e.summon && !e.structure)
       .map((e) => ({ id: e.characterId, stars: e.stars, boss: e.boss }));
     return {
       id: b.stage,
@@ -530,14 +551,15 @@ function encounter() {
       index: b.stage > 0 ? stageById(b.stage)!.index : 0,
       units,
       depth: b.depth,
-      raid: b.stage < 0,
+      raid: b.stage < 0 && !b.crossing && !b.scenario,
     };
   }
-  const { stage, depth } = game.nextStage();
+  const run=game.state.crossings.active;
+  const { stage, depth } = run?.mode==='prepare'?{...crossingStage(run),depth:0}:game.nextStage();
   return {
     id: stage.id,
     name: stage.name,
-    region: stage.id ? regionOf(stage.id) : null,
+    region: stage.id ? REGIONS[stage.region-1] : null,
     index: stage.index,
     units: stage.units,
     depth,
@@ -551,6 +573,9 @@ function enemyPreview(): string {
 }
 
 function renderBattleSide() {
+  if(game.battle?.crossing||game.battle?.scenario||(!game.battle&&game.state.crossings.active?.mode==='prepare')){
+    $('#side-panel').innerHTML=crossingBattlePanel(game);return;
+  }
   const s = game.state,
     stage = encounter(),
     fighting = game.battle?.status === "fighting";
@@ -579,7 +604,7 @@ function renderBattleSide() {
 function renderPowers() {
   const bar = $("#power-bar"),
     battle = game.battle;
-  const show = view === "battle" && game.state.spirits.length > 0;
+  const show = view === "battle" && game.state.spirits.length > 0 && !battle?.scenario;
   bar.hidden = !show;
   if (!show) return;
   const key = `${battle?.status ?? "none"}|${battle?.powersUsed.join(",") ?? ""}|${game.state.spirits.join(",")}|${game.state.paused}`;
@@ -600,6 +625,10 @@ function heroStatus(h: Hero): string {
 }
 
 function renderCamp() {
+  if(game.battle?.scenario){
+    $('#camp-title').textContent='Equipe convidada · nível 1 · atributos padronizados';
+    $('#camp-content').innerHTML=`<div class="hero-dock">${game.battle.entities.filter(e=>e.team==='ally'&&!e.summon&&!e.structure).map(e=>`<span class="dock-hero">${portraitHTML(characterOf(e.characterId),1)}<span><b>${e.name}</b><small>${characterOf(e.characterId).traits.slice(0,2).join(' · ')}</small></span></span>`).join('')}</div>`;return;
+  }
   const party = game.state.heroes.filter((h) => h.slot !== null);
   $("#camp-title").textContent =
     `Sua formação · ${party.length}/${capacity(game.state)}`;
@@ -776,6 +805,7 @@ function renderAll() {
         : "Preparação";
   $("#world-hint").textContent =
     "Selecione um herói abaixo e uma posição no campo.";
+  $(".map-coordinate").textContent = stage.region?.name.toUpperCase() ?? "TERRAS DO ENCANTO";
   renderSide();
   renderCamp();
   renderMetrics();
@@ -787,6 +817,11 @@ function renderResult() {
     el = $("#battle-result");
   el.hidden = !b || b.status === "fighting" || view !== "battle";
   if (el.hidden || !b) return;
+  if(b.crossing||b.scenario){
+    const won=b.status==='victory';
+    el.innerHTML=`<span class="result-icon">${icon(won?'sparkles':'shield')}</span><p class="eyebrow">${b.scenario?'CENÁRIO TÁTICO':won?'O CAMINHO CONTINUA':'REAGRUPAR NA MARGEM'}</p><h2>${won?(b.objective?.kind==='altar'?'O altar permanece.':'Os selos se romperam.'):'A passagem ainda resiste.'}</h2><p>${won?(b.scenario?'Uma solução foi encontrada. Experimente outro posicionamento no próximo cenário.':'As descobertas e recompensas acompanham sua tribo.'):(b.objective?.kind==='altar'?'Cubra os flancos e proteja o altar. Cura e escudos também o sustentam.':'Priorize os selos e preserve quem consegue alcançá-los. Você pode reorganizar e tentar novamente.')}</p>${b.scenario?'<p>A primeira vitória registra o cenário e concede 1 conhecimento.</p>':`<p class="amber-reward">+${b.amber} âmbar · +${b.xp} XP por guardião</p>`}${b.loot.length?`<div class="loot">${b.loot.map(id=>itemChip(id)).join('')}</div>`:''}${summaryHTML(b)}<div class="result-actions"><button class="primary" data-cross-battle-return>${won?'Continuar no Igarapé':'Reorganizar formação'}${icon('arrow-right')}</button>${!won&&!b.scenario?'<button class="outline-button" data-cross-map-return>Voltar ao mapa</button>':''}</div>`;
+    refreshIcons();return;
+  }
   const victory = b.status === "victory";
   const repeating = victory && game.state.settings.autoRepeat;
   el.innerHTML = `<span class="result-icon">${icon(victory ? "crown" : "shield")}</span><p class="eyebrow">${victory ? (b.firstClear ? "PRIMEIRA VITÓRIA" : "A TRIBO PERMANECE") : "OS ESPÍRITOS ENSINAM"}</p><h2>${victory ? (b.stage < 0 ? "A aldeia está a salvo." : b.stage === 0 ? `Profundidade ${b.depth} vencida.` : "Uma nova conquista.") : b.stage < 0 ? "Os saqueadores escaparam." : "É hora de reagrupar."}</h2>
@@ -803,7 +838,7 @@ function renderResult() {
 /** TFT-style recap: who dealt, absorbed and healed the most. */
 function summaryHTML(b: NonNullable<typeof game.battle>): string {
   const allies = b.entities
-    .filter((e) => e.team === "ally" && !e.summon)
+    .filter((e) => e.team === "ally" && !e.summon && !e.structure)
     .sort((x, y) => y.dealt - x.dealt);
   if (!allies.length) return "";
   const top = Math.max(
@@ -1269,7 +1304,7 @@ function renderTitle() {
   $<HTMLElement>(".app-frame").inert = true;
   const s = game.state, first = s.heroes[0], starter = characterOf(first.characterId);
   $("#title-screen").innerHTML =
-    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(starter, first.stars)}<span class="title-landscape-label">${esc(starter.name)} · ${esc(starter.title)}</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}55 guardiões + 53 sobrenaturais</span></div>${!hasJourney ? `<div class="title-journey">${esc(starter.name)} inicia sua tribo · guardião sorteado da Era I</div>` : ""}${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} ${s.heroes.length === 1 ? "guardião" : "guardiões"}</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 4.0 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
+    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(starter, first.stars)}<span class="title-landscape-label">${esc(starter.name)} · ${esc(starter.title)}</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}Travessias do Encanto</span></div>${!hasJourney ? `<div class="title-journey">${esc(starter.name)} inicia sua tribo · guardião sorteado da Era I</div>` : ""}${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} ${s.heroes.length === 1 ? "guardião" : "guardiões"}</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 5.0 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
   refreshIcons();
 }
 
@@ -1311,7 +1346,7 @@ function welcomeBack() {
 
 function startNext() {
   if (game.battle && game.battle.status !== "fighting") game.dismissBattle();
-  const result = game.startBattle();
+  const result = game.state.crossings.active?.mode==='prepare'?game.startCrossingBattle():game.startBattle();
   if (!result.ok) toast(result.message);
   else sound.play("power");
   renderAll();
@@ -1323,6 +1358,12 @@ document.addEventListener("click", (event) => {
   );
   if (!target || target.disabled) return;
   const d = target.dataset;
+  if(d.crossDirective){act(game.setCrossingDirective(d.crossDirective),'click');return;}
+  if(d.crossBattleReturn!==undefined||d.crossMapReturn!==undefined){
+    const scenario=!!game.battle?.scenario,won=game.battle?.status==='victory';
+    game.dismissBattle();save();
+    setView(scenario||won||d.crossMapReturn!==undefined?'crossing':'battle');return;
+  }
   if (d.heroTab) {
     heroDetailTab = d.heroTab;
     renderGuardians(true);
@@ -1952,6 +1993,8 @@ document.addEventListener("keydown", (event) => {
   if ($<HTMLDialogElement>("#modal").open) return;
   if (titleOpen) return;
   const key = event.key.toLowerCase();
+  if(view==='crossing'&&['w','a','s','d','e',' ','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){if(key===' '&&(event.target as HTMLElement).closest('button'))return;event.preventDefault();return;}
+  if(key==='5')setView('crossing');
   if (key === "1") setView("village");
   if (key === "2") setView("battle");
   if (key === "3") showCodex();
@@ -2069,6 +2112,7 @@ function frame(now: number) {
         sound.play(status === "victory" ? "victory" : "defeat");
       if (
         status === "victory" &&
+        !game.battle?.crossing && !game.battle?.scenario &&
         game.state.settings.autoRepeat &&
         (game.battle?.stage ?? 0) >= 0
       )
@@ -2109,6 +2153,7 @@ requestAnimationFrame(frame);
 window.addEventListener("beforeunload", () => {
   save();
   world.destroy();
+  crossingsUI.destroy();
 });
 
 document.addEventListener("input", (event) => {

@@ -12,7 +12,9 @@ import { recommendedParty, positionPlan, equipmentPlan, planSignature, roleOf, c
 import { initialJourney, sanitizeJourney, migrateSettlement, blessingLock, legacyLevel, legacyCost, legacyLock, LEGACIES, PREPARATIONS, TRIALS, trialProgress, type AncestralJourney, type PreparationId } from './ancestralJourney';
 import { ALL_CHARACTER_IDS, nextRandom, unlockedCost } from './roster';
 import { bossScale, endlessLevel, endlessStage, enemyScale, expectedLevel, FINAL_STAGE, regionOf, stageById, type Stage } from './campaign';
-import { COMPONENT_IDS, isComponent, itemById, MAX_ITEMS_PER_HERO, recipeFor, type ItemPerks } from './items';
+import { COMPONENT_IDS, CROSSING_RELICS, isComponent, itemById, MAX_ITEMS_PER_HERO, recipeFor, type ItemPerks } from './items';
+import { GUIDES, ROUTES, SCENARIOS, SPECIALIZATIONS, createCrossing, freshChronicle, sanitizeChronicle, atCrossingNode, crossingEvent, crossingStage, affinityOffers, puzzleSequence, recordDiscovery, completeCrossing, pathProjection, crossingPath, type CrossingChronicle, type RouteId, type AffinityId, type ObjectiveKind } from './crossings';
+import { createObjective, objectiveOutcome, type BattleObjective } from './battleObjectives';
 import { castAbility, SKILL_NOTES } from './skills';
 import { MEMORIES, memoryCost, spiritById, spiritsOfEra, type MemoryId, type SpiritId } from './spirits';
 import { countTraits, TRAIT_RULES, traitStatus, traitPower } from './synergies';
@@ -43,6 +45,7 @@ export interface Hero {
 export interface HuntReport { clock: number; uid: string; name: string; text: string; ok: boolean }
 export interface GameState {
   journey: AncestralJourney;
+  crossings: CrossingChronicle;
   amber: number;
   draft: Draft | null;
   cacaoBattles: number;
@@ -91,6 +94,7 @@ export interface CombatEntity {
   stars: number;
   cost: number;
   boss: boolean;
+  structure?: 'altar' | 'seal';
   x: number;
   y: number;
   hp: number;
@@ -200,6 +204,10 @@ export interface CombatZone {
   ownerArmor?: number;
 }
 export interface BattleState {
+  objective?: BattleObjective;
+  crossing?: boolean;
+  scenario?: string;
+  affinities?: AffinityId[];
   entities: CombatEntity[];
   zones: CombatZone[];
   time: number;
@@ -241,7 +249,7 @@ export interface CombatApi {
 
 export const PLAYABLE_IDS = ALL_CHARACTER_IDS;
 export const MAX_ERA = 5;
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 export const OFFLINE_CAP_SECONDS = 12 * 3600;
 export const MAX_ROSTER_SIZE = 108;
 export const MAX_INVENTORY = 180;
@@ -327,7 +335,7 @@ export const available = (hero: Hero) => !hero.away;
 
 function initialState(seed = 7): GameState {
   return {
-    journey: initialJourney(), amber: STARTING_AMBER, draft: null, cacaoBattles: 0, cacaoCircles: 0,
+    journey: initialJourney(), crossings: freshChronicle(), amber: STARTING_AMBER, draft: null, cacaoBattles: 0, cacaoCircles: 0,
     era: 1, commanderLevel: 1,
     heroes: starterHeroes(seed),
     progress: 0, selectedStage: 1, endlessBest: 0, endlessRecord: 0,
@@ -376,6 +384,7 @@ function sanitizeState(value: unknown, version: number): GameState {
     }) : [],
   };
   state.journey = version >= 6 ? sanitizeJourney(input.journey) : initialJourney();
+  state.crossings = sanitizeChronicle(input.crossings);
   if(version<7)migrateSettlement(state,input);
   state.journey.focusTraits=state.journey.focusTraits.filter(trait=>Object.hasOwn(TRAIT_RULES,trait));
   state.cacao = finite(input.cacao, 0, 0, state.clock + CACAO_DURATION);
@@ -502,7 +511,7 @@ export class Game {
     this.state = initialState(seed);
     if (typeof save === 'string') { try { save = JSON.parse(save); } catch { return; } }
     const root = record(save);
-    if (typeof root.version !== 'number' || ![1,2,3,4,5,6,7,8,9,10,SAVE_VERSION].includes(root.version)) return;
+    if (typeof root.version !== 'number' || ![1,2,3,4,5,6,7,8,9,10,11,SAVE_VERSION].includes(root.version)) return;
     this.state = sanitizeState(root.state, root.version as number);
     this.offlineSeconds = 0;
   }
@@ -513,6 +522,143 @@ export class Game {
   }
 
   private fighting(): boolean { return this.battle?.status === 'fighting'; }
+
+  startCrossing(guide:number,route:string,tier=1):ActionResult {
+    if(this.state.paused||this.battle)return fail('Feche o resultado ou conclua o combate para explorar.');
+    if(this.state.crossings.active)return fail('Retome ou encerre a travessia atual.');
+    if(!GUIDES.includes(guide as 1|2|3)||!ROUTES.some(r=>r.id===route))return fail('Escolha um guia e uma rota.');
+    if(!Number.isInteger(tier)||tier<1||tier>Math.min(3,1+Math.floor(this.state.progress/5)))return fail('Avance na campanha para abrir essa dificuldade.');
+    this.state.crossings.active=createCrossing(nextRandom(this.state.lootSeed).seed,guide,route as RouteId,tier);
+    this.state.lootSeed=nextRandom(this.state.lootSeed).seed;
+    return success('A margem espera. Siga as marcas no caminho.');
+  }
+  moveCrossing(x:number,y:number):void {
+    const run=this.state.crossings.active;
+    if(!run||run.mode!=='explore'||this.state.paused||this.fighting()||!Number.isFinite(x)||!Number.isFinite(y))return;
+    run.position=pathProjection({x,y},crossingPath(run));
+  }
+  private crossingDiscovery(id:string):void {
+    if(recordDiscovery(this.state.crossings,id)){
+      this.state.journey.knowledge=Math.min(1e9,this.state.journey.knowledge+1);
+      for(const h of this.state.heroes.filter(h=>h.slot!==null))this.gainXp(h,30);
+      if(this.state.crossings.active)this.state.crossings.active.xp+=30;
+    }
+  }
+  crossingPuzzle(order:number[],affinity:string):ActionResult {
+    const run=this.state.crossings.active;
+    if(!run||run.mode!=='explore'||![0,3].includes(run.node)||this.state.paused||this.battle||!atCrossingNode(run))return fail('Investigue a pista entre combates, com o guia próximo.');
+    const expected=puzzleSequence(run);
+    if(order.length!==expected.length||!order.every((v,i)=>v===expected[i]))return fail('Observe a pista novamente. Você pode consultar a sequência sem perder progresso.');
+    if(!affinityOffers(run).some(d=>d.id===affinity))return fail('Escolha uma das afinidades reveladas.');
+    if(run.affinities.length<2)run.affinities.push(affinity as AffinityId);
+    else run.affinities[1]=affinity as AffinityId;
+    this.crossingDiscovery(`clue:${run.route}:${run.node===0?'tracks':'glyphs'}`);
+    this.state.crossings.chapters[run.guide]=Math.max(1,this.state.crossings.chapters[run.guide]??0);
+    run.node++;
+    return success('A pista revelou uma afinidade. O caminho continua.');
+  }
+  crossingChoice(id:string,affinity?:string):ActionResult {
+    const run=this.state.crossings.active;
+    if(!run||run.mode!=='explore'||![1,4].includes(run.node)||this.state.paused||this.battle||!atCrossingNode(run))return fail('Interaja entre combates, com o guia próximo do encontro.');
+    const event=crossingEvent(run),choice=event.choices.find(d=>d.id===id);
+    if(!choice)return fail('Escolha uma resposta ao encontro.');
+    if(choice.effect==='risk'&&!affinityOffers(run,1).some(d=>d.id===affinity))return fail('Escolha uma das novas afinidades.');
+    const component=run.route==='ridge'?'presa':run.route==='river'?'raiz':'pena';
+    if((choice.effect==='component'||choice.effect==='risk')&&this.state.inventory.length>=MAX_INVENTORY)return fail('Abra espaço no Arsenal para receber o componente.');
+    if(choice.effect==='component'||choice.effect==='risk'){this.addItem(component);run.loot.push(component);run.threat=Math.min(40,run.threat+(choice.effect==='risk'?15:8));}
+    if(choice.effect==='risk'){if(run.affinities.length<2)run.affinities.push(affinity as AffinityId);else run.affinities[1]=affinity as AffinityId;}
+    if(choice.effect==='recipe'){this.crossingDiscovery(`recipe:${run.route}`);run.strain=Math.min(24,run.strain+8);}
+    if(choice.effect==='insight'){this.crossingDiscovery(`event:${event.id}`);run.threat=Math.min(40,run.threat+8);}
+    if(choice.effect==='rest'){run.strain=0;run.threat=Math.max(0,run.threat-8);}
+    if(choice.effect==='shelter')run.choices.push('shelter');
+    run.choices.push(`${event.id}:${id}`);run.node++;
+    return success('Sua escolha ficou registrada. Prepare o próximo encontro.');
+  }
+  prepareCrossing():ActionResult {
+    const run=this.state.crossings.active;
+    if(!run||run.mode!=='explore'||![2,5].includes(run.node)||!atCrossingNode(run)||this.battle||this.state.paused)return fail('Alcance o marco de combate e retome a jornada.');
+    run.objective=run.node===5?'seals':run.route==='ruins'?'seals':'altar';
+    run.directive=run.objective==='seals'?'focus':'guard';run.mode='prepare';
+    return success('Confira objetivo, ameaças e formação antes de entrar.');
+  }
+  setCrossingDirective(id:string):ActionResult {
+    const run=this.state.crossings.active;
+    if(!run||run.mode!=='prepare'||!['guard','focus','balanced'].includes(id))return fail('Defina o plano entre combates.');
+    run.directive=id as typeof run.directive;return success('Prioridade de alvos atualizada.');
+  }
+  startCrossingBattle():ActionResult {
+    const run=this.state.crossings.active;
+    if(!run||run.mode!=='prepare'||this.battle)return fail('Prepare o encontro da travessia.');
+    const {stage,level}=crossingStage(run),result=this.beginBattle(stage,level,0);
+    if(!result.ok)return result;
+    const battle=this.battle!;battle.crossing=true;battle.affinities=[...run.affinities];
+    battle.firstClear=!this.state.crossings.discoveries.includes(`encounter:${run.route}:${run.tier}:${run.node}`);
+    for(const ally of battle.entities.filter(e=>e.team==='ally')){
+      ally.hp*=1-Math.max(0,run.strain-(run.guide===2?4:0))/100;
+      if(run.choices.includes('shelter'))ally.shield+=ally.maxHp*.1;
+      if(run.affinities.includes('opening'))ally.mana=Math.min(ally.manaMax,ally.mana+18);
+      if(run.affinities.includes('scattered')&&!battle.entities.some(e=>e!==ally&&e.team==='ally'&&distance(e,ally)<1.4))ally.shield+=ally.maxHp*.22;
+      if(run.affinities.includes('roots')&&ally.uid&&this.state.heroes.find(h=>h.uid===ally.uid)!.slot!<7){ally.armor+=18;ally.attackSpeed*=.92;}
+    }
+    for(const enemy of battle.entities.filter(e=>e.team==='enemy'))enemy.attack*=1+run.threat/100;
+    if(run.guide===1){const enemy=battle.entities.find(e=>e.team==='enemy');if(enemy)enemy.marked=4;}
+    run.mode='battle';this.installObjective(run.objective,run.directive);
+    return success('O confronto da travessia começou.');
+  }
+  endCrossing():ActionResult {
+    if(this.fighting())return fail('Conclua o combate antes de retornar.');
+    this.state.crossings.active=null;this.battle=null;this.events=[];
+    return success('A tribo retorna. Descobertas, XP e recompensas permanecem.');
+  }
+  selectSpecialization(hero:number,id:string):ActionResult {
+    if(this.fighting()||this.state.paused)return fail('Escolha a especialização entre combates.');
+    if((this.state.crossings.chapters[hero]??0)<2||!SPECIALIZATIONS.some(s=>s.hero===hero&&s.id===id))return fail('Conclua uma travessia com esse guia para aprender a especialização.');
+    if(this.state.crossings.specializations[hero]===id)delete this.state.crossings.specializations[hero];
+    else this.state.crossings.specializations[hero]=id;
+    return success('Especialização atualizada. A troca é gratuita.');
+  }
+  forgeCrossingRelic(id:string):ActionResult {
+    if(this.fighting()||this.state.paused)return fail('Forje entre os combates.');
+    const item=CROSSING_RELICS.find(d=>d.id===id);
+    if(!item||!this.state.crossings.discoveries.includes(`recipe:${item.route}`))return fail('Descubra essa receita na travessia.');
+    const indexes=item.ingredients.map(d=>this.state.inventory.indexOf(d));
+    if(indexes.some(i=>i<0))return fail('Reúna os dois componentes na mochila do Arsenal.');
+    indexes.sort((a,b)=>b-a).forEach(i=>this.state.inventory.splice(i,1));this.addItem(id);
+    return success(`${item.name} foi forjado. Equipe no Arsenal.`);
+  }
+  startScenario(id:string,slots?:number[]):ActionResult {
+    if(this.battle||this.state.crossings.active?.mode==='battle')return fail('Feche o resultado ou conclua o combate atual.');
+    const def=SCENARIOS.find(d=>d.id===id);if(!def)return fail('Cenário desconhecido.');
+    const valid=slots?.length===6&&slots.every(n=>Number.isInteger(n)&&n>=0&&n<FORMATION_SLOTS)&&new Set(slots).size===6;
+    const positions=valid?slots!:[1,5,9,12,22,25];
+    const party=def.heroes.map((characterId,i)=>newHero(`scenario-${i}`,characterId,1,positions[i]));
+    const stage:Stage={id:-200,region:2,index:3,name:def.name,units:def.enemies.map(id=>({id,stars:1}))};
+    const result=this.beginBattle(stage,1,0,party);if(!result.ok)return result;
+    const battle=this.battle!;battle.scenario=id;battle.firstClear=!this.state.crossings.scenarios.includes(id);
+    this.healBonus=0;this.summonBonus=0;
+    for(const entity of battle.entities){
+      const c=characterById(entity.characterId),uid=entity.uid,x=entity.x,y=entity.y;
+      Object.assign(entity,this.blankEntity(c,entity.team,entity.id,1),{uid,x,y});
+      this.applyTraits(entity,c,entity.team==='ally'?this.traitTiers:this.enemyTraits);entity.hp=entity.maxHp;
+    }
+    this.installObjective(def.objective,def.objective==='altar'?'guard':'focus');return success(`${def.name}: o cenário começou.`);
+  }
+
+  private installObjective(kind:ObjectiveKind,directive:BattleObjective['directive']):void {
+    const battle=this.battle!;battle.objective=createObjective(kind,directive);
+    const tier=this.state.crossings.active?.tier??1;
+    const objectiveHp=battle.scenario
+      ?kind==='altar'?1100:580
+      :kind==='altar'?[1000,1800,3000][tier-1]:[140,450,1000][tier-1];
+    for(const [i,id] of battle.objective.ids.entries()){
+      const entity=this.blankEntity(characterById(3),kind==='altar'?'ally':'enemy',id,1);
+      entity.structure=kind==='altar'?'altar':'seal';entity.name=kind==='altar'?'Altar do Igarapé':`Selo ${i+1}`;
+      entity.x=kind==='altar'?3.25:[.8,3.25,5.7][i];entity.y=kind==='altar'?5.6:1.5;
+      entity.hp=entity.maxHp=objectiveHp*(kind==='altar'&&battle.crossing&&this.state.crossings.active?.guide===3?1.12:1);
+      entity.armor=kind==='altar'?20:10;entity.magicResist=10;entity.mana=entity.manaMax=entity.attack=0;
+      battle.entities.push(entity);
+    }
+  }
   private random(): number {
     const roll = nextRandom(this.state.lootSeed);
     this.state.lootSeed = roll.seed;
@@ -781,7 +927,7 @@ export class Game {
     if (this.fighting() || this.state.paused) return fail('Renasça entre combates, com a jornada em atividade.');
     const lock=resetLock(this.state);if(lock)return fail(lock);
     const gained = embersFor(this.state);
-    const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, quests: [...this.state.quests], stats: { ...this.state.stats }, journey:{...this.state.journey,selected:[]}, clock: this.state.clock };
+    const keep = { embers: this.state.embers + gained, memories: { ...this.state.memories }, rebirths: this.state.rebirths + 1, endlessRecord: Math.max(this.state.endlessRecord, this.state.endlessBest), settings: { ...this.state.settings }, quests: [...this.state.quests], stats: { ...this.state.stats }, journey:{...this.state.journey,selected:[]}, crossings:{...this.state.crossings,active:null}, clock: this.state.clock };
     this.state = { ...initialState(this.state.lootSeed), ...keep };
     this.state.journey.trial=null;
     this.gainXp(this.state.heroes[0],1500*memory(this.state,'heranca'),false);
@@ -1043,6 +1189,8 @@ export class Game {
 
   /** The stage the next expedition will fight. */
   nextStage(): { stage: Stage; level: number; depth: number } {
+    const run=this.state.crossings.active;
+    if(run?.mode==='prepare')return {...crossingStage(run),depth:0};
     if (this.state.selectedStage === 0) {
       const depth = this.state.endlessBest + 1;
       return { stage: endlessStage(depth, this.state.rebirths), level: endlessLevel(depth), depth };
@@ -1052,6 +1200,7 @@ export class Game {
   }
 
   startBattle(): ActionResult {
+    if(this.state.crossings.active?.mode==='prepare')return this.startCrossingBattle();
     if (this.state.paused) return fail('Retome o tempo antes de iniciar a expedição.');
     if (this.battle) return fail('Conclua ou feche a expedição atual.');
     if (!stageUnlocked(this.state, this.state.selectedStage)) return fail('Escolha uma expedição já alcançada no mapa.');
@@ -1060,20 +1209,30 @@ export class Game {
   }
 
   /** Shared by expeditions, the endless hunt and village raids. */
-  private beginBattle(stage: Stage, level: number, depth: number): ActionResult {
+  private beginBattle(stage: Stage, level: number, depth: number, borrowedParty?:Hero[]): ActionResult {
     if (this.state.paused) return fail('Retome o tempo antes do combate.');
-    const deployed = this.state.heroes.filter(hero => hero.slot !== null);
+    const deployed = borrowedParty ?? this.state.heroes.filter(hero => hero.slot !== null);
     if (!deployed.length) return fail('Posicione pelo menos um herói no campo.');
-    if (deployed.length > capacity(this.state)) return fail('Há heróis demais na formação.');
+    if (!borrowedParty && deployed.length > capacity(this.state)) return fail('Há heróis demais na formação.');
     const party = deployed.filter(available);
     if (!party.length) return fail('Os heróis da formação estão fora da aldeia, caçando ou em cerimônia.');
-    this.traitTiers = new Map(getSynergies(this.state).filter(synergy => synergy.active).map(synergy => [synergy.name, synergy.tier]));
+    this.traitTiers = borrowedParty ? new Map([...countTraits(party.map(h=>h.characterId))].map(([name,count])=>[name,traitStatus(name,count).tier])) : new Map(getSynergies(this.state).filter(synergy => synergy.active).map(synergy => [synergy.name, synergy.tier]));
     this.enemyTraits=new Map([...countTraits(stage.units.map(u=>u.id))].map(([name,count])=>[name,traitStatus(name,count).tier]));
     const spirits = chosenSpirits(this.state);
     this.healBonus = spirits.reduce((sum, spirit) => sum + (spirit.passive.healPower ?? 0), 0) + (this.state.cacaoBattles > 0 ? CACAO_HEAL : 0);
     this.summonBonus = spirits.reduce((sum, spirit) => sum + (spirit.passive.summonPct ?? 0), 0);
     this.battlePreparations=stage.id>=0?this.state.journey.selected.filter(id=>!blessingLock(this.state,id)):[];
     const allies = party.map((hero, index) => this.entity(hero.characterId, hero.stars, 'ally', index, hero.slot!, 0, hero));
+    if(!borrowedParty)for(const ally of allies){
+      const spec=this.state.crossings.specializations[ally.characterId];
+      if(spec==='lone'){ally.maxHp*=.88;ally.spellPower*=1.22;}
+      if(spec==='pack')ally.attack*=.88;
+      if(spec==='weaver'){ally.spellPower*=.85;ally.perks.healAllyOnCast=(ally.perks.healAllyOnCast??0)+.08;}
+      if(spec==='brood')ally.maxHp*=.88;
+      if(spec==='shelter'){ally.armor-=10;for(const other of allies.filter(e=>e!==ally&&distance(e,ally)<1.5))other.shield+=ally.maxHp*.16;}
+      if(spec==='charge'){ally.attack*=1.22;ally.armor-=12;}
+      ally.hp=ally.maxHp;
+    }
     for (const ally of allies) {
       if (!ally.perks.teamShield) continue;
       for (const other of allies.filter(other => distance(other, ally) <= 1.1)) other.shield += ally.maxHp * ally.perks.teamShield;
@@ -1102,6 +1261,7 @@ export class Game {
   usePower(id: SpiritId): ActionResult {
     const battle = this.battle;
     if (!battle || battle.status !== 'fighting') return fail('Os poderes espirituais só respondem durante uma expedição.');
+    if(battle.scenario)return fail('Os cenários usam equipes e atributos padronizados, sem poderes de legado.');
     if (this.state.paused) return fail('Retome o tempo para invocar os espíritos.');
     const spirit = spiritById(id);
     if (!spirit || !this.state.spirits.includes(id)) return fail('Este espírito ainda não protege a tribo.');
@@ -1184,6 +1344,10 @@ export class Game {
     const hadShield = target.shield > 0;
     const absorbed = Math.min(target.shield, damage);
     target.shield -= absorbed;
+    if(absorbed>0&&target.perks.guardNeighbor){
+      const neighbor=this.living(target.team).filter(e=>e!==target&&!e.structure&&distance(e,target)<2).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];
+      if(neighbor)this.giveShield(target,neighbor,Math.min(absorbed*target.perks.guardNeighbor,Math.max(0,neighbor.maxHp*.25-neighbor.shield)));
+    }
     if (hadShield && target.shield <= 0.01 && target.shieldBurst > 0) {
       const burst = target.shieldBurst;
       target.shield = 0; target.shieldBurst = 0;
@@ -1292,9 +1456,12 @@ export class Game {
   private heal(source: CombatEntity, target: CombatEntity, amount: number): void {
     if (target.hp <= 0) return;
     const boost = source.team === 'ally' ? 1 + this.healBonus : 1;
-    const healed = Math.min(amount * boost * (target.antiheal > 0 ? 0.5 : 1) * overtimeHealing(this.battle!.time), target.maxHp - target.hp);
+    const available=Math.max(0,amount*boost*(target.antiheal>0?.5:1)*overtimeHealing(this.battle!.time));
+    const healed = Math.min(available, target.maxHp - target.hp);
     target.hp += healed;
     if (healed > 0) { this.creditOf(source).healed += healed; this.emit('heal', source, target, Math.round(healed)); }
+    const overflow=Math.max(source.perks.overflowShield??0,source.team==='ally'&&this.battle!.affinities?.includes('healing')?.35:0);
+    if(overflow>0&&available>healed)this.giveShield(source,target,Math.min((available-healed)*overflow,Math.max(0,target.maxHp*.25-target.shield)));
   }
   private giveShield(source: CombatEntity, target: CombatEntity, amount: number): void {
     if (target.hp <= 0 || !(amount > 0)) return;
@@ -1315,6 +1482,7 @@ export class Game {
     entity.name = kind === 'echo' ? `Eco de ${character.name}` : { spider: 'Cria de seda', crow: 'Corvo', beetle: 'Escaravelho', elephant: 'Espírito do marfim', wolf: 'Lobo cinzento' }[kind];
     entity.hp = entity.maxHp = spec.hp * boost;
     entity.attack = spec.attack * boost;
+    if(owner.team==='ally'&&!battle.scenario&&this.state.crossings.specializations[owner.characterId]==='brood'){entity.hp*=1.18;entity.maxHp=entity.hp;entity.attack*=1.18;}
     entity.armor = owner.armor * 0.6; entity.magicResist = owner.magicResist * 0.6;
     entity.attackSpeed = spec.attackSpeed ?? 0.8; entity.range = spec.range;
     entity.mana = 0; entity.manaMax = 0;
@@ -1352,6 +1520,13 @@ export class Game {
     source.action = 'cast'; source.actionTime = 0.26; source.cooldown = Math.max(source.cooldown, 0.26);
     this.emit('skill', source, target, undefined, characterById(source.characterId).ability.name);
     castAbility(this.api(), source.characterId, source, target, effectiveAttack(source) * source.spellPower);
+    if(source.team==='ally'&&!battle.scenario){
+      if(this.state.crossings.specializations[source.characterId]==='pack')for(const ally of this.living('ally').filter(e=>distance(e,source)<2.5))addMod(ally,'attackSpeed',.2,3,'matilha-igarape');
+      const first=!source.bonds.includes('crossing-first-cast');
+      if(first&&battle.affinities?.includes('opening'))source.mana+=12;
+      if(first&&battle.affinities?.includes('echo')){const wounded=this.living('ally').sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];if(wounded)this.giveShield(source,wounded,wounded.maxHp*.18);}
+      if(first)source.bonds.push('crossing-first-cast');
+    }
     if (source.characterId !== 29) battle.lastCast[source.team] = source.characterId;
     source.mana = Math.min(source.manaMax, source.mana + source.manaMax * source.manaRefund + (source.perks.manaAfterCast ?? 0));
     if (source.perks.healAllyOnCast) {
@@ -1377,6 +1552,21 @@ export class Game {
     }
     const byDistance = (a: CombatEntity, b: CombatEntity) => distance(entity, a) - distance(entity, b);
     const taunting = candidates.filter(other => other.taunt > 0 && distance(entity, other) <= 3);
+    const objective=this.battle!.objective;
+    if(objective&&!taunting.length){
+      if(entity.team==='enemy'&&objective.kind==='altar'){
+        const altar=candidates.find(e=>e.structure==='altar'),screen=candidates.some(e=>!e.structure&&distance(entity,e)<1.7);
+        if(altar&&!screen&&distance(entity,altar)<3.1)return altar;
+        const defenders=candidates.filter(e=>!e.structure);if(screen&&defenders.length)return defenders.sort(byDistance)[0];
+      }
+      if(entity.team==='ally'&&objective.directive==='focus'&&objective.kind==='seals'){
+        const seals=candidates.filter(e=>e.structure==='seal').sort(byDistance);if(seals.length)return seals[0];
+      }
+      if(entity.team==='ally'&&objective.directive==='guard'&&objective.kind==='altar'){
+        const altar=this.battle!.entities.find(e=>e.structure==='altar');
+        const invaders=candidates.filter(e=>!e.structure&&altar&&distance(e,altar)<2.6).sort(byDistance);if(invaders.length)return invaders[0];
+      }
+    }
     return (taunting.length ? taunting : candidates).sort(byDistance)[0];
   }
 
@@ -1428,6 +1618,8 @@ export class Game {
   }
 
   private attackImpact(entity:CombatEntity,target:CombatEntity,power:number,third:boolean):void {
+    if(entity.team==='ally'&&this.battle!.affinities?.includes('prey')&&(target.marked>0||target.huntMarked>0))power*=1.18;
+    if(third&&entity.perks.mark3)target.marked=Math.max(target.marked,entity.perks.mark3);
     if(target.hp<=0)return;
     const perks=entity.perks;
     this.damage(entity, target, power * (third && perks.crit3 ? 1 + perks.crit3 : 1));
@@ -1453,6 +1645,23 @@ export class Game {
     const battle = this.battle!;
     const wasTwilight = battle.time >= OVERTIME_START;
     battle.time += dt;
+    const objective=battle.objective;
+    if(objective){
+      if(battle.time>=objective.hazard-2&&objective.telegraph===0){
+        const source=battle.entities.find(e=>e.team==='enemy'&&!e.structure&&e.hp>0)??battle.entities.find(e=>e.structure==='seal'&&e.hp>0);
+        if(source){objective.sourceId=source.id;objective.telegraph=2;this.emit('phase',source,undefined,undefined,'O Igarapé anuncia uma onda. Interrompa o conjurador!');}
+      }
+      if(objective.telegraph>0){objective.warning=`${objective.kind==='altar'?'Impacto no altar':'Onda dos selos'} em ${Math.max(0,Math.ceil(objective.hazard-battle.time))}s`;}
+      if(battle.time>=objective.hazard){
+        const source=battle.entities.find(e=>e.id===objective.sourceId&&e.hp>0);
+        if(source&&source.stun<=0){
+          const targets=objective.kind==='altar'?battle.entities.filter(e=>e.structure==='altar'&&e.hp>0):battle.entities.filter(e=>e.team==='ally'&&e.hp>0);
+          const seals=battle.entities.filter(e=>e.structure==='seal'&&e.hp>0).length;
+          for(const target of targets)this.damage(source,target,target.maxHp*(objective.kind==='altar'?.17:.025*seals),true);
+        }
+        objective.hazard+=12;objective.telegraph=0;objective.warning='';objective.sourceId=undefined;
+      }
+    }
     if (!wasTwilight && battle.time >= OVERTIME_START) { const first = battle.entities.find(entity => entity.hp > 0); if (first) this.emit('overtime', first, undefined, undefined, 'Crepúsculo'); }
     this.events = this.events.filter(event => battle.time - event.time < 2);
     for (const team of ['ally', 'enemy'] as const) {
@@ -1463,6 +1672,7 @@ export class Game {
     const flying=this.projectiles;this.projectiles=[];
     for(const shot of flying){shot.remaining-=dt;if(shot.remaining<=.000001)this.attackImpact(shot.source,shot.target,shot.power,shot.third);else this.projectiles.push(shot);}
     for (const entity of [...battle.entities]) {
+      if(entity.structure)continue;
       if (entity.hp <= 0) {this.windups.delete(entity.id);continue;}
       // Item protection against crowd control cancels a freshly applied stun.
       if (entity.stun > entity.prevStun + 0.01 && (entity.perks.ccShield ?? 0) > 0) { entity.stun = entity.prevStun; entity.perks.ccShield!--; }
@@ -1513,9 +1723,12 @@ export class Game {
       } else if (entity.cooldown <= 0) this.prepareAction(entity, target,'attack');
       else entity.action = 'idle';
     }
-    const standing = (team: Team) => this.living(team).some(entity => !entity.summon);
-    if (!standing('enemy')) this.finishBattle(true);
-    else if (!standing('ally') || battle.time >= 150) this.finishBattle(false);
+    const standing = (team: Team) => this.living(team).some(entity => !entity.summon&&!entity.structure);
+    const outcome=objective?objectiveOutcome(objective,battle.entities,battle.time):null;
+    if(outcome!==null)this.finishBattle(outcome);
+    else if(!standing('ally'))this.finishBattle(false);
+    else if(!standing('enemy')&&(!objective||objective.kind==='altar'))this.finishBattle(true);
+    else if(battle.time>=150)this.finishBattle(false);
   }
 
   private finishBattle(victory: boolean): void {
@@ -1525,9 +1738,13 @@ export class Game {
     this.windups.clear();this.projectiles=[];
     battle.zones = [];
     for (const entity of battle.entities) if (entity.summon && entity.hp > 0) { entity.hp = 0; entity.action = 'dead'; }
+    if(battle.scenario){
+      if(victory&&!this.state.crossings.scenarios.includes(battle.scenario)){this.state.crossings.scenarios.push(battle.scenario);this.state.journey.knowledge++;}
+      return;
+    }
     // Everyone who marched learns from the fight, a little even in defeat.
-    const farm=frontierReward(battle.stage,this.state.progress);
-    const xpLevel = battle.stage < 0 ? Math.max(2, this.state.progress * 0.85) : battle.stage === 0 ? endlessLevel(battle.depth) : battle.stage;
+    const xpLevel = battle.crossing?1+((this.state.crossings.active?.tier??1)-1)*6:battle.stage < 0 ? Math.max(2, this.state.progress * 0.85) : battle.stage === 0 ? endlessLevel(battle.depth) : battle.stage;
+    const farm=frontierReward(battle.crossing?xpLevel:battle.stage,this.state.progress);
     battle.xp = Math.round(battleXp(xpLevel, victory, battle.entities.some(entity => entity.boss), battle.firstClear) * this.xpBonus() * farm);
     for (const uid of battle.party) {
       const hero = this.state.heroes.find(entry => entry.uid === uid);
@@ -1546,6 +1763,20 @@ export class Game {
     battle.amber=victory?Math.round(battleAmber(xpLevel,true,battle.firstClear,battle.entities.some(e=>e.boss))*(1+legacyLevel(this.state,'roots')*.04)*farm):0;
     this.state.amber=Math.min(1e9,this.state.amber+battle.amber);
     if(this.state.cacaoBattles>0)this.state.cacaoBattles--;
+    if(battle.crossing){
+      const run=this.state.crossings.active;
+      if(run){
+        run.xp+=battle.xp;run.amber+=battle.amber;
+        if(victory){
+          recordDiscovery(this.state.crossings,`encounter:${run.route}:${run.tier}:${run.node}`);
+          this.state.stats.victories++;this.state.journey.knowledge+=battle.firstClear?3:1;
+          const component=run.route==='ridge'?'presa':run.route==='river'?'raiz':'pena';
+          if(this.addItem(component)){battle.loot.push(component);run.loot.push(component);}
+          run.node++;run.mode='explore';run.strain=0;run.choices=run.choices.filter(c=>c!=='shelter');
+          if(run.node>=6)completeCrossing(this.state.crossings);
+        }else{run.mode='prepare';run.failures++;}
+      }return;
+    }
     if (!victory) return;
     this.state.stats.victories++;
     this.state.journey.knowledge+=battle.firstClear?3:1;

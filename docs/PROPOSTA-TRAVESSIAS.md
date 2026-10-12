@@ -1,6 +1,6 @@
 # Travessias do Encanto
 
-Pesquisa e proposta de design — 8 de outubro de 2026. **Este modo ainda não foi implementado.** A reformulação já disponível está descrita em [Wolf Totem 2.2](REFORMULACAO-2.2.md).
+Pesquisa e proposta de design — 8 de outubro de 2026. O primeiro bioma foi implementado na [versão 5.0 — Travessias do Encanto](TRAVESSIAS-5.0.md). Este documento conserva a proposta original; o registro da versão 5.0 distingue o conteúdo disponível das expansões futuras.
 
 ## Recomendação
 

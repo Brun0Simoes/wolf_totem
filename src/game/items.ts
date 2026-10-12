@@ -26,6 +26,9 @@ export interface ItemPerks {
   manaAfterCast?: number;
   /** Heals the most wounded ally by this fraction of their life after each cast. */
   healAllyOnCast?: number;
+  overflowShield?: number;
+  mark3?: number;
+  guardNeighbor?: number;
 }
 export interface ItemDef { id: string; name: string; kind: 'component' | 'item'; recipe?: [ComponentId, ComponentId]; text: string; stats: ItemStats; perks?: ItemPerks; color: string; era?:number; price?:number }
 
@@ -73,7 +76,12 @@ export const RELICS:ItemDef[]=[
   {id:'raiz-luz',name:'Raiz de Luz',kind:'item',era:4,price:130,color:'#c5daa0',text:'+3 de mana por segundo. Cada conjuração cura o aliado mais ferido em 24% da vida.',stats:{manaRegen:3},perks:{healAllyOnCast:.24}},
   {id:'coroa-inverno',name:'Coroa do Primeiro Inverno',kind:'item',era:5,price:165,color:'#e0e6ef',text:'+25% de vida e +45 de resistência. Ignora três atordoamentos e recebe escudo de 35% ao cair abaixo de 40% da vida.',stats:{hpPct:.25,magicResist:45},perks:{ccShield:3,lowHpShield:.35}},
 ];
-export const ALL_ITEMS: ItemDef[] = [...COMPONENTS, ...ITEMS, ...RELICS];
+export const CROSSING_RELICS: (ItemDef & { route: string; ingredients: [ComponentId,ComponentId] })[] = [
+  {id:'presa-igarape',route:'ridge',ingredients:['presa','arco'],name:'Presa do Igarapé',kind:'item',color:'#d6ba78',text:'+12% de ataque e velocidade. Cada terceiro ataque marca o alvo por 4s, ampliando o dano recebido.',stats:{attackPct:.12,attackSpeedPct:.12},perks:{mark3:4}},
+  {id:'eco-igarape',route:'river',ingredients:['pena','raiz'],name:'Eco do Igarapé',kind:'item',color:'#8bc8b8',text:'+15 de mana e +180 de vida. 35% da cura excedente vira escudo, até 25% da vida do alvo.',stats:{mana:15,hp:180},perks:{overflowShield:.35}},
+  {id:'pedra-igarape',route:'ruins',ingredients:['couro','manto'],name:'Pedra da Vigília',kind:'item',color:'#b6bda7',text:'+20 de armadura e resistência. Ao absorver dano com escudo, transfere 25% do valor para um aliado próximo, até 25% da vida dele.',stats:{armor:20,magicResist:20},perks:{guardNeighbor:.25}},
+];
+export const ALL_ITEMS: ItemDef[] = [...COMPONENTS, ...ITEMS, ...RELICS,...CROSSING_RELICS];
 export const itemById = (id: string): ItemDef | undefined => ALL_ITEMS.find(entry => entry.id === id);
 export const isComponent = (id: string): id is ComponentId => COMPONENTS.some(component => component.id === id);
 export function recipeFor(a: string, b: string): ItemDef | undefined {

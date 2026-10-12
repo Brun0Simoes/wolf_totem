@@ -1274,7 +1274,7 @@
 }
 @media (max-width: 620px) {
   .nav-group {
-    grid-template-columns: repeat(5, 1fr) !important;
+    grid-template-columns: repeat(6, 1fr) !important;
   }
   .nav-button {
     min-width: 0 !important;
