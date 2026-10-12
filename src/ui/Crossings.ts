@@ -3,7 +3,6 @@ import { characters } from '../data/characters';
 import { CROSSING_RELICS, itemById } from '../game/items';
 import { GUIDES, GUIDE_STORIES, ROUTES, AFFINITIES, SPECIALIZATIONS, SCENARIOS, NODE_NAMES, PUZZLE_SYMBOLS, affinityOffers, atCrossingNode, crossingEvent, puzzleSequence, routeOf, crossingStage, type RouteId } from '../game/crossings';
 import { objectiveAdvice } from '../game/battleObjectives';
-import { assetUrl } from '../render/animationAssets';
 import { createCrossingWorld } from '../render/CrossingScene';
 import { portraitHTML as gamePortrait } from '../render/portrait';
 import { itemGlyph } from './itemGlyph';
@@ -29,8 +28,7 @@ export class CrossingsUI {
   private selectedUnit=0;
   private world?:ReturnType<typeof createCrossingWorld>;
   constructor(private root:HTMLElement,private game:Game,private callbacks:{changed:()=>void;prepare:()=>void;icons:()=>void;toast:(message:string)=>void;enabled:()=>boolean;reduced:()=>boolean}){
-    root.innerHTML=`<header class="crossing-page-heading"><div><p class="eyebrow">TRAVESSIAS DO ENCANTO</p><h1>Igarapé ancestral<span>.</span></h1></div><nav aria-label="Atividades da travessia"><button data-cross-tab="explore">${icon('compass')}Explorar</button><button data-cross-tab="journal">${icon('book-open')}Descobertas</button><button data-cross-tab="scenarios">${icon('swords')}Cenários táticos</button></nav></header><div class="crossing-stage"><div class="crossing-canvas"></div><div class="crossing-cover"></div><div class="crossing-hud"></div><div class="crossing-context"></div><div class="crossing-panel" hidden></div></div><div class="crossing-secondary" hidden></div>`;
-    root.querySelector<HTMLElement>('.crossing-cover')!.style.backgroundImage=`url("${assetUrl('/assets/travessias/igarape.webp')}")`;
+    root.innerHTML=`<header class="crossing-page-heading"><div><p class="eyebrow">TRAVESSIAS DO ENCANTO</p><h1>Igarapé ancestral<span>.</span></h1></div><nav aria-label="Atividades da travessia"><button data-cross-tab="explore">${icon('compass')}Explorar</button><button data-cross-tab="journal">${icon('book-open')}Descobertas</button><button data-cross-tab="scenarios">${icon('swords')}Cenários táticos</button></nav></header><div class="crossing-stage"><div class="crossing-canvas"></div><div class="crossing-cover"></div><div class="crossing-hud"></div><nav class="crossing-map-tools" aria-label="Câmera do mapa" hidden><button data-cross-zoom="1" aria-label="Aproximar mapa">${icon('plus')}</button><button data-cross-zoom="-1" aria-label="Afastar mapa">${icon('minus')}</button><button data-cross-center aria-label="Centralizar no guia">${icon('focus')}</button></nav><div class="crossing-context"></div><div class="crossing-panel" hidden></div></div><div class="crossing-secondary" hidden></div>`;
     root.addEventListener('click',event=>{
       const button=(event.target as HTMLElement).closest<HTMLButtonElement>('button');if(!button||button.disabled)return;
       const d=button.dataset;if(!Object.keys(d).some(k=>k.startsWith('cross')))return;
@@ -41,6 +39,8 @@ export class CrossingsUI {
       if(d.crossTier){this.tier=Number(d.crossTier);this.render();}
       if(d.crossStart!==undefined)this.act(game.startCrossing(this.guide,this.route,this.tier));
       if(d.crossTravel!==undefined)this.world?.travel();
+      if(d.crossZoom)this.world?.zoom(Number(d.crossZoom));
+      if(d.crossCenter!==undefined)this.world?.center();
       if(d.crossInteract!==undefined)this.interact();
       if(d.crossClose!==undefined){this.panel=null;this.render();}
       if(d.crossReturn!==undefined)this.act(game.endCrossing());
@@ -69,7 +69,7 @@ export class CrossingsUI {
     if(this.world)return;
     this.world=createCrossingWorld(this.root.querySelector('.crossing-canvas')!,()=>this.game.state.crossings.active,{
       position:(x,y)=>{this.game.moveCrossing(x,y);const run=this.game.state.crossings.active;if(run&&atCrossingNode(run)!==this.near){this.near=atCrossingNode(run);this.renderContext();}},
-      arrived:()=>{if(!this.near){this.near=true;this.renderContext();}},interact:()=>this.interact(),
+      arrived:()=>{const run=this.game.state.crossings.active;this.near=!!run&&atCrossingNode(run);this.renderContext();},interact:()=>this.interact(),feedback:this.callbacks.toast,
       enabled:()=>!document.hidden&&!this.root.hidden&&this.tab==='explore'&&!this.panel&&!this.game.state.paused&&this.callbacks.enabled(),reduced:this.callbacks.reduced,
     });
   }
@@ -90,8 +90,8 @@ export class CrossingsUI {
     if(this.tab!=='explore'){secondary.innerHTML=this.tab==='journal'?this.journal():this.scenarios();this.callbacks.icons();return;}
     const cover=this.root.querySelector<HTMLElement>('.crossing-cover')!;cover.hidden=!!run;
     if(!run)cover.innerHTML=this.landing();
-    this.root.querySelector<HTMLElement>('.crossing-canvas')!.hidden=!run;
-    if(run)this.ensureWorld();
+    this.root.querySelector<HTMLElement>('.crossing-canvas')!.hidden=false;
+    this.ensureWorld();
     const hud=this.root.querySelector<HTMLElement>('.crossing-hud')!;hud.hidden=!run;
     if(run)hud.innerHTML=`<div class="crossing-route-chip">${icon(routeOf(run.route).icon)}<span><b>${routeOf(run.route).name}</b><small>${run.mode==='complete'?'Travessia concluída':`Marco ${Math.min(6,run.node+1)} de 6 · ${['Bruma','Correnteza','Tormenta'][run.tier-1]}`}</small></span></div><button class="crossing-quiet" data-cross-return>${icon('log-out')}${run.mode==='complete'?'Concluir':'Retornar'}<span class="sr-only"> e guardar o progresso</span></button>`;
     this.near=!!run&&atCrossingNode(run);this.renderContext();this.renderPanel();this.callbacks.icons();
@@ -101,12 +101,13 @@ export class CrossingsUI {
     return `<div class="crossing-cover-shade"></div><section class="crossing-intro"><span class="crossing-kicker">UMA NOVA JORNADA</span><h2>O rio guarda<br>outros caminhos.</h2><p>Investigue rastros, escolha seu destino e leve a formação ao encontro dos espíritos.</p><div class="crossing-guide-label">Quem conduz a travessia?</div><div class="crossing-guides">${GUIDES.map(id=>`<button data-cross-guide="${id}" aria-pressed="${this.guide===id}">${portraitHTML(hero(id),1)}<span>${hero(id).name}<small>${GUIDE_STORIES[id].gift}</small></span></button>`).join('')}</div><p class="crossing-small">O guia acompanha a exploração. Seus guardiões acolhidos formam a equipe de combate.</p><div class="crossing-difficulty" aria-label="Dificuldade da travessia">${['Bruma','Correnteza','Tormenta'].map((name,i)=>`<button data-cross-tier="${i+1}" aria-pressed="${this.tier===i+1}" ${i+1>max?'disabled':''}>${i+1>max?icon('lock'):''}${name}</button>`).join('')}</div><p class="crossing-small">Correnteza abre na expedição 5; Tormenta, na 10. ${c.visits?`${c.visits} travessias concluídas.`:'Disponível desde o início.'}</p></section><section class="crossing-route-picker" aria-label="Escolher caminho"><p class="eyebrow">TRÊS ROTAS · ESCOLHAS QUE PERMANECEM</p>${ROUTES.map(r=>`<button class="crossing-route-option" data-cross-route="${r.id}" aria-pressed="${this.route===r.id}"><span class="crossing-route-icon">${icon(r.icon)}</span><span><b>${r.name}</b><small>${r.subtitle}</small><em>${r.reward} · ${r.challenge}</em></span><span class="crossing-route-check">${icon(this.route===r.id?'check':'chevron-right')}</span></button>`).join('')}<button class="crossing-primary" data-cross-start ${this.game.battle||this.game.state.paused?'disabled':''}>Explorar o Igarapé ${icon('arrow-right')}</button><p class="crossing-reassurance">${icon('bookmark')}Salvo entre descobertas. Retorne quando quiser.</p></section>`;
   }
   private renderContext(){
+    this.root.querySelector<HTMLElement>('.crossing-map-tools')!.hidden=!this.game.state.crossings.active||!!this.panel;
     const run=this.game.state.crossings.active,el=this.root.querySelector<HTMLElement>('.crossing-context')!;
     el.hidden=!run||!!this.panel;if(!run)return;
     if(run.mode==='complete'){el.innerHTML=`<div class="crossing-completion"><p class="eyebrow">O IGARAPÉ LEMBRA</p><h2>Um caminho se abriu.</h2><p>${hero(run.guide).name} concluiu seu segundo capítulo. Duas especializações podem ser escolhidas nas Descobertas.</p><div class="crossing-tally"><span>+${run.amber} âmbar</span><span>+${run.xp} XP por guardião</span><span>${run.loot.length} componentes</span></div><div><button class="crossing-primary" data-cross-tab="journal">Ver descobertas ${icon('arrow-right')}</button><button class="crossing-quiet" data-cross-return>Concluir travessia</button></div></div>`;}
     else if(run.mode==='prepare'||run.mode==='battle'){el.innerHTML=`<div class="crossing-prompt"><span class="crossing-prompt-icon">${icon('swords')}</span><div><b>${run.mode==='battle'?'A formação está em combate':'Seu próximo confronto aguarda'}</b><small>Objetivo: ${run.objective==='altar'?'proteger o altar':'romper os três selos'}.</small></div><button class="crossing-primary" data-cross-prepare>Ir ao campo ${icon('arrow-right')}</button></div>`;}
     else{const puzzle=[0,3].includes(run.node),fight=[2,5].includes(run.node);
-      el.innerHTML=`<div class="crossing-prompt"><span class="crossing-prompt-icon">${icon(fight?'swords':puzzle?'footprints':'sparkles')}</span><div><small>${this.game.battle?'CONCLUA O CONFRONTO NO CAMPO':this.near?'VOCÊ ENCONTROU UMA PISTA':'SIGA O CAMINHO ILUMINADO'}</small><b>${NODE_NAMES[run.node]}</b></div><button class="crossing-primary" ${this.game.state.paused||this.game.battle?'disabled':''} ${this.near?'data-cross-interact':'data-cross-travel'}>${this.near?(fight?'Preparar confronto':puzzle?'Investigar':'Interagir'):'Ir até o marco'}${icon(this.near?'sparkles':'arrow-right')}</button></div><p class="crossing-controls">${icon('mouse-pointer-2')}Clique no mapa ou use WASD / setas · E para interagir</p><div class="crossing-affinity-strip">${run.affinities.map(id=>{const a=AFFINITIES.find(d=>d.id===id)!;return `<span title="${a.text}">${icon(a.icon)}${a.name}</span>`;}).join('')}</div>`;}
+      el.innerHTML=`<div class="crossing-prompt"><span class="crossing-prompt-icon">${icon(fight?'swords':puzzle?'footprints':'sparkles')}</span><div><small>${this.game.battle?'CONCLUA O CONFRONTO NO CAMPO':this.near?'VOCÊ ENCONTROU UMA PISTA':'SIGA O CAMINHO ILUMINADO'}</small><b>${NODE_NAMES[run.node]}</b></div><button class="crossing-primary" ${this.game.state.paused||this.game.battle?'disabled':''} ${this.near?'data-cross-interact':'data-cross-travel'}>${this.near?(fight?'Preparar confronto':puzzle?'Investigar':'Interagir'):'Ir até o marco'}${icon(this.near?'sparkles':'arrow-right')}</button></div><p class="crossing-controls">${icon('mouse-pointer-2')}Clique no terreno livre · WASD / setas · E para interagir</p><div class="crossing-affinity-strip">${run.affinities.map(id=>{const a=AFFINITIES.find(d=>d.id===id)!;return `<span title="${a.text}">${icon(a.icon)}${a.name}</span>`;}).join('')}</div>`;}
     this.callbacks.icons();
   }
   private renderPanel(){

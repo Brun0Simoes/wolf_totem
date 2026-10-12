@@ -1,10 +1,12 @@
 import { nextRandom } from './roster';
 import type { Stage } from './campaign';
+import { CROSSING_START,CROSSING_PATHS,type Point,type RouteId } from './crossingLayout';
+import { nearestWalkable } from './crossingMap';
+export { CROSSING_START } from './crossingLayout';
+export type { Point,RouteId } from './crossingLayout';
 
-export type RouteId = 'ridge' | 'river' | 'ruins';
 export type AffinityId = 'scattered' | 'healing' | 'prey' | 'opening' | 'roots' | 'echo';
 export type ObjectiveKind = 'altar' | 'seals';
-export type Point = { x: number; y: number };
 export interface CrossingRun {
   seed: number; guide: number; route: RouteId; tier: number; node: number;
   mode: 'explore' | 'prepare' | 'battle' | 'complete'; position: Point;
@@ -16,7 +18,6 @@ export interface CrossingChronicle {
   visits: number; discoveries: string[]; routes: RouteId[]; chapters: Record<string, number>;
   specializations: Record<string, string>; scenarios: string[]; active: CrossingRun | null;
 }
-export const CROSSING_START: Point = { x: 760, y: 830 };
 export const GUIDES = [1, 2, 3] as const;
 export const GUIDE_STORIES:Record<number,{gift:string;tracks:string;glyphs:string}> = {
   1:{gift:'Presa marcada · 4s',tracks:'Akru reconhece o sinal de uma matilha que atravessou a margem antes da tribo. As pegadas contam quem abriu o caminho e quem ficou para proteger os outros.',glyphs:'A pedra guarda a resposta da antiga matilha: uma presa pode chamar os companheiros ou enfrentar o perigo sozinha. Akru leva essa escolha para sua próxima batalha.'},
@@ -24,9 +25,9 @@ export const GUIDE_STORIES:Record<number,{gift:string;tracks:string;glyphs:strin
   3:{gift:'Altar +12% de vida',tracks:'Boru toca o barro seco junto às pegadas. Uma antiga guarda ergueu este caminho para que a manada pudesse atravessar em segurança.',glyphs:'A pedra revela quem sustentou a passagem quando a margem cedeu. Boru aprende a repartir sua proteção e a concentrar a força numa investida.'},
 };
 export const ROUTES: { id: RouteId; name: string; subtitle: string; icon: string; reward: string; challenge: string; points: Point[] }[] = [
-  { id: 'ridge', name: 'Crista da matilha', subtitle: 'Pegadas entre raízes e pedras.', icon: 'mountain', reward: 'Presa · dano coordenado', challenge: 'Flancos abertos', points: [{x:545,y:725},{x:395,y:470},{x:380,y:290},{x:505,y:185},{x:660,y:155},{x:815,y:95}] },
-  { id: 'river', name: 'Vozes do rio', subtitle: 'O reflexo revela outra passagem.', icon: 'waves', reward: 'Raiz · cura e proteção', challenge: 'Defender o altar', points: [{x:815,y:690},{x:685,y:465},{x:835,y:390},{x:980,y:300},{x:925,y:175},{x:815,y:95}] },
-  { id: 'ruins', name: 'Memória das ruínas', subtitle: 'Símbolos sob a pedra antiga.', icon: 'landmark', reward: 'Pena · conjuração', challenge: 'Romper os selos', points: [{x:1040,y:735},{x:1200,y:600},{x:1110,y:420},{x:1145,y:265},{x:990,y:175},{x:815,y:95}] },
+  { id: 'ridge', name: 'Crista da matilha', subtitle: 'Pegadas entre raízes e pedras.', icon: 'mountain', reward: 'Presa · dano coordenado', challenge: 'Flancos abertos', points:CROSSING_PATHS.ridge },
+  { id: 'river', name: 'Vozes do rio', subtitle: 'O reflexo revela outra passagem.', icon: 'waves', reward: 'Raiz · cura e proteção', challenge: 'Defender o altar', points:CROSSING_PATHS.river },
+  { id: 'ruins', name: 'Memória das ruínas', subtitle: 'Símbolos sob a pedra antiga.', icon: 'landmark', reward: 'Pena · conjuração', challenge: 'Romper os selos', points:CROSSING_PATHS.ruins },
 ];
 export const NODE_NAMES = ['Rastros na margem', 'Um encontro no caminho', 'O altar desperto', 'A linguagem das pedras', 'O preço da passagem', 'O guardião do Igarapé'];
 export const AFFINITIES: { id: AffinityId; name: string; icon: string; text: string; advice: string }[] = [
@@ -101,7 +102,7 @@ export function sanitizeChronicle(value:unknown):CrossingChronicle {
     run.amber=bounded(a.amber,1e7);run.xp=bounded(a.xp,1e8);run.loot=strings(a.loot).slice(0,20);run.failures=bounded(a.failures,1e6);
     const p=a.position&&typeof a.position==='object'?a.position as Record<string,unknown>:{};
     const pos={x:bounded(p.x,1536,CROSSING_START.x),y:bounded(p.y,1024,CROSSING_START.y)};
-    run.position=pathProjection(pos,crossingPath(run));out.active=run;
+    run.position=nearestWalkable(pos);out.active=run;
   }return out;
 }
 export function affinityOffers(run:CrossingRun,extra=0): typeof AFFINITIES {

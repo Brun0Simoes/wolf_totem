@@ -1,5 +1,7 @@
 # Wolf Totem 5.0 — Travessias do Encanto
 
+**Atualização:** a [versão 5.1](MAPA-IGARAPE-5.1.md) substitui a paisagem única por um mapa construído no motor do jogo, com terreno, obstáculos e navegação. Este registro conserva a implementação e a arte da versão 5.0.
+
 Implementação de 12 de outubro de 2026, baseada na [pesquisa sobre variedade e progressão](PESQUISA-VARIEDADE-E-PROGRESSAO.md) e na [proposta das Travessias](PROPOSTA-TRAVESSIAS.md).
 
 ## Jogar

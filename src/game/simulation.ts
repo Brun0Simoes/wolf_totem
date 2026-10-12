@@ -13,7 +13,8 @@ import { initialJourney, sanitizeJourney, migrateSettlement, blessingLock, legac
 import { ALL_CHARACTER_IDS, nextRandom, unlockedCost } from './roster';
 import { bossScale, endlessLevel, endlessStage, enemyScale, expectedLevel, FINAL_STAGE, regionOf, stageById, type Stage } from './campaign';
 import { COMPONENT_IDS, CROSSING_RELICS, isComponent, itemById, MAX_ITEMS_PER_HERO, recipeFor, type ItemPerks } from './items';
-import { GUIDES, ROUTES, SCENARIOS, SPECIALIZATIONS, createCrossing, freshChronicle, sanitizeChronicle, atCrossingNode, crossingEvent, crossingStage, affinityOffers, puzzleSequence, recordDiscovery, completeCrossing, pathProjection, crossingPath, type CrossingChronicle, type RouteId, type AffinityId, type ObjectiveKind } from './crossings';
+import { GUIDES, ROUTES, SCENARIOS, SPECIALIZATIONS, createCrossing, freshChronicle, sanitizeChronicle, atCrossingNode, crossingEvent, crossingStage, affinityOffers, puzzleSequence, recordDiscovery, completeCrossing, type CrossingChronicle, type RouteId, type AffinityId, type ObjectiveKind } from './crossings';
+import { moveOnMap } from './crossingMap';
 import { createObjective, objectiveOutcome, type BattleObjective } from './battleObjectives';
 import { castAbility, SKILL_NOTES } from './skills';
 import { MEMORIES, memoryCost, spiritById, spiritsOfEra, type MemoryId, type SpiritId } from './spirits';
@@ -535,7 +536,7 @@ export class Game {
   moveCrossing(x:number,y:number):void {
     const run=this.state.crossings.active;
     if(!run||run.mode!=='explore'||this.state.paused||this.fighting()||!Number.isFinite(x)||!Number.isFinite(y))return;
-    run.position=pathProjection({x,y},crossingPath(run));
+    run.position=moveOnMap(run.position,{x,y});
   }
   private crossingDiscovery(id:string):void {
     if(recordDiscovery(this.state.crossings,id)){

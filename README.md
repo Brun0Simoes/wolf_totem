@@ -2,7 +2,7 @@
 
 Jogo de estratégia e combate automático, em português. A tribo acolhe heróis ligados a espíritos animais, desenvolve experiência e vínculo ritual e desperta as formas 1★, 2★ e 3★. As expedições combinam posicionamento, equipamentos, laços, bênçãos e poderes espirituais.
 
-A versão **5.0 — Travessias do Encanto** acrescenta exploração do Igarapé, três rotas, escolhas com consequências, afinidades temporárias, histórias e especializações persistentes, receitas descobertas e quatro cenários táticos. O conteúdo começa antes do primeiro reset. Os 55 primais e os 53 sobrenaturais do Véu da Noite continuam com sua progressão por XP e ritualística; a expansão sobrenatural abre após o primeiro renascimento.
+A versão **5.1 — Igarapé construído** refaz o mapa das Travessias com terreno, rio, pontes, floresta e ruínas desenhados pelo motor do jogo. O clique escolhe um destino livre; a navegação contorna obstáculos e atravessa pelas pontes. As três rotas, afinidades, histórias, receitas e quatro cenários táticos continuam disponíveis antes do primeiro reset. Os 55 primais e os 53 sobrenaturais do Véu da Noite mantêm sua progressão por XP e ritualística; a expansão sobrenatural abre após o primeiro renascimento.
 
 ## Jogar
 
@@ -28,7 +28,7 @@ Abra **http://127.0.0.1:5173** enquanto o servidor estiver funcionando.
 7. **Legados:** vitórias concedem conhecimento diretamente: três no primeiro triunfo de uma expedição e um nas repetições. Invista nos caminhos ancestrais; legados e conhecimento atravessam o reset.
 8. **Grande Totem:** pague pelas cinco consagrações e cumpra seus requisitos. O primeiro renascimento pede formação nível 28, Totem 5/5, campanha 30/30, Abismo 10, três heróis 3★ com XP 24 e rito 8 e 2.400 âmbar. O reset reinicia heróis, carteira, itens, formação e avanço atual; libera permanentemente O Véu da Noite. Renascimentos seguintes exigem mais âmbar e profundidade.
 9. **Arsenal:** abra **Para a formação** para combinar e equipar itens recomendados individualmente ou aplicar o plano inteiro. Ele considera os heróis em campo, laços, adversários e itens existentes. Complete também componentes já equipados. Confira os próximos objetivos e compre apenas as peças desejadas.
-10. **Travessias:** escolha um guia, uma rota e uma dificuldade. Caminhe com clique, WASD, setas ou **Ir até o marco**. Investigue pistas e escolha até duas afinidades. Prepare a equipe para proteger um altar ou destruir três selos. Descobertas, capítulos e especializações permanecem após renascimentos; a equipe mantém XP e recompensas ao retornar.
+10. **Travessias:** escolha um guia, uma rota e uma dificuldade. Clique no terreno livre para escolher o destino, caminhe com WASD/setas ou use **Ir até o marco**. Atravesse o rio pelas pontes; árvores, rochas e ruínas bloqueiam a passagem. Use os controles de zoom e centralização para observar o cenário. Investigue pistas e escolha até duas afinidades. Prepare a equipe para proteger um altar ou destruir três selos. Descobertas, capítulos e especializações permanecem após renascimentos; a equipe mantém XP e recompensas ao retornar.
 11. **Descobertas e cenários:** nas Travessias, abra **Descobertas** para selecionar especializações e forjar as três receitas do Igarapé. **Cenários táticos** oferece quatro equipes convidadas de seis guardiões, com atributos padronizados e posições editáveis. Eles não alteram seu elenco ou inventário; a primeira vitória concede um conhecimento.
 
 Atalhos: `J` caminhos, `R` bênçãos, `A` conselheiro, `1` jornada, `2` campo, `3` códice, `4` totem, `5` travessias, `C` Arsenal, `M` mapa, `P` pausar e `Esc` fechar. Na exploração, WASD/setas caminham e `E` interage.
@@ -55,7 +55,7 @@ Regras atuais e elenco completo: [O Véu da Noite 4.0](docs/expansions/veu-da-no
 
 O Igarapé está implementado com três guias, três rotas e dificuldades, seis marcos por percurso, dois desafios de sequência, seis eventos e seis afinidades. Altar e selos são estruturas do combate, com condições de vitória próprias e ondas anunciadas. Três histórias abrem seis especializações com vantagens e concessões; três receitas usam os componentes existentes. A biblioteca tem quatro cenários táticos permanentes.
 
-Regras, arte e validação: [Travessias 5.0](docs/TRAVESSIAS-5.0.md). A [proposta original](docs/PROPOSTA-TRAVESSIAS.md) registra a pesquisa que orientou a implementação.
+Mapa, navegação e validação atuais: [Igarapé construído 5.1](docs/MAPA-IGARAPE-5.1.md). Conteúdo e progressão: [Travessias 5.0](docs/TRAVESSIAS-5.0.md). A [proposta original](docs/PROPOSTA-TRAVESSIAS.md) registra a pesquisa que orientou a implementação.
 
 A [pesquisa sobre variedade e progressão](docs/PESQUISA-VARIEDADE-E-PROGRESSAO.md) analisa caminhos alternativos, objetivos de combate, afinidades temporárias e especializações persistentes, com uma ordem de desenvolvimento para reduzir a dependência dos resets.
 

@@ -3,8 +3,9 @@ import { Game,newHero } from '../src/game/simulation';
 import { AFFINITIES, ROUTES, SCENARIOS, atCrossingNode, affinityOffers, crossingEvent, crossingStage, puzzleSequence, sanitizeChronicle, SPECIALIZATIONS } from '../src/game/crossings';
 import { objectiveOutcome } from '../src/game/battleObjectives';
 import { characters } from '../src/data/characters';
+import { mapPath } from '../src/game/crossingMap';
 
-function reach(game:Game){const r=game.state.crossings.active!,p=ROUTES.find(d=>d.id===r.route)!.points[r.node];game.moveCrossing(p.x,p.y);expect(atCrossingNode(r)).toBe(true);}
+function reach(game:Game){const r=game.state.crossings.active!,p=ROUTES.find(d=>d.id===r.route)!.points[r.node];for(const step of mapPath(r.position,p))game.moveCrossing(step.x,step.y);expect(atCrossingNode(r)).toBe(true);}
 function clue(game:Game){reach(game);const r=game.state.crossings.active!;expect(game.crossingPuzzle(puzzleSequence(r),affinityOffers(r)[0].id).ok).toBe(true);}
 function event(game:Game){reach(game);const r=game.state.crossings.active!,e=crossingEvent(r),choice=e.choices.find(c=>c.effect!=='risk')!;expect(game.crossingChoice(choice.id).ok).toBe(true);}
 function prepare(game:Game){clue(game);event(game);reach(game);expect(game.prepareCrossing().ok).toBe(true);expect(game.startCrossingBattle().ok).toBe(true);}

@@ -1,11 +1,12 @@
 import { describe,it,expect } from 'vitest';
 import { Game,newHero } from '../src/game/simulation';
 import { ROUTES,SCENARIOS,affinityOffers,puzzleSequence,crossingEvent } from '../src/game/crossings';
+import { mapPath } from '../src/game/crossingMap';
 
 function finishFight(g:Game){for(let i=0;i<1500&&g.battle?.status==='fighting';i++)g.advanceBattle(.05);}
 function traverse(g:Game){
   for(let step=0;step<6;step++){
-    const r=g.state.crossings.active!,p=ROUTES.find(d=>d.id===r.route)!.points[r.node];g.moveCrossing(p.x,p.y);
+    const r=g.state.crossings.active!,p=ROUTES.find(d=>d.id===r.route)!.points[r.node];for(const step of mapPath(r.position,p))g.moveCrossing(step.x,step.y);
     if(r.node===0||r.node===3)g.crossingPuzzle(puzzleSequence(r),affinityOffers(r)[0].id);
     else if(r.node===1||r.node===4){const e=crossingEvent(r),choice=e.choices.find(c=>c.effect==='rest'||c.effect==='shelter')??e.choices.find(c=>c.effect==='component')??e.choices[0];g.crossingChoice(choice.id);}
     else{g.prepareCrossing();g.startCrossingBattle();finishFight(g);if(g.battle?.status!=='victory')return false;g.dismissBattle();}
