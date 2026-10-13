@@ -6,6 +6,8 @@ A versão **5.2 — Crônicas do Sangue** dá aos 63 sobrenaturais roupas, equip
 
 A versão **5.3 — Quatro Nações** acrescenta 63 personagens de Aang e Korra: dobradores, guerreiros, Avatares, companheiros e espíritos. Cada um possui formas 1★, 2★ e 3★ com roupas e silhuetas evolutivas, seis poses desenhadas por estrela, habilidade própria e treinos compatíveis. A expansão abre após o segundo renascimento, com nove laços e sete práticas interativas. O elenco total chega a 181 personagens. XP de atividades e vínculo ritual continuam independentes.
 
+A versão **5.3.1** corrige a escala e o posicionamento dos 126 personagens das expansões em suas 378 formas. Os pés ficam alinhados entre as poses, animais e crianças recebem proporções próprias, e retratos e prévias mostram a silhueta inteira. Detalhes: [escala e posicionamento](docs/production/sprite-layout/README.md).
+
 ## Jogar
 
 [Abrir Wolf Totem no GitHub Pages](https://brun0simoes.github.io/wolf_totem/).

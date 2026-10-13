@@ -27,7 +27,7 @@ describe('supernatural visual evolution',()=>{
    const bytes=readFileSync('public'+sheet.image);hashes.push(createHash('sha256').update(bytes).digest('hex'));
    expect(bytes.readUInt32BE(16)).toBe(640);expect(bytes.readUInt32BE(20)).toBe(960);
    expect(sheet.rigged).toBe(false);expect(sheet.bodyHeight).toBeGreaterThan(40);
-   expect(sheet.frameRects).toHaveLength(6);expect(sheet.frameAnchors!.every(a=>a.x===160&&a.y===304)).toBe(true);
+   expect(sheet.frameRects).toHaveLength(6);expect(sheet.frameAnchors!.every(a=>Number.isFinite(a.x)&&Number.isFinite(a.y)&&a.x>0&&a.x<320&&a.y>0&&a.y<320)).toBe(true);
    const motion=createMotion();triggerMotion(motion,'windup');expect(frameForMotion(motion,sheet)).toBe(3);
    triggerMotion(motion,'attack');expect(frameForMotion(motion,sheet)).toBe(4);
    triggerMotion(motion,'cast');expect(frameForMotion(motion,sheet)).toBe(5);

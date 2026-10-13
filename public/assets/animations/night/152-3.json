@@ -10,7 +10,7 @@
   "imageWidth": 640,
   "imageHeight": 960,
   "bodyHeight": 208,
-  "anchorX": 160,
+  "anchorX": 135,
   "anchorY": 304,
   "frameRects": [
     {
@@ -52,27 +52,27 @@
   ],
   "frameAnchors": [
     {
-      "x": 160,
+      "x": 135,
       "y": 304
     },
     {
-      "x": 160,
+      "x": 186,
       "y": 304
     },
     {
-      "x": 160,
+      "x": 169,
       "y": 304
     },
     {
-      "x": 160,
+      "x": 165,
       "y": 304
     },
     {
-      "x": 160,
+      "x": 181,
       "y": 304
     },
     {
-      "x": 160,
+      "x": 139,
       "y": 304
     }
   ],
@@ -107,5 +107,46 @@
     ]
   },
   "rigged": false,
-  "notes": "Six independently drawn poses per star: idle, two walk contacts, anticipation, attack release and spell gesture. Breathing, recovery, impact, death and victory are renderer motion. Three distinct generated costume/equipment designs."
+  "notes": "Six independently drawn poses per star: idle, two walk contacts, anticipation, attack release and spell gesture. Breathing, recovery, impact, death and victory are renderer motion. Three distinct generated costume/equipment designs.",
+  "frameBounds": [
+    {
+      "x": 25,
+      "y": 96,
+      "width": 270,
+      "height": 208
+    },
+    {
+      "x": 23,
+      "y": 117,
+      "width": 274,
+      "height": 187
+    },
+    {
+      "x": 21,
+      "y": 123,
+      "width": 277,
+      "height": 181
+    },
+    {
+      "x": 24,
+      "y": 119,
+      "width": 271,
+      "height": 185
+    },
+    {
+      "x": 12,
+      "y": 125,
+      "width": 296,
+      "height": 179
+    },
+    {
+      "x": 25,
+      "y": 57,
+      "width": 270,
+      "height": 247
+    }
+  ],
+  "arenaHeight": 54,
+  "arenaWidth": 106,
+  "layoutVersion": 1
 }

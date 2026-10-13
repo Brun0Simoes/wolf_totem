@@ -1,6 +1,7 @@
 import { getAnimation, frameRect } from './animationAssets';
 import { CLIP_DURATION, createMotion, frameForMotion, poseForMotion, type MotionClip, type SheetDefinition } from './animationModel';
 import { combatProfile } from './combatProfiles';
+import {previewGround,previewSpriteScale,spriteAnchor} from './spriteGeometry';
 
 /** Uses the shipped atlas and the same frame timing as the battlefield. */
 export class CharacterPreview {
@@ -67,13 +68,12 @@ export class CharacterPreview {
     if (this.clip === 'hurt') state.hit = Math.max(0, duration - phase);
     const index = frameForMotion(state, sheet, this.reduced);
     const rect = frameRect(sheet, index);
-    const anchor = sheet.frameAnchors?.[index] ?? { x: sheet.anchorX, y: sheet.anchorY };
-    // Spirit silhouettes can be taller than the physical body used on the battlefield.
-    const widestFrame = Math.max(...(sheet.frameRects?.map(frame => frame.width) ?? [sheet.frameWidth]));
-    const scale = Math.min(330 / sheet.bodyHeight, 430 / (sheet.portrait?.height ?? sheet.bodyHeight), 570 / widestFrame);
+    const anchor = spriteAnchor(sheet,index);
+    const scale = previewSpriteScale(sheet,this.canvas.width,this.canvas.height);
+    const ground=previewGround(sheet,this.canvas.height),center=this.canvas.width/2;
     const pose = poseForMotion(state, !sheet.rigged, this.reduced);
-    c.fillStyle = '#0b15184a'; c.beginPath(); c.ellipse(320, 483, 86, 17, 0, 0, Math.PI * 2); c.fill();
-    c.save(); c.translate(320 + pose.x * 2, 480 + pose.y * 2);
+    c.fillStyle = '#0b15184a'; c.beginPath(); c.ellipse(center, ground+3, 86, 17, 0, 0, Math.PI * 2); c.fill();
+    c.save(); c.translate(center + pose.x * 2, ground + pose.y * 2);
     c.rotate(pose.angle * Math.PI / 180);
     c.scale(this.facing * scale * pose.scaleX, scale * pose.scaleY);
     c.globalAlpha = pose.alpha;
@@ -81,7 +81,7 @@ export class CharacterPreview {
     c.restore();
     if (this.clip === 'cast' && phase < duration) {
       c.strokeStyle = '#d5dba677'; c.lineWidth = 2; c.beginPath();
-      c.ellipse(320, 480, 65 + phase * 120, 15 + phase * 35, 0, 0, Math.PI * 2); c.stroke();
+      c.ellipse(center, ground, 65 + phase * 120, 15 + phase * 35, 0, 0, Math.PI * 2); c.stroke();
     }
   }
 }

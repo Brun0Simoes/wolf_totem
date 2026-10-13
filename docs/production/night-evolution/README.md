@@ -12,7 +12,7 @@ O códice compara as três formas e permite experimentar movimentos e espelhamen
 
 - `generations.json` registra os prompts, arquivos gerados e reparos. `packaging.json` registra recortes, hashes e fontes alternativas de poses.
 - As folhas originais ficam em `artifacts/night-evolution/sources`, fora do bundle. Os PNGs e manifests de runtime ficam em `public/assets/animations/night`.
-- `scripts/package-night-evolution.mjs` recorta os pixels aprovados, separa vizinhos pela transparência e usa uma escala comum por forma, com pés ancorados em (160, 304).
+- `scripts/package-night-evolution.mjs` recorta os pixels aprovados, separa vizinhos pela transparência e usa uma escala comum por forma. Na versão 5.3.1, o pós-processamento [escala e posicionamento](../sprite-layout/README.md) calibra os pontos de apoio reais de cada pose, os tamanhos na arena e o enquadramento dos retratos. Execute a normalização depois de empacotar novas folhas.
 - Folhas com corpos ausentes, linhas unidas ou poses incompletas são rejeitadas. As folhas 102, 105, 111, 112 e 121 foram refeitas durante a revisão. Louis conserva o golpe da folha original e usa a conjuração completa da folha reparada.
 - Ataque e conjuração usam quadros diferentes. Os seis quadros não constituem sequências extensas de animação desenhada; os movimentos do renderer fazem parte da apresentação.
 

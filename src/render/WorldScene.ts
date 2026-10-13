@@ -6,6 +6,7 @@ import { animationSheets, assetUrl, bestAnimation, getAnimation, getSummonAnimat
 import { advanceMotion, createMotion, frameForMotion, poseForMotion, triggerMotion, type MotionClip, type MotionState, type SheetDefinition } from './animationModel';
 import { CombatEffects, SKILL_COLORS } from './CombatEffects';
 import { combatProfile } from './combatProfiles';
+import {arenaSpriteScale,spriteAnchor,spriteHitBounds} from './spriteGeometry';
 import { separateBodies } from '../game/combatTiming';
 import { artFor } from './artSource';
 import { proceduralSheet } from './proceduralArt';
@@ -148,7 +149,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
         const local = corners.flatMap(([x, y]) => [x - minX, y - minY]);
         const [px, py] = project(center.x, center.y);
         // The hit area is the projected hex itself, in the polygon's local space.
-        const tile = this.add.polygon((minX + maxX) / 2, (minY + maxY) / 2, local, 0xe2cf8d, .001).setInteractive(new Phaser.Geom.Polygon(local), Phaser.Geom.Polygon.Contains).setDepth(600);
+        const tile = this.add.polygon((minX + maxX) / 2, (minY + maxY) / 2, local, 0xe2cf8d, .001).setInteractive(new Phaser.Geom.Polygon(local), Phaser.Geom.Polygon.Contains).setDepth(0);
         tile.input!.cursor = 'pointer';
         tile.on('pointerover', () => this.highlightTile(corners)); tile.on('pointerout', () => this.floorHover.clear());
         tile.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -375,7 +376,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       const view = this.makeUnit(characterId, enemy, stars, this.battlefield, height, summon, label);
       if(id.startsWith('formation-')) {
         const uid=id.slice('formation-'.length);
-        view.sprite.setInteractive({useHandCursor:true});this.input.setDraggable(view.sprite);
+        view.sprite.setInteractive(new Phaser.Geom.Rectangle(0,0,1,1),Phaser.Geom.Rectangle.Contains);view.sprite.input!.cursor='pointer';this.input.setDraggable(view.sprite);
         view.sprite.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!game.battle)callbacks.onHero(uid);});
         view.sprite.on('dragstart',()=>{view.dragging=true;});
         view.sprite.on('drag',(_pointer:Phaser.Input.Pointer,dx:number,dy:number)=>{if(!game.battle){view.sprite.setPosition(dx,dy);}});
@@ -409,10 +410,11 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       if (sheet && hasSheet) {
         const frame = frameForMotion(view.motion, sheet, this.reducedMotion);
         view.sprite.setTexture(key, frame);
-        const anchor = sheet.frameAnchors?.[frame] ?? { x: sheet.anchorX, y: sheet.anchorY };
+        const anchor = spriteAnchor(sheet,frame);
         const footX = view.motion.facing < 0 ? view.sprite.width - anchor.x : anchor.x;
         view.sprite.setOrigin(footX / view.sprite.width, anchor.y / view.sprite.height);
-        scale = view.desiredHeight / sheet.bodyHeight;
+        scale = arenaSpriteScale(sheet,view.desiredHeight);
+        if(view.sprite.input){const hit=spriteHitBounds(sheet,frame);(view.sprite.input.hitArea as Phaser.Geom.Rectangle).setTo(hit.x,hit.y,hit.width,hit.height);}
       } else {
         view.sprite.setTexture(view.baseTexture).setOrigin(.5, 1);
         scale = view.desiredHeight / view.sprite.height;
@@ -423,6 +425,7 @@ export function createWorld(parent: HTMLElement, game: Game, callbacks: Callback
       // On the arena, the back rows stand a little smaller.
       const depth = view.layer === this.battlefield ? perspectiveScale(y) : 1;
       scale *= depth;
+      view.desiredHeight = (sheet?.bodyHeight ?? view.sprite.height) * scale / depth;
       view.sprite.setFlipX(view.motion.facing < 0).setScale(scale * pose.scaleX, scale * pose.scaleY);
       view.sprite.setPosition(x + pose.x, y + 5 + pose.y).setAngle(pose.angle).setAlpha(pose.alpha * (view.summon ? .82 : 1)*(view.stealth?.34:1)).setDepth(y + 10);
       view.shadow.setPosition(x,y+8).setDepth(y-2).setScale(depth*(1+view.morph*.2)).setAlpha(desired==='death'?pose.alpha*.3:.36);

@@ -11,6 +11,8 @@
 
 Korra recebeu uma fonte complementar de conjuração com três poses inteiras; a proporção dessa fonte é normalizada antes do recorte final. Raava usa limiar de opacidade 200 para conectar suas asas translúcidas à silhueta sem perder extremidades. As fontes de produção ficam em `artifacts/avatar-evolution/sources`, fora do bundle. Os atlas anteriores dos 55 primais e 63 sobrenaturais foram preservados.
 
+Na versão 5.3.1, o pós-processamento [escala e posicionamento](../sprite-layout/README.md) calibra os pontos de apoio reais de cada pose, os tamanhos na arena e o enquadramento dos retratos. Execute a normalização depois de empacotar novas folhas.
+
 ## Movimento
 
 Cada estrela tem repouso, dois contatos de caminhada, preparação, ataque e conjuração. Ataque e habilidade usam poses independentes. O renderizador acrescenta respiração, recuperação, impacto, queda e vitória por movimento programado. Essas poses não equivalem a longas sequências desenhadas quadro a quadro.

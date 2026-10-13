@@ -29,6 +29,10 @@ export interface SheetDefinition {
   anchorY: number;
   frameAnchors?: { x: number; y: number }[];
   frameRects?: { x: number; y: number; width: number; height: number }[];
+  frameBounds?: { x: number; y: number; width: number; height: number }[];
+  arenaHeight?: number;
+  arenaWidth?: number;
+  layoutVersion?: number;
   imageWidth?: number;
   imageHeight?: number;
   portrait?: { x: number; y: number; width: number; height: number };
