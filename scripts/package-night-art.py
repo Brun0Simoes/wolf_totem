@@ -4,6 +4,8 @@ This packs existing pixels; motion and star auras are supplied by the renderer.
 import json, pathlib, re
 from PIL import Image
 root=pathlib.Path(__file__).resolve().parents[1]
+if (root/'public/assets/animations/night/103-3-portrait.png').exists():
+ raise SystemExit('Legacy packaging disabled: use scripts/package-night-evolution.mjs to preserve distinct stars and painted poses.')
 source=root/'docs/production/night'
 files=[f'concept-{n}.png' for n in range(1,5)]
 cuts=[[0,293,583,884,1170,1402],[0,287,569,846,1120,1402],[0,310,617,919,1206,1402],[0,299,629,921,1212,1402]]

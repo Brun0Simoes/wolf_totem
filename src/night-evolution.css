@@ -1,0 +1,6 @@
+.star-evolution-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:18px 0}
+.star-evolution-strip button{display:flex;flex-direction:column;align-items:center;border:1px solid #d6be8530;border-radius:6px;background:radial-gradient(ellipse at 50% 75%,#69607e25,#111c1930);padding:8px 3px;transition:border-color .15s}
+.star-evolution-strip button[aria-pressed=true]{border-color:#dbc187;background-color:#d9bf7e0c}
+.star-evolution-strip img{height:110px;width:100%;object-fit:contain}
+.star-evolution-strip b{font-size:11px;color:#dfc184;letter-spacing:3px;padding-top:6px}
+@media(max-width:600px){.star-evolution-strip img{height:90px}}

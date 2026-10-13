@@ -7,13 +7,24 @@ export function castNightAbility(api:CombatApi, id:number, s:CombatEntity,t:Comb
   const profile=NIGHT_PROFILES.get(id);if(!profile)return false;
   const star=Math.min(2,s.stars-1),near=api.enemiesOf(s).sort((a,b)=>Math.hypot(a.x-t.x,a.y-t.y)-Math.hypot(b.x-t.x,b.y-t.y));
   const allies=api.alliesOf(s).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp);
+  let struck=t;
   const hit=(n:number,k:number,magic=false)=>near.slice(0,n).forEach(e=>api.damage(s,e,p*k,magic));
   const mod=(e:CombatEntity,stat:'armor'|'attack',value:number,time:number)=>{e.mods=e.mods.filter(m=>m.tag!==`night-${id}`);e.mods.push({stat,value,time,tag:`night-${id}`});};
   switch(profile.ability){
+    case 'anthem':
+      hit(3,[1.6,2.1,2.7][star],true);
+      for(const a of [...allies].sort((a,b)=>Math.hypot(a.x-s.x,a.y-s.y)-Math.hypot(b.x-s.x,b.y-s.y)).slice(0,3)){
+        a.mods=a.mods.filter(m=>m.tag!=='requiem-speed');a.mods.push({stat:'attackSpeed',value:[.15,.22,.3][star],time:4,tag:'requiem-speed'});
+      }
+      t.stun=Math.max(t.stun,[1,1.3,1.6][star]);break;
+    case 'pyre':
+      for(const e of near.slice(0,3)){const dealt=api.damage(s,e,p*[1.8,2.4,3.1][star],true);api.heal(s,s,dealt*.15);}
+      api.addZone({kind:'fire',team:s.team,sourceId:s.id,x:t.x,y:t.y,radius:1.6,time:4,dps:p*[.4,.55,.75][star]});break;
     case 'whip':hit(3,[1.8,2.3,2.9][star]);t.huntMarked=5;mod(t,'armor',-[12,18,24][star],5);break;
     case 'elements':api.damage(s,t,p*[1.6,2.1,2.8][star],true);api.addZone({kind:'frost',team:s.team,sourceId:s.id,x:t.x,y:t.y,radius:1.7,time:5,dps:p*[.35,.45,.6][star],slow:true});break;
     case 'blade':{
       const far=api.targetableEnemiesOf(s).sort((a,b)=>Math.hypot(b.x-s.x,b.y-s.y)-Math.hypot(a.x-s.x,a.y-s.y))[0]??t;
+      struck=far;
       s.x=clampX(far.x);s.y=clampY(far.y+(s.team==='ally'?.6:-.6));s.stealth=1;
       api.damage(s,far,p*[2.4,3,3.9][star]);api.shield(s,s,s.maxHp*[.12,.18,.24][star]);break;
     }
@@ -67,6 +78,14 @@ export function castNightAbility(api:CombatApi, id:number, s:CombatEntity,t:Comb
     case 151:for(const e of near.slice(0,3))e.slow=3;break;
     case 152:api.addZone({kind:'veil',team:s.team,sourceId:s.id,followId:s.id,x:s.x,y:s.y,radius:1.8,time:4,protect:.12});break;
     case 153:for(const e of near.slice(0,3))e.wet=6;break;
+    case 156:if(struck.marked>0&&struck.hp>0)api.damage(s,struck,p*.4);break;
+    case 157:if(t.hp>0&&t.hp/t.maxHp<.3)api.damage(s,t,p*.3);break;
+    case 158:t.stun=Math.max(t.stun,[.6,.8,1][star]);timed('attack',-.1,4,t);break;
+    case 159:for(const a of [...allies].sort((a,b)=>Math.hypot(a.x-s.x,a.y-s.y)-Math.hypot(b.x-s.x,b.y-s.y)).filter(a=>a!==s).slice(0,3))timed('armor',[12,18,25][star],4,a);break;
+    case 160:for(const a of allies.slice(0,2)){api.heal(s,a,p*[.8,1.1,1.5][star]);a.hex=0;}break;
+    case 161:for(const e of near.slice(0,3)){e.stealth=0;e.marked=5;}break;
+    case 162:s.dodge=.6;s.taunt=2;break;
+    case 163:if(allies[0])api.shield(s,allies[0],p*[.6,.9,1.2][star]);break;
   }
   return true;
 }

@@ -13,6 +13,8 @@ export const RITUAL_PLAY = {
   'speaker-seal': {title:'As quatro palavras',verb:'Traçar a runa',instruction:'Observe as runas e repita a sequência. Use os botões ou as teclas 1 a 4.',sound:'Cristal e notas elementais',color:'#98cfea'},
   'ancestral-song': {title:'O canto da memória',verb:'Acompanhar a nota',instruction:'Toque ou pressione Espaço em oito notas no centro do círculo.',sound:'Cordas e acordes de lembrança',color:'#b9d6b0'},
   eclipse: {title:'A centelha no eclipse',verb:'Conduzir a centelha',instruction:'Mantenha a centelha dentro do caminho de luz. Use as setas ou arraste pelo campo.',sound:'Ressonância grave e coro distante',color:'#d0aedc'},
+  requiem: {title:'As notas do despertar',verb:'Tocar o réquiem',instruction:'Toque ou pressione Espaço quando cada nota alcançar o centro. Acompanhe oito notas do despertar.',sound:'Cordas elétricas suaves e acorde grave',color:'#ca91bf'},
+  'first-blood': {title:'A memória do primeiro sangue',verb:'Firmar o selo',instruction:'Toque ou pressione Espaço quando o círculo encontrar o selo dourado. Complete quatro selos da linhagem.',sound:'Sino de bronze e pulso ancestral',color:'#e6bf81'},
 } satisfies Record<PracticeId, { title: string; verb: string; instruction: string; sound: string; color: string }>;
 
 /** Participation improves learning by at most 20%; it never shortens integration. */

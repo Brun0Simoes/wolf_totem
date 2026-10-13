@@ -1,4 +1,5 @@
 import "./nocturne.css";
+import "./night-evolution.css";
 import "./crossings.css";
 import { CrossingsUI, crossingBattlePanel } from './ui/Crossings';
 import { crossingStage } from './game/crossings';
@@ -89,6 +90,7 @@ import { project } from "./render/battleArena";
 import { allySlotCenter, FORMATION_SLOTS } from "./game/board";
 import {
   Game,
+  isSupportedSaveVersion,
   MAX_INVENTORY,
   SKILL_NOTES,
   WONDER_STAGES,
@@ -273,7 +275,7 @@ $("#app").innerHTML = `
     <section id="crossing-hall" hidden aria-label="Travessias do Encanto"></section>
     <section class="journey-page" hidden><nav id="journey-toolbar" class="ancestral-toolbar" aria-label="Atividades da jornada"><div><button data-journey-tab="paths">${icon("trending-up")}Progressão</button><button data-journey-tab="legacies">${icon("route")}Legados</button><button data-journey-tab="preparations">${icon("sparkles")}Bênçãos</button><button data-view="arsenal">${icon("anvil")}Arsenal</button><button data-action="ancestors">${icon("landmark")}Grande Totem</button></div></nav><div id="journey-objective" class="journey-objective"></div><section id="ancestral-hall"></section></section>
    </main>
-   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Progressão da formação</button><span>WOLF TOTEM · 5.1</span></footer>
+   <footer><span id="save-status">Progresso salvo neste navegador</span><button class="text-button" data-action="journal">${icon("scroll-text")}Progressão da formação</button><span>WOLF TOTEM · 5.2</span></footer>
   </div>
  </div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -699,7 +701,7 @@ function renderGuardians(force = false) {
         !h.mastery.claimed.includes(p.id) && p.progress(h.mastery) >= p.goal,
     ).length;
   $("#guardian-hall").innerHTML =
-    `<header class="page-heading"><div><p class="eyebrow">CADA ESPÍRITO TEM UM CAMINHO</p><h1>Seus guardiões.</h1><p>Aprenda lutando. Aprofunde o vínculo. Desperte uma nova forma.</p></div><span class="collection-count"><b>${owned}</b> / ${expansionUnlocked(s)?108:55} acolhidos</span></header>
+    `<header class="page-heading"><div><p class="eyebrow">CADA ESPÍRITO TEM UM CAMINHO</p><h1>Seus guardiões.</h1><p>Aprenda lutando. Aprofunde o vínculo. Desperte uma nova forma.</p></div><span class="collection-count"><b>${owned}</b> / ${expansionUnlocked(s)?characters.length:55} acolhidos</span></header>
   <div class="guardian-workspace"><section class="guardian-library"><div class="segmented"><button data-tribe-tab="owned" aria-pressed="${tribeTab === "owned"}">Sua tribo</button><button data-tribe-tab="catalog" aria-pressed="${false}">Draft de guardiões</button></div><label class="search">${icon("search")}<input id="tribe-search" aria-label="Buscar companheiro" placeholder="Nome ou laço" value="${esc(tribeQuery)}"></label><div class="guardian-grid">${
     list
       .map((ch) => {
@@ -1003,7 +1005,7 @@ function showCodex(cost = 0, query = "", nightOnly=false) {
   );
   showModal(
     "codex",
-    `<p class="eyebrow">O MUNDO DE WOLF TOTEM</p><h2>Memórias dos espíritos</h2>${codexTabs("heroes")}${nightOnly?`<div class="night-codex-head"><b>O Véu da Noite · 53 personagens originais</b><p>${expansionUnlocked(game.state)?"Liberado: novas identidades, oito laços e seis rituais no draft.":"Conheça o elenco. O draft deste conjunto abre após concluir o primeiro reset."}</p></div>`:""}
+    `<p class="eyebrow">O MUNDO DE WOLF TOTEM</p><h2>Memórias dos espíritos</h2>${codexTabs("heroes")}${nightOnly?`<div class="night-codex-head"><b>O Véu da Noite · ${nocturneCharacters.length} personagens</b><p>${expansionUnlocked(game.state)?"Liberado: novas identidades, nove laços e oito rituais no draft.":"Conheça o elenco. O draft deste conjunto abre após concluir o primeiro reset."}</p></div>`:""}
    <div class="codex-tools"><label class="search">${icon("search")}<input id="codex-search" placeholder="Buscar herói ou característica" value="${esc(query)}" aria-label="Buscar no códice"/></label><div class="cost-filters">${[0, 1, 2, 3, 4, 5].map((n) => `<button data-filter="${n}" class="${cost === n ? "active" : ""}">${n === 0 ? "Todos" : `Era ${roman(n)}`}</button>`).join("")}</div></div>
    <div class="codex-grid">${list.map((c) => `<button class="codex-card cost-${c.cost} ${isNightCharacter(c.id)?"night-card":""}" data-character="${c.id}">${portraitHTML(c)}<span class="codex-cost">${c.cost}</span><span class="codex-name">${c.name}<small>${c.title}</small></span><span class="codex-status">${isNightCharacter(c.id)&&!expansionUnlocked(game.state)?"Primeiro reset":c.cost <= unlockedCost(game.state.era) ? "Vínculo acessível" : `Era ${roman(c.cost)}`} · ${NIGHT_PROFILES.get(c.id)?.faction??ANIMALITY[c.id]?.category??"Sobrenatural"}</span></button>`).join("") || "<p>Nenhum espírito encontrado com essa busca.</p>"}</div>`,
   );
@@ -1098,10 +1100,10 @@ function showCharacter(id: number, stars = 1) {
    </div><div class="character-story"><button class="text-button" data-action="codex">${icon("arrow-left")}Voltar ao códice</button><p class="eyebrow">ERA ${roman(c.cost)} · ${c.range > 1 ? "ATAQUE À DISTÂNCIA" : "CORPO A CORPO"}</p><h2>${c.name}</h2><h3>${c.title}</h3><div class="trait-chips">${c.traits.map((t) => `<span>${t}</span>`).join("")}</div>
    <div class="stat-grid"><div>${icon("heart")}<strong>${c.hp[stars - 1]}</strong><small>Vida</small></div><div>${icon("swords")}<strong>${c.attack[stars - 1]}</strong><small>Ataque</small></div><div>${icon("shield")}<strong>${c.armor}/${c.magicResist}</strong><small>Armadura/RM</small></div><div>${icon("zap")}<strong>${c.attackSpeed}</strong><small>Ataques/s</small></div></div>
    <h4>${c.ability.name}</h4><p>${c.ability.description}</p>
-   <div class="evolution"><span class="eyebrow">O DESPERTAR · ${stars} ESTRELA${stars > 1 ? "S" : ""}</span><p>${c.evolution[stars - 1]}</p></div>
+   ${isNightCharacter(c.id)?`<section class="star-evolution-strip" aria-label="Evolução visual de ${c.name}">${[1,2,3].map(n=>`<button data-detail="${id}" data-stars="${n}" aria-pressed="${stars===n}">${portraitHTML(c,n)}<b>${"★".repeat(n)}</b></button>`).join("")}</section>`:""}<div class="evolution"><span class="eyebrow">O DESPERTAR · ${stars} ESTRELA${stars > 1 ? "S" : ""}</span><p>${c.evolution[stars - 1]}</p></div>
    <div class="prototype-skill"><span class="eyebrow">EFEITO EM COMBATE</span><p>${SKILL_NOTES[c.id]??c.ability.description}</p></div>
    <div class="animality"><span class="eyebrow">${isNightCharacter(c.id)?"VÍNCULO SOBRENATURAL":"VÍNCULO PRIMAL"} · ${isNightCharacter(c.id)?esc(NIGHT_PROFILES.get(c.id)!.faction.toUpperCase()):animality.category.toUpperCase()}${!isNightCharacter(c.id)&&animality.source === "proposta" ? " · PROPOSTA" : ""}</span><p>${isNightCharacter(c.id)?"Rito de despertar: "+practiceById(deepRiteForHero(c.id))!.name+". Formas e poderes são adaptações originais para Wolf Totem.":ANIMALITY_RULES[animality.category]}</p></div>
-   <p class="development-note">${c.cost <= unlockedCost(game.state.era) ? "Companheiro disponível nesta era." : `Chega à fogueira na Era ${roman(c.cost)}.`} ${{ painted: "Esta forma tem animação pintada.", illustration: "Esta forma usa a ilustração original com movimentos programados.", standin: `A forma ${stars}★ ainda não tem folha pintada: o jogo mostra a forma ${art.sheet?.stars ?? 1}★ com a aura do espírito.`, procedural: "Figura desenhada pelo próprio jogo enquanto a arte pintada não chega; ela é substituída automaticamente." }[art.kind]}</p></div></div>`,
+   <p class="development-note">${c.cost <= unlockedCost(game.state.era) ? "Companheiro disponível nesta era." : `Chega à fogueira na Era ${roman(c.cost)}.`} ${{ painted: "Esta forma tem poses pintadas; impacto, queda e vitória usam movimento programado.", illustration: "Esta forma usa a ilustração original com movimentos programados.", standin: `A forma ${stars}★ ainda não tem folha pintada: o jogo mostra a forma ${art.sheet?.stars ?? 1}★ com a aura do espírito.`, procedural: "Figura desenhada pelo próprio jogo enquanto a arte pintada não chega; ela é substituída automaticamente." }[art.kind]}</p></div></div>`,
   );
   if (sheet)
     preview.mount($<HTMLCanvasElement>("#character-preview"), id, stars, sheet);
@@ -1304,7 +1306,7 @@ function renderTitle() {
   $<HTMLElement>(".app-frame").inert = true;
   const s = game.state, first = s.heroes[0], starter = characterOf(first.characterId);
   $("#title-screen").innerHTML =
-    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(starter, first.stars)}<span class="title-landscape-label">${esc(starter.name)} · ${esc(starter.title)}</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}Travessias do Encanto</span></div>${!hasJourney ? `<div class="title-journey">${esc(starter.name)} inicia sua tribo · guardião sorteado da Era I</div>` : ""}${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} ${s.heroes.length === 1 ? "guardião" : "guardiões"}</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 5.1 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
+    `<div class="title-landscape"><div class="title-orbit"></div>${portraitHTML(starter, first.stars)}<span class="title-landscape-label">${esc(starter.name)} · ${esc(starter.title)}</span></div><div class="title-card"><div class="title-emblem">${glyphSVG("wolf", "#e8c58e", "")}</div><p class="eyebrow">O DESPERTAR DA TRIBO</p><h1 id="title-name">WOLF<br><b>TOTEM</b></h1><p class="title-story">Reúna os guardiões. Honre os espíritos.<br>Leve sua tribo além do Primeiro Inverno.</p><div class="title-tags"><span>${icon("swords")}Combate tático</span><span>${icon("flame")}Rituais interativos</span><span>${icon("sparkles")}Travessias do Encanto</span></div>${!hasJourney ? `<div class="title-journey">${esc(starter.name)} inicia sua tribo · guardião sorteado da Era I</div>` : ""}${hasJourney ? `<div class="title-journey">Era ${roman(s.era)} · ${s.progress}/30 expedições · ${s.heroes.length} ${s.heroes.length === 1 ? "guardião" : "guardiões"}</div>` : ""}<div class="title-actions"><button class="primary" data-action="title-continue">${icon("play")}${hasJourney ? "Continuar jornada" : "Começar jornada"}${icon("arrow-right")}</button>${hasJourney ? `<button class="text-button ${confirmNew ? "danger" : ""}" data-action="title-new">${confirmNew ? "Confirmar: apagar a jornada atual" : "Nova jornada"}</button>` : ""}<div class="title-links"><button class="text-button" data-action="import">Carregar jornada</button><button class="text-button" data-action="settings">Configurações</button><button class="text-button" data-action="help">Como jogar</button></div></div><p class="title-version">VERSÃO 5.2 · ${storage ? "progresso salvo neste navegador" : "exporte sua jornada para salvar"}</p></div>`;
   refreshIcons();
 }
 
@@ -1962,7 +1964,7 @@ $<HTMLInputElement>("#save-file").addEventListener("change", async (event) => {
     const root = data as { version?: number; state?: { heroes?: unknown } };
     if (
       !root ||
-      ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(root.version as number) ||
+      !isSupportedSaveVersion(root.version) ||
       !root.state ||
       !Array.isArray(root.state.heroes)
     )

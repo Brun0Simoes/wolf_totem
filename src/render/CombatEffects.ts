@@ -22,7 +22,7 @@ const RECIPES:Record<number,Recipe[]>={
 };
 for(const [id,profile] of NIGHT_PROFILES){
  SKILL_COLORS[id]=profile.color;
- RECIPES[id]=({whip:['line','mark'],elements:['nova','aura'],blade:['leap','flurry'],blood:['flurry','aura'],heal:['heal','allies'],forge:['call'],guard:['shield','allies'],curse:['mark','night'],volley:['volley'],portal:['aura','nova'],serpent:['aura','line'],beast:['stampede','flurry'],eclipse:['night','nova']} as Record<string,Recipe[]>)[profile.ability];
+ RECIPES[id]=({whip:['line','mark'],elements:['nova','aura'],blade:['leap','flurry'],blood:['flurry','aura'],heal:['heal','allies'],forge:['call'],guard:['shield','allies'],curse:['mark','night'],volley:['volley'],portal:['aura','nova'],serpent:['aura','line'],beast:['stampede','flurry'],eclipse:['night','nova'],anthem:['aura','allies','mark'],pyre:['nova','line']} as Record<string,Recipe[]>)[profile.ability];
 }
 
 /** Scene-only effects. They never apply damage or change simulation positions. */

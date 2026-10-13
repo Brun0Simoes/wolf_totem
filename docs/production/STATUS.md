@@ -1,10 +1,10 @@
 # Estado da produção de arte
 
-Formas disponíveis: **324/324**. Personagens com as três formas: **108/108**.
+Formas disponíveis: **354/354**. Personagens com as três formas: **118/118**.
 
 **55 primais:** 165 atlas pintados, com quatro poses por sequência de repouso, caminhada e ataque/conjuração. Impacto, queda e vitória usam movimentos programados.
 
-**53 sobrenaturais:** 53 ilustrações transparentes, com 159 registros de estrelas. Repouso, caminhada, ataque, habilidade, impacto, queda e vitória usam movimento programado; as estrelas mudam as auras. Não são 159 desenhos distintos nem animações desenhadas quadro a quadro.
+**63 sobrenaturais:** 189 atlas com roupas, equipamentos e silhuetas próprias para 1★, 2★ e 3★. São 1.134 poses desenhadas: repouso, dois contatos de caminhada, preparação, golpe e gesto de habilidade. Caminhada alterna os contatos com a pose de passagem; ataque e habilidade têm quadros próprios. Respiração, recuperação, impacto, queda e vitória usam movimentos programados.
 
 | ID | Personagem | Era | 1★ | 2★ | 3★ |
 | --- | --- | --- | --- | --- | --- |
@@ -63,59 +63,69 @@ Formas disponíveis: **324/324**. Personagens com as três formas: **108/108**.
 | 53 | Ssar'ka | 5 | Atlas pintado | Atlas pintado | Atlas pintado |
 | 54 | N'Goro | 5 | Atlas pintado | Atlas pintado | Atlas pintado |
 | 55 | Karkun | 5 | Atlas pintado | Atlas pintado | Atlas pintado |
-| 101 | Kael Voss | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 102 | Elira | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 103 | Aurelian | 5 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 104 | Valtherion | 5 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 105 | Liora | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 106 | Zahir | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 107 | Corven | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 108 | Seraphine | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 109 | Isolde | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 110 | Astrid | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 111 | Maelis | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 112 | Oren Valis | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 113 | Sylvara | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 114 | Akemi | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 115 | Renji | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 116 | Nayara | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 117 | Vespera | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 118 | Borvath | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 119 | Nharos | 5 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 120 | Hrold | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 121 | Shiori | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 122 | Rajhan | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 123 | Kavira | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 124 | Osskar | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 125 | Varkul | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 126 | Azgorr | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 127 | Eresh | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 128 | Mivren | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 129 | Azrael | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 130 | Dorian | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 131 | Saren | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 132 | Malrec | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 133 | Osvan | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 134 | Riven Ash | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 135 | Mirielle | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 136 | Amaya | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 137 | Eloan | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 138 | Teriel | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 139 | Jovana | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 140 | Aldren | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 141 | Xolvar | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 142 | Merek | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 143 | Zoraya | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 144 | Elysandra | 5 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 145 | Emrys | 3 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 146 | Ysola | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 147 | Vaelor | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 148 | Jarek | 1 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 149 | Sahmara | 5 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 150 | Pyris | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 151 | Bairos | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 152 | Chelon | 2 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
-| 153 | Azurion | 4 | Ilustração + movimento | Ilustração + movimento | Ilustração + movimento |
+| 101 | Kael Voss | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 102 | Elira | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 103 | Aurelian | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 104 | Valtherion | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 105 | Liora | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 106 | Zahir | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 107 | Corven | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 108 | Seraphine | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 109 | Isolde | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 110 | Astrid | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 111 | Maelis | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 112 | Oren Valis | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 113 | Sylvara | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 114 | Akemi | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 115 | Renji | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 116 | Nayara | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 117 | Vespera | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 118 | Borvath | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 119 | Nharos | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 120 | Hrold | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 121 | Shiori | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 122 | Rajhan | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 123 | Kavira | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 124 | Osskar | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 125 | Varkul | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 126 | Azgorr | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 127 | Eresh | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 128 | Mivren | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 129 | Azrael | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 130 | Dorian | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 131 | Saren | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 132 | Malrec | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 133 | Osvan | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 134 | Riven Ash | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 135 | Mirielle | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 136 | Amaya | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 137 | Eloan | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 138 | Teriel | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 139 | Jovana | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 140 | Aldren | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 141 | Xolvar | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 142 | Merek | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 143 | Zoraya | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 144 | Elysandra | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 145 | Emrys | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 146 | Ysola | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 147 | Vaelor | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 148 | Jarek | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 149 | Sahmara | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 150 | Pyris | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 151 | Bairos | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 152 | Chelon | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 153 | Azurion | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 154 | Lestat | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 155 | Akasha | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 156 | Louis | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 157 | Claudia | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 158 | Armand | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 159 | Marius | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 160 | Maharet | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 161 | Jesse | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 162 | Santiago | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 163 | Madeleine | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
 
 ## Criaturas invocadas
 

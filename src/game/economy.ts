@@ -19,6 +19,7 @@ export const RITUAL_PRICES: Record<PracticeId, number> = {
   ayahuasca: 90,
   cacau: 44,
   consecration: 36, "blood-pact": 48, "soul-forge": 64, "speaker-seal": 56, "ancestral-song": 44, eclipse: 120,
+  requiem:52, 'first-blood':88,
 };
 /** Learned ritual bonuses raise the price; repeat XP never needs a waiting period. */
 export const ritualCost = (id: PracticeId, count = 0) =>

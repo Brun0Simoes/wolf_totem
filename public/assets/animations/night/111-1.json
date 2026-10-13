@@ -2,25 +2,110 @@
   "characterId": 111,
   "stars": 1,
   "name": "Maelis",
-  "image": "/assets/animations/night/111.png",
-  "columns": 1,
-  "rows": 1,
-  "frameWidth": 406,
-  "frameHeight": 310,
-  "bodyHeight": 286,
-  "anchorX": 203.0,
-  "anchorY": 298,
+  "image": "/assets/animations/night/111-1.png",
+  "columns": 2,
+  "rows": 3,
+  "frameWidth": 320,
+  "frameHeight": 320,
+  "imageWidth": 640,
+  "imageHeight": 960,
+  "bodyHeight": 262,
+  "anchorX": 160,
+  "anchorY": 304,
+  "frameRects": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 320
+    },
+    {
+      "x": 320,
+      "y": 0,
+      "width": 320,
+      "height": 320
+    },
+    {
+      "x": 0,
+      "y": 320,
+      "width": 320,
+      "height": 320
+    },
+    {
+      "x": 320,
+      "y": 320,
+      "width": 320,
+      "height": 320
+    },
+    {
+      "x": 0,
+      "y": 640,
+      "width": 320,
+      "height": 320
+    },
+    {
+      "x": 320,
+      "y": 640,
+      "width": 320,
+      "height": 320
+    }
+  ],
+  "frameAnchors": [
+    {
+      "x": 160,
+      "y": 304
+    },
+    {
+      "x": 160,
+      "y": 304
+    },
+    {
+      "x": 160,
+      "y": 304
+    },
+    {
+      "x": 160,
+      "y": 304
+    },
+    {
+      "x": 160,
+      "y": 304
+    },
+    {
+      "x": 160,
+      "y": 304
+    }
+  ],
+  "portrait": {
+    "x": 0,
+    "y": 0,
+    "width": 320,
+    "height": 320
+  },
   "clips": {
     "idle": [
       0
     ],
     "walk": [
+      1,
+      0,
+      2,
       0
     ],
+    "windup": [
+      3
+    ],
     "attack": [
+      4,
+      4,
+      0
+    ],
+    "cast": [
+      5,
+      5,
       0
     ]
   },
-  "rigged": true,
-  "notes": "Generated original illustration; programmed idle, walk, attacks, spells, impact, death and victory. Stars use supernatural auras; not independently drawn animation frames."
+  "rigged": false,
+  "notes": "Six independently drawn poses per star: idle, two walk contacts, anticipation, attack release and spell gesture. Breathing, recovery, impact, death and victory are renderer motion. Three distinct generated costume/equipment designs."
 }

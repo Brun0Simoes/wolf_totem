@@ -1,9 +1,11 @@
 import type { Character } from './characters';
+import { vampireCharacters, VAMPIRE_PROFILES } from './vampireChronicles';
+import { NIGHT_EVOLUTIONS } from './nightEvolution';
 
-export type NightAbility = 'whip' | 'elements' | 'blade' | 'blood' | 'heal' | 'forge' | 'guard' | 'curse' | 'volley' | 'portal' | 'serpent' | 'beast' | 'eclipse';
-export type NightRite = 'consecration' | 'blood-pact' | 'soul-forge' | 'speaker-seal' | 'ancestral-song' | 'eclipse';
-export interface NightProfile { ability: NightAbility; rite: NightRite; color: number; faction: string; source: 'Castlevania' | 'Nocturne'; }
-type Entry = [string, string, number, string, string, NightAbility, NightRite, number];
+export type NightAbility = 'whip' | 'elements' | 'blade' | 'blood' | 'heal' | 'forge' | 'guard' | 'curse' | 'volley' | 'portal' | 'serpent' | 'beast' | 'eclipse' | 'anthem' | 'pyre';
+export type NightRite = 'consecration' | 'blood-pact' | 'soul-forge' | 'speaker-seal' | 'ancestral-song' | 'eclipse' | 'requiem' | 'first-blood';
+export interface NightProfile { ability: NightAbility; rite: NightRite; color: number; faction: string; source: 'Castlevania' | 'Nocturne' | 'Interview with the Vampire' | 'Queen of the Damned'; }
+type Entry = [string, string, number, string, string, Exclude<NightAbility,'anthem'|'pyre'>, NightRite, number];
 /** 53 original identities, inspired by the designs and power archetypes of the two animated series. */
 const entries: Entry[] = [
   ['Kael Voss','O Último Caçador',3,'Vigília','Caçador','whip','consecration',0xe7be89],
@@ -60,7 +62,7 @@ const entries: Entry[] = [
   ['Chelon','O Escudo de Mirielle',2,'Bestas Astrais','Guardião','guard','speaker-seal',0x9cbcb0],
   ['Azurion','O Sopro de Mirielle',4,'Bestas Astrais','Místico','serpent','speaker-seal',0x91c4e1],
 ];
-const descriptions: Record<NightAbility,string> = {
+const descriptions: Record<Exclude<NightAbility,'anthem'|'pyre'>,string> = {
   whip: 'Varre até três inimigos com o chicote: 180/230/290% de ataque, marca a presa por 5 s e reduz sua armadura em 12/18/24 por 5 s.',
   elements: 'Cria um campo elemental por 5 s: 35/45/60% de ataque mágico por segundo e lentidão. O impacto causa 160/210/280% de ataque.',
   blade: 'Avança contra o inimigo mais distante: 240/300/390% de ataque, fica inalvejável por 1 s e recebe escudo de 12/18/24% da vida.',
@@ -82,8 +84,10 @@ export const nocturneCharacters: Character[] = entries.map(([name,title,cost,fac
   const id = 101+i, tank = ['Guardião','Brigão'].includes(role), ranged = ['Místico','Xamã','Invocador'].includes(role) || ability === 'volley';
   const hp = (tank ? 710 : 530) + cost * 90, attack = (tank ? 43 : 48) + cost * 7;
   NIGHT_PROFILES.set(id,{ability,rite,color,faction,source:i<33?'Castlevania':'Nocturne'});
-  return { id,name,title,cost,traits:[faction,role],type:ranged?'Ranged':'Melee',hp:[hp,Math.round(hp*1.8),Math.round(hp*3.24)],attack:[attack,Math.round(attack*1.8),Math.round(attack*3.24)],armor:tank?45:25,magicResist:role==='Místico'?40:25,attackSpeed:role==='Espreitador'?.85:ranged?.7:.65,manaStart:['Xamã','Invocador'].includes(role)?25:0,manaMax:ability==='eclipse'?110:ability==='forge'?90:70,range:ranged?4:1,ability:{name:nightAbilityNames[i],description:(id===135?"Invoca Pyris, Bairos, Chelon e Azurion por 8 s. Cada besta recebe 16% da vida e 35/45/55% do ataque da conjuradora. Limite de seis invocações por mestre.":descriptions[ability]+" "+signatureNotes[i])},evolution:[`${name} em sua forma inicial: ${title.toLowerCase()}.`,`${name} domina ${faction.toLowerCase()}; armas e selos recebem uma aura sobrenatural.`,`${name} desperta seu avatar: a energia de ${faction.toLowerCase()} envolve sua silhueta e intensifica a habilidade.`],art:`nocturne-${id}`};
+  return { id,name,title,cost,traits:[faction,role],type:ranged?'Ranged':'Melee',hp:[hp,Math.round(hp*1.8),Math.round(hp*3.24)],attack:[attack,Math.round(attack*1.8),Math.round(attack*3.24)],armor:tank?45:25,magicResist:role==='Místico'?40:25,attackSpeed:role==='Espreitador'?.85:ranged?.7:.65,manaStart:['Xamã','Invocador'].includes(role)?25:0,manaMax:ability==='eclipse'?110:ability==='forge'?90:70,range:ranged?4:1,ability:{name:nightAbilityNames[i],description:(id===135?"Invoca Pyris, Bairos, Chelon e Azurion por 8 s. Cada besta recebe 16% da vida e 35/45/55% do ataque da conjuradora. Limite de seis invocações por mestre.":descriptions[ability]+" "+signatureNotes[i])},evolution:NIGHT_EVOLUTIONS[id],art:`nocturne-${id}`};
 
 });
+nocturneCharacters.push(...vampireCharacters);
+for(const [id,profile] of VAMPIRE_PROFILES) NIGHT_PROFILES.set(id,profile);
 export const isNightCharacter = (id: number) => NIGHT_PROFILES.has(id);
 export const NIGHT_CHARACTER_IDS = nocturneCharacters.map(c => c.id);

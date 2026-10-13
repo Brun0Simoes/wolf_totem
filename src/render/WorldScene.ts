@@ -25,7 +25,7 @@ type UnitView = { dragging?: boolean; summon?: string; transform: boolean; morph
 
 const COST_TINT = [0xdfd8c0, 0xc7dccf, 0xc3cde6, 0xdccbe6, 0xf1dca6];
 const SUMMON_HEIGHT: Record<string, number> = { spider: 34, crow: 40, beetle: 36, elephant: 82, wolf: 48 };
-const ZONE_COLOR: Record<string, number> = { web: 0xc8ebd8, water: 0x7fc8d6, veil: 0x4f7fa8, domain: 0xa77d4f, frost: 0xcfe9f7 };
+const ZONE_COLOR: Record<string, number> = { web: 0xc8ebd8, water: 0x7fc8d6, veil: 0x4f7fa8, domain: 0xa77d4f, frost: 0xcfe9f7, fire:0xe5a064 };
 const W = 1200;
 const H = 740;
 const procKey = (id: number, stars: number) => `proc-${id}-${stars}`;

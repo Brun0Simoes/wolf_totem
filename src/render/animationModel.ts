@@ -32,7 +32,7 @@ export interface SheetDefinition {
   imageWidth?: number;
   imageHeight?: number;
   portrait?: { x: number; y: number; width: number; height: number };
-  clips: { idle: number[]; walk: number[]; attack: number[] };
+  clips: { idle: number[]; walk: number[]; attack: number[]; cast?: number[]; windup?: number[] };
   notes?: string;
   rigged?: boolean;
 }
@@ -64,11 +64,15 @@ export function advanceMotion(state: MotionState, desired: MotionClip, seconds: 
   if (Math.abs(direction) > .8) state.facing = Math.sign(direction);
 }
 export function frameForMotion(state: MotionState, sheet: SheetDefinition, reducedMotion = false): number {
-  const clip = state.clip === 'walk' ? 'walk' : state.clip === 'windup'||state.clip === 'attack' || state.clip === 'cast' ? 'attack' : 'idle';
-  const frames = sheet.clips[clip];
+  const frames = state.clip === 'cast' ? sheet.clips.cast ?? sheet.clips.attack
+    : state.clip === 'windup' ? sheet.clips.windup ?? sheet.clips.attack
+    : sheet.clips[state.clip === 'walk' ? 'walk' : state.clip === 'attack' ? 'attack' : 'idle'];
   if (state.clip === 'death' || (reducedMotion && state.clip === 'idle')) return sheet.clips.idle[0];
   const duration = state.duration??CLIP_DURATION[state.clip];
-  if(state.clip==='windup')return frames[Math.min(1,Math.floor(Math.min(.99,state.elapsed/duration)*2))];
+  if(state.clip==='windup'){
+    const count=sheet.clips.windup?frames.length:Math.min(2,frames.length);
+    return frames[Math.min(count-1,Math.floor(Math.min(.99,state.elapsed/duration)*count))];
+  }
   const phase = state.clip === 'attack' || state.clip === 'cast'
     ? Math.min(.999, state.elapsed / duration)
     : (state.elapsed % duration) / duration;

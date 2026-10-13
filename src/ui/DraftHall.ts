@@ -65,7 +65,7 @@ export function draftHall(
     d = s.draft;
   return `<div class="draft-hall"><header class="page-heading"><div><p class="eyebrow">O CHAMADO DOS GUARDIÕES</p><h1>Três caminhos. Uma escolha.</h1><p>Leia os laços, compare funções e acolha um espírito inédito.</p></div><button class="outline-button" data-tribe-tab="owned">${icon("users")}Sua tribo · ${s.heroes.length}</button></header>
   <div class="draft-economy"><span>${icon("gem")}<b>${s.amber}</b> âmbar</span><span>Era ${s.era} · ${pool.length} inéditos disponíveis</span><span>${d ? "Escolha já paga · cartas preservadas ao sair" : "Um chamado custa " + draftCost(s.era) + " âmbar"}</span></div>
-  <div class="night-draft-banner"><div><b>O Véu da Noite · +53 personagens</b><small>${s.rebirths>0?"Conjunto liberado no draft · os dois mundos podem lutar juntos.":"Bloqueado até concluir o primeiro renascimento."}</small></div><button class="text-button" data-action="night-codex">Conhecer a expansão →</button></div><div class="draft-cards">${
+  <div class="night-draft-banner"><div><b>O Véu da Noite · +${characters.filter(c=>c.id>=101).length} personagens</b><small>${s.rebirths>0?"Conjunto liberado no draft · os dois mundos podem lutar juntos.":"Bloqueado até concluir o primeiro renascimento."}</small></div><button class="text-button" data-action="night-codex">Conhecer a expansão →</button></div><div class="draft-cards">${
     d
       ? d.offers
           .map((id, index) => {

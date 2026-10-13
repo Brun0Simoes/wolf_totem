@@ -168,6 +168,7 @@ export const TRAIT_RULES: Record<string, TraitRule> = {
   },
 };
 const nightFactions:Record<string,string[]>={
+ 'Crônicas do Sangue':['4% de roubo de vida e +8 de RM.','8% de roubo de vida e +18 de RM.','14% de roubo de vida e +30 de RM.','20% de roubo de vida e +45 de RM.'],
  'Vigília':['+12% de ataque.','+28% de ataque.','+52% de ataque.','+75% de ataque.'],
  'Vozes do Véu':['+15% de poder de habilidade.','+35% de poder de habilidade.'],
  'Corte Rubra':['5% de roubo de vida.','12% de roubo de vida.','20% de roubo de vida.','28% de roubo de vida.'],

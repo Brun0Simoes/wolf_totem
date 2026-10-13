@@ -179,7 +179,7 @@ export interface CombatEvent {
   school?:'physical'|'magic'|'true';
   absorbed?:number;
 }
-export type ZoneKind = 'web' | 'water' | 'veil' | 'domain' | 'frost';
+export type ZoneKind = 'web' | 'water' | 'veil' | 'domain' | 'frost' | 'fire';
 export interface CombatZone {
   id: number;
   kind: ZoneKind;
@@ -251,8 +251,10 @@ export interface CombatApi {
 export const PLAYABLE_IDS = ALL_CHARACTER_IDS;
 export const MAX_ERA = 5;
 export const SAVE_VERSION = 12;
+export const isSupportedSaveVersion = (version: unknown): version is number =>
+  typeof version === 'number' && Number.isInteger(version) && version >= 1 && version <= SAVE_VERSION;
 export const OFFLINE_CAP_SECONDS = 12 * 3600;
-export const MAX_ROSTER_SIZE = 108;
+export const MAX_ROSTER_SIZE = characters.length;
 export const MAX_INVENTORY = 180;
 export const WONDER_STAGES = 5;
 const MAX_SUMMONS_PER_OWNER = 6;
@@ -512,7 +514,7 @@ export class Game {
     this.state = initialState(seed);
     if (typeof save === 'string') { try { save = JSON.parse(save); } catch { return; } }
     const root = record(save);
-    if (typeof root.version !== 'number' || ![1,2,3,4,5,6,7,8,9,10,11,SAVE_VERSION].includes(root.version)) return;
+    if (!isSupportedSaveVersion(root.version)) return;
     this.state = sanitizeState(root.state, root.version as number);
     this.offlineSeconds = 0;
   }
@@ -1112,6 +1114,8 @@ export class Game {
       entity.mana+=6*(r['soul-forge']??0);entity.manaRegen+=.3*(r['speaker-seal']??0);
       if(r['blood-pact'])addMod(entity,'lifesteal',.02*r['blood-pact'],Infinity,'pacto');
       if(r.eclipse){entity.spellPower*=1.2;entity.mana+=20;}
+      entity.attackSpeed*=1+.04*(r.requiem??0);entity.spellPower*=1+.04*(r.requiem??0);
+      entity.maxHp*=1+.06*(r['first-blood']??0);entity.magicResist+=8*(r['first-blood']??0);
       entity.attack *= growth.attack * (1 + RITUAL_EFFECT.sanangaDamage * (r.sananga ?? 0));
       entity.attackSpeed *= 1 + RITUAL_EFFECT.rapeAttackSpeed * (r.rape ?? 0);
       if (r.ayahuasca) { entity.spellPower *= 1 + RITUAL_EFFECT.ayahuascaSpell; entity.mana += RITUAL_EFFECT.ayahuascaMana; }
@@ -1147,8 +1151,9 @@ export class Game {
       const tier = tiers.get(trait) ?? 0;
       if (!tier) continue;
       entity.bonds.push(trait);
-      const nightFaction=['Vigília','Vozes do Véu','Corte Rubra','Artífices da Alma','Nascidos da Noite','Insurgentes','Sol Negro','Bestas Astrais'].includes(trait);
+      const nightFaction=['Vigília','Vozes do Véu','Corte Rubra','Artífices da Alma','Nascidos da Noite','Insurgentes','Sol Negro','Bestas Astrais','Crônicas do Sangue'].includes(trait);
       if(nightFaction){
+        if(trait==='Crônicas do Sangue'){addMod(entity,'lifesteal',[.04,.08,.14,.2][tier-1],Infinity,'cronicas');entity.magicResist+=[8,18,30,45][tier-1];}
         if(trait==='Vigília')entity.attack*=1+[.12,.28,.52,.75][tier-1];
         if(trait==='Vozes do Véu')entity.spellPower*=1+[.15,.35,.65,.85][tier-1];
         if(trait==='Corte Rubra')addMod(entity,'lifesteal',[.05,.12,.2,.28][tier-1],Infinity,'corte');

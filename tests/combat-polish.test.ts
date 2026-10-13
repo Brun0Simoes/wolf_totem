@@ -56,7 +56,7 @@ describe('combat choreography',()=>{
 });
 describe('presentation coverage and clocks',()=>{
   it('defines finite movement and effect profiles for the complete roster',()=>{
-    expect(COMBAT_PROFILES.size).toBe(108);for(let id=1;id<=55;id++){const p=combatProfile(id);expect(p.weapon).toBeTruthy();expect(p.spell).toBeTruthy();expect([p.color,p.weight,p.stride,p.reach,p.arc].every(Number.isFinite)).toBe(true);}
+    expect(COMBAT_PROFILES.size).toBe(118);for(let id=1;id<=55;id++){const p=combatProfile(id);expect(p.weapon).toBeTruthy();expect(p.spell).toBeTruthy();expect([p.color,p.weight,p.stride,p.reach,p.arc].every(Number.isFinite)).toBe(true);}
   });
   it('separates copied positions without moving simulation entities',()=>{
     const original=[{id:'a',x:3,y:3,hp:10},{id:'b',x:3,y:3,hp:10}],snapshot=structuredClone(original);const copied=original.map(e=>({...e}));separateBodies(copied,.05,()=>{});expect(Math.hypot(copied[0].x-copied[1].x,copied[0].y-copied[1].y)).toBeGreaterThan(0);expect(original).toEqual(snapshot);

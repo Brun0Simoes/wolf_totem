@@ -1059,7 +1059,7 @@
 }
 #modal[data-surface="ritual-play"] .rite-header {
   flex: none;
-  padding-right: 32px;
+  padding-right: 64px;
 }
 #modal[data-surface="ritual-play"] .rite-header h2 {
   font-size: 26px;
