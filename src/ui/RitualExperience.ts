@@ -1,4 +1,5 @@
 import { ritualMode } from "../game/nightRituals";
+import { AVATAR_RITES } from '../data/avatarRituals';
 import {
   RitualPlay,
   RITUAL_PLAY,
@@ -15,7 +16,7 @@ export function ritualExperienceMarkup(
   const p = practiceById(id)!,
     design = RITUAL_PLAY[id];
   return `<section class="ritual-experience" style="--rite-color:${design.color}" aria-label="Participação em ${p.name}">
-    <header class="rite-header"><div><p class="eyebrow">${id==='rape'||id==='sananga'||id==='kambo'||id==='ayahuasca'||id==='cacau'?'CASA DE CURA':'CÂMARA DO VÉU'} · ${p.name.toUpperCase()}</p><h2>${design.title}</h2>${cost ? `<p class="rite-price">${cost} âmbar · cobrado ao confirmar</p>` : ""}</div><div class="rite-companion">${companion}</div></header>
+    <header class="rite-header"><div><p class="eyebrow">${id==='rape'||id==='sananga'||id==='kambo'||id==='ayahuasca'||id==='cacau'?'CASA DE CURA':AVATAR_RITES.includes(id)?'DOJO DO DOMÍNIO':'CÂMARA DO VÉU'} · ${p.name.toUpperCase()}</p><h2>${design.title}</h2>${cost ? `<p class="rite-price">${cost} âmbar · cobrado ao confirmar</p>` : ""}</div><div class="rite-companion">${companion}</div></header>
     <div class="rite-stage"><canvas width="900" height="440" aria-label="Campo interativo de ${p.name}"></canvas><div class="rite-stage-caption"><span data-rite-stage>PREPARAÇÃO</span><strong data-rite-feedback role="status">Um instante de presença.</strong></div><div class="rite-intro"><span class="rite-glyph">✧</span><h3>Entre no ritmo da cerimônia</h3><p>${design.instruction}</p><button class="primary" data-rite-start>Começar participação</button><label><input type="checkbox" data-rite-gentle> Modo tranquilo · mais margem para acertar</label>${ritualMode(id) === "rape" ? '<label><input type="checkbox" data-rite-tap> Sopro por dois toques · iniciar e soltar</label>' : ""}</div></div>
     <div class="rite-hud"><span data-rite-round>Preparação interativa</span><progress max="1" value="0" aria-label="Progresso da participação"></progress><span data-rite-bonus>Até +${participationBonus(RITUAL_XP[id], 1)} XP ritual</span></div>
     <div class="rite-controls" hidden>${ritualMode(id) === "kambo" ? [0, 1, 2, 3].map((n) => `<button class="rite-stone" data-rite-stone="${n}" aria-label="Pedra ${n + 1}"><span>${["◇", "△", "◉", "✧"][n]}</span><small>${n + 1}</small></button>`).join("") : ritualMode(id) === "ayahuasca" ? '<button data-rite-steer="-1" aria-label="Conduzir para a esquerda">←</button><span>Dentro do rio<br><small>Arraste a luz ou use as setas</small></span><button data-rite-steer="1" aria-label="Conduzir para a direita">→</button>' : `<button class="rite-touch" data-rite-touch>${design.verb}<small>${ritualMode(id) === "rape" ? "Segure e solte · Espaço" : "Toque · Espaço"}</small></button>`}</div>

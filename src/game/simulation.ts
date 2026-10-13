@@ -1,5 +1,7 @@
 import { formationLevelCost, eraForLevel, MAX_FORMATION_LEVEL, consecrationCost, resetLock, frontierReward, expansionUnlocked } from './formationProgression';
 import { isNightCharacter, NIGHT_PROFILES } from '../data/nocturne';
+import { characterUnlocked, characterUnlockMessage, collectionFor } from '../data/collections';
+import { applyAvatarTraits, applyAvatarRituals } from './avatarProgression';
 import { ritesForHero, deepRiteForHero } from './nightRituals';
 import { characters, type Character } from '../data/characters';
 import { attackTiming, castWindup } from './combatTiming';
@@ -250,7 +252,7 @@ export interface CombatApi {
 
 export const PLAYABLE_IDS = ALL_CHARACTER_IDS;
 export const MAX_ERA = 5;
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 export const isSupportedSaveVersion = (version: unknown): version is number =>
   typeof version === 'number' && Number.isInteger(version) && version >= 1 && version <= SAVE_VERSION;
 export const OFFLINE_CAP_SECONDS = 12 * 3600;
@@ -330,7 +332,7 @@ export const newHero = (uid: string, characterId: number, stars = 1, slot: numbe
   ({ uid, characterId, stars, slot, items: [], level: 1, xp: 0, ritualLevel: 1, ritualXp: 0, ritualReadyAt: 0, integrationWins: 0, mastery: freshMastery(), panema: 0, rituals: {}, away: null, focus: false });
 /** Only era-I heroes can begin a new journey. Explicit seeds keep simulations reproducible. */
 const starterHeroes = (seed = 7): Hero[] => {
-  const pool = characters.filter(c => c.cost === 1 && !isNightCharacter(c.id));
+  const pool = characters.filter(c => c.cost === 1 && collectionFor(c.id)==='primal');
   return [newHero('hero-1', pool[Math.floor(nextRandom(seed).value * pool.length)].id, 1, 3)];
 };
 /** Kept for formation checks; migrated heroes are always available. */
@@ -405,7 +407,7 @@ function sanitizeState(value: unknown, version: number): GameState {
   if (Array.isArray(input.heroes)) {
     state.heroes = input.heroes.slice(0, MAX_ROSTER_SIZE).flatMap((value, index) => {
       const hero = record(value);
-      if (!PLAYABLE_IDS.includes(hero.characterId as number) || (isNightCharacter(hero.characterId as number) && !expansionUnlocked(state))) return [];
+      if (!PLAYABLE_IDS.includes(hero.characterId as number) || !characterUnlocked(hero.characterId as number,state.rebirths)) return [];
       let uid = typeof hero.uid === 'string' && /^[a-z0-9-]{1,40}$/.test(hero.uid) ? hero.uid : `restored-${index}`;
       let suffix = 0;
       while (uids.has(uid)) uid = `restored-${index}-${suffix++}`;
@@ -755,7 +757,7 @@ export class Game {
   }
   recruit(characterId:number):ActionResult {
     if(this.fighting()||this.state.paused)return fail('Escolha seu guardião entre os combates.');
-    if(isNightCharacter(characterId)&&!expansionUnlocked(this.state))return fail('O Véu da Noite abre após o primeiro renascimento.');
+    if(!characterUnlocked(characterId,this.state.rebirths))return fail(characterUnlockMessage(characterId));
     if(this.state.heroes.some(h=>h.characterId===characterId))return fail('Este guardião já pertence à tribo.');
     if(!this.state.draft?.offers.includes(characterId))return fail('Este guardião precisa estar no draft pago atual.');
     const c=characterById(characterId);
@@ -1099,6 +1101,7 @@ export class Game {
     if (hero) {
       entity.maxHp *= 1 + .03 * memory(this.state, 'fogueira');
       const growth = levelMultiplier(hero.level), r = hero.rituals;
+      applyAvatarRituals(entity,r);
       entity.maxHp*=1+legacyLevel(this.state,'vigor')*.03;entity.attack*=1+legacyLevel(this.state,'tactics')*.03+legacyLevel(this.state,'tracking')*.02;
       entity.attackSpeed*=1+legacyLevel(this.state,'resolve')*.03;entity.spellPower*=1+legacyLevel(this.state,'insight')*.04;
       entity.magicResist+=legacyLevel(this.state,'ward')*4;entity.mana+=legacyLevel(this.state,'channel')*5;
@@ -1151,6 +1154,7 @@ export class Game {
       const tier = tiers.get(trait) ?? 0;
       if (!tier) continue;
       entity.bonds.push(trait);
+      if(applyAvatarTraits(entity,trait,tier))continue;
       const nightFaction=['Vigília','Vozes do Véu','Corte Rubra','Artífices da Alma','Nascidos da Noite','Insurgentes','Sol Negro','Bestas Astrais','Crônicas do Sangue'].includes(trait);
       if(nightFaction){
         if(trait==='Crônicas do Sangue'){addMod(entity,'lifesteal',[.04,.08,.14,.2][tier-1],Infinity,'cronicas');entity.magicResist+=[8,18,30,45][tier-1];}

@@ -1,4 +1,5 @@
 import { nocturneCharacters } from './nocturne';
+import { avatarCharacters } from './avatar';
 // Canonical character data transcribed from docs/plano-original.txt.
 // Keep prototype combat tuning separate from this source roster.
 export interface Character {
@@ -2103,3 +2104,4 @@ export const characters: Character[] = [
   }
 ];
 characters.push(...nocturneCharacters);
+characters.push(...avatarCharacters);

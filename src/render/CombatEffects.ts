@@ -3,6 +3,7 @@ import { ARENA_CENTER as C, ARENA_SPAN as S } from './battleArena';
 import { CombatParticles } from './CombatParticles';
 import { combatProfile } from './combatProfiles';
 import { NIGHT_PROFILES } from '../data/nocturne';
+import { AVATAR_PROFILES } from '../data/avatar';
 
 export interface FxPoint { x: number; y: number }
 export const SKILL_COLORS:Record<number,number>={1:0xb7dfff,2:0xaadcca,3:0xd2ac78,4:0xa4df72,5:0xe5bd74,6:0x84d9d0,7:0xe6a189,8:0xd5cdf6,9:0xb3d6aa,10:0xc4e984,11:0xf2d486,12:0xf4dfa0,13:0xc7a3ec,
@@ -26,6 +27,7 @@ for(const [id,profile] of NIGHT_PROFILES){
 }
 
 /** Scene-only effects. They never apply damage or change simulation positions. */
+for(const [id,p]of AVATAR_PROFILES){SKILL_COLORS[id]=p.color;RECIPES[id]=({air:['aura','line'],water:['line','heal'],earth:['nova','shield'],fire:['flurry','nova'],lightning:['line','volley'],metal:['line','shield'],lava:['aura','nova'],healing:['heal','allies'],ice:['nova','mark'],blood:['mark','night'],chi:['leap','flurry'],blade:['flurry','shield'],boomerang:['volley','mark'],explosive:['line','nova'],tech:['line','allies'],spirit:['aura','allies'],avatar:['aura','nova','shield'],beast:['stampede','flurry']} as Record<string,Recipe[]>)[p.ability];}
 export class CombatEffects {
  private sprites=new Map<Phaser.GameObjects.Image,Phaser.Tweens.Tween>();
  private active=new Map<Phaser.GameObjects.Graphics, Phaser.Tweens.Tween>();

@@ -6,7 +6,7 @@ import { proceduralPortrait } from './proceduralArt';
 export function portraitHTML(character: Character, stars = 1): string {
   if(character.id >= 101) {
     const sheet=bestAnimation(character.id,stars);
-    return `<img class="night-portrait" src="${assetUrl(`assets/animations/night/${character.id}-${sheet?.stars??stars}-portrait.png`)}" alt="${character.name}, ${stars} estrelas" loading="lazy"/>`;
+    return `<img class="night-portrait" src="${assetUrl(`assets/animations/${character.id>=201?'avatar':'night'}/${character.id}-${sheet?.stars??stars}-portrait.png`)}" alt="${character.name}, ${stars} estrelas" loading="lazy"/>`;
   }
   if (character.art) return `<img src="${assetUrl(`chars/${character.art}-${stars}star.png`)}" alt="${character.name}" loading="lazy"/>`;
   const sheet = bestAnimation(character.id, stars);

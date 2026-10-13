@@ -105,6 +105,13 @@ export class SoundSystem {
     if (id === 'blood-pact') {this.tone(65,t,.25,'sine',.13,40,bus);this.tone(130,t+.15,.3,'triangle',.04,90,bus);}
     if (id === 'requiem') {this.tone(f/2,t,.4,'sawtooth',.018,f/2*.98,bus);this.tone(f,t,.5,'triangle',.05,undefined,bus);this.tone(f*1.5,t+.05,.45,'sine',.025,undefined,bus);}
     if (id === 'first-blood') {this.tone(165,t,.6,'sine',.055,220,bus);this.tone(330,t+.025,.4,'triangle',.03,undefined,bus);this.tone(55,t,.3,'sine',.07,40,bus);}
+    if(id==='air-discipline'){this.noise(t,.18,.03*strength,1800,bus);this.tone(f*2,t,.4,'sine',.025,undefined,bus);}
+    if(id==='water-flow'){this.noise(t,.2,.025,500,bus);this.tone(f*3,t,.25,'sine',.025,f*1.5,bus);}
+    if(id==='earth-root'){this.tone(70+step*18,t,.25,'triangle',.06,40,bus);this.noise(t,.09,.035,650,bus);}
+    if(id==='fire-breath'){this.noise(t,.1,.035,1600,bus);this.tone(100,t,.25,'triangle',.045,70,bus);}
+    if(id==='warrior-path'){this.tone(330+step*70,t,.2,'triangle',.035,undefined,bus);this.noise(t,.04,.025,2200,bus);}
+    if(id==='spirit-balance'){this.tone(f*2,t,.65,'sine',.035,undefined,bus);this.tone(f*3,t+.04,.7,'sine',.018,undefined,bus);}
+    if(id==='avatar-convergence'){this.tone(f,t,.6,'triangle',.035,undefined,bus);this.tone(f*1.5,t,.65,'sine',.025,undefined,bus);this.noise(t,.2,.015,900,bus);}
     if (id === 'soul-forge') {this.tone(110+step*45,t,.4,'triangle',.07,60,bus);this.noise(t,.09,.07,950,bus);}
     if (id === 'speaker-seal') {this.tone(330*Math.pow(2,step/5),t,.6,'sine',.07,undefined,bus);}
     if (id === 'ancestral-song') {this.tone(220*Math.pow(2,step/12),t,.65,'triangle',.06,undefined,bus);}

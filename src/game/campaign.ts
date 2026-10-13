@@ -1,4 +1,4 @@
-import { isNightCharacter } from '../data/nocturne';
+import { characterUnlocked } from '../data/collections';
 import { characters } from '../data/characters';
 import { nextRandom } from './roster';
 
@@ -89,7 +89,7 @@ export function endlessStage(depth: number, rebirths = 0): Stage {
   let seed = 7919 * depth + 17;
   const count = Math.min(28, 14 + depth);
   const maxCost = Math.min(5, 3 + Math.floor(depth / 3));
-  const pool = characters.filter(character => character.cost <= maxCost && character.cost >= 2 && (!isNightCharacter(character.id) || rebirths > 0)).map(character => character.id);
+  const pool = characters.filter(character => character.cost <= maxCost && character.cost >= 2 && characterUnlocked(character.id,rebirths)).map(character => character.id);
   const units: StageUnit[] = [];
   for (let i = 0; i < count; i++) {
     const roll = nextRandom(seed); seed = roll.seed;

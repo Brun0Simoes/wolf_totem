@@ -1,4 +1,5 @@
 import { characters } from "../data/characters";
+import { AVATAR_TRAITS } from '../data/avatarTraits';
 const characterMap = new Map(characters.map((c) => [c.id, c]));
 
 /** Prototype numbers for every Set 1 trait. Thresholds count distinct deployed characters. */
@@ -179,6 +180,7 @@ const nightFactions:Record<string,string[]>={
  'Bestas Astrais':['+15% de vida e ataque.','+35% de vida e ataque.'],
 };
 for(const [name,effects] of Object.entries(nightFactions)){const members=characters.filter(c=>c.traits.includes(name)).length;const thresholds=[2,4,6,8].filter(n=>n<=members);TRAIT_RULES[name]={kind:'povo',thresholds,effects:effects.slice(0,thresholds.length)};}
+for(const [name,rule] of Object.entries(AVATAR_TRAITS))TRAIT_RULES[name]={kind:'povo',...rule};
 for (const character of characters)
   for (const trait of character.traits) {
     if (TRAIT_RULES[trait]) continue;

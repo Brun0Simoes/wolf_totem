@@ -1,4 +1,5 @@
 import { castNightAbility } from './nightSkills';
+import { castAvatarAbility } from './avatarSkills';
 import { characters } from '../data/characters';
 import type { CombatApi, CombatEntity } from './simulation';
 import { clampX, clampY } from './board';
@@ -44,6 +45,7 @@ function mod(entity: CombatEntity, stat: CombatEntity['mods'][number]['stat'], v
 }
 
 export function castAbility(api: CombatApi, abilityId: number, source: CombatEntity, target: CombatEntity, power: number): void {
+  if(castAvatarAbility(api,abilityId,source,target,power))return;
   if(castNightAbility(api,abilityId,source,target,power))return;
   const enemies = api.enemiesOf(source);
   const targetable = api.targetableEnemiesOf(source);

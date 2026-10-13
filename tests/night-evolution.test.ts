@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {nocturneCharacters,NIGHT_PROFILES} from '../src/data/nocturne';
 import {vampireCharacters,VAMPIRE_CHARACTER_IDS} from '../src/data/vampireChronicles';
 import {Game,newHero,MAX_ROSTER_SIZE,SAVE_VERSION,isSupportedSaveVersion} from '../src/game/simulation';
+import {AVATAR_UNLOCK_REBIRTHS} from '../src/data/collections';
 import {characters} from '../src/data/characters';
 import {combatProfile} from '../src/render/combatProfiles';
 import {traitStatus} from '../src/game/synergies';
@@ -38,10 +39,10 @@ describe('supernatural visual evolution',()=>{
 });
 describe('Crônicas do Sangue',()=>{
  it('preserves the full expanded collection and accepts the current export version',()=>{
-  const g=new Game();Object.assign(g.state,{rebirths:1,era:5,commanderLevel:28});
+  const g=new Game();Object.assign(g.state,{rebirths:AVATAR_UNLOCK_REBIRTHS,era:5,commanderLevel:28});
   g.state.heroes=characters.map(c=>newHero('all-'+c.id,c.id,1));
   const data=JSON.parse(g.serialize());expect(isSupportedSaveVersion(data.version)).toBe(true);
-  expect(MAX_ROSTER_SIZE).toBe(118);expect(new Game(data).state.heroes.map(h=>h.characterId)).toEqual(characters.map(c=>c.id));
+  expect(MAX_ROSTER_SIZE).toBe(181);expect(new Game(data).state.heroes.map(h=>h.characterId)).toEqual(characters.map(c=>c.id));
   for(let n=1;n<=SAVE_VERSION;n++)expect(isSupportedSaveVersion(n)).toBe(true);
   for(const n of [0,-1,NaN,Infinity,'12',12.5,SAVE_VERSION+1])expect(isSupportedSaveVersion(n)).toBe(false);
  });

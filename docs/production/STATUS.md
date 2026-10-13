@@ -1,10 +1,12 @@
 # Estado da produção de arte
 
-Formas disponíveis: **354/354**. Personagens com as três formas: **118/118**.
+Formas disponíveis: **543/543**. Personagens com as três formas: **181/181**.
 
 **55 primais:** 165 atlas pintados, com quatro poses por sequência de repouso, caminhada e ataque/conjuração. Impacto, queda e vitória usam movimentos programados.
 
 **63 sobrenaturais:** 189 atlas com roupas, equipamentos e silhuetas próprias para 1★, 2★ e 3★. São 1.134 poses desenhadas: repouso, dois contatos de caminhada, preparação, golpe e gesto de habilidade. Caminhada alterna os contatos com a pose de passagem; ataque e habilidade têm quadros próprios. Respiração, recuperação, impacto, queda e vitória usam movimentos programados.
+
+**63 personagens de Avatar:** 189 atlas e 1.134 poses desenhadas, com três evoluções de roupa, equipamento e silhueta. Repouso, caminhada, preparação, golpe e conjuração usam quadros próprios; impacto, queda e vitória usam movimento programado.
 
 | ID | Personagem | Era | 1★ | 2★ | 3★ |
 | --- | --- | --- | --- | --- | --- |
@@ -126,6 +128,69 @@ Formas disponíveis: **354/354**. Personagens com as três formas: **118/118**.
 | 161 | Jesse | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
 | 162 | Santiago | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
 | 163 | Madeleine | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 201 | Aang | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 202 | Korra | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 203 | Katara | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 204 | Sokka | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 205 | Toph | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 206 | Zuko | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 207 | Azula | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 208 | Iroh | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 209 | Ozai | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 210 | Piandao | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 211 | Roku | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 212 | Kyoshi | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 213 | Wan | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 214 | Kuruk | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 215 | Yangchen | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 216 | Suki | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 217 | Ty Lee | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 218 | Mai | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 219 | Jet | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 220 | Long Feng | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 221 | Zhao | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 222 | Rei Bumi | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 223 | Jeong Jeong | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 224 | Pakku | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 225 | Hama | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 226 | Hakoda | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 227 | Yue | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 228 | Appa | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 229 | Momo | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 230 | Tenzin | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 231 | Jinora | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 232 | Ikki | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 233 | Meelo | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 234 | Bumi do Ar | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 235 | Kya | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 236 | Bolin | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 237 | Mako da República | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 238 | Asami | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 239 | Lin Beifong | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 240 | Suyin Beifong | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 241 | Opal | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 242 | Kuvira | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 243 | Zhu Li | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 244 | Varrick | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 245 | Tonraq | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 246 | Unalaq | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 247 | Desna | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 248 | Eska | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 249 | Zaheer | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 250 | Ghazan | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 251 | Ming-Hua | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 252 | P'Li | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 253 | Amon | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 254 | Tarrlok | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 255 | Kai | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 256 | Naga | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 257 | Pabu | 1 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 258 | Raava | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 259 | Vaatu | 5 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 260 | Wan Shi Tong | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 261 | Koh | 4 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 262 | Homem Combustão | 3 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
+| 263 | Guru Pathik | 2 | Atlas evolutivo | Atlas evolutivo | Atlas evolutivo |
 
 ## Criaturas invocadas
 

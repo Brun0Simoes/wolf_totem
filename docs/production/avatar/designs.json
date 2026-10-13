@@ -1,0 +1,317 @@
+[
+  {
+    "id": 201,
+    "name": "Aang",
+    "design": "Aang, youthful bald boy monk, blue arrow tattoo on scalp, light tan skin, orange yellow Air Nomad clothing, wooden glider staff; keep young proportions in all tiers. Tier 1 short novice tunic and simple staff; tier 2 layered master monk robes and reinforced glider; tier 3 ceremonial long orange gold mantle with four elemental embroidery and glowing blue arrows. Attack circular staff sweep, cast small four-element orbit around one hand."
+  },
+  {
+    "id": 202,
+    "name": "Korra",
+    "design": "Korra, athletic young woman with brown skin and blue eyes. Tier 1 dark high ponytail with side locks, sleeveless blue Water Tribe outfit and fur boots; tier 2 reinforced blue fighter outfit with shoulder guards; tier 3 recognizable short bob haircut, flowing blue silver ceremonial layered mantle with four element patterns. Powerful martial arts punch attack; cast compact aqua spiritual orb, all tiers retain her athletic identity."
+  },
+  {
+    "id": 203,
+    "name": "Katara",
+    "design": "Katara, brown-skinned young woman, long dark brown braid and signature hair loops, blue eyes, blue Water Tribe dress, water pouch, necklace. Tier 1 travel dress; tier 2 layered blue master robe and cuffs; tier 3 flowing white blue healer mantle embroidered with waves. Attack water whip near hands, cast gentle aqua healing ribbon."
+  },
+  {
+    "id": 204,
+    "name": "Sokka",
+    "design": "Sokka, tan-skinned young man with shaved sides and dark topknot, blue Water Tribe warrior outfit. No bending or magic. Tier 1 blue vest wooden boomerang; tier 2 leather armor and sword; tier 3 layered ceremonial tribal armor short cape and black meteorite sword. Attack boomerang throw, cast tactical pointing gesture with small metallic weapon arc only."
+  },
+  {
+    "id": 205,
+    "name": "Toph",
+    "design": "Toph Beifong, short blind girl with pale green sightless eyes, black hair bun and green headband, green cream earthbender clothing, barefoot in all forms. Tier 1 simple green tunic; tier 2 metal wrist cuffs and layered fighting outfit; tier 3 jade steel ceremonial armor, broad sash, sculpted gauntlets while barefoot. Attack grounded earth punch with small rock, cast seismic stance."
+  },
+  {
+    "id": 206,
+    "name": "Zuko",
+    "design": "Zuko, young male with burn scar around LEFT eye, dark shaggy hair, crimson black Fire Nation clothing and paired dao swords. Tier 1 exile travel outfit; tier 2 layered light red armor gold sash; tier 3 Fire Lord ceremonial crimson armor flowing mantle and flame crown. Preserve left eye scar all 18 poses. Attack short paired sword slash, cast controlled orange fire punch."
+  },
+  {
+    "id": 207,
+    "name": "Azula",
+    "design": "Azula, regal young woman, pale skin, sharp gold eyes, sleek dark hair in high bun, red black gold Fire Nation costume. Tier 1 uniform; tier 2 golden shoulder armor and royal sash; tier 3 layered royal armor phoenix crown black mantle. Attack compact BLUE flame, cast thin blue lightning between fingers. Never orange primary fire."
+  },
+  {
+    "id": 208,
+    "name": "Iroh",
+    "design": "Uncle Iroh, stocky elderly man, gray beard, kind face, receding gray hair in small topknot. Tier 1 green tea traveler robe copper teapot; tier 2 crimson gold robe with White Lotus sash; tier 3 layered white red ceremonial dragon embroidery mantle. Fire palm strike attack; cast compact orange dragon-shaped flame beside teapot."
+  },
+  {
+    "id": 209,
+    "name": "Ozai",
+    "design": "Ozai, intimidating muscular middle-aged man, long black hair, pointed black beard and golden eyes. Tier 1 black red Fire Lord robes; tier 2 gold royal armor and war cape; tier 3 imposing gold Phoenix King layered armor tall flame crown and feather-shaped cape. Attack orange fire fist, cast compact crimson flame arc."
+  },
+  {
+    "id": 210,
+    "name": "Piandao",
+    "design": "Piandao, middle-aged East Asian swordsman, black mustache and goatee, long dark hair tied behind, green robes. NON-bender, never elemental magic. Tier 1 simple training robe straight sword; tier 2 layered green silk robe black meteorite sword; tier 3 green gold White Lotus ceremonial mantle and engraved black sword. Attack disciplined sword lunge, cast sword salute with metallic glint only."
+  },
+  {
+    "id": 211,
+    "name": "Roku",
+    "design": "Avatar Roku, elderly man, long white hair tied high, long white beard, crimson golden Fire Nation robes. Tier 1 simple elder robe; tier 2 layered red gold master mantle and staff; tier 3 broad ancestral four-element embroidered mantle flame diadem lava hems. Attack compact fire sweep, cast small four element sigil."
+  },
+  {
+    "id": 212,
+    "name": "Kyoshi",
+    "design": "Avatar Kyoshi, tall powerful woman, pale white face paint with red eye makeup, dark long hair, gold fan-shaped headpiece, green armored robes and paired fans. Tier 1 simple green warrior robe wooden fans; tier 2 green shoulder armor gold metal fans; tier 3 elaborate layered jade ancestral mantle monumental fan diadem. Attack fan sweep, cast small lifted stone and four elemental sparks."
+  },
+  {
+    "id": 213,
+    "name": "Wan",
+    "design": "Avatar Wan, young lean tan male, shaggy dark brown hair, earthy ancient clothing and sandals. Tier 1 rustic brown travel shirt and scarf; tier 2 red layered robe blue sash and cuffs; tier 3 ceremonial white red mantle with luminous Raava motifs and elemental sash. Attack fire palm, cast compact white blue spiritual orb, no modern gear."
+  },
+  {
+    "id": 214,
+    "name": "Kuruk",
+    "design": "Avatar Kuruk, broad young brown-skinned Water Tribe man, dark hair, blue white fur clothes. Tier 1 fur hunter vest and short spear; tier 2 long polar fur coat and carved spear; tier 3 layered ceremonial polar mantle bear fur hood and ancestral elemental spear. Attack short ice spear thrust, cast small icy four element orb."
+  },
+  {
+    "id": 215,
+    "name": "Yangchen",
+    "design": "Avatar Yangchen, serene adult woman, dark brown hair with shaved tattooed forehead and blue Air Nomad arrow, yellow orange monk robes. Tier 1 simple robes staff; tier 2 broad layered master robes ceremonial glider; tier 3 white gold flowing ancestral mantle and luminous blue arrows. Attack circular air palm, cast compact four-element energy."
+  },
+  {
+    "id": 216,
+    "name": "Suki",
+    "design": "Suki, young woman with brown hair, Kyoshi warrior white red face paint, green armor and paired fans. Non-bender no magic. Tier 1 green novice dress wooden fans; tier 2 metal green armor and paired steel fans; tier 3 layered ceremonial jade steel armor gold headband short cape. Attack short fan slash, cast crossed-fan guard."
+  },
+  {
+    "id": 217,
+    "name": "Ty Lee",
+    "design": "Ty Lee, smiling agile young woman with long dark brown braid, pink acrobat crop top and loose pink trousers. Non-bender no elemental magic. Tier 1 simple pink acrobat outfit; tier 2 layered martial outfit wrist guards; tier 3 pink gold ceremonial martial outfit long waist ribbons sculpted bracelets. Attack precise two-finger chi jab, cast acrobatic guard, keep feet fully visible and grounded."
+  },
+  {
+    "id": 218,
+    "name": "Mai",
+    "design": "Mai, pale stoic young woman, dark hair with two side buns and straight bangs, burgundy dark red robes, throwing knives. NON-bender. Tier 1 plain burgundy robe metal needles; tier 2 embroidered coat gloves paired daggers; tier 3 layered burgundy black mantle high collar ceremonial throwing daggers. Attack small dagger throw, cast crossed dagger stance, no magical particles."
+  },
+  {
+    "id": 219,
+    "name": "Jet",
+    "design": "Jet, tan young male with shaggy dark brown hair, rustic brown green rebel clothes and twin hook swords. Non-bender. Tier 1 brown vest hook swords; tier 2 leather guards green sash stronger hooks; tier 3 layered forest rebel armor short green cape enlarged ceremonial hook swords foreshortened. Attack hook sword sweep, cast guarded crossed swords."
+  },
+  {
+    "id": 220,
+    "name": "Long Feng",
+    "design": "Long Feng, middle-aged man with narrow stern face, black mustache long goatee and tied dark hair, dark green bureaucrat robes. Tier 1 simple green minister robe; tier 2 structured Dai Li coat stone gloves tall hat; tier 3 imperial green gold mantle jade gloves and city seal. Attack small stone hand thrust, cast earth prison gesture."
+  },
+  {
+    "id": 221,
+    "name": "Zhao",
+    "design": "Admiral Zhao, stern adult man with thick black sideburns and black topknot, red Fire Nation naval uniform. Tier 1 officer uniform; tier 2 black gold admiral armor naval sash; tier 3 heavy gilded naval armor ceremonial red mantle flame diadem. Attack orange fire fist, cast controlled blazing arc."
+  },
+  {
+    "id": 222,
+    "name": "Rei Bumi",
+    "design": "King Bumi, muscular elderly man, long white hair and beard, eccentric grin, green royal Earth Kingdom clothes. Tier 1 simple green tunic small crown; tier 2 royal layered coat shoulder armor and rock wrist guards; tier 3 jade gold ceremonial mantle broad crown monumental stone bracers. Attack lifted stone fist, cast planted earthmaster stance."
+  },
+  {
+    "id": 223,
+    "name": "Jeong Jeong",
+    "design": "Jeong Jeong, stern elderly man with long wild white hair and mustache, green hermit robes. Tier 1 dark green rough robes; tier 2 broad master cloak wrist wraps shoulder guards; tier 3 white green White Lotus embroidered layered mantle crimson sash. Attack disciplined orange fire palm, cast small vertical flame barrier."
+  },
+  {
+    "id": 224,
+    "name": "Pakku",
+    "design": "Pakku, elderly brown-skinned man, bald crown gray long side hair and thin white beard, blue Northern Water Tribe fur robes. Tier 1 simple blue fur collar robe; tier 2 polar blue coat white sash; tier 3 layered white blue ceremonial White Lotus mantle carved hood icy cuffs. Attack narrow ice shard, cast short ice wave."
+  },
+  {
+    "id": 225,
+    "name": "Hama",
+    "design": "Hama, elderly Water Tribe woman, gray hair in two long braids, angular wrinkled face, dark blue gray robes. Tier 1 travel robe water pouch; tier 2 long blue tunic gloves dark necklace; tier 3 layered deep blue silver moon ceremonial mantle. Attack narrow water thread, cast restrained fingers with small dark aqua ribbons, no blood gore."
+  },
+  {
+    "id": 226,
+    "name": "Hakoda",
+    "design": "Hakoda, broad brown-skinned adult man with black hair topknot and facial stubble, blue Water Tribe warrior clothing. NON-bender. Tier 1 blue vest spear small shield; tier 2 leather armor white fur reinforced shield; tier 3 ceremonial polar warrior armor carved spear and fur cape. Attack foreshortened spear thrust, cast raised shield guard."
+  },
+  {
+    "id": 227,
+    "name": "Yue",
+    "design": "Princess Yue, young brown-skinned woman with long WHITE hair styled in northern braided loops, blue white princess dress. Tier 1 blue simple princess dress; tier 2 layered white blue robe silver diadem; tier 3 flowing white lunar spirit ceremonial mantle crescent crown and small luminous ribbons. Attack silver moon mote, cast soft lunar orb. Complete legs or full robe hem visible in all poses, no torso fade."
+  },
+  {
+    "id": 228,
+    "name": "Appa",
+    "design": "Appa, cream white flying sky bison with brown arrow marking, brown horns and SIX legs. Must stay bison in all tiers, never humanoid. Tier 1 simple saddle; tier 2 reinforced leather saddle armor and Air Nomad straps; tier 3 elaborate golden ceremonial saddle lightweight armor wind ribbons. Full body side three-quarter facing right, six feet visible where anatomically appropriate, walk two contacts, attack tail swing, cast compact wind puff. No rider."
+  },
+  {
+    "id": 229,
+    "name": "Momo",
+    "design": "Momo, small white brown winged lemur with enormous ears, green eyes, long striped tail, tiny forearms. Stay lemur, not human. Tier 1 natural fur; tier 2 small leather scouting vest monk sash; tier 3 lightweight golden ceremonial breastplate Air Nomad ornaments gold ribbons on wings. Walking grounded, attack playful claw leap staying in cell, cast wing gust, all body and tail contained."
+  },
+  {
+    "id": 230,
+    "name": "Tenzin",
+    "design": "Tenzin, tall middle-aged bald monk, blue arrow tattoos, pointed black beard, yellow orange Air Nomad robes. Tier 1 instructor robes staff; tier 2 broad layered master mantle glider; tier 3 white gold ceremonial wind mantle sculpted cuffs. Attack circular air palm, cast small wind spiral. Tattoos remain on forehead."
+  },
+  {
+    "id": 231,
+    "name": "Jinora",
+    "design": "Jinora, young girl Air Nomad, light tan skin. Tier 1 short brown hair orange novice robes; tier 2 shaved head with blue arrows and layered orange monk robes glider; tier 3 white gold spiritual ceremonial mantle long wind ribbons, tattooed shaved head. Attack small wind ring, cast pale spiritual light. Preserve young body proportions, no aging."
+  },
+  {
+    "id": 232,
+    "name": "Ikki",
+    "design": "Ikki, lively young brown-haired girl with two side ponytails, orange yellow Air Nomad clothes. Tier 1 short novice tunic; tier 2 lightweight layered messenger robe gloves glider; tier 3 white orange ceremonial mantle gold glider long sash. Air attack palm sweep, cast short wind ribbon, maintain child age and full body."
+  },
+  {
+    "id": 233,
+    "name": "Meelo",
+    "design": "Meelo, very young bald boy with large ears, yellow orange Air Nomad tunic, mischievous grin, keep child proportions all tiers. Tier 1 yellow novice tunic; tier 2 short orange fighting robe cuffs; tier 3 layered ceremonial air vest large sash miniature training staff. Attack playful air punch, cast compact wind puff, no toilet joke effects."
+  },
+  {
+    "id": 234,
+    "name": "Bumi do Ar",
+    "design": "Bumi son of Aang, stocky middle-aged man, curly gray brown hair and mustache, not King Bumi. Tier 1 rustic commander coat orange sash; tier 2 layered military Air Nomad robe arm guards glider; tier 3 white red ceremonial veteran mantle shoulder pieces command glider. Attack clumsy air punch, cast authoritative air sweep."
+  },
+  {
+    "id": 235,
+    "name": "Kya",
+    "design": "Kya daughter of Aang and Katara, middle-aged brown-skinned woman with gray dark long hair, blue water healer clothing. Tier 1 simple blue travel robe water pouch; tier 2 layered white blue healer mantle cuffs; tier 3 ceremonial white blue healing dress broad embroidered wave sash and ornate water flask. Attack water ribbon, cast soft aqua healing glow."
+  },
+  {
+    "id": 236,
+    "name": "Bolin",
+    "design": "Bolin, muscular cheerful young man, dark cropped hair, green eyes, green Republic City earthbender athlete clothes. Tier 1 green pro-bending uniform gloves; tier 2 light green armor fighting sash; tier 3 jade bronze layered ceremonial armor short mantle volcanic gauntlets. Attack earth punch small rock, cast compact orange lava ribbon."
+  },
+  {
+    "id": 237,
+    "name": "Mako da República",
+    "design": "Mako, lean young man with swept-up black hair and gold eyes, dark coat and iconic red scarf. Tier 1 simple dark pro-bending coat red scarf; tier 2 reinforced combat uniform gloves; tier 3 crimson black layered armor flowing red scarf silver gauntlets. Attack orange fire jab, cast narrow blue-white lightning from fingers."
+  },
+  {
+    "id": 238,
+    "name": "Asami",
+    "design": "Asami Sato, elegant athletic young woman, pale skin green eyes, long wavy black hair, red leather jacket and electrified glove. NON-bender, electricity is technological glove only, no elemental spell. Tier 1 red jacket small glove; tier 2 reinforced red black coat arm guards; tier 3 layered red black engineer armor short cape advanced large electric glove. Attack glove strike, cast compact electric spark from glove."
+  },
+  {
+    "id": 239,
+    "name": "Lin Beifong",
+    "design": "Lin Beifong, stern middle-aged woman with short dark gray hair, facial scars, steel-gray Republic City metal police armor. Tier 1 patrol uniform wrist bracers; tier 2 full metal armor capture cables; tier 3 layered ceremonial steel jade plate armor large shoulders reinforced cables. Attack short metal cable slash, cast folded metal shield, keep cables compact."
+  },
+  {
+    "id": 240,
+    "name": "Suyin Beifong",
+    "design": "Suyin Beifong, graceful middle-aged woman with short dark wavy hair and green eyes, green Zaofu clothes metal cuffs. Tier 1 green artist tunic; tier 2 flexible articulated silver green metal armor ornate sash; tier 3 jade silver ceremonial mantle layered plates paired compact metal fans. Attack graceful metal ribbon, cast articulated steel shield."
+  },
+  {
+    "id": 241,
+    "name": "Opal",
+    "design": "Opal, young green-eyed woman with short dark brown bob hair, graceful Air Nomad apprentice. Tier 1 green white Zaofu tunic; tier 2 layered orange monk outfit wooden glider; tier 3 green gold ceremonial wind mantle monk ribbons ornate glider. Attack wind palm, cast short green-white air ribbon."
+  },
+  {
+    "id": 242,
+    "name": "Kuvira",
+    "design": "Kuvira, athletic stern young woman with dark brown hair in neat bun and green eyes, green military metalbender uniform. Tier 1 officer uniform metal strips; tier 2 military metal armor shoulder guards cables; tier 3 imposing jade steel imperial armor command cape and ceremonial plates. Attack short metal strip spear, cast compact metal capture ring."
+  },
+  {
+    "id": 243,
+    "name": "Zhu Li",
+    "design": "Zhu Li, composed adult woman, dark short neat bob hair and glasses, gray blue assistant engineer coat. NON-bender. Tier 1 gray coat small tool kit; tier 2 technical guards gloves handheld repair device; tier 3 blue silver layered engineer armor command sash large electric tool. Attack precise tool strike, cast repair device pulse, no bending gestures."
+  },
+  {
+    "id": 244,
+    "name": "Varrick",
+    "design": "Varrick, eccentric brown-skinned middle-aged man, neat black hair prominent black mustache, blue brown fur business coat. NON-bender. Tier 1 fur business coat pocket gadget; tier 2 technical vest gloves portable electric coil; tier 3 layered engineer mantle copper shoulders large handheld coil. Attack gadget throw, cast contained electric gadget spark."
+  },
+  {
+    "id": 245,
+    "name": "Tonraq",
+    "design": "Tonraq, muscular brown-skinned middle-aged man, dark short hair, blue eyes, blue white fur Water Tribe warrior clothes. Tier 1 blue fur vest; tier 2 polar armor wrist cuffs command sash; tier 3 layered ceremonial polar mantle blue plates icy gauntlets. Attack close water punch, cast short ice water barrier."
+  },
+  {
+    "id": 246,
+    "name": "Unalaq",
+    "design": "Unalaq, slender stern brown-skinned middle-aged man, long dark hair and thin beard, blue Northern Water Tribe robes. Tier 1 simple blue white fur collar robe; tier 2 royal blue mantle northern diadem spiritual flask; tier 3 layered dark blue black ceremonial spirit mantle tall polar crown. Attack dark aqua water whip, cast compact dark spiritual water orb."
+  },
+  {
+    "id": 247,
+    "name": "Desna",
+    "design": "Desna, pale brown-skinned young male with long straight black hair, narrow stoic face, blue Northern Water Tribe fur robes. Tier 1 simple blue fur tunic; tier 2 reinforced polar mantle icy cuffs; tier 3 layered blue silver ceremonial robes broad fur collar sculpted gauntlets. Attack narrow ice blade thrust, cast short ice shards."
+  },
+  {
+    "id": 248,
+    "name": "Eska",
+    "design": "Eska, pale brown-skinned young woman, long straight black hair, sharply lined dark eyes, northern blue fur Water Tribe robes. Tier 1 simple blue fur robe; tier 2 reinforced polar mantle gloves northern sash; tier 3 deep blue ceremonial layered dress monumental fur collar icy ornaments. Attack compact ice spike, cast short aqua ice ribbon, full robe hem visible."
+  },
+  {
+    "id": 249,
+    "name": "Zaheer",
+    "design": "Zaheer, lean adult man with shaved head and dark short beard, gray dark martial robes, no Air Nomad tattoos. Tier 1 rough gray travel tunic; tier 2 layered dark monk robe red sash wrist guards; tier 3 flowing black red ceremonial Red Lotus mantle lightweight shoulders long ribbons. Attack circular air palm, cast compact sharp wind spiral. Feet complete, modest floating only cast."
+  },
+  {
+    "id": 250,
+    "name": "Ghazan",
+    "design": "Ghazan, muscular tan adult male with shaggy black hair and beard, dark tattoos on arms chest, brown trousers. Tier 1 tattooed bare chest rough pants boots; tier 2 bronze arm guards earth fighting sash; tier 3 layered volcanic bronze armor short red mantle massive bronze gauntlets. Attack rock punch, cast compact glowing orange lava ribbon."
+  },
+  {
+    "id": 251,
+    "name": "Ming-Hua",
+    "design": "Ming-Hua, slim adult woman with wild dark hair and pale tan skin, born without biological arms; WATER tentacle arms only, never human arms. Tier 1 dark blue travel outfit short water arms; tier 2 flexible layered blue robes leg armor and shaped water blades; tier 3 blue silver ceremonial layered attire larger water arm coils. Both legs boots visible. Attack water tentacle slash, cast compact double aqua spiral."
+  },
+  {
+    "id": 252,
+    "name": "P'Li",
+    "design": "P'Li, tall athletic pale adult woman with black hair shaved on sides and topknot, THIRD EYE tattoo on forehead, crimson dark martial clothes. Tier 1 red tunic forehead tattoo; tier 2 layered light armor black sash; tier 3 ceremonial crimson gold layered armor flame collar. Attack palm feint, cast compact combustion spark emerging from forehead, no huge beam crossing cell."
+  },
+  {
+    "id": 253,
+    "name": "Amon",
+    "design": "Amon, masked adult male, iconic white mask with red vertical forehead symbol and black facial lines, dark green Equalist coat, hood. Tier 1 simple coat white mask; tier 2 layered light armor gloves command cape; tier 3 elaborate green black ceremonial coat high collar engraved white red mask. Attack martial palm, cast restrained fingers with subtle dark aqua chi threads. No gore."
+  },
+  {
+    "id": 254,
+    "name": "Tarrlok",
+    "design": "Tarrlok, brown-skinned adult politician with black slicked back hair and angular face, formal blue white Water Tribe coat. Tier 1 formal blue coat office sash; tier 2 layered formal mantle gloves water cuffs; tier 3 ornate blue silver ceremonial long coat imperial collar Republic emblems. Attack water palm, cast small dark aqua binding threads no gore."
+  },
+  {
+    "id": 255,
+    "name": "Kai",
+    "design": "Kai, lean young brown-haired boy, brown skin, orange Air Nomad apprentice tunic. Tier 1 orange short travel tunic; tier 2 lightweight layered scout robe gloves wooden glider; tier 3 white orange ceremonial short mantle broad sash silver glider. Attack agile wind palm, cast compact wind ribbon. Keep young proportions."
+  },
+  {
+    "id": 256,
+    "name": "Naga",
+    "design": "Naga, large WHITE polar bear dog with four legs, friendly dog face broad bear body. Never human. Tier 1 blue harness; tier 2 reinforced saddle leather guards; tier 3 elaborate blue silver ceremonial saddle light polar armor ribbons. No rider. Walk two grounded contacts, attack short paw strike, cast protective roar with compact frosty breath, full body tail feet contained."
+  },
+  {
+    "id": 257,
+    "name": "Pabu",
+    "design": "Pabu, small RED fire ferret with white face mask and striped red tail, four paws, playful animal. He is a non-bending animal, do NOT depict literal fire powers. Tier 1 natural red fur; tier 2 tiny green scout vest; tier 3 small copper ceremonial breastplate pro-bending sash and ribbons. Attack paw swipe, cast distracting playful flourish with no magical element. Full animal body and tail inside each cell."
+  },
+  {
+    "id": 258,
+    "name": "Raava",
+    "design": "Raava, nonhumanoid white cyan luminous kite-like winged spirit with symmetrical curving dark-blue patterns and flowing tapered ribbons, no human face arms legs. Tier 1 compact narrow-wing spirit; tier 2 broader wing silhouette longer patterned ribbons; tier 3 grand multilayered ceremonial spirit wings gold cyan ornaments long luminous tail. All 6 poses fully show spirit body and tail, walking is drifting alternating wing contacts, attack short light sweep, cast compact white orb. Transparent all background."
+  },
+  {
+    "id": 259,
+    "name": "Vaatu",
+    "design": "Vaatu, nonhumanoid black red kite-like winged spirit with crimson flowing patterns and tapered tentacle ribbons, no human face arms legs. Tier 1 compact narrow-wing shadow spirit; tier 2 broad spiky wings and red ribbons; tier 3 grand layered black crimson ceremonial spirit silhouette armored spiritual plates long red tail. Walking is drifting alternating wings, attack dark energy sweep, cast compact red black orb. Full shape and tail complete all poses."
+  },
+  {
+    "id": 260,
+    "name": "Wan Shi Tong",
+    "design": "Wan Shi Tong, giant dark brown black owl spirit, pale white owl face black eyes, long powerful legs and broad feather wings. Remain owl, not human wizard. Tier 1 simple owl feathers; tier 2 broad wings ancient collar silver feather armor; tier 3 grand owl silhouette ceremonial layered feather mantle golden ornaments. Grounded walking, attack wing slash, cast compact amber knowledge sigil beside claw, all complete bird poses."
+  },
+  {
+    "id": 261,
+    "name": "Koh",
+    "design": "Koh the Face Stealer, supernatural CENTIPEDE spirit with coiled dark segmented body many small legs and a pale humanlike mask face on head. Never normal human body. Tier 1 small coiled dark centipede white face mask; tier 2 reinforced dark carapace amber eyes hanging face ornaments; tier 3 large layered black red ceremonial carapace silver ancestral face mask. Keep body coil compact fully inside each slot. Walk alternates leg contacts, attack head lunge, cast small amber mask sigil. No gore."
+  },
+  {
+    "id": 262,
+    "name": "Homem Combustão",
+    "design": "Combustion Man, enormous muscular bald male with third eye tattoo on forehead, dark beard, metal prosthetic RIGHT arm and metal lower leg, brown pants. Tier 1 bare torso forehead mark metal prosthesis; tier 2 bronze shoulder and arm guards sash; tier 3 imposing layered black gold ceremonial armor. Attack metal arm fist, cast small combustion spark at forehead, prostheses stay consistent all poses."
+  },
+  {
+    "id": 263,
+    "name": "Guru Pathik",
+    "design": "Guru Pathik, elderly brown-skinned sage with long white beard and white hair, peaceful face, simple white ascetic robe. Tier 1 plain white tunic sash wooden staff; tier 2 layered cream sage robe prayer beads cuffs; tier 3 flowing white gold ceremonial mantle seven colored subtle sash ornaments ancestral staff. Attack short staff tap, cast compact golden meditation orb. Full body feet visible or complete robe hem, no seated torso crop."
+  }
+]

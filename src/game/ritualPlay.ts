@@ -15,6 +15,13 @@ export const RITUAL_PLAY = {
   eclipse: {title:'A centelha no eclipse',verb:'Conduzir a centelha',instruction:'Mantenha a centelha dentro do caminho de luz. Use as setas ou arraste pelo campo.',sound:'Ressonância grave e coro distante',color:'#d0aedc'},
   requiem: {title:'As notas do despertar',verb:'Tocar o réquiem',instruction:'Toque ou pressione Espaço quando cada nota alcançar o centro. Acompanhe oito notas do despertar.',sound:'Cordas elétricas suaves e acorde grave',color:'#ca91bf'},
   'first-blood': {title:'A memória do primeiro sangue',verb:'Firmar o selo',instruction:'Toque ou pressione Espaço quando o círculo encontrar o selo dourado. Complete quatro selos da linhagem.',sound:'Sino de bronze e pulso ancestral',color:'#e6bf81'},
+  'air-discipline':{title:'As três janelas do vento',verb:'Segurar e liberar o sopro',instruction:'Segure Espaço ou o botão para conduzir o vento. Solte dentro da faixa iluminada em três sopros.',sound:'Flauta suave, vento e sinos claros',color:'#c6e9d9'},
+  'water-flow':{title:'A corrente que encontra o caminho',verb:'Conduzir a corrente',instruction:'Mantenha a luz dentro da corrente. Use as setas ou arraste pelo campo para acompanhar o fluxo.',sound:'Água corrente, gotas e cordas suaves',color:'#84d7ec'},
+  'earth-root':{title:'A memória dos quatro pilares',verb:'Firmar o pilar',instruction:'Observe os quatro pilares e repita a sequência. Use os botões ou as teclas 1 a 4.',sound:'Pedra, tambor grave e impacto de terra',color:'#c7b781'},
+  'fire-breath':{title:'O ritmo da chama',verb:'Controlar a chama',instruction:'Toque ou pressione Espaço quando a chama alcançar o centro. Complete oito pulsações de fogo.',sound:'Fogo crepitante, tambor e pulso quente',color:'#eeac75'},
+  'warrior-path':{title:'A sequência do guerreiro',verb:'Repetir a técnica',instruction:'Observe as técnicas acenderem e repita a sequência com os botões ou as teclas 1 a 4.',sound:'Metal, madeira e passos de treino',color:'#d6c49e'},
+  'spirit-balance':{title:'As quatro janelas do equilíbrio',verb:'Harmonizar o foco',instruction:'Toque ou pressione Espaço quando o círculo encontrar o selo. Harmonize quatro janelas de foco.',sound:'Sinos longos e harmônicos de meditação',color:'#bae2d5'},
+  'avatar-convergence':{title:'O caminho dos quatro elementos',verb:'Conduzir o equilíbrio',instruction:'Mantenha a centelha dentro do percurso dos quatro elementos. Use as setas ou arraste pelo campo.',sound:'Vento, água, pedra e chama em harmonia',color:'#e7d3a9'},
 } satisfies Record<PracticeId, { title: string; verb: string; instruction: string; sound: string; color: string }>;
 
 /** Participation improves learning by at most 20%; it never shortens integration. */

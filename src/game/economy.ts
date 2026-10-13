@@ -1,5 +1,6 @@
 import { characters, type Character } from "../data/characters";
 import { nextRandom } from "./roster";
+import { characterUnlocked } from '../data/collections';
 import type { PracticeId } from "./tribe";
 
 export interface Draft {
@@ -20,6 +21,7 @@ export const RITUAL_PRICES: Record<PracticeId, number> = {
   cacau: 44,
   consecration: 36, "blood-pact": 48, "soul-forge": 64, "speaker-seal": 56, "ancestral-song": 44, eclipse: 120,
   requiem:52, 'first-blood':88,
+  'air-discipline':36,'water-flow':44,'earth-root':52,'fire-breath':48,'warrior-path':36,'spirit-balance':64,'avatar-convergence':120,
 };
 /** Learned ritual bonuses raise the price; repeat XP never needs a waiting period. */
 export const ritualCost = (id: PracticeId, count = 0) =>
@@ -41,7 +43,7 @@ export function draftPool(
   excluded: number[] = [],
   rebirths = 0,
 ): Character[] {
-  return characters.filter((c) => c.cost <= era && (c.id < 101 || rebirths > 0) && !owned.includes(c.id) && !excluded.includes(c.id));
+  return characters.filter((c) => c.cost <= era && characterUnlocked(c.id,rebirths) && !owned.includes(c.id) && !excluded.includes(c.id));
 }
 /** Cost tiers use equal weights. Exhausted tiers disappear; candidates are sampled without replacement. */
 export function drawCandidates(

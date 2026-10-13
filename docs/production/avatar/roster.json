@@ -1,0 +1,2359 @@
+[
+  {
+    "id": 201,
+    "name": "Aang",
+    "title": "O Último Mestre do Ar",
+    "cost": 5,
+    "traits": [
+      "Nômades do Ar",
+      "Místico",
+      "Ciclo Avatar"
+    ],
+    "type": "Ranged",
+    "hp": [
+      965,
+      1737,
+      3127
+    ],
+    "attack": [
+      82,
+      148,
+      266
+    ],
+    "armor": 24,
+    "magicResist": 38,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 110,
+    "range": 4,
+    "ability": {
+      "name": "Esfera dos Quatro Elementos",
+      "description": "Domínio dos quatro elementos: 200/260/335% de ataque mágico em três presas, lentidão por 3 s, atordoamento de 0,5/0,8/1,1 s e escudo próprio de 12/18/24% da vida. A esfera também escuda dois aliados em 12/18/24% de sua vida."
+    },
+    "evolution": [
+      "Monge viajante: túnica laranja, faixa amarela e bastão simples.",
+      "Mestre dos elementos: robe em camadas, braçadeiras e bastão planador reforçado.",
+      "Avatar desperto: manto cerimonial dos quatro elementos, tatuagens luminosas e planador ancestral."
+    ],
+    "art": "avatar-201"
+  },
+  {
+    "id": 202,
+    "name": "Korra",
+    "title": "A Ponte entre os Mundos",
+    "cost": 5,
+    "traits": [
+      "Tribos da Água",
+      "Brigão",
+      "Ciclo Avatar"
+    ],
+    "type": "Melee",
+    "hp": [
+      1150,
+      2070,
+      3726
+    ],
+    "attack": [
+      78,
+      140,
+      253
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 110,
+    "range": 1,
+    "ability": {
+      "name": "Convergência Espiritual",
+      "description": "Domínio dos quatro elementos: 200/260/335% de ataque mágico em três presas, lentidão por 3 s, atordoamento de 0,5/0,8/1,1 s e escudo próprio de 12/18/24% da vida. O impacto recupera 8/12/16% de sua vida e limpa maldição."
+    },
+    "evolution": [
+      "Atleta da água: túnica azul sem mangas, faixa e botas de viagem.",
+      "Mestre da República: proteção de ombros, luvas e vestes azuis reforçadas.",
+      "Avatar equilibrada: cabelo curto, manto azul cerimonial, adornos dos quatro elementos e energia espiritual."
+    ],
+    "art": "avatar-202"
+  },
+  {
+    "id": 203,
+    "name": "Katara",
+    "title": "A Mestra das Marés",
+    "cost": 3,
+    "traits": [
+      "Tribos da Água",
+      "Xamã"
+    ],
+    "type": "Ranged",
+    "hp": [
+      785,
+      1413,
+      2543
+    ],
+    "attack": [
+      68,
+      122,
+      220
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Maré Restauradora",
+      "description": "Cura os três aliados mais feridos em 180/240/320% de ataque, remove veneno e maldição e concede 8/12/18 de mana. A cura também remove lentidão dos três aliados."
+    },
+    "evolution": [
+      "Aprendiz: vestido azul de viagem e bolsa de água.",
+      "Mestra: robe azul em camadas, braçadeiras e frasco ornamental.",
+      "Guardiã das marés: manto branco e azul bordado, colar ancestral e veste de cura."
+    ],
+    "art": "avatar-203"
+  },
+  {
+    "id": 204,
+    "name": "Sokka",
+    "title": "O Estrategista do Bumerangue",
+    "cost": 1,
+    "traits": [
+      "Tribos da Água",
+      "Caçador"
+    ],
+    "type": "Ranged",
+    "hp": [
+      605,
+      1089,
+      1960
+    ],
+    "attack": [
+      54,
+      97,
+      175
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Bumerangue de Volta",
+      "description": "Armas de arremesso em três presas: 170/220/285% de ataque físico; a presa recebe um segundo golpe de 60/80/110%. Marca a presa e concede +8/12/18% de velocidade a dois aliados por 4 s."
+    },
+    "evolution": [
+      "Explorador: colete azul, bumerangue de madeira e botas.",
+      "Guerreiro: armadura de couro, espada e bumerangue reforçado.",
+      "Estrategista veterano: armadura cerimonial das tribos, capa curta e espada de meteorito."
+    ],
+    "art": "avatar-204"
+  },
+  {
+    "id": 205,
+    "name": "Toph",
+    "title": "A Voz Sísmica",
+    "cost": 4,
+    "traits": [
+      "Reino da Terra",
+      "Guardião"
+    ],
+    "type": "Melee",
+    "hp": [
+      1060,
+      1908,
+      3434
+    ],
+    "attack": [
+      71,
+      128,
+      230
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Pulso Sísmico",
+      "description": "Abalo em três presas: 180/235/305% de ataque físico; atordoa a presa por 0,6/0,9/1,2 s e concede escudo de 12/18/24% da vida. Revela a furtividade de três presas e recebe +12/20/30 de armadura por 5 s."
+    },
+    "evolution": [
+      "Lutadora: túnica verde, faixa clara e pés descalços.",
+      "Mestra sísmica: vestes de combate, punhos de metal e ombreiras leves.",
+      "Fundadora do metal: armadura de jade e aço, grande faixa cerimonial e braceletes esculpidos."
+    ],
+    "art": "avatar-205"
+  },
+  {
+    "id": 206,
+    "name": "Zuko",
+    "title": "A Chama que Escolheu o Equilíbrio",
+    "cost": 3,
+    "traits": [
+      "Nação do Fogo",
+      "Brigão"
+    ],
+    "type": "Melee",
+    "hp": [
+      970,
+      1746,
+      3143
+    ],
+    "attack": [
+      64,
+      115,
+      207
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Chama da Reconciliação",
+      "description": "Chama em três presas: 175/230/300% de ataque mágico e feridas por 4 s. Redireciona energia: +20/30/45 de RM por 4 s."
+    },
+    "evolution": [
+      "Príncipe errante: roupas vermelhas de viagem e espadas duplas.",
+      "Mestre do fogo: armadura leve vermelha, faixa dourada e lâminas trabalhadas.",
+      "Senhor do fogo: armadura cerimonial, manto rubro e diadema da chama."
+    ],
+    "art": "avatar-206"
+  },
+  {
+    "id": 207,
+    "name": "Azula",
+    "title": "A Princesa da Chama Azul",
+    "cost": 4,
+    "traits": [
+      "Nação do Fogo",
+      "Místico"
+    ],
+    "type": "Ranged",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 38,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Raio da Chama Azul",
+      "description": "Raio em cadeia contra três presas: 190/250/325% de ataque mágico; a presa principal perde 15/22/30 de mana. O raio reduz a cura da presa por 4 s."
+    },
+    "evolution": [
+      "Prodígio: uniforme vermelho e preto e coque alto.",
+      "Princesa guerreira: armadura dourada, ombreiras e faixa real.",
+      "Chama azul desperta: armadura real em camadas, coroa da fênix e longo manto negro."
+    ],
+    "art": "avatar-207"
+  },
+  {
+    "id": 208,
+    "name": "Iroh",
+    "title": "O Dragão do Oeste",
+    "cost": 4,
+    "traits": [
+      "Nação do Fogo",
+      "Xamã",
+      "Lótus Branca"
+    ],
+    "type": "Ranged",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Sopro do Dragão",
+      "description": "Chama em três presas: 175/230/300% de ataque mágico e feridas por 4 s. Seu chá restaura 12/18/25 de mana a três aliados."
+    },
+    "evolution": [
+      "Viajante do chá: robe verde e bule de cobre.",
+      "Dragão do Oeste: robe vermelho e dourado, faixa da Lótus e proteção de braços.",
+      "Mestre da Lótus: manto cerimonial branco e rubro, bordados de dragões e bule ancestral."
+    ],
+    "art": "avatar-208"
+  },
+  {
+    "id": 209,
+    "name": "Ozai",
+    "title": "O Senhor da Fênix",
+    "cost": 5,
+    "traits": [
+      "Nação do Fogo",
+      "Místico"
+    ],
+    "type": "Ranged",
+    "hp": [
+      965,
+      1737,
+      3127
+    ],
+    "attack": [
+      82,
+      148,
+      266
+    ],
+    "armor": 24,
+    "magicResist": 38,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Domínio da Fênix",
+      "description": "Chama em três presas: 175/230/300% de ataque mágico e feridas por 4 s. Deixa uma zona de fogo de 3 s com 30/40/55% de ataque por segundo."
+    },
+    "evolution": [
+      "Senhor do fogo: robe negro, faixa rubra e diadema.",
+      "Imperador: armadura real dourada e capa de guerra.",
+      "Rei Fênix: placas monumentais de ouro, coroa alta e manto de penas de fogo."
+    ],
+    "art": "avatar-209"
+  },
+  {
+    "id": 210,
+    "name": "Piandao",
+    "title": "O Mestre da Espada",
+    "cost": 2,
+    "traits": [
+      "Nação do Fogo",
+      "Espreitador",
+      "Lótus Branca"
+    ],
+    "type": "Melee",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.85,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Lâmina do Meteoro",
+      "description": "Corte contra duas presas: 200/265/345% de ataque físico e evasão por 0,4/0,6/0,8 s. O corte ignora 15/25/35 de armadura da presa por 4 s."
+    },
+    "evolution": [
+      "Instrutor: túnica verde e espada simples.",
+      "Mestre: robe de seda, luvas e espada de meteorito.",
+      "Lâmina da Lótus: veste cerimonial verde e dourada, grande faixa e espada negra ornamentada."
+    ],
+    "art": "avatar-210"
+  },
+  {
+    "id": 211,
+    "name": "Roku",
+    "title": "A Memória do Vulcão",
+    "cost": 5,
+    "traits": [
+      "Nação do Fogo",
+      "Místico",
+      "Ciclo Avatar"
+    ],
+    "type": "Ranged",
+    "hp": [
+      965,
+      1737,
+      3127
+    ],
+    "attack": [
+      82,
+      148,
+      266
+    ],
+    "armor": 24,
+    "magicResist": 38,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 110,
+    "range": 4,
+    "ability": {
+      "name": "Memória do Vulcão",
+      "description": "Domínio dos quatro elementos: 200/260/335% de ataque mágico em três presas, lentidão por 3 s, atordoamento de 0,5/0,8/1,1 s e escudo próprio de 12/18/24% da vida. O domínio deixa fogo por 3 s, em 25/35/45% de ataque por segundo."
+    },
+    "evolution": [
+      "Sábio ancestral: robe rubro, barba branca e diadema simples.",
+      "Avatar mestre: manto vermelho e dourado, ombreiras e bastão cerimonial.",
+      "Memória desperta: grande manto ancestral dos quatro elementos, diadema de fogo e bordados de lava."
+    ],
+    "art": "avatar-211"
+  },
+  {
+    "id": 212,
+    "name": "Kyoshi",
+    "title": "A Justiça de Pedra",
+    "cost": 5,
+    "traits": [
+      "Reino da Terra",
+      "Guardião",
+      "Ciclo Avatar"
+    ],
+    "type": "Melee",
+    "hp": [
+      1150,
+      2070,
+      3726
+    ],
+    "attack": [
+      78,
+      140,
+      253
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 110,
+    "range": 1,
+    "ability": {
+      "name": "Ilha da Justiça",
+      "description": "Domínio dos quatro elementos: 200/260/335% de ataque mágico em três presas, lentidão por 3 s, atordoamento de 0,5/0,8/1,1 s e escudo próprio de 12/18/24% da vida. Provoca por 2 s e recebe +20/35/50 de armadura por 4 s."
+    },
+    "evolution": [
+      "Guerreira: robe verde, pintura branca e leques de madeira.",
+      "Avatar: armadura verde, ombreiras e leques dourados.",
+      "Justiça ancestral: manto de jade em camadas, diadema monumental e leques cerimoniais de metal."
+    ],
+    "art": "avatar-212"
+  },
+  {
+    "id": 213,
+    "name": "Wan",
+    "title": "O Primeiro Avatar",
+    "cost": 4,
+    "traits": [
+      "Nação do Fogo",
+      "Místico",
+      "Ciclo Avatar"
+    ],
+    "type": "Ranged",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 38,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 110,
+    "range": 4,
+    "ability": {
+      "name": "Pacto de Raava",
+      "description": "Domínio dos quatro elementos: 200/260/335% de ataque mágico em três presas, lentidão por 3 s, atordoamento de 0,5/0,8/1,1 s e escudo próprio de 12/18/24% da vida. Purifica maldição e recebe 15/22/30% de ataque por 4 s."
+    },
+    "evolution": [
+      "Viajante: roupas terrosas, lenço e sandálias.",
+      "Guardião: robe rubro, faixa azul e braçadeiras.",
+      "Primeiro Avatar: manto cerimonial com padrões de Raava, faixa dos elementos e adornos ancestrais."
+    ],
+    "art": "avatar-213"
+  },
+  {
+    "id": 214,
+    "name": "Kuruk",
+    "title": "O Caçador de Espíritos",
+    "cost": 4,
+    "traits": [
+      "Tribos da Água",
+      "Brigão",
+      "Ciclo Avatar"
+    ],
+    "type": "Melee",
+    "hp": [
+      1060,
+      1908,
+      3434
+    ],
+    "attack": [
+      71,
+      128,
+      230
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 110,
+    "range": 1,
+    "ability": {
+      "name": "Caçada do Véu",
+      "description": "Domínio dos quatro elementos: 200/260/335% de ataque mágico em três presas, lentidão por 3 s, atordoamento de 0,5/0,8/1,1 s e escudo próprio de 12/18/24% da vida. Remove veneno e maldição de dois aliados e lhes escuda em 8/12/18% de sua vida."
+    },
+    "evolution": [
+      "Caçador: pele azul e branca e lança curta.",
+      "Avatar das neves: casaco de peles, braçadeiras e lança ancestral.",
+      "Guardião espiritual: manto polar cerimonial, capuz de urso e lança dos quatro elementos."
+    ],
+    "art": "avatar-214"
+  },
+  {
+    "id": 215,
+    "name": "Yangchen",
+    "title": "A Voz do Equilíbrio",
+    "cost": 4,
+    "traits": [
+      "Nômades do Ar",
+      "Xamã",
+      "Ciclo Avatar"
+    ],
+    "type": "Ranged",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 110,
+    "range": 4,
+    "ability": {
+      "name": "Voz do Céu",
+      "description": "Domínio dos quatro elementos: 200/260/335% de ataque mágico em três presas, lentidão por 3 s, atordoamento de 0,5/0,8/1,1 s e escudo próprio de 12/18/24% da vida. Sua voz interrompe a presa por 0,8/1/1,3 s."
+    },
+    "evolution": [
+      "Monja: túnica amarela, mangas laranja e bastão.",
+      "Avatar do ar: robe amplo, braçadeiras e planador cerimonial.",
+      "Voz ancestral: manto branco e dourado em camadas, faixa dos elementos e tatuagens luminosas."
+    ],
+    "art": "avatar-215"
+  },
+  {
+    "id": 216,
+    "name": "Suki",
+    "title": "A Capitã de Kyoshi",
+    "cost": 2,
+    "traits": [
+      "Reino da Terra",
+      "Guardião"
+    ],
+    "type": "Melee",
+    "hp": [
+      880,
+      1584,
+      2851
+    ],
+    "attack": [
+      57,
+      103,
+      185
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Guarda dos Leques",
+      "description": "Corte contra duas presas: 200/265/345% de ataque físico e evasão por 0,4/0,6/0,8 s. Protege dois aliados com escudo de 10/15/22% de sua vida."
+    },
+    "evolution": [
+      "Recruta: vestido verde e leques de madeira.",
+      "Capitã: armadura verde, pintura de guerra e leques metálicos.",
+      "Guardiã de Kyoshi: armadura cerimonial, manto curto e leques de jade e aço."
+    ],
+    "art": "avatar-216"
+  },
+  {
+    "id": 217,
+    "name": "Ty Lee",
+    "title": "O Toque que Fecha o Chi",
+    "cost": 2,
+    "traits": [
+      "Nação do Fogo",
+      "Espreitador"
+    ],
+    "type": "Melee",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.85,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Toques do Chi",
+      "description": "Avança à presa mais distante, golpe de 210/280/360% de ataque físico, atordoa por 0,6/0,9/1,2 s e drena 15/25/35 de mana. Recebe evasão por 0,4/0,6/0,8 s após bloquear o chi."
+    },
+    "evolution": [
+      "Acrobata: conjunto rosa, faixa e trança.",
+      "Lutadora: vestes de combate rosa e protetores de punhos.",
+      "Mestra do chi: conjunto cerimonial rosa e dourado, faixa longa e braçadeiras trabalhadas."
+    ],
+    "art": "avatar-217"
+  },
+  {
+    "id": 218,
+    "name": "Mai",
+    "title": "A Precisão Silenciosa",
+    "cost": 1,
+    "traits": [
+      "Nação do Fogo",
+      "Caçador"
+    ],
+    "type": "Ranged",
+    "hp": [
+      605,
+      1089,
+      1960
+    ],
+    "attack": [
+      54,
+      97,
+      175
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Agulhas Silenciosas",
+      "description": "Armas de arremesso em três presas: 170/220/285% de ataque físico; a presa recebe um segundo golpe de 60/80/110%. Os punhais desaceleram duas presas por 3 s."
+    },
+    "evolution": [
+      "Atiradora: robe vinho e agulhas de metal.",
+      "Guerreira: casaco bordado, luvas e punhais duplos.",
+      "Precisão desperta: manto vinho e negro em camadas, gola alta e punhais cerimoniais."
+    ],
+    "art": "avatar-218"
+  },
+  {
+    "id": 219,
+    "name": "Jet",
+    "title": "A Lâmina da Floresta",
+    "cost": 1,
+    "traits": [
+      "Reino da Terra",
+      "Espreitador"
+    ],
+    "type": "Melee",
+    "hp": [
+      605,
+      1089,
+      1960
+    ],
+    "attack": [
+      54,
+      97,
+      175
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.85,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Ganchos da Rebelião",
+      "description": "Corte contra duas presas: 200/265/345% de ataque físico e evasão por 0,4/0,6/0,8 s. Recupera 10/15/20% do dano do golpe."
+    },
+    "evolution": [
+      "Rebelde: colete marrom e espadas gancho.",
+      "Combatente: proteção de couro, faixa verde e ganchos reforçados.",
+      "Veterano da floresta: armadura em camadas, capa curta de folhas e grandes espadas gancho."
+    ],
+    "art": "avatar-219"
+  },
+  {
+    "id": 220,
+    "name": "Long Feng",
+    "title": "A Mão Oculta de Ba Sing Se",
+    "cost": 3,
+    "traits": [
+      "Reino da Terra",
+      "Trapaceiro"
+    ],
+    "type": "Ranged",
+    "hp": [
+      785,
+      1413,
+      2543
+    ],
+    "attack": [
+      68,
+      122,
+      220
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Mãos de Pedra",
+      "description": "Abalo em três presas: 180/235/305% de ataque físico; atordoa a presa por 0,6/0,9/1,2 s e concede escudo de 12/18/24% da vida. A prisão drena 15/22/30 de mana da presa."
+    },
+    "evolution": [
+      "Ministro: robe verde escuro e faixa simples.",
+      "Dai Li: casaco estruturado, luvas de pedra e chapéu alto.",
+      "Mão oculta: manto imperial verde e dourado, luvas de jade e selo da cidade."
+    ],
+    "art": "avatar-220"
+  },
+  {
+    "id": 221,
+    "name": "Zhao",
+    "title": "O Almirante das Chamas",
+    "cost": 2,
+    "traits": [
+      "Nação do Fogo",
+      "Brigão"
+    ],
+    "type": "Melee",
+    "hp": [
+      880,
+      1584,
+      2851
+    ],
+    "attack": [
+      57,
+      103,
+      185
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Fogo do Almirante",
+      "description": "Chama em três presas: 175/230/300% de ataque mágico e feridas por 4 s. Aplica feridas por 3/4/5 s na presa."
+    },
+    "evolution": [
+      "Oficial: uniforme vermelho e proteção de braços.",
+      "Almirante: armadura negra e dourada e faixa naval.",
+      "Conquistador: placas de ouro, manto naval e diadema de chama."
+    ],
+    "art": "avatar-221"
+  },
+  {
+    "id": 222,
+    "name": "Rei Bumi",
+    "title": "O Gênio de Omashu",
+    "cost": 3,
+    "traits": [
+      "Reino da Terra",
+      "Guardião",
+      "Lótus Branca"
+    ],
+    "type": "Melee",
+    "hp": [
+      970,
+      1746,
+      3143
+    ],
+    "attack": [
+      64,
+      115,
+      207
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Quebra-Montanhas",
+      "description": "Abalo em três presas: 180/235/305% de ataque físico; atordoa a presa por 0,6/0,9/1,2 s e concede escudo de 12/18/24% da vida. Sua rocha escuda a si em mais 8/12/18% da vida."
+    },
+    "evolution": [
+      "Sábio excêntrico: túnica verde e coroa discreta.",
+      "Rei de Omashu: casaco real, ombreiras e punhos de pedra.",
+      "Mestre desperto: manto de jade e ouro, coroa ampla e grandes braçadeiras rochosas."
+    ],
+    "art": "avatar-222"
+  },
+  {
+    "id": 223,
+    "name": "Jeong Jeong",
+    "title": "A Chama Disciplinada",
+    "cost": 3,
+    "traits": [
+      "Nação do Fogo",
+      "Guardião",
+      "Lótus Branca"
+    ],
+    "type": "Melee",
+    "hp": [
+      970,
+      1746,
+      3143
+    ],
+    "attack": [
+      64,
+      115,
+      207
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Muralha de Chamas",
+      "description": "Chama em três presas: 175/230/300% de ataque mágico e feridas por 4 s. Uma barreira concede 10/15/22% de sua vida em escudo a dois aliados."
+    },
+    "evolution": [
+      "Ermitão: robe verde escuro e faixa de tecido.",
+      "Instrutor: manto largo, luvas e proteção de ombros.",
+      "Mestre da Lótus: robe cerimonial branco e verde, faixa rubra e bordados de chama."
+    ],
+    "art": "avatar-223"
+  },
+  {
+    "id": 224,
+    "name": "Pakku",
+    "title": "O Mestre do Norte",
+    "cost": 3,
+    "traits": [
+      "Tribos da Água",
+      "Místico",
+      "Lótus Branca"
+    ],
+    "type": "Ranged",
+    "hp": [
+      785,
+      1413,
+      2543
+    ],
+    "attack": [
+      68,
+      122,
+      220
+    ],
+    "armor": 24,
+    "magicResist": 38,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Prisão Polar",
+      "description": "Estilhaços contra três presas: 165/220/290% de ataque mágico, lentidão por 4 s e atordoamento da presa principal por 0,5/0,8/1,1 s. O gelo prolonga a lentidão em 1/2/3 s."
+    },
+    "evolution": [
+      "Instrutor: túnica azul e gola de pele.",
+      "Mestre: casaco polar, braceletes e faixa branca.",
+      "Lótus das neves: manto branco e azul cerimonial, capuz esculpido e adornos de gelo."
+    ],
+    "art": "avatar-224"
+  },
+  {
+    "id": 225,
+    "name": "Hama",
+    "title": "A Memória da Lua Escura",
+    "cost": 2,
+    "traits": [
+      "Tribos da Água",
+      "Trapaceiro"
+    ],
+    "type": "Ranged",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Fios da Lua",
+      "description": "Imobiliza duas presas por 0,8/1,1/1,4 s, causa 140/190/250% de ataque mágico e drena 15/25/35 de mana. O bloqueio é temporário. A prisão também reduz o ataque da presa em 8/12/18% por 4 s."
+    },
+    "evolution": [
+      "Viajante: robe cinza e azul e bolsa de água.",
+      "Mestra da lua: túnica longa, luvas e colar escuro.",
+      "Lua escura: manto cerimonial azul profundo, bordados de lua e véu de prata."
+    ],
+    "art": "avatar-225"
+  },
+  {
+    "id": 226,
+    "name": "Hakoda",
+    "title": "O Escudo do Sul",
+    "cost": 1,
+    "traits": [
+      "Tribos da Água",
+      "Guardião"
+    ],
+    "type": "Melee",
+    "hp": [
+      790,
+      1422,
+      2560
+    ],
+    "attack": [
+      50,
+      90,
+      162
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Escudo do Sul",
+      "description": "Corte contra duas presas: 200/265/345% de ataque físico e evasão por 0,4/0,6/0,8 s. Recebe escudo de 12/18/24% da vida e provoca por 2 s."
+    },
+    "evolution": [
+      "Guerreiro: colete azul, lança e escudo simples.",
+      "Comandante: armadura de couro, pele branca e escudo reforçado.",
+      "Escudo ancestral: armadura cerimonial das tribos, capa polar e lança esculpida."
+    ],
+    "art": "avatar-226"
+  },
+  {
+    "id": 227,
+    "name": "Yue",
+    "title": "A Guardiã da Lua",
+    "cost": 3,
+    "traits": [
+      "Tribos da Água",
+      "Xamã",
+      "Mundo Espiritual"
+    ],
+    "type": "Ranged",
+    "hp": [
+      785,
+      1413,
+      2543
+    ],
+    "attack": [
+      68,
+      122,
+      220
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Bênção da Lua",
+      "description": "Pulso espiritual em três presas: 175/230/300% de ataque mágico. Escuda dois aliados em 8/12/18% da vida do conjurador. Cura dois aliados em 70/100/140% de ataque."
+    },
+    "evolution": [
+      "Princesa: cabelos brancos e vestido azul.",
+      "Vínculo lunar: robe branco e azul e diadema de prata.",
+      "Espírito da lua: grande manto branco cerimonial, coroa lunar e fitas de luz."
+    ],
+    "art": "avatar-227"
+  },
+  {
+    "id": 228,
+    "name": "Appa",
+    "title": "O Guardião dos Céus",
+    "cost": 3,
+    "traits": [
+      "Nômades do Ar",
+      "Guardião",
+      "Mundo Espiritual"
+    ],
+    "type": "Melee",
+    "hp": [
+      970,
+      1746,
+      3143
+    ],
+    "attack": [
+      64,
+      115,
+      207
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Cauda dos Céus",
+      "description": "Investida em duas presas: 190/250/325% de ataque físico e atordoamento de 0,5/0,8/1,1 s na presa principal. Sua cauda empurra a presa 0,4/0,6/0,8 casa e a desacelera por 3 s."
+    },
+    "evolution": [
+      "Companheiro: bisão de seis patas e sela simples.",
+      "Guardião: sela reforçada, proteções de couro e faixas do ar.",
+      "Guardião celestial: sela cerimonial dourada, armadura leve e grandes fitas de vento."
+    ],
+    "art": "avatar-228"
+  },
+  {
+    "id": 229,
+    "name": "Momo",
+    "title": "O Olho do Vento",
+    "cost": 1,
+    "traits": [
+      "Nômades do Ar",
+      "Trapaceiro",
+      "Mundo Espiritual"
+    ],
+    "type": "Ranged",
+    "hp": [
+      605,
+      1089,
+      1960
+    ],
+    "attack": [
+      54,
+      97,
+      175
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Batedor Alado",
+      "description": "Investida em duas presas: 190/250/325% de ataque físico e atordoamento de 0,5/0,8/1,1 s na presa principal. Marca três presas por 4 s e ganha evasão por 0,5 s."
+    },
+    "evolution": [
+      "Lêmure: pelagem clara e pequenas asas.",
+      "Batedor: colete de couro leve e faixa de monge.",
+      "Mensageiro celestial: peitoral cerimonial, adornos do ar e asas com fitas douradas."
+    ],
+    "art": "avatar-229"
+  },
+  {
+    "id": 230,
+    "name": "Tenzin",
+    "title": "O Pilar da Nação do Ar",
+    "cost": 3,
+    "traits": [
+      "Nômades do Ar",
+      "Guardião"
+    ],
+    "type": "Melee",
+    "hp": [
+      970,
+      1746,
+      3143
+    ],
+    "attack": [
+      64,
+      115,
+      207
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Torre de Vento",
+      "description": "Rajada contra três presas: 160/210/270% de ataque mágico, empurra 0,4/0,6/0,8 casa e desacelera por 3 s. Recebe +10/18/28 de armadura e RM por 4 s."
+    },
+    "evolution": [
+      "Instrutor: robe amarelo e laranja e bastão.",
+      "Mestre: manto amplo, luvas e planador reforçado.",
+      "Pilar do ar: robe cerimonial branco e dourado, braçadeiras e grande manto de vento."
+    ],
+    "art": "avatar-230"
+  },
+  {
+    "id": 231,
+    "name": "Jinora",
+    "title": "A Guia dos Espíritos",
+    "cost": 2,
+    "traits": [
+      "Nômades do Ar",
+      "Xamã"
+    ],
+    "type": "Ranged",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Projeção Espiritual",
+      "description": "Rajada contra três presas: 160/210/270% de ataque mágico, empurra 0,4/0,6/0,8 casa e desacelera por 3 s. Purifica maldição e devolve 10/15/22 de mana a dois aliados."
+    },
+    "evolution": [
+      "Aprendiz: robe laranja e cabelo castanho curto.",
+      "Mestra do ar: roupa de monja, tatuagens e planador.",
+      "Guia espiritual: manto branco e dourado, fitas de vento e adornos da meditação."
+    ],
+    "art": "avatar-231"
+  },
+  {
+    "id": 232,
+    "name": "Ikki",
+    "title": "A Mensageira do Ar",
+    "cost": 1,
+    "traits": [
+      "Nômades do Ar",
+      "Caçador"
+    ],
+    "type": "Ranged",
+    "hp": [
+      605,
+      1089,
+      1960
+    ],
+    "attack": [
+      54,
+      97,
+      175
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Recado do Vento",
+      "description": "Rajada contra três presas: 160/210/270% de ataque mágico, empurra 0,4/0,6/0,8 casa e desacelera por 3 s. O vento concede +10/15/22% de velocidade a si por 4 s."
+    },
+    "evolution": [
+      "Aprendiz: túnica laranja e duas mechas laterais.",
+      "Mensageira: robe leve, luvas e planador.",
+      "Asa desperta: manto branco e laranja, faixa cerimonial e planador dourado."
+    ],
+    "art": "avatar-232"
+  },
+  {
+    "id": 233,
+    "name": "Meelo",
+    "title": "O Pequeno Vendaval",
+    "cost": 1,
+    "traits": [
+      "Nômades do Ar",
+      "Brigão"
+    ],
+    "type": "Melee",
+    "hp": [
+      790,
+      1422,
+      2560
+    ],
+    "attack": [
+      50,
+      90,
+      162
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Pequeno Vendaval",
+      "description": "Rajada contra três presas: 160/210/270% de ataque mágico, empurra 0,4/0,6/0,8 casa e desacelera por 3 s. A rajada atordoa a presa por mais 0,2/0,3/0,4 s."
+    },
+    "evolution": [
+      "Aprendiz: túnica amarela e pés leves.",
+      "Lutador do vento: faixa laranja, braceletes e robe curto.",
+      "Vendaval desperto: veste cerimonial do ar, grande faixa e bastão de treino."
+    ],
+    "art": "avatar-233"
+  },
+  {
+    "id": 234,
+    "name": "Bumi do Ar",
+    "title": "O Comandante que Aprendeu a Voar",
+    "cost": 2,
+    "traits": [
+      "Nômades do Ar",
+      "Brigão"
+    ],
+    "type": "Melee",
+    "hp": [
+      880,
+      1584,
+      2851
+    ],
+    "attack": [
+      57,
+      103,
+      185
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Ordem do Comandante",
+      "description": "Rajada contra três presas: 160/210/270% de ataque mágico, empurra 0,4/0,6/0,8 casa e desacelera por 3 s. Sua ordem concede +8/12/18% de ataque a dois aliados por 4 s."
+    },
+    "evolution": [
+      "Comandante: casaco de viagem e faixa laranja.",
+      "Dobrador: robe militar do ar, proteção de braços e planador.",
+      "Veterano do vento: manto branco e vermelho cerimonial, ombreiras e planador de comando."
+    ],
+    "art": "avatar-234"
+  },
+  {
+    "id": 235,
+    "name": "Kya",
+    "title": "A Curadora dos Caminhos",
+    "cost": 2,
+    "traits": [
+      "Tribos da Água",
+      "Xamã"
+    ],
+    "type": "Ranged",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Mãos dos Caminhos",
+      "description": "Cura os três aliados mais feridos em 180/240/320% de ataque, remove veneno e maldição e concede 8/12/18 de mana. Limpa veneno e recebe +15/22/30 de RM por 4 s."
+    },
+    "evolution": [
+      "Viajante: robe azul e bolsa de água.",
+      "Curadora: manto azul e branco e braceletes.",
+      "Mestra dos caminhos: veste cerimonial de cura, grande faixa de ondas e frasco ancestral."
+    ],
+    "art": "avatar-235"
+  },
+  {
+    "id": 236,
+    "name": "Bolin",
+    "title": "A Rocha que Aprendeu a Arder",
+    "cost": 3,
+    "traits": [
+      "Cidade República",
+      "Brigão",
+      "Reino da Terra"
+    ],
+    "type": "Melee",
+    "hp": [
+      970,
+      1746,
+      3143
+    ],
+    "attack": [
+      64,
+      115,
+      207
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 90,
+    "range": 1,
+    "ability": {
+      "name": "Rio de Lava",
+      "description": "Campo de lava por 4 s: 35/48/65% de ataque mágico por segundo, lentidão e impacto de 140/190/250% em três presas. O impacto concede +12/18/25% de ataque por 4 s."
+    },
+    "evolution": [
+      "Atleta: uniforme verde e luvas de arena.",
+      "Dobrador de lava: armadura leve verde e faixa de combate.",
+      "Rocha desperta: armadura de jade e bronze, manto curto e braceletes vulcânicos."
+    ],
+    "art": "avatar-236"
+  },
+  {
+    "id": 237,
+    "name": "Mako da República",
+    "title": "A Centelha da República",
+    "cost": 3,
+    "traits": [
+      "Cidade República",
+      "Caçador",
+      "Nação do Fogo"
+    ],
+    "type": "Ranged",
+    "hp": [
+      785,
+      1413,
+      2543
+    ],
+    "attack": [
+      68,
+      122,
+      220
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Centelha da República",
+      "description": "Raio em cadeia contra três presas: 190/250/325% de ataque mágico; a presa principal perde 15/22/30 de mana. O raio devolve 10/15/22 de mana ao conjurador."
+    },
+    "evolution": [
+      "Atleta: casaco escuro e cachecol vermelho.",
+      "Protetor: uniforme de combate, luvas e faixa da arena.",
+      "Centelha desperta: armadura vermelha e negra, longo cachecol e braceletes de prata."
+    ],
+    "art": "avatar-237"
+  },
+  {
+    "id": 238,
+    "name": "Asami",
+    "title": "A Engenheira do Futuro",
+    "cost": 2,
+    "traits": [
+      "Cidade República",
+      "Trapaceiro"
+    ],
+    "type": "Ranged",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Luva de Choque",
+      "description": "Descarga de equipamento em duas presas: 170/225/295% de ataque mágico. Escuda o aliado mais ferido em 70/100/140% do ataque; não é dobra. Sua luva drena 10/15/22 de mana da presa."
+    },
+    "evolution": [
+      "Condutora: jaqueta vermelha, luva elétrica e botas.",
+      "Engenheira: casaco reforçado, proteção de braços e luva aperfeiçoada.",
+      "Mestre da inovação: armadura técnica vermelha e negra, capa curta e grande luva de energia."
+    ],
+    "art": "avatar-238"
+  },
+  {
+    "id": 239,
+    "name": "Lin Beifong",
+    "title": "A Muralha de Metal",
+    "cost": 3,
+    "traits": [
+      "Cidade República",
+      "Guardião",
+      "Reino da Terra"
+    ],
+    "type": "Melee",
+    "hp": [
+      970,
+      1746,
+      3143
+    ],
+    "attack": [
+      64,
+      115,
+      207
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Cabos da Lei",
+      "description": "Cabos contra duas presas: 180/240/310% de ataque físico, reduz 12/20/30 de armadura por 4 s; escuda a si em 15/22/30% da vida. A armadura reduz dano recebido em 8/12/18% por 4 s."
+    },
+    "evolution": [
+      "Patrulheira: uniforme cinza e braceletes.",
+      "Chefe de polícia: armadura de metal e cabos de captura.",
+      "Muralha desperta: placas cerimoniais de aço e jade, ombreiras e cabos reforçados."
+    ],
+    "art": "avatar-239"
+  },
+  {
+    "id": 240,
+    "name": "Suyin Beifong",
+    "title": "A Harmonia de Zaofu",
+    "cost": 3,
+    "traits": [
+      "Reino da Terra",
+      "Xamã"
+    ],
+    "type": "Ranged",
+    "hp": [
+      785,
+      1413,
+      2543
+    ],
+    "attack": [
+      68,
+      122,
+      220
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Dança do Metal",
+      "description": "Cabos contra duas presas: 180/240/310% de ataque físico, reduz 12/20/30 de armadura por 4 s; escuda a si em 15/22/30% da vida. Concede +10/18/28 de armadura a três aliados por 4 s."
+    },
+    "evolution": [
+      "Artista: túnica verde e punhos metálicos.",
+      "Mestra de Zaofu: armadura flexível, braceletes e faixa ornamental.",
+      "Harmonia desperta: manto de jade e prata, placas articuladas e leques de metal."
+    ],
+    "art": "avatar-240"
+  },
+  {
+    "id": 241,
+    "name": "Opal",
+    "title": "O Vento de Zaofu",
+    "cost": 2,
+    "traits": [
+      "Nômades do Ar",
+      "Xamã",
+      "Reino da Terra"
+    ],
+    "type": "Ranged",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Brisa de Zaofu",
+      "description": "Rajada contra três presas: 160/210/270% de ataque mágico, empurra 0,4/0,6/0,8 casa e desacelera por 3 s. O sopro escuda o aliado mais ferido em 10/16/22% de sua vida."
+    },
+    "evolution": [
+      "Iniciada: túnica verde e branca.",
+      "Dobradora do ar: robe laranja e planador.",
+      "Vento desperto: manto verde e dourado, faixas de monja e planador cerimonial."
+    ],
+    "art": "avatar-241"
+  },
+  {
+    "id": 242,
+    "name": "Kuvira",
+    "title": "A Grande Unificadora",
+    "cost": 4,
+    "traits": [
+      "Reino da Terra",
+      "Guardião"
+    ],
+    "type": "Melee",
+    "hp": [
+      1060,
+      1908,
+      3434
+    ],
+    "attack": [
+      71,
+      128,
+      230
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Grilhões da Unificação",
+      "description": "Cabos contra duas presas: 180/240/310% de ataque físico, reduz 12/20/30 de armadura por 4 s; escuda a si em 15/22/30% da vida. Seus grilhões provocam por 2 s e escudam a si em 8/12/18% de sua vida."
+    },
+    "evolution": [
+      "Oficial: uniforme verde e faixas de metal.",
+      "Comandante: armadura militar, ombreiras e cabos.",
+      "Unificadora: armadura imperial de jade e aço, capa de comando e placas cerimoniais."
+    ],
+    "art": "avatar-242"
+  },
+  {
+    "id": 243,
+    "name": "Zhu Li",
+    "title": "A Precisão que Faz Acontecer",
+    "cost": 1,
+    "traits": [
+      "Cidade República",
+      "Xamã"
+    ],
+    "type": "Ranged",
+    "hp": [
+      605,
+      1089,
+      1960
+    ],
+    "attack": [
+      54,
+      97,
+      175
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Reparo Preciso",
+      "description": "Descarga de equipamento em duas presas: 170/225/295% de ataque mágico. Escuda o aliado mais ferido em 70/100/140% do ataque; não é dobra. Restaura 12/18/25 de mana ao aliado mais ferido."
+    },
+    "evolution": [
+      "Assistente: casaco cinza e ferramentas.",
+      "Operadora: proteção técnica, luvas e dispositivo de reparo.",
+      "Precisão desperta: armadura de engenharia azul e prata, faixa de comando e grande ferramenta elétrica."
+    ],
+    "art": "avatar-243"
+  },
+  {
+    "id": 244,
+    "name": "Varrick",
+    "title": "O Inventor Improvável",
+    "cost": 2,
+    "traits": [
+      "Cidade República",
+      "Trapaceiro"
+    ],
+    "type": "Ranged",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Bobina Improvisada",
+      "description": "Descarga de equipamento em duas presas: 170/225/295% de ataque mágico. Escuda o aliado mais ferido em 70/100/140% do ataque; não é dobra. A invenção concede +8/12/18% de velocidade a dois aliados por 4 s."
+    },
+    "evolution": [
+      "Empresário: casaco de pele e dispositivo de bolso.",
+      "Inventor: colete técnico, luvas e bobina elétrica.",
+      "Visionário desperto: manto de engenharia, ombreiras de cobre e grande bobina portátil."
+    ],
+    "art": "avatar-244"
+  },
+  {
+    "id": 245,
+    "name": "Tonraq",
+    "title": "O Guardião do Sul",
+    "cost": 2,
+    "traits": [
+      "Tribos da Água",
+      "Guardião"
+    ],
+    "type": "Melee",
+    "hp": [
+      880,
+      1584,
+      2851
+    ],
+    "attack": [
+      57,
+      103,
+      185
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Punho Polar",
+      "description": "Maré contra três presas: 170/220/290% de ataque mágico, molha por 5 s e cura a si em 12/18/24% do dano. Recebe +12/18/25 de armadura por 4 s."
+    },
+    "evolution": [
+      "Guerreiro: colete azul e peles brancas.",
+      "Protetor: armadura polar, braceletes e faixa de comando.",
+      "Guardião ancestral: manto polar cerimonial, placas azuis e grandes punhos de gelo."
+    ],
+    "art": "avatar-245"
+  },
+  {
+    "id": 246,
+    "name": "Unalaq",
+    "title": "A Voz das Profundezas",
+    "cost": 4,
+    "traits": [
+      "Tribos da Água",
+      "Místico"
+    ],
+    "type": "Ranged",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 38,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Correntes das Profundezas",
+      "description": "Maré contra três presas: 170/220/290% de ataque mágico, molha por 5 s e cura a si em 12/18/24% do dano. O fluxo aplica maldição de 20/30/40% de ataque por segundo por 4 s."
+    },
+    "evolution": [
+      "Sábio: robe azul e gola branca.",
+      "Chefe do Norte: manto real, diadema e bolsa espiritual.",
+      "Voz sombria: grande manto azul e negro, coroa polar e símbolos espirituais."
+    ],
+    "art": "avatar-246"
+  },
+  {
+    "id": 247,
+    "name": "Desna",
+    "title": "A Lâmina de Gelo",
+    "cost": 2,
+    "traits": [
+      "Tribos da Água",
+      "Caçador"
+    ],
+    "type": "Ranged",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Estilhaços do Norte",
+      "description": "Estilhaços contra três presas: 165/220/290% de ataque mágico, lentidão por 4 s e atordoamento da presa principal por 0,5/0,8/1,1 s. O gelo marca duas presas por 4 s."
+    },
+    "evolution": [
+      "Nobre: túnica azul e peles claras.",
+      "Dobrador: manto polar reforçado e braceletes de gelo.",
+      "Lâmina desperta: vestes cerimoniais azuis e prateadas, grande gola e punhos esculpidos."
+    ],
+    "art": "avatar-247"
+  },
+  {
+    "id": 248,
+    "name": "Eska",
+    "title": "A Maré do Norte",
+    "cost": 2,
+    "traits": [
+      "Tribos da Água",
+      "Trapaceiro"
+    ],
+    "type": "Ranged",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Maré Congelante",
+      "description": "Estilhaços contra três presas: 165/220/290% de ataque mágico, lentidão por 4 s e atordoamento da presa principal por 0,5/0,8/1,1 s. Drena 10/15/22 de mana da presa congelada."
+    },
+    "evolution": [
+      "Nobre: robe azul, peles e cabelos longos.",
+      "Mestra polar: manto reforçado, luvas e faixa do Norte.",
+      "Maré desperta: veste cerimonial azul profunda, gola monumental e adornos de gelo."
+    ],
+    "art": "avatar-248"
+  },
+  {
+    "id": 249,
+    "name": "Zaheer",
+    "title": "O Vento sem Correntes",
+    "cost": 4,
+    "traits": [
+      "Nômades do Ar",
+      "Espreitador",
+      "Lótus Vermelha"
+    ],
+    "type": "Melee",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.85,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Vazio de Ar",
+      "description": "Rajada contra três presas: 160/210/270% de ataque mágico, empurra 0,4/0,6/0,8 casa e desacelera por 3 s. Recebe evasão por 0,6/0,8/1 s e avança à retaguarda."
+    },
+    "evolution": [
+      "Viajante: cabeça raspada e roupas cinza.",
+      "Dobrador livre: robe escuro, braçadeiras e faixa rubra.",
+      "Vento desperto: manto negro e vermelho em camadas, ombreiras leves e longas faixas."
+    ],
+    "art": "avatar-249"
+  },
+  {
+    "id": 250,
+    "name": "Ghazan",
+    "title": "O Rio de Lava",
+    "cost": 3,
+    "traits": [
+      "Reino da Terra",
+      "Brigão",
+      "Lótus Vermelha"
+    ],
+    "type": "Melee",
+    "hp": [
+      970,
+      1746,
+      3143
+    ],
+    "attack": [
+      64,
+      115,
+      207
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 90,
+    "range": 1,
+    "ability": {
+      "name": "Círculo Vulcânico",
+      "description": "Campo de lava por 4 s: 35/48/65% de ataque mágico por segundo, lentidão e impacto de 140/190/250% em três presas. Sua lava desacelera três presas por mais 2 s."
+    },
+    "evolution": [
+      "Errante: torso tatuado, calças terrosas e botas.",
+      "Dobrador de lava: proteção de bronze, faixa e braçadeiras.",
+      "Rio desperto: armadura vulcânica, manto rubro curto e grandes punhos de bronze."
+    ],
+    "art": "avatar-250"
+  },
+  {
+    "id": 251,
+    "name": "Ming-Hua",
+    "title": "Os Braços da Maré",
+    "cost": 3,
+    "traits": [
+      "Tribos da Água",
+      "Espreitador",
+      "Lótus Vermelha"
+    ],
+    "type": "Melee",
+    "hp": [
+      785,
+      1413,
+      2543
+    ],
+    "attack": [
+      68,
+      122,
+      220
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.85,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Braços da Maré",
+      "description": "Maré contra três presas: 170/220/290% de ataque mágico, molha por 5 s e cura a si em 12/18/24% do dano. A maré recupera mais 12/18/25% do dano causado."
+    },
+    "evolution": [
+      "Errante: roupas azuis e braços de água curtos.",
+      "Mestra: robe flexível, proteção de pernas e lâminas de água.",
+      "Maré desperta: veste cerimonial azul e prata e grandes braços aquáticos ornamentados."
+    ],
+    "art": "avatar-251"
+  },
+  {
+    "id": 252,
+    "name": "P'Li",
+    "title": "A Chama da Distância",
+    "cost": 4,
+    "traits": [
+      "Nação do Fogo",
+      "Caçador",
+      "Lótus Vermelha"
+    ],
+    "type": "Ranged",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Combustão Distante",
+      "description": "Explosão em três presas: 200/265/345% de ataque mágico; atordoa a presa principal por 0,6/0,9/1,2 s. A explosão ignora 10/18/28 de armadura da presa por 4 s."
+    },
+    "evolution": [
+      "Errante: túnica rubra e marca do terceiro olho.",
+      "Combatente: armadura leve, proteção de braços e faixa negra.",
+      "Chama desperta: veste cerimonial rubra, gola de fogo e placas douradas."
+    ],
+    "art": "avatar-252"
+  },
+  {
+    "id": 253,
+    "name": "Amon",
+    "title": "A Máscara do Silêncio",
+    "cost": 4,
+    "traits": [
+      "Cidade República",
+      "Trapaceiro"
+    ],
+    "type": "Ranged",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Bloqueio do Domínio",
+      "description": "Imobiliza duas presas por 0,8/1,1/1,4 s, causa 140/190/250% de ataque mágico e drena 15/25/35 de mana. O bloqueio é temporário. Silencia a mana da presa: remove mais 15/22/30 de mana e reduz seu ataque em 10% por 4 s."
+    },
+    "evolution": [
+      "Líder: máscara branca e casaco verde escuro.",
+      "Equalista: armadura leve, luvas e manto de comando.",
+      "Máscara desperta: casaco cerimonial verde e negro, gola monumental e máscara ornamentada."
+    ],
+    "art": "avatar-253"
+  },
+  {
+    "id": 254,
+    "name": "Tarrlok",
+    "title": "O Poder sob a Cortesia",
+    "cost": 3,
+    "traits": [
+      "Tribos da Água",
+      "Trapaceiro",
+      "Cidade República"
+    ],
+    "type": "Ranged",
+    "hp": [
+      785,
+      1413,
+      2543
+    ],
+    "attack": [
+      68,
+      122,
+      220
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Ordem do Sangue",
+      "description": "Imobiliza duas presas por 0,8/1,1/1,4 s, causa 140/190/250% de ataque mágico e drena 15/25/35 de mana. O bloqueio é temporário. Recebe escudo de 10/16/22% de sua vida após subjugar a presa."
+    },
+    "evolution": [
+      "Conselheiro: casaco azul e branco e faixa de cargo.",
+      "Dobrador: manto formal, luvas e braceletes de água.",
+      "Poder desperto: grande casaco cerimonial azul e prata, gola imperial e símbolos da República."
+    ],
+    "art": "avatar-254"
+  },
+  {
+    "id": 255,
+    "name": "Kai",
+    "title": "O Batedor do Novo Ar",
+    "cost": 1,
+    "traits": [
+      "Nômades do Ar",
+      "Espreitador"
+    ],
+    "type": "Melee",
+    "hp": [
+      605,
+      1089,
+      1960
+    ],
+    "attack": [
+      54,
+      97,
+      175
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.85,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Passo do Vento",
+      "description": "Rajada contra três presas: 160/210/270% de ataque mágico, empurra 0,4/0,6/0,8 casa e desacelera por 3 s. Marca a presa por 4 s e recebe +12/18/25% de velocidade por 4 s."
+    },
+    "evolution": [
+      "Aprendiz: túnica laranja e cabelos curtos.",
+      "Batedor: roupa leve, luvas e planador.",
+      "Asa desperta: manto curto branco e laranja, faixa ampla e planador de prata."
+    ],
+    "art": "avatar-255"
+  },
+  {
+    "id": 256,
+    "name": "Naga",
+    "title": "A Protetora da Neve",
+    "cost": 2,
+    "traits": [
+      "Tribos da Água",
+      "Guardião",
+      "Mundo Espiritual"
+    ],
+    "type": "Melee",
+    "hp": [
+      880,
+      1584,
+      2851
+    ],
+    "attack": [
+      57,
+      103,
+      185
+    ],
+    "armor": 44,
+    "magicResist": 25,
+    "attackSpeed": 0.65,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 1,
+    "ability": {
+      "name": "Guarda Polar",
+      "description": "Investida em duas presas: 190/250/325% de ataque físico e atordoamento de 0,5/0,8/1,1 s na presa principal. Provoca por 2 s e recebe escudo de 8/12/18% de sua vida."
+    },
+    "evolution": [
+      "Companheira: cão-urso polar branco e arreio azul.",
+      "Protetora: arreio reforçado, sela e proteção de couro.",
+      "Neve desperta: sela cerimonial azul e prata, armadura leve e fitas polares."
+    ],
+    "art": "avatar-256"
+  },
+  {
+    "id": 257,
+    "name": "Pabu",
+    "title": "A Centelha Curiosa",
+    "cost": 1,
+    "traits": [
+      "Cidade República",
+      "Trapaceiro",
+      "Mundo Espiritual"
+    ],
+    "type": "Ranged",
+    "hp": [
+      605,
+      1089,
+      1960
+    ],
+    "attack": [
+      54,
+      97,
+      175
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Distração Curiosa",
+      "description": "Investida em duas presas: 190/250/325% de ataque físico e atordoamento de 0,5/0,8/1,1 s na presa principal. Distrai duas presas: reduz ataque em 8/12/18% por 3 s."
+    },
+    "evolution": [
+      "Companheiro: furão vermelho e cauda listrada.",
+      "Batedor: colete leve e faixa verde.",
+      "Centelha desperta: peitoral cerimonial de cobre, faixa da arena e longas fitas."
+    ],
+    "art": "avatar-257"
+  },
+  {
+    "id": 258,
+    "name": "Raava",
+    "title": "A Luz do Equilíbrio",
+    "cost": 5,
+    "traits": [
+      "Mundo Espiritual",
+      "Xamã"
+    ],
+    "type": "Ranged",
+    "hp": [
+      965,
+      1737,
+      3127
+    ],
+    "attack": [
+      82,
+      148,
+      266
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Luz do Equilíbrio",
+      "description": "Pulso espiritual em três presas: 175/230/300% de ataque mágico. Escuda dois aliados em 8/12/18% da vida do conjurador. Cura três aliados em 70/100/140% de ataque e remove maldição."
+    },
+    "evolution": [
+      "Centelha: espírito branco e azul de asas estreitas.",
+      "Guardiã: asas alongadas, padrões luminosos e fitas de energia.",
+      "Luz ancestral: grande silhueta alada cerimonial, padrões dourados e cauda de luz."
+    ],
+    "art": "avatar-258"
+  },
+  {
+    "id": 259,
+    "name": "Vaatu",
+    "title": "A Sombra do Caos",
+    "cost": 5,
+    "traits": [
+      "Mundo Espiritual",
+      "Místico"
+    ],
+    "type": "Ranged",
+    "hp": [
+      965,
+      1737,
+      3127
+    ],
+    "attack": [
+      82,
+      148,
+      266
+    ],
+    "armor": 24,
+    "magicResist": 38,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Espiral do Caos",
+      "description": "Pulso espiritual em três presas: 175/230/300% de ataque mágico. Escuda dois aliados em 8/12/18% da vida do conjurador. Deixa domínio de 3 s em 25/35/45% de ataque por segundo e feridas."
+    },
+    "evolution": [
+      "Sombra: espírito negro e rubro de asas estreitas.",
+      "Caos: asas amplas, espinhos e fitas de energia.",
+      "Sombra ancestral: silhueta monumental negra e vermelha, placas espirituais e longa cauda rubra."
+    ],
+    "art": "avatar-259"
+  },
+  {
+    "id": 260,
+    "name": "Wan Shi Tong",
+    "title": "O Guardião dos Dez Mil Saberes",
+    "cost": 4,
+    "traits": [
+      "Mundo Espiritual",
+      "Místico"
+    ],
+    "type": "Ranged",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 38,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Lição dos Dez Mil",
+      "description": "Pulso espiritual em três presas: 175/230/300% de ataque mágico. Escuda dois aliados em 8/12/18% da vida do conjurador. Revela três presas e reduz sua mana em 10/15/22."
+    },
+    "evolution": [
+      "Coruja: penas escuras e rosto claro.",
+      "Guardião: asas amplas, colar ancestral e penas de prata.",
+      "Sabedoria desperta: silhueta de coruja monumental, manto de penas e adornos dourados."
+    ],
+    "art": "avatar-260"
+  },
+  {
+    "id": 261,
+    "name": "Koh",
+    "title": "O Ladrão de Rostos",
+    "cost": 4,
+    "traits": [
+      "Mundo Espiritual",
+      "Trapaceiro"
+    ],
+    "type": "Ranged",
+    "hp": [
+      875,
+      1575,
+      2835
+    ],
+    "attack": [
+      75,
+      135,
+      243
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Máscara Roubada",
+      "description": "Pulso espiritual em três presas: 175/230/300% de ataque mágico. Escuda dois aliados em 8/12/18% da vida do conjurador. A máscara reduz ataque da presa em 10/15/22% por 4 s."
+    },
+    "evolution": [
+      "Visitante: corpo segmentado escuro e máscara branca.",
+      "Colecionador: carapaça reforçada, olhos de âmbar e adornos de rostos.",
+      "Ladrão desperto: carapaça cerimonial, grandes placas vermelhas e máscara ancestral de prata."
+    ],
+    "art": "avatar-261"
+  },
+  {
+    "id": 262,
+    "name": "Homem Combustão",
+    "title": "O Olho da Explosão",
+    "cost": 3,
+    "traits": [
+      "Nação do Fogo",
+      "Caçador"
+    ],
+    "type": "Ranged",
+    "hp": [
+      785,
+      1413,
+      2543
+    ],
+    "attack": [
+      68,
+      122,
+      220
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 0,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Terceiro Olho",
+      "description": "Explosão em três presas: 200/265/345% de ataque mágico; atordoa a presa principal por 0,6/0,9/1,2 s. O impacto atordoa por mais 0,3/0,5/0,7 s."
+    },
+    "evolution": [
+      "Mercenário: torso marcado, calças e braço metálico.",
+      "Combatente: proteção de bronze, faixa e punhos reforçados.",
+      "Olho desperto: armadura cerimonial negra e dourada, ombreiras e marcas de chama."
+    ],
+    "art": "avatar-262"
+  },
+  {
+    "id": 263,
+    "name": "Guru Pathik",
+    "title": "O Caminho do Equilíbrio",
+    "cost": 2,
+    "traits": [
+      "Mundo Espiritual",
+      "Xamã"
+    ],
+    "type": "Ranged",
+    "hp": [
+      695,
+      1251,
+      2252
+    ],
+    "attack": [
+      61,
+      110,
+      198
+    ],
+    "armor": 24,
+    "magicResist": 25,
+    "attackSpeed": 0.7,
+    "manaStart": 25,
+    "manaMax": 75,
+    "range": 4,
+    "ability": {
+      "name": "Abertura dos Caminhos",
+      "description": "Cura os três aliados mais feridos em 180/240/320% de ataque, remove veneno e maldição e concede 8/12/18 de mana. Seu conselho concede +8/12/18% de ataque a três aliados por 4 s."
+    },
+    "evolution": [
+      "Ermitão: túnica branca, faixa e bastão.",
+      "Guia: robe em camadas, colar de contas e braceletes.",
+      "Sábio desperto: manto cerimonial branco e dourado, faixa dos caminhos e bastão ancestral."
+    ],
+    "art": "avatar-263"
+  }
+]

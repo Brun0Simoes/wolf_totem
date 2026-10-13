@@ -1,4 +1,5 @@
 
+import { AVATAR_PRACTICES } from '../data/avatarRituals';
 /**
  * Hero growth outside the formation: experience and levels, hunting trails, panema and the
  * ceremonies of the Casa de Cura. Everything here is data and pure rules; the Game applies them.
@@ -7,7 +8,7 @@
 export const MAX_HERO_LEVEL = 30;
 export const MAX_RITUAL_LEVEL = 10;
 export const RITUAL_COOLDOWN = 3 * 3600;
-export const RITUAL_XP: Record<PracticeId, number> = { rape: 90, sananga: 180, kambo: 450, ayahuasca: 900, cacau: 60, consecration: 240, "blood-pact": 300, "soul-forge": 450, "speaker-seal": 360, "ancestral-song": 260, eclipse: 900, requiem:320, 'first-blood':600 };
+export const RITUAL_XP: Record<PracticeId, number> = { rape: 90, sananga: 180, kambo: 450, ayahuasca: 900, cacau: 60, consecration: 240, "blood-pact": 300, "soul-forge": 450, "speaker-seal": 360, "ancestral-song": 260, eclipse: 900, requiem:320, 'first-blood':600,'air-discipline':270,'water-flow':330,'earth-root':400,'fire-breath':360,'warrior-path':280,'spirit-balance':500,'avatar-convergence':900 };
 export const ritualXpToNext = (level: number): number => level >= MAX_RITUAL_LEVEL ? Infinity : Math.round(90 * Math.pow(level, 1.4));
 export function ritualTotalXp(level: number, xp: number): number {
   let total = xp;
@@ -77,7 +78,7 @@ export const FOCUS_BONUS = 0.5;
 
 // ——— Casa de Cura ———
 
-export type PracticeId = 'rape' | 'sananga' | 'kambo' | 'ayahuasca' | 'cacau' | 'consecration' | 'blood-pact' | 'soul-forge' | 'speaker-seal' | 'ancestral-song' | 'eclipse' | 'requiem' | 'first-blood';
+export type PracticeId = 'rape' | 'sananga' | 'kambo' | 'ayahuasca' | 'cacau' | 'consecration' | 'blood-pact' | 'soul-forge' | 'speaker-seal' | 'ancestral-song' | 'eclipse' | 'requiem' | 'first-blood' | 'air-discipline' | 'water-flow' | 'earth-root' | 'fire-breath' | 'warrior-path' | 'spirit-balance' | 'avatar-convergence';
 export interface Practice {
   id: PracticeId; name: string; native: string; peoples: string;
   /** What the practice is for the peoples who keep it. */
@@ -133,6 +134,7 @@ PRACTICES.push(...[
  {id:'ancestral-song',name:'Canto dos Ancestrais',native:'memória da alma',peoples:'Insurgentes · rito fictício',text:'Acompanhe as notas de uma canção de lembrança. A memória dos que vieram antes protege a formação.',effect:'+5% de vida por canto, até três bônus. XP ritual em toda participação.',max:3,era:1,minLevel:2,rest:0},
  {id:'eclipse',name:'Comunhão do Eclipse',native:'sol negro',peoples:'Sol Negro · rito fictício',text:'Conduza a centelha através do eclipse para vincular a energia sobrenatural ao guardião.',effect:'+20% de poder de habilidade e +20 de mana inicial, uma vez por herói.',max:1,era:3,minLevel:14,rest:0},
 ] as Practice[]);
+PRACTICES.push(...AVATAR_PRACTICES);
 export const practiceById = (id: string) => PRACTICES.find(practice => practice.id === id);
 export const CACAO_DURATION = 600;
 export const CACAO_XP = 0.25;
